@@ -1,0 +1,283 @@
+app-accessibility/at-spi2-atk   abi_x86_32
+app-accessibility/at-spi2-core  abi_x86_32
+
+app-arch/bzip2                  abi_x86_32
+app-arch/libarchive             abi_x86_32
+app-arch/lz4                    abi_x86_32
+app-arch/xz-utils               abi_x86_32
+
+app-crypt/mit-krb5              abi_x86_32
+
+app-emulation/playonlinux       winbind
+app-emulation/virtualbox        vnc 
+app-emulation/wine-gecko        abi_x86_32
+app-emulation/wine-staging      capi gphoto2 gsm gstreamer ldap mp3 netapi odbc openal opencl osmesa pcap v4l pipelight s3tc themes vaapi
+app-emulation/wine-vanilla      capi gphoto2 gsm gstreamer ldap mp3 netapi odbc openal opencl osmesa pcap v4l
+app-emulation/wine-d3d9         capi gphoto2 gsm gstreamer ldap mp3 netapi odbc openal opencl osmesa pcap v4l
+app-emulation/wine-any          capi gphoto2 gsm gstreamer ldap mp3 netapi odbc openal opencl osmesa pcap v4l pipelight s3tc d3d9 staging 
+app-emulation/winetricks        rar
+app-emulation/qemu              nfs spice ssh usb
+
+app-crypt/pinentry              gnome-keyring
+
+app-text/aspell                 en es ru uk
+app-text/poppler                qt5
+app-text/xmlto                  text
+
+dev-db/sqlite                   abi_x86_32
+dev-db/unixODBC                 abi_x86_32
+
+dev-lang/orc                    abi_x86_32
+dev-lang/python                 sqlite tk
+
+dev-libs/atk                    abi_x86_32
+dev-libs/boost                  context doc mpi tools
+dev-libs/check                  abi_x86_32
+dev-libs/elfutils               static-libs
+dev-libs/expat                  abi_x86_32
+dev-libs/fuzzylite              no-c++11
+dev-libs/glib                   abi_x86_32
+dev-libs/gmp                    abi_x86_32
+dev-libs/icu                    abi_x86_32
+dev-libs/libaio                 abi_x86_32
+dev-libs/libbsd                 abi_x86_32
+dev-libs/libcroco               abi_x86_32
+dev-libs/libev                  abi_x86_32
+dev-libs/libffi                 abi_x86_32
+dev-libs/libgcrypt              abi_x86_32
+dev-libs/libgit2                ssh
+dev-libs/libgit2-glib           ssh
+dev-libs/libgpg                 abi_x86_32
+dev-libs/libgcrypt              static-libs
+dev-libs/libgpg-error           abi_x86_32 static-libs
+dev-libs/libltdl                abi_x86_32
+dev-libs/libpcre                abi_x86_32 pcre16
+dev-libs/libpcre2               pcre16
+dev-libs/libpthread-stubs       abi_x86_32
+dev-libs/libtasn1               abi_x86_32
+dev-libs/libunistring           abi_x86_32
+dev-libs/libusb                 abi_x86_32
+dev-libs/libgusb                vala
+dev-libs/libverto               abi_x86_32
+dev-libs/libxml2                abi_x86_32
+dev-libs/libxslt                abi_x86_32
+dev-libs/lzo                    static-libs abi_x86_32
+dev-libs/nettle                 abi_x86_32
+dev-libs/nss                    utils
+dev-libs/openssl                abi_x86_32
+dev-libs/popt                   abi_x86_32
+dev-libs/xmlsec                 nss
+
+#dev-python/certifi              python_targets_python3_6 python_targets_python3_4
+#dev-python/pip                  PYTHON_TARGETS: pypy pypy3 python2_7 python3_4 python3_6
+dev-python/PyQt5                widgets gui webkit svg printsupport network
+#dev-python/requests             python_targets_python3_4
+#dev-python/setuptools           python_targets_python3_6 python_targets_python3_4
+dev-python/subunit              abi_x86_32
+dev-python/QtPy                 gui
+
+dev-util/boost-build            examples
+dev-util/cmake                  qt5 server
+dev-util/cppunit                abi_x86_32
+dev-util/pkgconfig              abi_x86_32
+
+dev-qt/qt3support               abi_x86_32
+dev-qt/qtcore                   abi_x86_32
+dev-qt/qt-creator               android autotools baremetal bazaar clangstaticanalyzer cmake cvs designer doc git glsl ios mercurial modeling nim qbs qnx scxml subversion valgrind webengine winrt
+dev-qt/qtgui                    abi_x86_32 gtkstyle
+dev-qt/qtlockedfile             qt5
+dev-qt/qtphonon                 qt3support
+dev-qt/qtscript                 abi_x86_32
+dev-qt/qtsingleapplication      qt5
+# dev-qt/qtsql                    qt3support abi_x86_32
+dev-qt/qtsql                    abi_x86_32
+dev-qt/qtwebchannel             qml
+dev-qt/qtwebengine              widgets
+dev-qt/qtwebkit                 abi_x86_32 printsupport
+dev-qt/qtxmlpatterns            abi_x86_32
+
+dev-vcs/git                     cvs tk
+
+gnome-base/gvfs                 fuse gnome-keyring nfsgoogle archive
+gnome-base/librsvg              abi_x86_32
+
+#media-gfx/blender               python_targets_python3_4
+media-gfx/fim                   aalib dia djvu exif fbcon gif imagemagick jpeg -pdf png postscript readline sdl svg tiff xfig
+media-gfx/gimp                  jpeg2k lcms mng openexr postscript smp svg wmf xpm 
+media-gfx/graphite2             abi_x86_32
+media-gfx/inkscape              cdr dia exif imagemagick inkjar latex lcms postscript spell visio wpg
+media-gfx/imagemagick           perl
+media-gfx/pstoedit              plotutils
+media-gfx/sane-backends         abi_x86_32
+
+media-libs/aalib                slang
+media-libs/alsa-lib             abi_x86_32
+media-libs/flac                 abi_x86_32
+media-libs/fontconfig           abi_x86_32
+media-libs/freetype             abi_x86_32
+media-libs/gd                   abi_x86_32
+media-libs/glu                  abi_x86_32
+media-libs/gstreamer            abi_x86_32
+media-libs/gst-plugins-bad      egl
+media-libs/gst-plugins-base     abi_x86_32 theora
+media-libs/gst-plugins-good     abi_x86_32
+media-libs/harfbuzz             abi_x86_32
+media-libs/lcms                 abi_x86_32
+media-libs/libepoxy             abi_x86_32
+media-libs/libgphoto2           abi_x86_32
+media-libs/libjpeg-turbo        abi_x86_32
+media-libs/libogg               abi_x86_32
+media-libs/libpng               abi_x86_32
+media-libs/libsndfile           abi_x86_32
+media-libs/libtheora            abi_x86_32
+media-libs/libtxc_dxtn          abi_x86_32
+media-libs/libv4l               abi_x86_32
+media-libs/libvorbis            abi_x86_32
+media-libs/libvpx               svc
+media-libs/mesa                 abi_x86_32 d3d9 osmesa
+media-libs/openal               abi_x86_32
+media-libs/tiff                 abi_x86_32
+
+media-plugins/alsa-plugins      abi_x86_32
+media-plugins/gst-plugins-meta  abi_x86_32
+media-plugins/gst-plugins-pulse abi_x86_32
+
+media-sound/gsm                 abi_x86_32
+media-sound/mpg123              abi_x86_32
+media-sound/pulseaudio          abi_x86_32 gnome
+
+media-video/vlc                 qt5 skins v4l xml
+media-video/ffmpeg              opus vpx vorbis
+
+net-analyzer/nmap               ncat ndiff nmap-update nping
+net-analyzer/tcpdump            smi suid samba
+net-analyzer/wireshark          adns androiddump ciscodump doc doc-pdf geoip libssh lua portaudio randpkt randpktdump sbc smi sshdump tfshark
+
+net-dns/avahi                   autoipd
+net-dns/libidn2                 abi_x86_32
+
+net-firewall/iptables           conntrack netlink pcap
+net-fs/samba                    abi_x86_32 winbind client
+net-fs/nfs-utils                nfsdcld nfsv41
+
+net-libs/gnutls                 abi_x86_32
+net-libs/libasyncns             abi_x86_32
+net-libs/libcapi                abi_x86_32
+net-libs/libpcap                abi_x86_32
+
+net-misc/freerdp                gstreamer libav server usb xv
+net-misc/networkmanager         dhcpcd
+net-misc/teamviewer             -system-wine
+net-misc/rdesktop               ao kerberos libsamplerate oss pcsc-lite
+net-misc/remmina                rdp spice ssh vnc
+net-misc/spice-gtk              usbredir
+
+net-nds/openldap                abi_x86_32
+
+net-print/cups                  abi_x86_32
+net-print/hplip                 qt5
+
+net-vpn/strongswan              curl dhcp eap farp gcrypt ldap networkmanager pkcs11 strongswan_plugins_blowfish strongswan_plugins_ccm strongswan_plugins_ctr strongswan_plugins_gcm strongswan_plugins_ha strongswan_plugins_ipseckey strongswan_plugins_ntru strongswan_plugins_padlock strongswan_plugins_rdrand strongswan_plugins_unbound strongswan_plugins_whitelist
+
+net-wireless/bluez              abi_x86_32 deprecated experimental extra-tools
+net-wireless/blueman            appindicator network
+
+sys-apps/acl                    abi_x86_32
+sys-apps/attr                   abi_x86_32
+sys-apps/dbus                   abi_x86_32
+sys-apps/keyutils               abi_x86_32
+sys-apps/systemd                abi_x86_32 elfutils
+sys-apps/tcp-wrappers           abi_x86_32
+sys-apps/util-linux             abi_x86_32
+
+sys-devel/flex                  abi_x86_32
+sys-devel/gettext               abi_x86_32
+sys-devel/llvm                  abi_x86_32 clang
+sys-devel/gcc                   cilk doc
+
+sys-libs/binutils-libs          abi_x86_32
+sys-libs/cracklib               abi_x86_32
+sys-libs/db                     abi_x86_32
+sys-libs/e2fsprogs-libs         abi_x86_32
+sys-libs/ldb                    abi_x86_32
+sys-libs/libcap                 abi_x86_32
+sys-libs/ncurses                abi_x86_32 tinfo
+sys-libs/pam                    abi_x86_32
+sys-libs/readline               abi_x86_32
+sys-libs/talloc                 abi_x86_32
+sys-libs/tdb                    abi_x86_32
+sys-libs/tevent                 abi_x86_32
+sys-libs/zlib                   abi_x86_32 minizip
+
+virtual/acl                     abi_x86_32
+virtual/glu                     abi_x86_32
+virtual/jpeg                    abi_x86_32
+virtual/imagemagick-tools       perl
+virtual/libffi                  abi_x86_32
+virtual/libiconv                abi_x86_32
+virtual/libintl                 abi_x86_32
+virtual/libudev                 abi_x86_32
+virtual/libusb                  abi_x86_32
+virtual/opengl                  abi_x86_32
+virtual/opencl                  abi_x86_32
+virtual/pam                     abi_x86_32
+virtual/pkgconfig               abi_x86_32
+virtual/wine                    staging d3d9
+
+www-client/firefox              bindist
+
+x11-base/xorg-server            kdrive xephyr xorg
+
+x11-drivers/nvidia-drivers      acpi uvm
+
+x11-libs/cairo                  abi_x86_32
+x11-libs/gdk-pixbuf             abi_x86_32
+x11-libs/gtk+                   abi_x86_32
+x11-libs/libdrm                 abi_x86_32
+x11-libs/libICE                 abi_x86_32
+x11-libs/libSM                  abi_x86_32
+x11-libs/libva                  abi_x86_32
+x11-libs/libva-vdpau-driver     abi_x86_32
+x11-libs/libvdpau               abi_x86_32
+x11-libs/libxcb                 abi_x86_32
+x11-libs/libxshmfence           abi_x86_32
+x11-libs/libX11                 abi_x86_32
+x11-libs/libXau                 abi_x86_32
+x11-libs/libXcomposite          abi_x86_32
+x11-libs/libXcursor             abi_x86_32
+x11-libs/libXdamage             abi_x86_32
+x11-libs/libXdmcp               abi_x86_32
+x11-libs/libXext                abi_x86_32
+x11-libs/libXfixes              abi_x86_32
+x11-libs/libXft                 abi_x86_32
+x11-libs/libXi                  abi_x86_32
+x11-libs/libXinerama            abi_x86_32
+x11-libs/libXrandr              abi_x86_32
+x11-libs/libXrender             abi_x86_32
+x11-libs/libXtst                abi_x86_32
+x11-libs/libXv                  abi_x86_32
+x11-libs/libXxf86vm             abi_x86_32
+x11-libs/pango                  abi_x86_32
+x11-libs/pixman                 abi_x86_32
+
+x11-proto/compositeproto        abi_x86_32
+x11-proto/damageproto           abi_x86_32
+x11-proto/dri2proto             abi_x86_32
+x11-proto/dri3proto             abi_x86_32
+x11-proto/fixesproto            abi_x86_32
+x11-proto/glproto               abi_x86_32
+x11-proto/inputproto            abi_x86_32
+x11-proto/kbproto               abi_x86_32
+x11-proto/presentproto          abi_x86_32
+x11-proto/randrproto            abi_x86_32
+x11-proto/recordproto           abi_x86_32
+x11-proto/renderproto           abi_x86_32
+x11-proto/videoproto            abi_x86_32
+x11-proto/xcb-proto             abi_x86_32
+x11-proto/xextproto             abi_x86_32
+x11-proto/xf86bigfontproto      abi_x86_32
+x11-proto/xf86driproto          abi_x86_32
+x11-proto/xf86vidmodeproto      abi_x86_32
+x11-proto/xineramaproto         abi_x86_32
+x11-proto/xproto                abi_x86_32
+

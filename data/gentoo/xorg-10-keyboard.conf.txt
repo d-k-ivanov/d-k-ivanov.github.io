@@ -1,0 +1,11 @@
+Section "InputClass"
+    Identifier "keyboard-all"
+    Driver "evdev"
+    Option "XkbLayout" "us,ru"
+    Option "XkbModel" "precision_m"
+    Option "XkbRules" "xorg"
+    Option "XkbVariant" "altgr-intl,abnt2"
+    # Option "XkbOptions" "grp:shift_toggle,grp_led:scroll"
+    Option "XkbOptions" "grp:alt_shift_toggle,grp:switch,grp_led:scroll,compose:rwin,terminate:ctrl_alt_bksp"
+    MatchIsKeyboard "on"
+EndSection

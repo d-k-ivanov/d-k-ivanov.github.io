@@ -1,0 +1,168 @@
+app-admin/mongo-tools                     ~amd64
+app-admin/terraform                       ~amd64
+
+app-crypt/gkeys-gen                       ~amd64
+app-crypt/gkeys                           ~amd64
+
+app-editors/sublime-text                  ~amd64
+app-editors/vscode                        ~amd64
+
+app-eselect/eselect-electron              ~amd64
+app-eselect/eselect-wine                  ~amd64
+
+#app-emulation/docker                      ~amd64
+app-emulation/libvirt-glib                ~amd64
+app-emulation/lxd                         ~amd64
+app-emulation/playonlinux                 ~amd64
+app-emulation/virt-manager                ~amd64
+app-emulation/virtualbox                  ~amd64
+app-emulation/virtualbox-modules          ~amd64
+app-emulation/virtualbox-additions        ~amd64
+app-emulation/virtualbox-extpack-oracle   ~amd64
+app-emulation/wine-any                    ~amd64
+app-emulation/wine-d3d9                   ~amd64
+app-emulation/wine-desktop-common         ~amd64
+app-emulation/wine-gecko                  ~amd64
+app-emulation/wine-mono                   ~amd64
+app-emulation/wine-staging                ~amd64
+app-emulation/wine-vanilla                ~amd64
+
+app-misc/ddccontrol                       ~amd64
+app-misc/ddccontrol-db                    ~amd64
+app-misc/taskd                            ~amd64
+
+app-text/goldendict                       ~amd64
+
+dev-db/mongodb                            ~amd64
+dev-db/tarantool                          ~amd64
+
+dev-lang/python                           ~amd64
+dev-lang/python-exec                      ~amd64
+dev-lang/rust                             ~amd64
+
+dev-libs/boost                            ~amd64
+dev-libs/fuzzylite                        ~amd64
+dev-libs/libuv                            ~amd64
+dev-libs/libxml2                          ~amd64
+dev-libs/nss                              ~amd64
+dev-libs/nspr                             ~amd64
+dev-libs/openssl                          ~amd64
+
+dev-python/certifi                        ~amd64
+dev-python/setuptools                     ~amd64
+dev-python/snakeoil                       ~amd64
+
+dev-util/android-studio                   ~amd64
+dev-util/boost-build                      ~amd64
+dev-util/cargo                            ~amd64
+dev-util/electron                         ~amd64
+dev-util/kbuild                           ~amd64
+dev-util/nvidia-cuda-toolkit              ~amd64
+dev-util/nvidia-cuda-sdk                  ~amd64
+dev-util/patchbin                         ~amd64
+dev-util/qbs                              ~amd64
+
+dev-qt/qt-creator                         ~amd64
+dev-qt/qtdemo                             ~amd64
+
+games-strategy/vcmi-data                  ~amd64
+games-strategy/vcmi                       ~amd64
+
+games-util/steam-launcher                 ~amd64
+
+media-gfx/fim                             ~amd64
+
+media-libs/harfbuzz                       ~amd64
+media-libs/libpng                         ~amd64
+media-libs/mesa                           ~amd64
+
+net-analyzer/openbsd-netcat               ~amd64
+
+net-firewall/iptables                     ~amd64
+
+net-im/skypeforlinux                      ~amd64
+net-im/slack-bin                          ~amd64
+net-im/telegram-desktop-bin               ~amd64
+
+net-libs/libnetfilter_conntrack           ~amd64
+net-libs/nodejs                           ~amd64
+
+net-misc/drive                            ~amd64
+net-misc/dropbox                          ~amd64
+net-misc/freerdp                          ~amd64
+net-misc/grive                            ~amd64
+net-misc/networkmanager-libreswan         ~amd64
+net-misc/networkmanager-fortisslvpn       ~amd64
+net-misc/networkmanager-sstp              ~amd64
+net-misc/remmina                          ~amd64
+net-misc/teamviewer                       ~amd64
+
+net-print/hplip                           ~amd64
+net-p2p/qbittorrent                       ~amd64
+
+net-vpn/openfortivpn                      ~amd64
+
+net-wireless/blueman                      ~amd64
+
+sys-apps/inxi                             ~amd64
+sys-apps/iproute2                         ~amd64
+sys-apps/yarn                             ~amd64
+
+sys-boot/unetbootin                       ~amd64
+
+sys-devel/clang                           ~amd64
+sys-devel/clang-runtime                   ~amd64
+sys-devel/llvm                            ~amd64
+sys-devel/llvm-common                     ~amd64
+
+sys-firmware/iwl8000-ucode                ~amd64
+sys-kernel/linux-firmware                 ~amd64
+
+sys-fs/fuse-convmvfs                      ~amd64
+sys-fs/fuse-zip                           ~amd64
+sys-fs/zfs                                ~amd64
+sys-fs/zfs-kmod                           ~amd64
+
+sys-kernel/spl                            ~amd64
+
+sys-libs/compiler-rt                      ~amd64
+sys-libs/compiler-rt-sanitizers           ~amd64
+sys-libs/libomp                           ~amd64
+
+sys-power/acpi_call                       ~amd64
+sys-power/thermald                        ~amd64
+
+virtual/rust                              ~amd64
+virtual/wine                              ~amd64
+
+www-client/chromium                       ~amd64
+www-client/firefox                        ~amd64
+www-client/google-chrome-beta             ~amd64
+www-client/opera                          ~amd64
+
+x11-libs/libcryptui                       ~amd64
+x11-libs/libdrm                           ~amd64
+
+x11-misc/lightdm                          ~amd64
+x11-misc/lightdm-gtk-greeter              ~amd64
+x11-misc/shutter                          ~amd64
+
+x11-plugins/pidgin-skypeweb               ~amd64
+
+x11-terms/alacritty                       ~amd64
+x11-terms/xterm                           ~amd64
+
+x11-themes/arc-theme                      ~amd64
+x11-themes/faenza-icon-theme              ~amd64
+x11-themes/fvwm_icons                     ~amd64
+x11-themes/gargantuan-icon-theme          ~amd64
+x11-themes/hicolor-icon-theme             ~amd64
+x11-themes/human-icon-theme               ~amd64
+x11-themes/iceicons                       ~amd64
+x11-themes/nou-icon-theme                 ~amd64
+x11-themes/nuovo-icon-theme               ~amd64
+x11-themes/wm-icons                       ~amd64
+x11-themes/yasis-icon-theme               ~amd64
+
+x11-wm/awesome                            ~amd64
+

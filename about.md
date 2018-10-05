@@ -1,0 +1,106 @@
+---
+layout: page
+title: Curriculum Vitae
+permalink: /about/
+---
+
+***
+
+## Education
+
+* Engineer, Belgorod State Technological University named after V.G. Shukhov
+
+***
+
+## Roles
+
+* 07.2018-present - **Senior Development and Operation Engineer** at Ormco Corporation (Medical Devices)
+* 11.2017-05.2018 - **Senior Development and Operation Engineer** at Align Technology Inc. (Medical Devices)
+* 02.2017-11.2017 - **Development Pipeline Developer** at HotelChat (AI)
+* 02.2013-02.2017 - **Tecnical Systems Architect** at D8 Corporation (Banking)
+* 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems (Banking)
+* 06.2007-08.2010 - **Senior System and Network Administrator** at Delta-Systems (Banking)
+* 06.2005-05.2007 - **System Administrator** at Akella (GameDev)
+
+***
+
+## Skills
+
+* Development with various programming languages
+* Unix и Linux services
+* Windows-based services
+* Virtualization and emulation technologies
+* RDBMS and NoSQL
+* Some of payment standards (e.g. ISO 8583 and PCI DSS)
+* Various Hardware (Mostly branded one: HP DL, IBM x86 and Power series)
+* A lot of cloud solutions (Amazon Web Services on the top of the hill)
+* And of course Production support and documentation
+
+***
+
+## Experience
+
+### [**Ormco Corporation**](https://ormco.com)
+
+### [**Align Technology Inc.**](https://aligntech.com)
+
+* Software Deployment: Contribute to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments, author and maintain cookbooks, perform related training.
+* Reliability Engineering: Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher).
+* Automation: Author customized scripts (in Ruby, Python, and Shell) and software applications to automate environment maintenance, orchestration, and release engineering tasks.
+* Continuous Integration: Define, configure and script build, metric, test, deploy, release and other steps of deployment pipeline for variety applications.
+* Software Development Life Cycle: Shape and improve SDLC processes and document them in Standard Operating Procedures.
+* Cloud Rollout: Contribute to the movement towards AWS/Heroku-based hosting and architecture, work on a platform that allows development teams to push their changes into fresh EC2 instances in mere minutes.
+* DevOps Culture: Identify gaps in current DevOps process, support, fix, and maintain those key areas.
+* Teamwork: Demonstrate, collaborate, and share expertise to assist the surrounding team members.
+* Linux/Windows Systems Administration: Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over a 5000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements.
+* Production Support: Respond to off-hours emergencies and activities. This is an on-call Production support position.
+* Languages used: Python, Ruby, HCL
+
+### [**HotelChat**](http://hotelchat.me)
+
+* Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, nGinx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (vertx), JavaScript, Go, Snakeskin
+* Design and implementation of deployment processes for code delivery to production, development and demo environments
+* Design and implementation of GitLab-based CI/CD pipeline
+* Design and implementation of hotel's solutions
+* Automation deployments with Ansible, Python and Terraform
+* Languages used: Python, Java, JavaScript, HCL
+
+### [**D8 Corporation**](http://www.d8corporation.com)
+
+* Design and implementation of Payment Systems (FIS CORTEX)
+* Design and implementation of Risk Management Systems (D8 Stronghold)
+* Design and implementation of Loyalty Systems (D8 PointZone)
+* SLA Support and Monitoring (NetXMS)
+* Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash
+
+### [**iTech Systems**](http://itech-systems.com)
+
+* Design and implementation of Loyalty Systems (.NET)
+* Design and implementation of monitoring system and 24/7 Support
+* PCI DSS certification
+* SLA support and Monitoring
+* Languages used: Bash, Perl, Powershell, Ruby, VBA
+
+### [**Delta-Systems**](http://delta-systems.ru)
+
+* Design and implementation of 1C Warehouse Management System
+* Design and implementation of 1C ERP System
+* Migration of 1C Accounting Suite from 7.7 to 8.0
+* Migration pf 1C Warehouse Management System to 1C ERP System
+* Design and implementation of ASoftCRM
+* Migration of infrastructure from NT4 Domain to Windows Server 2008 Domain
+* Migration from ISA Server to FreeBSD gateway stack
+* Design and implementation of Crechet Service Desk
+* Design and implementation of Project Server + SharePoint
+* Languages used: 1C, Batch, Bash
+
+### [**Akella**](http://akella.ru)
+
+* Administration of Windows services and FreeBSD gateways administration
+* Design and implementation of bug-track system
+* Installation of CCTV
+* Languages used: Batch, VBS
+
+## Contact me
+
+[d.k.ivanov@live.com](mailto:d.k.ivanov@live.com)

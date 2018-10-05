@@ -1,0 +1,84 @@
+# Basic
+title: "Dmitriy Ivanov"
+subtitle: "Software Developer"
+description: "My own home page"
+avatarTitle: "About Me"
+avatarDesc: ""
+
+# Your website URL
+# Used for Sitemap.xml and your RSS feed
+url: "d-k-ivanov.github.io"
+
+# Comment module
+comment:
+    disqus: keepbot
+    # uyan: <uyan_id>
+
+# Social
+social:
+    github: d-k-ivanov
+    facebook: a1231239849
+    gplus: 117493423659295113944
+    instagram: dkivanov
+    linkedin: dmitriy-ivanov-5b9275b3
+    mail: d.k.ivanov@live.com
+    twitter: Dmitriy24037176
+    vkontakte: d.k.ivanov
+    # weibo: <weibo_id>
+
+# Baidu 
+# baidu:
+#    id: <baidu_id>  
+
+# Google Analytics
+ya:
+  id: 40819844
+ga:
+    id: UA-80208201-1 
+    host: "d-k-ivanov.github.io"  
+
+permalink: /:year/:month/:title/
+# Format
+highlighter: rouge
+
+textColor: #FF0000
+
+# supported colors: blue, green, purple, red, orange or slate. If you need clear, leave it empty.
+cover_color: clear
+
+# The blog button should not be removed.
+blog_button:
+    title: Blog
+
+# Navigation buttons in the front page.s
+nav:
+    - {title: Archive, description: archive, url: '/archive'}
+    - {title: Projects, description: projects, url: '/projects'}
+    - {title: Tags, description: tags, url: '/tags'}
+    - {title: Docs, description: docs, url: '/docs'}
+    - {title: About Me, description: about, url: '/about'}
+    - {title: GitHub, description: GitHub, url: 'https://github.com/d-k-ivanov'}
+
+
+# Pagination
+plugins: 
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-feed
+
+paginate: 100
+paginate_path: "page/:num/"
+
+# Exclude these files from your production _site
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE
+  - README.md
+  - CNAME
+  - .idea
+  - publish.ps1
+  - publish.sh
+  - start_serve.ps1
+  - start_serve.sh
+
