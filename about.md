@@ -26,21 +26,27 @@ permalink: /about/
 
 ## Skills
 
-* Development with various programming languages
 * Unix и Linux services
 * Windows-based services
+* Development in various programming languages
 * Virtualization and emulation technologies
 * RDBMS and NoSQL
 * Some of payment standards (e.g. ISO 8583 and PCI DSS)
-* Various Hardware (Mostly branded one: HP DL, IBM x86 and Power series)
-* A lot of cloud solutions (Amazon Web Services on the top of the hill)
-* And of course Production support and documentation
+* Cloud Solutions
+* Technical documentation
+* Project management
+* Hardware
 
 ***
 
 ## Experience
 
 ### [**Ormco Corporation**](https://ormco.com)
+
+* Design and implementation of cloud-based solutions
+* Design and implementation of DevOps pipeline
+* Administration and devlopment for Allassian stack
+* Languages used: Python, HCL, C/C++, SQL, Java, JavaScript
 
 ### [**Align Technology Inc.**](https://aligntech.com)
 
