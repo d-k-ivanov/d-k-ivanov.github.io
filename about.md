@@ -26,16 +26,16 @@ permalink: /about/
 
 ## Skills
 
-* Unix и Linux services
-* Windows-based services
-* Development in various programming languages
-* Virtualization and emulation technologies
-* RDBMS and NoSQL
-* Some of payment standards (e.g. ISO 8583 and PCI DSS)
-* Cloud Solutions
-* Technical documentation
-* Project management
-* Hardware
+* Various knowledge of Unix и Linux services
+* Various knowledge of Windows-based services
+* Development skills in various programming languages
+* Various knowledge of virtualization and emulation technologies
+* Knowledge of RDBMS and NoSQL, ability to write code for them (lua included)
+* Some knowledge of payment standards (e.g. ISO 8583 and PCI DSS)
+* Various knowledge Cloud Solutions
+* Technical and sales documentation
+* Project management and workflow
+* Various hardware
 
 ***
 
