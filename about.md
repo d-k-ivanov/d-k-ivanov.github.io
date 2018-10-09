@@ -16,7 +16,7 @@ permalink: /about/
 
 * 07.2018-present - **Senior Development and Operation Engineer** at Ormco Corporation (Medical Devices)
 * 11.2017-05.2018 - **Senior Development and Operation Engineer** at Align Technology Inc. (Medical Devices)
-* 02.2017-11.2017 - **Development Pipeline Developer** at HotelChat (AI)
+* 03.2017-11.2017 - **Development Pipeline Developer** at HotelChat (AI)
 * 02.2013-02.2017 - **Tecnical Systems Architect** at D8 Corporation (Banking)
 * 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems (Banking)
 * 06.2007-08.2010 - **Senior System and Network Administrator** at Delta-Systems (Banking)
