@@ -31,7 +31,7 @@ permalink: /about/
 * Development skills in various programming languages
 * Various knowledge of virtualization and emulation technologies
 * Knowledge of RDBMS and NoSQL, ability to write code for them (lua included)
-* Some knowledge of payment standards (e.g. ISO 8583 and PCI DSS)
+* Some knowledge of standards (e.g. ISO 8583, PCI DSS and HIPAA)
 * Various knowledge Cloud Solutions
 * Technical and sales documentation
 * Project management and workflow
@@ -54,17 +54,17 @@ permalink: /about/
 
 ### [**Align Technology Inc.**](https://aligntech.com)
 
-* Software Deployment: Contribute to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments, author and maintain cookbooks, perform related training.
-* Reliability Engineering: Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher).
-* Automation: Author customized scripts (in Ruby, Python, and Shell) and software applications to automate environment maintenance, orchestration, and release engineering tasks.
-* Continuous Integration: Define, configure and script build, metric, test, deploy, release and other steps of deployment pipeline for variety applications.
-* Software Development Life Cycle: Shape and improve SDLC processes and document them in Standard Operating Procedures.
-* Cloud Rollout: Contribute to the movement towards AWS/Heroku-based hosting and architecture, work on a platform that allows development teams to push their changes into fresh EC2 instances in mere minutes.
-* DevOps Culture: Identify gaps in current DevOps process, support, fix, and maintain those key areas.
-* Teamwork: Demonstrate, collaborate, and share expertise to assist the surrounding team members.
-* Linux/Windows Systems Administration: Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over a 5000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements.
-* Production Support: Respond to off-hours emergencies and activities. This is an on-call Production support position.
-* Languages used: Python, Ruby, HCL
+* Contribution to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
+* Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher)
+* Automate environment maintenance, orchestration, and release engineering tasks (in Ruby, Python, and Shell)
+* Define, configure and script build, metric, test, deploy, release and other steps of deployment pipeline for variety applications
+* Shape and improve SDLC processes
+* Develop AWS, Azure and Heroku based hosting and architecture
+* Identify gaps in current DevOps process, support, fix, and maintain those key areas
+* Share expertise to assist the surrounding team members
+* Linux/Windows Systems Administration. Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over a 5000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements
+* Production Support
+* Languages used: Python, Ruby, HCL, Shell
 
 ### [**HotelChat**](http://hotelchat.me)
 
@@ -77,10 +77,14 @@ permalink: /about/
 
 ### [**D8 Corporation**](http://www.d8corporation.com)
 
-* Design and implementation of Payment Systems (FIS CORTEX)
-* Design and implementation of Risk Management Systems (D8 Stronghold)
-* Design and implementation of Loyalty Systems (D8 PointZone)
+* Develop and implement banking solutions:
+** Payment Systems (FIS CORTEX)
+** Risk Management Systems (D8 Stronghold)
+** Loyalty Systems (D8 PointZone)
 * SLA Support and Monitoring (NetXMS)
+* Linux/Windows Systems Administration
+* Debug problems with apps in C/C++
+* Develop database migration scripts
 * Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash
 
 ### [**iTech Systems**](http://itech-systems.com)
