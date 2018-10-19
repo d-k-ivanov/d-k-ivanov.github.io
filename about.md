@@ -78,11 +78,9 @@ permalink: /about/
 ### [**D8 Corporation**](http://www.d8corporation.com)
 
 * Develop and implementation of banking solutions:
-
-** Payment Systems (FIS CORTEX)
-** Risk Management Systems (D8 Stronghold)
-** Loyalty Systems (D8 PointZone)
-
+    * Payment Systems (FIS CORTEX)
+    * Risk Management Systems (D8 Stronghold)
+    * Loyalty Systems (D8 PointZone)
 * SLA Support and Monitoring (NetXMS)
 * Linux/Windows Systems Administration
 * Debug problems with apps in C/C++
