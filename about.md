@@ -43,9 +43,13 @@ permalink: /about/
 
 ### [**Ormco Corporation**](https://ormco.com)
 
-* Design and implementation of cloud-based solutions
+* Design and implementation of AWS and Azure based cloud solutions
 * Design and implementation of DevOps pipeline
-* Administration and devlopment for Allassian stack
+* Debug and automate builds and compilation for C++/QT for Win and Mac
+* Debug and deploy Java microservices (Spring)
+* Develop workflow for Atlassian stack
+* Automate operations in Python and JavaScript
+* Develop database migration scripts
 * Languages used: Python, HCL, C/C++, SQL, Java, JavaScript
 
 ### [**Align Technology Inc.**](https://aligntech.com)
