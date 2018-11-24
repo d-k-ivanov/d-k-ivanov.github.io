@@ -43,8 +43,9 @@ permalink: /about/
 
 ### [**Ormco Corporation**](https://ormco.com)
 
-* Design and implementation of AWS and Azure based cloud solutions
-* Design and implementation of DevOps pipeline
+* Lead team to use most efficient automation trends
+* Architect AWS and Azure based cloud solutions
+* Architect DevOps pipeline
 * Debug and automate builds and compilation for C++/QT for Win and Mac
 * Debug and deploy Java microservices (Spring)
 * Develop workflow for Atlassian stack
