@@ -14,9 +14,9 @@ permalink: /about/
 
 ## Roles
 
-* 07.2018-present - **Senior Development and Operation Engineer** at Ormco Corporation (Medical Devices)
-* 11.2017-05.2018 - **Senior Development and Operation Engineer** at Align Technology Inc. (Medical Devices)
-* 03.2017-11.2017 - **Development Pipeline Developer** at HotelChat (AI)
+* 07.2018-present - **Lead Development and Operations Engineer** at Ormco Corporation (Medical Devices)
+* 11.2017-05.2018 - **Senior Development and Operations Engineer** at Align Technology Inc. (Medical Devices)
+* 03.2017-11.2017 - **Lead DevOps and Intergation Developer** at HotelChat (AI)
 * 02.2013-02.2017 - **Tecnical Systems Architect** at D8 Corporation (Banking)
 * 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems (Banking)
 * 06.2007-08.2010 - **Senior System and Network Administrator** at Delta-Systems (Banking)
@@ -41,19 +41,23 @@ permalink: /about/
 
 ## Experience
 
-### [**Ormco Corporation**](https://ormco.com)
+### [**Lead Development and Operations Engineer at Ormco Corporation**](https://ormco.com)
 
 * Lead team to use most efficient automation trends
-* Architect AWS and Azure based cloud solutions
+* Architect AWS based cloud solutions
 * Architect DevOps pipeline
+* Develop DevOps and Application Support workflow
 * Debug and automate builds and compilation for C++/QT for Win and Mac
-* Debug and deploy Java microservices (Spring)
+* Debug and deploy Java micro services (Spring)
 * Develop workflow for Atlassian stack
 * Automate operations in Python and JavaScript
 * Develop database migration scripts
+* Manage team learning activity
+* Interview new team members
+* Annual budget planning
 * Languages used: Python, HCL, C/C++, SQL, Java, JavaScript
 
-### [**Align Technology Inc.**](https://aligntech.com)
+### [**Senior Development and Operations Engineer at Align Technology Inc.**](https://aligntech.com)
 
 * Contribution to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
 * Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher)
@@ -67,7 +71,7 @@ permalink: /about/
 * Production Support
 * Languages used: Python, Ruby, HCL, Shell
 
-### [**HotelChat**](http://hotelchat.me)
+### [**Lead DevOps and Intergation Developer at HotelChat**](http://hotelchat.me)
 
 * Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, nGinx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (vertx), JavaScript, Go, Snakeskin
 * Design and implementation of deployment processes for code delivery to production, development and demo environments
@@ -76,7 +80,7 @@ permalink: /about/
 * Automation deployments with Ansible, Python and Terraform
 * Languages used: Python, Java, JavaScript, HCL
 
-### [**D8 Corporation**](http://www.d8corporation.com)
+### [**Tecnical Systems Architect at D8 Corporation**](http://www.d8corporation.com)
 
 * Develop and implementation of banking solutions:
     * Payment Systems (FIS CORTEX)
@@ -88,7 +92,7 @@ permalink: /about/
 * Develop database migration scripts
 * Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash
 
-### [**iTech Systems**](http://itech-systems.com)
+### [**Lead Infrastructure Engineer at iTech Systems**](http://itech-systems.com)
 
 * Design and implementation of Loyalty Systems (.NET)
 * Design and implementation of monitoring system and 24/7 Support
@@ -96,7 +100,7 @@ permalink: /about/
 * SLA support and Monitoring
 * Languages used: Bash, Perl, Powershell, Ruby, VBA
 
-### [**Delta-Systems**](http://delta-systems.ru)
+### [**Senior System and Network Administrator at Delta-Systems**](http://delta-systems.ru)
 
 * Design and implementation of 1C Warehouse Management System
 * Design and implementation of 1C ERP System
@@ -109,7 +113,7 @@ permalink: /about/
 * Design and implementation of Project Server + SharePoint
 * Languages used: 1C, Batch, Bash
 
-### [**Akella**](http://akella.ru)
+### [**System Administrator at Akella**](http://akella.ru)
 
 * Administration of Windows services and FreeBSD gateways administration
 * Design and implementation of bug-track system
