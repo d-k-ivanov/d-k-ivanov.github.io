@@ -6,6 +6,16 @@ permalink: /about/
 
 ***
 
+## About me
+
+* Experienced engineer with various knowledge of IT and Software Development areas.
+* Experienced in Banking, Medical and Enterprise areas from low-level infrastructure perspective to high-level project management.
+* Experience to follow and integration compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
+* My Myers-Briggs personality type is ISFJ.
+* Strong time management skills
+
+***
+
 ## Education
 
 * Engineer, Belgorod State Technological University named after V.G. Shukhov
@@ -21,21 +31,6 @@ permalink: /about/
 * 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems (Banking)
 * 06.2007-08.2010 - **Senior System and Network Administrator** at Delta-Systems (Banking)
 * 06.2005-05.2007 - **System Administrator** at Akella (GameDev)
-
-***
-
-## Skills
-
-* Various knowledge of Unix и Linux services
-* Various knowledge of Windows-based services
-* Development skills in various programming languages
-* Various knowledge of virtualization and emulation technologies
-* Knowledge of RDBMS and NoSQL, ability to write code for them (lua included)
-* Some knowledge of standards (e.g. ISO 8583, PCI DSS and HIPAA)
-* Various knowledge Cloud Solutions
-* Technical and sales documentation
-* Project management and workflow
-* Various hardware
 
 ***
 
