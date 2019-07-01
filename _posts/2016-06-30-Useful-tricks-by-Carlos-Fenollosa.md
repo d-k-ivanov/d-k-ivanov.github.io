@@ -6,7 +6,7 @@ date: 2016-06-30
 tag: console
 ---
 
-> Some time ago I've found a beautiful collection of unix triks which could help me to start customizing my unix environment and collect unix tricks by myself. So now I've started to publish my triks [here](http://keepbot.github.io/docs) 
+> Some time ago I've found a beautiful collection of unix triks which could help me to start customizing my unix environment and collect unix tricks by myself. So now I've started to publish my triks [here](https://d-k-ivanov.github.io/docs) 
 
 <p></p>
 

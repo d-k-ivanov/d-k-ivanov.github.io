@@ -67,7 +67,7 @@ permalink: /about/
 * Production Support
 * Languages used: Python, Ruby, HCL, Shell
 
-### [**Lead DevOps and Intergation Developer at HotelChat**](http://hotelchat.me)
+### [**Lead DevOps and Integration Developer at HotelChat**](http://hotelchat.me)
 
 * Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, nGinx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (vertx), JavaScript, Go, Snakeskin
 * Design and implementation of deployment processes for code delivery to production, development and demo environments
@@ -76,7 +76,7 @@ permalink: /about/
 * Automation deployments with Ansible, Python and Terraform
 * Languages used: Python, Java, JavaScript, HCL
 
-### [**Tecnical Systems Architect at D8 Corporation**](http://www.d8corporation.com)
+### [**Technical Systems Architect at D8 Corporation**](http://www.d8corporation.com)
 
 * Develop and implementation of banking solutions:
     * Payment Systems (FIS CORTEX)
