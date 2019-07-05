@@ -43,15 +43,18 @@ permalink: /about/
 * Architect AWS based cloud solutions
 * Architect DevOps pipeline
 * Develop DevOps and Application Support workflow
+* C++ Application Development
 * Debug and automate builds and compilation for C++/QT for Win and Mac
 * Debug and deploy Java micro services (Spring)
 * Develop workflow for Atlassian stack
+* Automate CI/CD Pipeline with Java
 * Automate operations in Python and JavaScript
 * Develop database migration scripts
 * Manage team learning activity
 * Interview new team members
 * Annual budget planning
-* Languages used: Python, HCL, C/C++, SQL, Java, JavaScript
+* Scripting: powershell, bash, vbs, sh, cmd
+* Languages used: Python, HCL, C/C++, SQL, Java, JavaScript, C#
 
 ### [**Senior Development and Operations Engineer at Align Technology Inc.**](https://aligntech.com)
 
