@@ -46,6 +46,7 @@ permalink: /about/
 * C++ Application Development
 * Debug and automate builds and compilation for C++/QT for Win and Mac
 * Debug and deploy Java micro services (Spring)
+* Code review
 * Develop workflow for Atlassian stack
 * Automate CI/CD Pipeline with Java
 * Automate operations in Python and JavaScript
