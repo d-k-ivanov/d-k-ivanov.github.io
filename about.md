@@ -25,8 +25,8 @@ permalink: /about/
 
 ## Roles
 
-* 07.2018-present - **Lead Development and Operations Engineer** at Ormco Corporation (Medical Devices)
-* 11.2017-05.2018 - **Senior Development and Operations Engineer** at Align Technology Inc. (Medical Devices)
+* 07.2018-present - **Lead DevOps Engineer** at Ormco Corporation (Medical Devices)
+* 11.2017-05.2018 - **Senior DevOps Engineer** at Align Technology Inc. (Medical Devices)
 * 03.2017-11.2017 - **Lead DevOps and Integration Developer** at HotelChat (AI)
 * 02.2013-02.2017 - **Technical Systems Architect** at D8 Corporation (Banking)
 * 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems (Banking)
@@ -37,7 +37,7 @@ permalink: /about/
 
 ## Experience
 
-### [**Lead Development and Operations Engineer at Ormco Corporation**](https://ormco.com)
+### [**Lead DevOps Engineer at Ormco Corporation**](https://ormco.com)
 
 * Lead team to use most efficient automation trends
 * Architect AWS based cloud solutions
@@ -57,7 +57,7 @@ permalink: /about/
 * Scripting: powershell, bash, vbs, sh, cmd
 * Languages used: Python, HCL, C/C++, SQL, Java, JavaScript, C#
 
-### [**Senior Development and Operations Engineer at Align Technology Inc.**](https://aligntech.com)
+### [**Senior DevOps Engineer at Align Technology Inc.**](https://aligntech.com)
 
 * Contribution to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
 * Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher)
