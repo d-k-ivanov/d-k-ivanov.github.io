@@ -4,10 +4,10 @@ title: Projects
 permalink: /projects/
 ---
 
-### Armenian Alphabet Quiz for Android
+### Armenian Alphabet for Android
 
 <a href="https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet" target="_blank">
-  <img src="../images/projects/ArmenianAlphabetQuizDroid.gif" alt="Armeinan Alphabet Quiz" style="width: 200px; margin:0px 50px 0px 50px;"/>
+  <img src="../images/projects/ArmenianAlphabet.gif" alt="Armeinan Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
 </a>
 
 ### TurboRED Company Website
