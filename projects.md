@@ -16,7 +16,6 @@ permalink: /projects/
   <img src="../images/projects/RussianAlphabet.gif" alt="Russian Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
 </a>
 
-
 ### TurboRED Company Website
 
 <img id="myImg" src="../images/projects/TurboRED.png" alt="Turbored Home Page" style="width: 300px; margin:0px 50px 0px 50px;">
