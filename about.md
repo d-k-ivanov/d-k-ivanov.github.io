@@ -106,11 +106,11 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * Design and implementation of 1C ERP System
 * Migration of 1C Accounting Suite from 7.7 to 8.0
 * Migration pf 1C Warehouse Management System to 1C ERP System
-* Design and implementation of ASoftCRM
+* Design and implementation of ASoftCRM integration 
 * Migration of infrastructure from NT4 Domain to Windows Server 2008 Domain
 * Migration from ISA Server to FreeBSD gateway stack
-* Design and implementation of Crechet Service Desk
-* Design and implementation of Project Server + SharePoint
+* Design and implementation of Crechet Service Desk integration 
+* Design and implementation of Project Server + SharePoint integration
 * Languages used: 1C, Batch, Bash
 
 ### [**System Administrator at Akella**](http://akella.ru)
