@@ -8,18 +8,18 @@ permalink: /about/
 
 ## About me
 
-* Experienced engineer with various knowledge of IT and Software Development areas
-* Experienced in Banking, Medical and Enterprise areas from low-level infrastructure perspective to high-level project management
-* Experience to follow and integration compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA)
-* My Myers-Briggs personality type is ISFJ
-* Strong time management skills
-* Interested in science, world and humanity.
+I am an experienced engineer with various knowledge in Software Development and Tech field.
+I am quite familiar with banking, medical devices and enterprise areas from low-level infrastructure development to high-level project management.
+I have the experience with various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
+My Myers-Briggs personality type is ISFJ.
+In the era of endless information, I've found useful tips and methods for time management and planning everything I can reach.
+My imagination and inspiration belong to our world, humanity, science and technology.
 
 ***
 
 ## Education
 
-* Engineer, Belgorod State Technological University named after V.G. Shukhov
+Engineering degree, Belgorod State Technological University named after V.G. Shukhov
 
 ***
 
@@ -45,38 +45,38 @@ permalink: /about/
 * Develop DevOps and Application Support workflow
 * C++ Application Development
 * Debug and automate builds and compilation for C++/QT for Win and Mac
-* Debug and deploy Java micro services (Spring)
+* Debug and deploy Java microservices (Spring)
 * Code review
-* Develop workflow for Atlassian stack
+* Develop a workflow for Atlassian stack
 * Automate CI/CD Pipeline with Java
 * Automate operations in Python and JavaScript
 * Develop database migration scripts
 * Manage team learning activity
 * Interview new team members
 * Annual budget planning
-* Scripting: powershell, bash, vbs, sh, cmd
+* Scripting: PowerShell, bash, VBS, sh, cmd
 * Languages used: Python, HCL, C/C++, SQL, Java, JavaScript, C#
 
 ### [**Senior DevOps Engineer at Align Technology Inc.**](https://aligntech.com)
 
-* Contribution to continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
-* Architect, develop and maintain docker-based infrastructure platform (Docker and Rancher)
+* Contribution to the continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
+* Architect, develop and maintain Docker-based infrastructure platform (Docker and Rancher)
 * Automate environment maintenance, orchestration, and release engineering tasks (in Ruby, Python, and Shell)
-* Define, configure and script build, metric, test, deploy, release and other steps of deployment pipeline for variety applications
+* Define, configure and script builds, metric, test, deploy, release and other steps of deployment pipeline for variety applications
 * Shape and improve SDLC processes
 * Develop AWS, Azure and Heroku based hosting and architecture
 * Identify gaps in current DevOps process, support, fix, and maintain those key areas
 * Share expertise to assist the surrounding team members
-* Linux/Windows Systems Administration. Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over a 5000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements
+* Linux/Windows Systems Administration. Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over 1000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements
 * Production Support
 * Languages used: Python, Ruby, HCL, Shell
 
 ### [**Lead DevOps and Integration Developer at HotelChat**](http://hotelchat.me)
 
-* Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, nGinx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (vertx), JavaScript, Go, Snakeskin
+* Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, Nginx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (Vertx), JavaScript, Go, Snakeskin
 * Design and implementation of deployment processes for code delivery to production, development and demo environments
 * Design and implementation of GitLab-based CI/CD pipeline
-* Design and implementation of hotel's solutions
+* Design and implementation of the hotel's solutions
 * Automation deployments with Ansible, Python and Terraform
 * Languages used: Python, Java, JavaScript, HCL
 
@@ -95,7 +95,7 @@ permalink: /about/
 ### [**Lead Infrastructure Engineer at iTech Systems**](http://itech-systems.com)
 
 * Design and implementation of Loyalty Systems (.NET)
-* Design and implementation of monitoring system and 24/7 Support
+* Design and implementation of monitoring systems and 24/7 Support
 * PCI DSS certification
 * SLA support and Monitoring
 * Languages used: Bash, Perl, Powershell, Ruby, VBA
@@ -116,7 +116,7 @@ permalink: /about/
 ### [**System Administrator at Akella**](http://akella.ru)
 
 * Administration of Windows services and FreeBSD gateways administration
-* Design and implementation of bug-track system
+* Design and implementation of the bug-track system
 * Installation of CCTV
 * Languages used: Batch, VBS
 
