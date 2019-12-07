@@ -8,12 +8,12 @@ permalink: /about/
 
 ## About me
 
-> I am an experienced engineer with various knowledge in Software Development and Tech field.
-> I am quite familiar with banking, medical devices and enterprise areas from low-level infrastructure development to high-level project management.
-> I have the experience with various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
-> My Myers-Briggs personality type is ISFJ.
-> In the era of endless information, I've found useful tips and methods for time management and planning everything I can reach.
-> My imagination and inspiration belong to our world, humanity, science and technology.
+* I am an experienced engineer with various knowledge in Software Development and Tech field.
+* I am quite familiar with banking, medical devices and enterprise areas from low-level infrastructure development to high-level project management.
+* I have the experience with various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
+* My Myers-Briggs personality type is ISFJ.
+* In the era of endless information, I've found useful tips and methods for time management and planning everything I can reach.
+* My imagination and inspiration belong to our world, humanity, science and technology.
 
 ***
 
