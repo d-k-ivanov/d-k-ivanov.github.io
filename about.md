@@ -52,6 +52,8 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * Automate operations in Python and JavaScript
 * Develop database migration scripts
 * Manage team learning activity
+* Manage the Local IT Environment
+* Network Administration
 * Interview new team members
 * Annual budget planning
 * Scripting: PowerShell, bash, VBS, sh, cmd
@@ -88,7 +90,7 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
     * Loyalty Systems (D8 PointZone)
 * SLA Support and Monitoring (NetXMS)
 * Linux/Windows Systems Administration
-* Debug problems with apps in C/C++
+* Debug C/C++ applications
 * Develop database migration scripts
 * Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash
 
