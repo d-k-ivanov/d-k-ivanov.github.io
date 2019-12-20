@@ -122,6 +122,16 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * Installation of CCTV
 * Languages used: Batch, VBS
 
+***
+
+## Activities
+
+<img style="float: left;" src="https://projecteuler.net/profile/d-k-ivanov.png" alt="Project Euler">
+<br>
+<br>
+
+***
+
 ## Contact me
 
 [d.k.ivanov@live.com](mailto:d.k.ivanov@live.com)
