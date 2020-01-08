@@ -13,6 +13,17 @@ tag: Math
 
 ## Miller-Rabin primality test
 
+In accorfing to Fermat test we know of two ways to prove that a number n is composite:
+
+* Exhibit a factorization *n = ab*, where *a; b > 1*.
+* Exhibit a Fermat witness for n, i.e. a number x satisfying: *x^n-1 ≠ ±1 (mod n)*.
+
+The Miller-Rabin test is based on a third way to prove that a number is composite.
+
+* Exhibit a "*fake square root of 1 mod n*", i.e. a number *x* satisfying *x^2 = 1 (mod n)*, but *x ≠ ±1 (mod n)*.
+
+## Miller-Rabin primality test C++
+
 ```cpp
 /*
  * =====================================================================
@@ -111,7 +122,7 @@ bool is_prime_mr(const Uint64 n)
 }
 ```
 
-## Simple primality test
+## Simple primality test C++
 
 ```cpp
 /*
