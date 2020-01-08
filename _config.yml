@@ -11,7 +11,7 @@ url: "d-k-ivanov.github.io"
 
 # Comment module
 comment:
-    disqus: d-k-ivanov
+    disqus: keepbot
     # uyan: <uyan_id>
 
 # Social
