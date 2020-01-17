@@ -82,7 +82,7 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * Automation deployments with Ansible, Python and Terraform
 * Languages used: Python, Java, JavaScript, HCL
 
-### [**Technical Systems Architect at D8 Corporation**](http://www.d8corporation.com)
+### [**Lead Engineer at D8 Corporation**](http://www.d8corporation.com)
 
 * Develop and implementation of banking solutions:
     * Payment Systems (FIS CORTEX)
