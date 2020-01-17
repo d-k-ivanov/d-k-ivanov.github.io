@@ -28,7 +28,7 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * 07.2018-present - **Lead Development and Operations Engineer** at Spark Clear Aligner System
 * 11.2017-05.2018 - **Senior DevOps Engineer** at Align Technology Inc.
 * 03.2017-11.2017 - **Lead DevOps and Integration Developer** at HotelChat
-* 02.2013-02.2017 - **Technical Systems Architect** at D8 Corporation
+* 02.2013-02.2017 - **Lead Engineer** at D8 Corporation
 * 03.2011-03.2013 - **Lead Infrastructure Engineer** at iTech Systems
 * 06.2007-08.2010 - **Senior System and Network Administrator** at Delta-Systems
 * 06.2005-05.2007 - **System Administrator** at Akella
