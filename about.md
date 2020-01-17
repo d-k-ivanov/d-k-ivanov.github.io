@@ -90,6 +90,7 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
     * Loyalty Systems (D8 PointZone)
 * SLA Support and Monitoring (NetXMS)
 * Linux/Windows Systems Administration
+* Virtualization: VMWare, KVM, Power VM, HP-UX VM
 * Debug C/C++ applications
 * Develop database migration scripts
 * Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash
