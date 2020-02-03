@@ -3,7 +3,7 @@ layout: post
 title: How to make Jira issue Unresolved
 description: How to make Jira issue Unresolved
 date: 2018-08-25
-tag: Jira
+tag: jira
 ---
 
 ## Problem

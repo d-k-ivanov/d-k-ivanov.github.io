@@ -3,7 +3,7 @@ layout: post
 title: AWS IPs Blocked by Russia government
 description: "AWS IPs Blocked by Russia government"
 date: 2018-05-31
-tag: AWS
+tag: aws
 ---
 
 ```

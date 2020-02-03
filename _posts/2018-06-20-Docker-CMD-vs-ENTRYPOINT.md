@@ -3,7 +3,7 @@ layout: post
 title: Docker CMD vs ENTRYPOINT
 description: "Docker CMD vs ENTRYPOINT"
 date: 2018-06-20
-tag: AWS
+tag: docker
 ---
 
 > According to: https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile<br>

@@ -3,7 +3,7 @@ layout: post
 title: Examples of CMake Variables
 description: "Examples of CMake Variables"
 date: 2018-03-19
-tag: CMake
+tag: cmake
 ---
 
 ## **Table of Contents**
