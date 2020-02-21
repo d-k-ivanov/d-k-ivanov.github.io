@@ -47,14 +47,14 @@ textColor: #FF0000
 cover_color: clear
 
 # The blog button should not be removed.
-blog_button:
-    title: Blog
+# blog_button:
+#     title: Blog
 
 # Navigation buttons in the front page.s
 nav:
-    - {title: Archive, description: archive, url: '/archive'}
+    - {title: Blog, description: blog, url: '/archive'}
     - {title: Projects, description: projects, url: '/projects'}
-    - {title: Tags, description: tags, url: '/tags'}
+    # - {title: Tags, description: tags, url: '/tags'}
     - {title: Docs, description: docs, url: '/docs'}
     - {title: About Me, description: about, url: '/about'}
     - {title: GitHub, description: GitHub, url: 'https://github.com/d-k-ivanov'}
@@ -81,4 +81,3 @@ exclude:
   - publish.sh
   - start_serve.ps1
   - start_serve.sh
-
