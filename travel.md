@@ -112,4 +112,32 @@ permalink: /travel/
         map.resize();
     });
 
+    window.setInterval(function() {
+        map.updateChoropleth({
+            "ARG": { "fillColor":  getRandomColor() },
+            "ARM": { "fillColor":  getRandomColor() },
+            "AUT": { "fillColor":  getRandomColor() },
+            "BLR": { "fillColor":  getRandomColor() },
+            "BRA": { "fillColor":  getRandomColor() },
+            "CHN": { "fillColor":  getRandomColor() },
+            "CYP": { "fillColor":  getRandomColor() },
+            "CZE": { "fillColor":  getRandomColor() },
+            "ECU": { "fillColor":  getRandomColor() },
+            "EGY": { "fillColor":  getRandomColor() },
+            "ESP": { "fillColor":  getRandomColor() },
+            "GRC": { "fillColor":  getRandomColor() },
+            "IDN": { "fillColor":  getRandomColor() },
+            "ITA": { "fillColor":  getRandomColor() },
+            "LTU": { "fillColor":  getRandomColor() },
+            "LVA": { "fillColor":  getRandomColor() },
+            "NLD": { "fillColor":  getRandomColor() },
+            "PER": { "fillColor":  getRandomColor() },
+            "RUS": { "fillColor":  getRandomColor() },
+            "TUN": { "fillColor":  getRandomColor() },
+            "TUR": { "fillColor":  getRandomColor() },
+            "UKR": { "fillColor":  getRandomColor() },
+            "VAT": { "fillColor":  getRandomColor() }
+        });
+    }, 2000);
+
 </script>
