@@ -1,0 +1,46 @@
+I"p#<h2 id="problem">Problem</h2>
+
+<p>If any issue change its status, it changes Resolution field. And there is no option for setting it to “Unresolved” (NULL in the Database).</p>
+
+<h2 id="solution">Solution</h2>
+
+<h3 id="edit-html">Edit HTML</h3>
+
+<p>On the Issue view select the resolution field so that it’s dropdown becomes visible</p>
+
+<ul>
+  <li>Right click on the dropdown and select the Inspect Element menu option:</li>
+  <li>Right click on the item and choose “Edit as HTML”</li>
+  <li>Add this option manually before the first <strong>option</strong> tag:</li>
+</ul>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>Unresolved<span class="nt">&lt;/option&gt;</span>**
+</code></pre></div></div>
+
+<ul>
+  <li>Hit CTRL+ENTER</li>
+  <li>Go back to the dropdown and select Unresolved:</li>
+  <li>Press the check mark to save</li>
+</ul>
+
+<h3 id="make-bookmarklet">Make Bookmarklet</h3>
+
+<p>Create bookmark with following code as URL:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">javascript</span><span class="p">:</span><span class="o">!</span><span class="kd">function</span><span class="p">(){</span><span class="kd">function</span><span class="o">%</span><span class="mi">20</span><span class="nx">e</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span><span class="nx">t</span><span class="p">){</span><span class="nx">t</span><span class="o">||</span><span class="p">(</span><span class="nx">t</span><span class="o">=</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">),</span><span class="nx">e</span><span class="o">=</span><span class="nx">e</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/</span><span class="se">[\[\]]</span><span class="sr">/g</span><span class="p">,</span><span class="o">%</span><span class="mi">22</span><span class="err">\\</span><span class="nx">$</span><span class="o">%</span><span class="mi">26</span><span class="o">%</span><span class="mi">22</span><span class="p">);</span><span class="kd">var</span><span class="o">%</span><span class="mi">20</span><span class="nx">n</span><span class="o">=</span><span class="k">new</span><span class="o">%</span><span class="mi">20</span><span class="nb">RegExp</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="p">[</span><span class="o">%</span><span class="mi">3</span><span class="nx">F</span><span class="o">%</span><span class="mi">26</span><span class="p">]</span><span class="o">%</span><span class="mi">22</span><span class="o">+</span><span class="nx">e</span><span class="o">+%</span><span class="mi">22</span><span class="p">(</span><span class="o">=</span><span class="p">([</span><span class="o">^%</span><span class="mi">26</span><span class="o">%</span><span class="mi">23</span><span class="p">]</span><span class="o">*</span><span class="p">)</span><span class="o">|%</span><span class="mi">26</span><span class="o">|%</span><span class="mi">23</span><span class="o">|</span><span class="nx">$</span><span class="p">)</span><span class="o">%</span><span class="mi">22</span><span class="p">),</span><span class="nx">o</span><span class="o">=</span><span class="nx">n</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">t</span><span class="p">);</span><span class="k">return</span><span class="o">%</span><span class="mi">20</span><span class="nx">o</span><span class="o">%</span><span class="mi">3</span><span class="nx">Fo</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">%</span><span class="mi">3</span><span class="nx">FdecodeURIComponent</span><span class="p">(</span><span class="nx">o</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/</span><span class="se">\+</span><span class="sr">/g</span><span class="p">,</span><span class="o">%</span><span class="mi">22</span><span class="o">%</span><span class="mi">20</span><span class="o">%</span><span class="mi">22</span><span class="p">)):</span><span class="o">%</span><span class="mi">22</span><span class="o">%</span><span class="mi">22</span><span class="p">:</span><span class="kc">null</span><span class="p">}</span><span class="kd">function</span><span class="o">%</span><span class="mi">20</span><span class="nx">t</span><span class="p">(){</span><span class="nx">issueId</span><span class="o">=</span><span class="nx">e</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="nx">id</span><span class="o">%</span><span class="mi">22</span><span class="p">,</span><span class="nx">jQuery</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="o">%</span><span class="mi">23</span><span class="nx">edit</span><span class="o">-</span><span class="nx">issue</span><span class="o">%</span><span class="mi">22</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="nx">href</span><span class="o">%</span><span class="mi">22</span><span class="p">)),</span><span class="nx">atl_token</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="nx">meta</span><span class="p">[</span><span class="nx">name</span><span class="o">=</span><span class="nx">atlassian</span><span class="o">-</span><span class="nx">token</span><span class="p">]</span><span class="o">%</span><span class="mi">22</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="nx">content</span><span class="o">%</span><span class="mi">22</span><span class="p">),</span><span class="nx">jQuery</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="o">/</span><span class="nx">secure</span><span class="o">/</span><span class="nx">AjaxIssueAction</span><span class="p">.</span><span class="nx">jspa</span><span class="o">%</span><span class="mi">3</span><span class="nx">Fdecorator</span><span class="o">=</span><span class="nx">none</span><span class="o">%</span><span class="mi">22</span><span class="p">,{</span><span class="na">resolution</span><span class="p">:</span><span class="o">%</span><span class="mi">22</span><span class="o">%</span><span class="mi">22</span><span class="p">,</span><span class="na">singleFieldEdit</span><span class="p">:</span><span class="o">!</span><span class="mi">0</span><span class="p">,</span><span class="na">atl_token</span><span class="p">:</span><span class="nx">atl_token</span><span class="p">,</span><span class="na">issueId</span><span class="p">:</span><span class="nx">issueId</span><span class="p">},</span><span class="kd">function</span><span class="p">(){</span><span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="o">=</span><span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">})}(</span><span class="nx">$</span><span class="o">=</span><span class="nb">window</span><span class="p">.</span><span class="nx">jQuery</span><span class="p">)</span><span class="o">%</span><span class="mi">3</span><span class="nx">Ft</span><span class="p">():(</span><span class="nx">script</span><span class="o">=</span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="o">%</span><span class="mi">22</span><span class="nx">script</span><span class="o">%</span><span class="mi">22</span><span class="p">),</span><span class="nx">script</span><span class="p">.</span><span class="nx">src</span><span class="o">=%</span><span class="mi">22</span><span class="nx">http</span><span class="p">:</span><span class="c1">//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js%22,script.onload=t,document.body.appendChild(script))}();</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Place it on your Bookmark Toolbar.</li>
+  <li>Click when you need to do the issue unresolved.</li>
+</ul>
+
+<h3 id="change-workflow">Change workflow</h3>
+
+<p>There is two possible ways to resolve it:</p>
+
+<ul>
+  <li>Make transition “Unresolve” which will target the issue itself and will have only one post-transition function: “Clean Resolution field”</li>
+  <li>Add post-transition function: “Clean Resolution field” in each of transition which should unresolved the issue.</li>
+</ul>
+:ET

@@ -19,45 +19,45 @@ tag: cmake
 -- CMAKE_CURRENT_SOURCE_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables
 -- PROJECT_BINARY_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables/build
 -- PROJECT_SOURCE_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables
--- EXECUTABLE_OUTPUT_PATH: 
--- LIBRARY_OUTPUT_PATH:     
--- CMAKE_MODULE_PATH: 
+-- EXECUTABLE_OUTPUT_PATH:
+-- LIBRARY_OUTPUT_PATH:
+-- CMAKE_MODULE_PATH:
 -- CMAKE_COMMAND: C:/ProgramData/chocolatey/lib/cmake.portable/tools/cmake-3.10.2-win64-x64/bin/cmake.exe
 -- CMAKE_ROOT: C:/ProgramData/chocolatey/lib/cmake.portable/tools/cmake-3.10.2-win64-x64/share/cmake-3.10
 -- CMAKE_CURRENT_LIST_FILE: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables/vars.cmake
 -- CMAKE_CURRENT_LIST_LINE: 46
--- CMAKE_INCLUDE_PATH: 
--- CMAKE_LIBRARY_PATH: 
+-- CMAKE_INCLUDE_PATH:
+-- CMAKE_LIBRARY_PATH:
 -- CMAKE_SYSTEM: Windows-10.0.16299
 -- CMAKE_SYSTEM_NAME: Windows
 -- CMAKE_SYSTEM_VERSION: 10.0.16299
--- UNIX: 
+-- UNIX:
 -- WIN32: 1
--- APPLE: 
--- MINGW: 
--- CYGWIN: 
--- BORLAND: 
+-- APPLE:
+-- MINGW:
+-- CYGWIN:
+-- BORLAND:
 -- MSVC: 1
 -- MSVC_IDE: 1
--- MSVC60: 
--- MSVC70: 
--- MSVC71: 
--- MSVC80: 
--- CMAKE_COMPILER_2005: 
--- CMAKE_SKIP_RULE_DEPENDENCY: 
--- CMAKE_SKIP_INSTALL_ALL_DEPENDENCY: 
+-- MSVC60:
+-- MSVC70:
+-- MSVC71:
+-- MSVC80:
+-- CMAKE_COMPILER_2005:
+-- CMAKE_SKIP_RULE_DEPENDENCY:
+-- CMAKE_SKIP_INSTALL_ALL_DEPENDENCY:
 -- CMAKE_SKIP_RPATH: NO
 -- CMAKE_VERBOSE_MAKEFILE: FALSE
--- CMAKE_SUPPRESS_REGENERATION: 
+-- CMAKE_SUPPRESS_REGENERATION:
 -- CMAKE_C_FLAGS: /DWIN32 /D_WINDOWS /W3
 -- CMAKE_CXX_FLAGS: /DWIN32 /D_WINDOWS /W3 /GR /EHsc
--- CMAKE_BUILD_TYPE: 
--- BUILD_SHARED_LIBS: 
+-- CMAKE_BUILD_TYPE:
+-- BUILD_SHARED_LIBS:
 -- CMAKE_C_COMPILER: C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.13.26128/bin/Hostx86/x64/cl.exe
 -- CMAKE_CXX_COMPILER: C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.13.26128/bin/Hostx86/x64/cl.exe
--- CMAKE_COMPILER_IS_GNUCC: 
--- CMAKE_COMPILER_IS_GNUCXX : 
--- CMAKE_AR: 
+-- CMAKE_COMPILER_IS_GNUCC:
+-- CMAKE_COMPILER_IS_GNUCXX :
+-- CMAKE_AR:
 -- CMAKE_RANLIB:
 -- CMAKE_AR=
 -- CMAKE_AUTOMOC_COMPILER_PREDEFINES=ON
@@ -353,10 +353,10 @@ Ld[^
 ]*(
 [ 	]+[^
 ]*)*
-[ 	]+([^ 	
+[ 	]+([^
 ]+)[^
 ]*-o[^
-]*CompilerIdCXX/(\./)?(CompilerIdCXX.xctest/)?CompilerIdCXX[ 	
+]*CompilerIdCXX/(\./)?(CompilerIdCXX.xctest/)?CompilerIdCXX[
 \"]
 -- CMAKE_CXX_COMPILER_ID_VENDORS=IAR
 -- CMAKE_CXX_COMPILER_ID_VENDOR_REGEX_IAR=IAR .+ Compiler
@@ -403,9 +403,9 @@ Time Elapsed 00:00:01.02
 -- CMAKE_CXX_COMPILE_OBJECT=<CMAKE_CXX_COMPILER>  /nologo /TP <DEFINES> <INCLUDES> <FLAGS> /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS -c <SOURCE>
 -- CMAKE_CXX_CREATE_ASSEMBLY_SOURCE=<CMAKE_CXX_COMPILER>  /nologo /TP <DEFINES> <INCLUDES> <FLAGS> /FoNUL /FAs /Fa<ASSEMBLY_SOURCE> /c <SOURCE>
 -- CMAKE_CXX_CREATE_PREPROCESSED_SOURCE=<CMAKE_CXX_COMPILER> > <PREPROCESSED_SOURCE>  /nologo /TP <DEFINES> <INCLUDES> <FLAGS> -E <SOURCE>
--- CMAKE_CXX_CREATE_SHARED_LIBRARY=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES> 
--- CMAKE_CXX_CREATE_SHARED_MODULE=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES> 
--- CMAKE_CXX_CREATE_STATIC_LIBRARY=<CMAKE_LINKER> /lib /nologo <LINK_FLAGS> /out:<TARGET> <OBJECTS> 
+-- CMAKE_CXX_CREATE_SHARED_LIBRARY=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES>
+-- CMAKE_CXX_CREATE_SHARED_MODULE=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES>
+-- CMAKE_CXX_CREATE_STATIC_LIBRARY=<CMAKE_LINKER> /lib /nologo <LINK_FLAGS> /out:<TARGET> <OBJECTS>
 -- CMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /W3 /GR /EHsc
 -- CMAKE_CXX_FLAGS_DEBUG=/MDd /Zi /Ob0 /Od /RTC1
 -- CMAKE_CXX_FLAGS_DEBUG_INIT=/MDd /Zi /Ob0 /Od /RTC1
@@ -695,10 +695,10 @@ Ld[^
 ]*(
 [ 	]+[^
 ]*)*
-[ 	]+([^ 	
+[ 	]+([^
 ]+)[^
 ]*-o[^
-]*CompilerIdC/(\./)?(CompilerIdC.xctest/)?CompilerIdC[ 	
+]*CompilerIdC/(\./)?(CompilerIdC.xctest/)?CompilerIdC[
 \"]
 -- CMAKE_C_COMPILER_ID_VENDORS=IAR
 -- CMAKE_C_COMPILER_ID_VENDOR_REGEX_IAR=IAR .+ Compiler
@@ -745,9 +745,9 @@ Time Elapsed 00:00:01.14
 -- CMAKE_C_COMPILE_OBJECT=<CMAKE_C_COMPILER>  /nologo <DEFINES> <INCLUDES> <FLAGS> /Fo<OBJECT> /Fd<TARGET_COMPILE_PDB> /FS -c <SOURCE>
 -- CMAKE_C_CREATE_ASSEMBLY_SOURCE=<CMAKE_C_COMPILER>  /nologo <DEFINES> <INCLUDES> <FLAGS> /FoNUL /FAs /Fa<ASSEMBLY_SOURCE> /c <SOURCE>
 -- CMAKE_C_CREATE_PREPROCESSED_SOURCE=<CMAKE_C_COMPILER> > <PREPROCESSED_SOURCE>  /nologo <DEFINES> <INCLUDES> <FLAGS> -E <SOURCE>
--- CMAKE_C_CREATE_SHARED_LIBRARY=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES> 
--- CMAKE_C_CREATE_SHARED_MODULE=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES> 
--- CMAKE_C_CREATE_STATIC_LIBRARY=<CMAKE_LINKER> /lib /nologo <LINK_FLAGS> /out:<TARGET> <OBJECTS> 
+-- CMAKE_C_CREATE_SHARED_LIBRARY=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES>
+-- CMAKE_C_CREATE_SHARED_MODULE=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- <CMAKE_LINKER> /nologo <OBJECTS>  /out:<TARGET> /implib:<TARGET_IMPLIB> /pdb:<TARGET_PDB> /dll /version:<TARGET_VERSION_MAJOR>.<TARGET_VERSION_MINOR> <LINK_FLAGS> <LINK_LIBRARIES>
+-- CMAKE_C_CREATE_STATIC_LIBRARY=<CMAKE_LINKER> /lib /nologo <LINK_FLAGS> /out:<TARGET> <OBJECTS>
 -- CMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /W3
 -- CMAKE_C_FLAGS_DEBUG=/MDd /Zi /Ob0 /Od /RTC1
 -- CMAKE_C_FLAGS_DEBUG_INIT=/MDd /Zi /Ob0 /Od /RTC1
@@ -959,8 +959,8 @@ Time Elapsed 00:00:01.14
 -- _CMAKE_INSTALL_DIR=C:/ProgramData/chocolatey/lib/cmake.portable/tools/cmake-3.10.2-win64-x64
 -- _CMAKE_RC_COMPILER_NAME_WE=rc
 -- _CMAKE_TOOLCHAIN_LOCATION=C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.13.26128/bin/Hostx86/x64
--- _CMAKE_VS_LINK_DLL=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- 
--- _CMAKE_VS_LINK_EXE=<CMAKE_COMMAND> -E vs_link_exe --intdir=<OBJECT_DIR> --manifests <MANIFESTS> -- 
+-- _CMAKE_VS_LINK_DLL=<CMAKE_COMMAND> -E vs_link_dll --intdir=<OBJECT_DIR> --manifests <MANIFESTS> --
+-- _CMAKE_VS_LINK_EXE=<CMAKE_COMMAND> -E vs_link_exe --intdir=<OBJECT_DIR> --manifests <MANIFESTS> --
 -- _COMPILE_CXX= /TP
 -- _FLAGS_CXX= /GR /EHsc
 -- _FS_C= /FS
@@ -1010,48 +1010,48 @@ Time Elapsed 00:00:01.14
 -- CMAKE_CURRENT_SOURCE_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables
 -- PROJECT_BINARY_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables/build
 -- PROJECT_SOURCE_DIR: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables
--- EXECUTABLE_OUTPUT_PATH: 
--- LIBRARY_OUTPUT_PATH:     
--- CMAKE_MODULE_PATH: 
+-- EXECUTABLE_OUTPUT_PATH:
+-- LIBRARY_OUTPUT_PATH:
+-- CMAKE_MODULE_PATH:
 -- CMAKE_COMMAND: C:/ProgramData/chocolatey/lib/cmake.portable/tools/cmake-3.10.2-win64-x64/bin/cmake.exe
 -- CMAKE_ROOT: C:/ProgramData/chocolatey/lib/cmake.portable/tools/cmake-3.10.2-win64-x64/share/cmake-3.10
 -- CMAKE_CURRENT_LIST_FILE: C:/Users/dkiva/workspace/my/info-cmake/cmake-variables/vars.cmake
 -- CMAKE_CURRENT_LIST_LINE: 46
--- CMAKE_INCLUDE_PATH: 
--- CMAKE_LIBRARY_PATH: 
+-- CMAKE_INCLUDE_PATH:
+-- CMAKE_LIBRARY_PATH:
 -- CMAKE_SYSTEM: Windows-10.0.16299
 -- CMAKE_SYSTEM_NAME: Windows
 -- CMAKE_SYSTEM_VERSION: 10.0.16299
 -- CMAKE_SYSTEM_PROCESSOR: AMD64
--- UNIX: 
+-- UNIX:
 -- WIN32: 1
--- APPLE: 
+-- APPLE:
 -- MINGW: 1
--- CYGWIN: 
--- BORLAND: 
--- MSVC: 
--- MSVC_IDE: 
--- MSVC60: 
--- MSVC70: 
--- MSVC71: 
--- MSVC80: 
--- CMAKE_COMPILER_2005: 
--- CMAKE_SKIP_RULE_DEPENDENCY: 
--- CMAKE_SKIP_INSTALL_ALL_DEPENDENCY: 
+-- CYGWIN:
+-- BORLAND:
+-- MSVC:
+-- MSVC_IDE:
+-- MSVC60:
+-- MSVC70:
+-- MSVC71:
+-- MSVC80:
+-- CMAKE_COMPILER_2005:
+-- CMAKE_SKIP_RULE_DEPENDENCY:
+-- CMAKE_SKIP_INSTALL_ALL_DEPENDENCY:
 -- CMAKE_SKIP_RPATH: NO
 -- CMAKE_VERBOSE_MAKEFILE: FALSE
--- CMAKE_SUPPRESS_REGENERATION: 
--- CMAKE_C_FLAGS: 
--- CMAKE_CXX_FLAGS: 
--- CMAKE_BUILD_TYPE: 
--- BUILD_SHARED_LIBS: 
+-- CMAKE_SUPPRESS_REGENERATION:
+-- CMAKE_C_FLAGS:
+-- CMAKE_CXX_FLAGS:
+-- CMAKE_BUILD_TYPE:
+-- BUILD_SHARED_LIBS:
 -- CMAKE_C_COMPILER: C:/tools/mingw64/bin/gcc.exe
 -- CMAKE_CXX_COMPILER: C:/tools/mingw64/bin/g++.exe
 -- CMAKE_COMPILER_IS_GNUCC: 1
 -- CMAKE_COMPILER_IS_GNUCXX : 1
 -- CMAKE_AR: C:/tools/mingw64/bin/ar.exe
 -- CMAKE_RANLIB: C:/tools/mingw64/bin/ranlib.exe
--- : 
+-- :
 -- CMAKE_AR=C:/tools/mingw64/bin/ar.exe
 -- CMAKE_AR=C:/tools/mingw64/bin/ar.exe
 -- CMAKE_AUTOMOC_COMPILER_PREDEFINES=ON
@@ -1359,10 +1359,10 @@ Ld[^
 ]*(
 [ 	]+[^
 ]*)*
-[ 	]+([^ 	
+[ 	]+([^
 ]+)[^
 ]*-o[^
-]*CompilerIdCXX/(\./)?(CompilerIdCXX.xctest/)?CompilerIdCXX[ 	
+]*CompilerIdCXX/(\./)?(CompilerIdCXX.xctest/)?CompilerIdCXX[
 \"]
 -- CMAKE_CXX_COMPILER_ID_VENDORS=IAR
 -- CMAKE_CXX_COMPILER_ID_VENDOR_REGEX_IAR=IAR .+ Compiler
@@ -1686,10 +1686,10 @@ Ld[^
 ]*(
 [ 	]+[^
 ]*)*
-[ 	]+([^ 	
+[ 	]+([^
 ]+)[^
 ]*-o[^
-]*CompilerIdC/(\./)?(CompilerIdC.xctest/)?CompilerIdC[ 	
+]*CompilerIdC/(\./)?(CompilerIdC.xctest/)?CompilerIdC[
 \"]
 -- CMAKE_C_COMPILER_ID_VENDORS=IAR
 -- CMAKE_C_COMPILER_ID_VENDOR_REGEX_IAR=IAR .+ Compiler
@@ -1795,8 +1795,8 @@ Ld[^
 -- CMAKE_INCLUDE_FLAG_CXX=-I
 -- CMAKE_INCLUDE_FLAG_C_SEP=
 -- CMAKE_INCLUDE_FLAG_RC=-I
--- CMAKE_INCLUDE_SYSTEM_FLAG_C=-isystem 
--- CMAKE_INCLUDE_SYSTEM_FLAG_CXX=-isystem 
+-- CMAKE_INCLUDE_SYSTEM_FLAG_C=-isystem
+-- CMAKE_INCLUDE_SYSTEM_FLAG_CXX=-isystem
 -- CMAKE_INSTALL_DEFAULT_COMPONENT_NAME=Unspecified
 -- CMAKE_INSTALL_PREFIX=C:/Program Files (x86)/CmakeVariables
 -- CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=1

@@ -1,29 +1,22 @@
----
-layout: post
-title: Console tricks by Carlos Fenollosa
-description: "Userful tricks by Carlos Fenollosa"
-date: 2016-06-30
-tag: console
----
-
-> Some time ago I've found a beautiful collection of unix triks which could help me to start customizing my unix environment and collect unix tricks by myself. So now I've started to publish my triks [here](https://d-k-ivanov.github.io/docs)
+I"�<blockquote>
+  <p>Some time ago I’ve found a beautiful collection of unix triks which could help me to start customizing my unix environment and collect unix tricks by myself. So now I’ve started to publish my triks <a href="https://d-k-ivanov.github.io/docs">here</a></p>
+</blockquote>
 
 <p></p>
 
-```txt
-I have marked with a * those which I think are absolutely essential
+<pre><code class="language-txt">I have marked with a * those which I think are absolutely essential
 Items for each section are sorted by oldest to newest. Come back soon for more!
 
 BASH
 * In bash, 'ctrl-r' searches your command history as you type
 - Input from the commandline as if it were a file by replacing
-  'command < file.in' with 'command <<< "some input text"'
+  'command &lt; file.in' with 'command &lt;&lt;&lt; "some input text"'
 - '^' is a sed-like operator to replace chars from last command
   'ls docs; ^docs^web^' is equal to 'ls web'. The second argument can be empty.
 * '!!:n' selects the nth argument of the last command, and '!$' the last arg
   'ls file1 file2 file3; cat !!:1-2' shows all files and cats only 1 and 2
 - More in-line substitutions: http://tiny.cc/ecv0cw http://tiny.cc/8zbltw
-- 'nohup ./long_script &' to leave stuff in background even if you logout
+- 'nohup ./long_script &amp;' to leave stuff in background even if you logout
 - 'cd -' change to the previous directory you were working on
 - 'ctrl-x ctrl-e' opens an editor to work with long or complex command lines
 * Use traps for cleaning up bash scripts on exit http://tiny.cc/traps
@@ -39,7 +32,7 @@ PSEUDO ALIASES FOR COMMONLY USED LONG COMMANDS
   removes lines from $1 if they appear in $2
 - alias pp="ps axuf | pager"
 - alias sum="xargs | tr ' ' '+' | bc" ## Usage: echo 1 2 3 | sum
-- function mcd() { mkdir $1 && cd $1; }
+- function mcd() { mkdir $1 &amp;&amp; cd $1; }
 
 VIM
 - ':set spell' activates vim spellchecker. Use ']s' and '[s' to move between
@@ -115,10 +108,11 @@ NETWORKING
       AuthPass=***PASSWORD***
       AuthMethod=LOGIN
       FromLineOverride=YES
-```
+</code></pre>
 
-***
+<hr />
 
-(CC) by-nc, Carlos Fenollosa <carlos.fenollosa@gmail.com>
-Retrieved from [http://cfenollosa.com/misc/tricks.txt](http://cfenollosa.com/misc/tricks.txt)
-Last modified: Fri Feb 28 07:18:39 CET 2014
+<p>(CC) by-nc, Carlos Fenollosa <a href="mailto:carlos.fenollosa@gmail.com">carlos.fenollosa@gmail.com</a>
+Retrieved from <a href="http://cfenollosa.com/misc/tricks.txt">http://cfenollosa.com/misc/tricks.txt</a>
+Last modified: Fri Feb 28 07:18:39 CET 2014</p>
+:ET

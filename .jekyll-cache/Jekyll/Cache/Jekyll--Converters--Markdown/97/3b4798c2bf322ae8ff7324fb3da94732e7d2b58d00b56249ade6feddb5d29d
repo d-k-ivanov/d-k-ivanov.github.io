@@ -1,13 +1,4 @@
----
-layout: post
-title: AWS IPs Blocked by Russia government
-description: "AWS IPs Blocked by Russia government"
-date: 2018-05-31
-tag: aws
----
-
-```txt
-    Region          Desc                        IPs       Blocked   % Blocked
+I"0<pre><code class="language-txt">    Region          Desc                        IPs       Blocked   % Blocked
     ap-northeast-1  Asia Pacific (Tokyo)         1984800    786451     39.62%
     ap-northeast-2  Asia Pacific (Seoul)          459024    131073     28.55%
     ap-northeast-3  Asia Pacific (Osaka-Local)     65808         0      0.00%
@@ -30,4 +21,5 @@ tag: aws
     us-west-1       US West (N. California)      1311536    196642     14.99%
     us-west-2       US West (Oregon)             4917552   1769549     35.98%
                     Total                       29590544  10913108     36.88%
-```
+</code></pre>
+:ET

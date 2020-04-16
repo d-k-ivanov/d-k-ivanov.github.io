@@ -1,0 +1,233 @@
+I"�R<h2 id="table-of-contents"><strong>Table of Contents</strong></h2>
+
+<ul id="markdown-toc">
+  <li><a href="#table-of-contents" id="markdown-toc-table-of-contents"><strong>Table of Contents</strong></a></li>
+  <li><a href="#miller-rabin-primality-test" id="markdown-toc-miller-rabin-primality-test">Miller-Rabin primality test</a></li>
+  <li><a href="#miller-rabin-primality-test-c" id="markdown-toc-miller-rabin-primality-test-c">Miller-Rabin primality test C++</a></li>
+  <li><a href="#simple-primality-test-c" id="markdown-toc-simple-primality-test-c">Simple primality test C++</a></li>
+  <li><a href="#miller-rabin-rounds-testing" id="markdown-toc-miller-rabin-rounds-testing">Miller-Rabin rounds testing</a></li>
+</ul>
+
+<h2 id="miller-rabin-primality-test">Miller-Rabin primality test</h2>
+
+<p>In accorfing to Fermat test we know of two ways to prove that a number n is composite:</p>
+
+<ul>
+  <li>Exhibit a factorization <em>n = ab</em>, where <em>a; b &gt; 1</em>.</li>
+  <li>Exhibit a Fermat witness for n, i.e. a number x satisfying: <em>x^n-1 ≠ ±1 (mod n)</em>.</li>
+</ul>
+
+<p>The Miller-Rabin test is based on a third way to prove that a number is composite.</p>
+
+<ul>
+  <li>Exhibit a “<em>fake square root of 1 mod n</em>”, i.e. a number <em>x</em> satisfying <em>x^2 = 1 (mod n)</em>, but <em>x ≠ ±1 (mod n)</em>.</li>
+</ul>
+
+<h2 id="miller-rabin-primality-test-c">Miller-Rabin primality test C++</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ * =====================================================================
+ *      Project :  is_prime_miller_rabin.cpp
+ *      File    :  is_prime_miller_rabin.cpp
+ *      Created :  07.01.2020 20:00:00 +0100
+ *      Author  :  Dmitriy Ivanov
+ * =====================================================================
+ */</span>
+
+<span class="cp">#include &lt;random&gt;
+</span>
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="n">Uint64</span><span class="p">;</span>
+
+<span class="c1">// Random nulmber generator</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kr">inline</span> <span class="n">T</span> <span class="nf">get_rand_n</span><span class="p">(</span><span class="n">T</span> <span class="n">min</span><span class="p">,</span> <span class="n">T</span> <span class="n">max</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">random_device</span> <span class="n">rand_device</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">mt19937</span> <span class="n">generator</span><span class="p">(</span><span class="n">rand_device</span><span class="p">());</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">uniform_int_distribution</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">distribution</span><span class="p">(</span><span class="n">min</span><span class="p">,</span> <span class="n">max</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">distribution</span><span class="p">(</span><span class="n">generator</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Modular exponentiation - Right-to-left binary method</span>
+<span class="n">Uint64</span> <span class="nf">modular_pow_lrb</span><span class="p">(</span><span class="n">Uint64</span> <span class="n">base</span><span class="p">,</span> <span class="n">Uint64</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">Uint64</span> <span class="n">modulus</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">modulus</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">Uint64</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">base</span> <span class="o">%=</span> <span class="n">modulus</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">exponent</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">exponent</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c1">// This multiplication is a subject to improve with Egyptian algorithm.</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span> <span class="o">*</span> <span class="n">base</span><span class="p">)</span> <span class="o">%</span> <span class="n">modulus</span><span class="p">;</span>
+        <span class="n">exponent</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">(</span><span class="n">base</span> <span class="o">*</span> <span class="n">base</span><span class="p">)</span> <span class="o">%</span> <span class="n">modulus</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+ <span class="p">}</span>
+
+<span class="c1">// Miller–Rabin primality test</span>
+<span class="c1">// Probabilistic. Relies on the unproven extended Riemann hypothesis.</span>
+<span class="c1">// n - number to test, rounds - number of iterations to increase correctness.</span>
+<span class="kt">bool</span> <span class="nf">is_prime_mr</span><span class="p">(</span><span class="k">const</span> <span class="n">Uint64</span> <span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Trivial results:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">||</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+
+    <span class="c1">// This parameter means how many rechecks for the number</span>
+    <span class="c1">// If we choose a too small amount, then there will be too many false-positive results.</span>
+    <span class="c1">// With a few repetitions, we can keep the probability of error very low.</span>
+    <span class="c1">// If you choose t less than 30 repetitions, then the chance that your computer hardware will</span>
+    <span class="c1">// make a mistake in the calculations is more likely than that the probability test fails.</span>
+    <span class="c1">// See Miller-Rabin rounds testing section.</span>
+    <span class="k">const</span> <span class="kt">unsigned</span> <span class="n">rounds</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+
+    <span class="c1">// Factorization of n-1 to get (2^s)·t</span>
+    <span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0ULL</span><span class="p">;</span>
+    <span class="k">auto</span> <span class="n">t</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1ULL</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">t</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">t</span> <span class="o">/=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Main iterator:</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">rounds</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// get a random integer a in the range [2, n−2]</span>
+        <span class="k">const</span> <span class="k">auto</span> <span class="n">a</span> <span class="o">=</span> <span class="n">get_rand_n</span><span class="o">&lt;</span><span class="n">Uint64</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">2ULL</span><span class="p">,</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2ULL</span><span class="p">);</span>
+
+        <span class="c1">// This is the weak point of the algorithm.</span>
+        <span class="c1">// Modular exponentiation function should be very fast to get results for large numbers.</span>
+        <span class="c1">// I've tried memory-efficient and straightforward algorithm, but it gets stuck in big numbers like ULLONG_MAX</span>
+        <span class="k">auto</span> <span class="n">x</span> <span class="o">=</span> <span class="n">modular_pow_lrb</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">||</span> <span class="n">x</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+        <span class="kt">bool</span> <span class="n">cont</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">Uint64</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">s</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">modular_pow_lrb</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">cont</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">cont</span><span class="p">)</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="k">else</span>
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="simple-primality-test-c">Simple primality test C++</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ * =====================================================================
+ *      Project :  is_prime_simple.cpp
+ *      File    :  is_prime_simple.cpp
+ *      Created :  07.01.2020 20:30:00 +0100
+ *      Author  :  Dmitriy Ivanov
+ * =====================================================================
+ */</span>
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="n">Uint64</span><span class="p">;</span>
+
+<span class="c1">// Simple iterative function for checking primality.</span>
+<span class="kt">bool</span> <span class="nf">is_prime_simple</span><span class="p">(</span><span class="k">const</span> <span class="n">Uint64</span> <span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+
+    <span class="c1">// is_prime: if n can't be divided by every number n &lt;= sqrt(n), than it is a prime</span>
+    <span class="c1">// for (Uint64 i = 3; i &lt;= static_cast&lt;Uint64&gt;(std::sqrtl(n)) + 1ULL; i++)</span>
+    <span class="c1">// But if we're dealing with integers `i * i &lt;= n` is better.</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">Uint64</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="miller-rabin-rounds-testing">Miller-Rabin rounds testing</h2>
+
+<p>I’m presenting prime numbers checks from 1 to 1000. 1000 is too small values to get very much of interference, but on big numbers, we need more rounds to get the correct answer.</p>
+
+<p>Deterministic from 1 to 1000</p>
+
+<pre><code class="language-txt">Prime numbers from 1 to 1000:
+      2      3      5      7     11     13     17     19     23     29     31     37     41
+     43     47     53     59     61     67     71     73     79     83     89     97    101    103
+    107    109    113    127    131    137    139    149    151    157    163    167    173    179
+    181    191    193    197    199    211    223    227    229    233    239    241    251    257
+    263    269    271    277    281    283    293    307    311    313    317    331    337    347
+    349    353    359    367    373    379    383    389    397    401    409    419    421    431
+    433    439    443    449    457    461    463    467    479    487    491    499    503    509
+    521    523    541    547    557    563    569    571    577    587    593    599    601    607
+    613    617    619    631    641    643    647    653    659    661    673    677    683    691
+    701    709    719    727    733    739    743    751    757    761    769    773    787    797
+    809    811    821    823    827    829    839    853    857    859    863    877    881    883
+    887    907    911    919    929    937    941    947    953    967    971    977    983    991
+    997
+</code></pre>
+
+<p>Miller-Rabin first round from 1 to 1000</p>
+
+<pre><code class="language-txt">Prime numbers from 1 to 1000:
+      2      3      5      7     11     13     17     19     23     29     31     37     41
+     43     47     53     59     61     67     71     73     79     83     89     91     97    101
+    103    107    109    113    127    131    137    139    149    151    157    163    167    173
+    179    181    191    193    197    199    211    223    227    229    233    239    241    251
+    257    263    269    271    277    281    283    293    307    311    313    317    331    337
+    347    349    353    359    367    373    379    383    389    397    401    409    419    421
+    431    433    439    443    449    457    461    463    467    479    487    491    499    503
+    509    521    523    541    547    557    563    569    571    577    587    593    599    601
+    607    613    617    619    631    641    643    647    653    659    661    673    677    683
+    691    701    703    709    719    727    733    739    743    751    757    761    763    769
+    773    787    797    809    811    821    823    827    829    839    853    857    859    863
+    877    881    883    887    907    911    919    929    937    941    947    953    967    971
+    977    983    991    997
+</code></pre>
+
+<p>Miller-Rabin second round from 1 to 1000</p>
+
+<pre><code class="language-txt">Prime numbers from 1 to 1000:
+      2      3      5      7     11     13     17     19     23     29     31     37     41
+     43     47     53     59     61     67     71     73     79     83     89     97    101    103
+    107    109    113    127    131    137    139    149    151    157    163    167    173    179
+    181    191    193    197    199    211    223    227    229    231    233    239    241    251
+    257    263    269    271    277    281    283    293    307    311    313    317    331    337
+    347    349    353    359    367    373    379    383    389    397    401    409    419    421
+    431    433    439    443    449    457    461    463    467    479    487    491    499    503
+    509    521    523    541    547    557    563    569    571    577    587    593    599    601
+    607    613    617    619    631    641    643    647    653    659    661    673    677    683
+    691    701    703    709    719    727    733    739    743    751    757    761    769    773
+    787    797    809    811    821    823    827    829    839    853    857    859    863    877
+    881    883    887    907    911    919    929    937    941    947    953    967    971    977
+    983    991    997
+</code></pre>
+
+<p>Miller-Rabin third round from 1 to 1000</p>
+
+<pre><code class="language-txt">Prime numbers from 1 to 1000:
+      2      3      5      7     11     13     17     19     23     29     31     37     41
+     43     47     53     59     61     67     71     73     79     83     89     97    101    103
+    107    109    113    127    131    137    139    149    151    157    163    167    173    179
+    181    191    193    197    199    211    223    227    229    233    239    241    251    257
+    263    269    271    277    281    283    293    307    311    313    317    331    337    347
+    349    353    359    367    373    379    383    389    397    401    409    419    421    431
+    433    439    443    449    457    461    463    467    479    487    491    499    503    509
+    521    523    541    547    557    563    569    571    577    587    593    599    601    607
+    613    617    619    631    641    643    647    653    659    661    673    677    683    691
+    701    709    719    727    733    739    743    751    757    761    769    773    787    797
+    809    811    821    823    827    829    839    853    857    859    863    877    881    883
+    887    907    911    919    929    937    941    947    953    967    971    977    983    991
+    997
+</code></pre>
+:ET

@@ -1,0 +1,312 @@
+I"|N<h2 id="table-of-contents"><strong>Table of Contents</strong></h2>
+
+<ul id="markdown-toc">
+  <li><a href="#table-of-contents" id="markdown-toc-table-of-contents"><strong>Table of Contents</strong></a>    <ul>
+      <li><a href="#boot-media" id="markdown-toc-boot-media">Boot media</a></li>
+      <li><a href="#partition-scheme" id="markdown-toc-partition-scheme">Partition scheme</a></li>
+      <li><a href="#filesystems" id="markdown-toc-filesystems">Filesystems</a></li>
+      <li><a href="#mounting" id="markdown-toc-mounting">Mounting</a></li>
+      <li><a href="#install-stage" id="markdown-toc-install-stage">Install Stage</a></li>
+      <li><a href="#chrooting" id="markdown-toc-chrooting">Chrooting</a></li>
+      <li><a href="#update" id="markdown-toc-update">Update</a></li>
+      <li><a href="#timezone" id="markdown-toc-timezone">Timezone</a></li>
+      <li><a href="#locale" id="markdown-toc-locale">Locale</a></li>
+      <li><a href="#fstab" id="markdown-toc-fstab">fstab</a></li>
+      <li><a href="#kernel" id="markdown-toc-kernel">Kernel</a></li>
+      <li><a href="#network" id="markdown-toc-network">Network</a></li>
+      <li><a href="#grub" id="markdown-toc-grub">Grub</a></li>
+      <li><a href="#console" id="markdown-toc-console">Console</a></li>
+      <li><a href="#post-install" id="markdown-toc-post-install">Post install</a></li>
+      <li><a href="#unmount-and-reboot" id="markdown-toc-unmount-and-reboot">Unmount and reboot</a></li>
+      <li><a href="#my-portage-package-files" id="markdown-toc-my-portage-package-files">My portage package files</a></li>
+      <li><a href="#my-xorg-config-files" id="markdown-toc-my-xorg-config-files">My Xorg config files</a></li>
+      <li><a href="#udev-rules" id="markdown-toc-udev-rules">Udev rules</a></li>
+      <li><a href="#vim-etcsysctlconf" id="markdown-toc-vim-etcsysctlconf">vim /etc/sysctl.conf</a></li>
+    </ul>
+  </li>
+</ul>
+
+<blockquote>
+  <p>Notebook Dell 7510 have a few of BIOS bugs. So if you face the probmem when NVMe drive not found in system, you just need to switch to SATA Raid -&gt; Reboot -&gt; And switch back <br />
+I’ve disabled Intel P30 video and run Nvidia only, because I need native driver for CUDA.</p>
+</blockquote>
+
+<h3 id="boot-media">Boot media</h3>
+
+<p>First of all we need UEFI installation media. I prefert to use SystemRescueCD:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Download ISO</span>
+https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/x.x.x/systemrescuecd-x86-x.x.x.iso/download
+<span class="nb">mkdir</span> <span class="nt">-p</span> /tmp/cdrom
+mount <span class="nt">-o</span> loop,exec /path/to/systemrescuecd-x86-x.x.x.iso /tmp/cdrom
+<span class="c"># Plug in the USB stick</span>
+<span class="nb">cd</span> /tmp/cdrom
+bash ./usb_inst.sh
+<span class="nb">cd</span> ~
+umount /tmp/cdrom
+</code></pre></div></div>
+
+<h3 id="partition-scheme">Partition scheme</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Partition scheme:</span>
+<span class="c"># /dev/nvme0n1p1 (bootloader)  2M      Just in case, but I don't think it's really needed on modern EFI systems.</span>
+<span class="c"># /dev/nvme0n1p2 fat32-UFFI    1024M   EFI Partition to hold more than one kernel. Yes I know that Handbook recommends 128M.</span>
+<span class="c"># /dev/nvme0n1p3 root-ext4     100%</span>
+<span class="c"># For swap I will use swapfile, because there is no performance advantage to either a contiguous swap file or a partition, both are treated the same way.</span>
+
+parted <span class="nt">-a</span> optimal /dev/nvme0n1
+<span class="o">(</span>parted<span class="o">)</span> mklabel gpt
+
+<span class="c"># Partition 1: Bootloader</span>
+<span class="o">(</span>parted<span class="o">)</span> unit mib
+<span class="o">(</span>parted<span class="o">)</span> mkpart primary 1 3
+<span class="o">(</span>parted<span class="o">)</span> name 1 grub 
+<span class="o">(</span>parted<span class="o">)</span> <span class="nb">set </span>1 bios_grub on
+
+<span class="c"># Partition 1: Boot</span>
+<span class="o">(</span>parted<span class="o">)</span> mkpart primary 3 1027
+<span class="o">(</span>parted<span class="o">)</span> name 2 boot
+<span class="o">(</span>parted<span class="o">)</span> <span class="nb">set </span>2 boot on
+
+<span class="c"># Partition 1: Root</span>
+<span class="o">(</span>parted<span class="o">)</span> mkpart primary 1027 <span class="nt">-1</span>
+<span class="o">(</span>parted<span class="o">)</span> name 4 rootfs
+</code></pre></div></div>
+
+<h3 id="filesystems">Filesystems</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkfs.fat <span class="nt">-F</span> 32 /dev/nvme0n1p2
+mkfs.ext4 /dev/nvme0n1p3
+</code></pre></div></div>
+
+<h3 id="mounting">Mounting</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mount /dev/nvme0n1p3 /mnt/gentoo
+mount /dev/nvme0n1p2 /mnt/gentoo/boot
+
+<span class="c"># System remount for chrooting</span>
+mount <span class="nt">-t</span> proc proc /mnt/gentoo/proc
+mount <span class="nt">--rbind</span> /sys /mnt/gentoo/sys
+mount <span class="nt">--make-rslave</span> /mnt/gentoo/sys
+mount <span class="nt">--rbind</span> /dev /mnt/gentoo/dev
+mount <span class="nt">--make-rslave</span> /mnt/gentoo/dev
+</code></pre></div></div>
+
+<h3 id="install-stage">Install Stage</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /mnt/gentoo/
+wget http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/autobuilds/current-stage3-amd64-systemd/stage3-amd64-systemd-&lt;YYYYMMDD&gt;.tar.bz2
+<span class="nb">tar </span>xvjpf stage3-amd64-systemd-&lt;YYYYMMDD&gt;.tar.bz2 <span class="nt">--xattrs</span>
+</code></pre></div></div>
+
+<h3 id="chrooting">Chrooting</h3>
+
+<ul>
+  <li><a href="/data/gentoo/make.conf.txt">make.conf</a></li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See link above to get contents of make.conf</span>
+vim /mnt/gentoo/etc/portage/make.conf
+<span class="nb">mkdir</span> /mnt/gentoo/etc/portage/repos.conf
+<span class="nb">cp</span> /mnt/gentoo/usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
+<span class="nb">cp</span> <span class="nt">-L</span> /etc/resolv.conf /mnt/gentoo/etc/
+<span class="nb">chroot</span> /mnt/gentoo /bin/bash
+<span class="nb">source</span> /etc/profile
+<span class="nb">export </span><span class="nv">PS1</span><span class="o">=</span><span class="s2">"(chrooted) </span><span class="nv">$PS1</span><span class="s2">"</span>
+</code></pre></div></div>
+
+<h3 id="update">Update</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emerge-webrsync
+emerge <span class="nt">--sync</span>
+<span class="c"># Should be systemd profile</span>
+eselect profile <span class="nb">set </span>12
+emerge <span class="nt">--ask</span> <span class="nt">--update</span> <span class="nt">--deep</span> <span class="nt">--newuse</span> @world
+</code></pre></div></div>
+
+<h3 id="timezone">Timezone</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">echo</span> <span class="s2">"Europe/Moscow"</span> <span class="o">&gt;</span> /etc/timezone
+emerge <span class="nt">--config</span> sys-libs/timezone-data
+</code></pre></div></div>
+
+<h3 id="locale">Locale</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim /etc/locale.gen
+<span class="c">#---- locale.gen ----</span>
+en_US.UTF-8 UTF-8
+ru_RU.UTF-8 UTF-8
+<span class="c">#--------------------</span>
+
+eselect locale list
+eselect locale <span class="nb">set </span>2
+env-update <span class="o">&amp;&amp;</span> <span class="nb">source</span> /etc/profile
+</code></pre></div></div>
+
+<h3 id="fstab">fstab</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fallocate <span class="nt">-l</span> 8192M /swapfile
+<span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/swapfile <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span>8192
+<span class="nb">chmod </span>600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+blkid
+
+<span class="c">#----    fstab   ----</span>
+<span class="nv">UUID</span><span class="o">=</span><span class="s2">"XXX"</span> /boot         vfat rw,relatime,fmask<span class="o">=</span>0022,dmask<span class="o">=</span>0022,codepage<span class="o">=</span>437,iocharset<span class="o">=</span>iso8859-1,shortname<span class="o">=</span>mixed,errors<span class="o">=</span>remount-ro 0 2
+<span class="nv">UUID</span><span class="o">=</span><span class="s2">"XXX"</span> /             ext4 rw,relatime,data<span class="o">=</span>ordered                                                                             0 1
+<span class="nv">UUID</span><span class="o">=</span><span class="s2">"XXX"</span> /home/storage ext4 rw,relatime,data<span class="o">=</span>ordered                                                                             1 1
+<span class="c">#Swap</span>
+/swapfile  none          swap defaults                                                                                             0 0
+<span class="c">#--------------------</span>
+</code></pre></div></div>
+
+<h3 id="kernel">Kernel</h3>
+
+<ul>
+  <li><a href="/data/gentoo/config-4.12.txt">.config</a></li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emerge <span class="nt">--ask</span> sys-kernel/gentoo-sources sys-apps/pciutils sys-kernel/genkernel-next
+eselect kernel list
+eselect kernel <span class="nb">set</span> <span class="s1">'N'</span>
+<span class="nb">cd</span> /usr/src/linux
+<span class="c"># See link above to get 4.12 kernel config for Dell 7510</span>
+<span class="nb">touch</span> /usr/src/linux/.config
+make olddefconfig
+make <span class="o">&amp;&amp;</span> make modules_install
+make <span class="nb">install
+</span>genkernel <span class="nt">--install</span> initramfs
+</code></pre></div></div>
+
+<h3 id="network">Network</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emerge <span class="nt">--ask</span> dbus
+hostnamectl set-hostname your-hostname.your-network
+vim /etc/hosts
+<span class="c">#----    hosts   ----</span>
+127.0.0.1   your-hostname.your-network your-hostname localhost
+::1         your-hostname.your-network your-hostname localhost
+<span class="c">#--------------------</span>
+
+emerge <span class="nt">--ask</span> net-misc/dhcpcd
+</code></pre></div></div>
+
+<h3 id="grub">Grub</h3>
+
+<p>Make sure that you have “GRUB_PLATFORMS=”efi-64” in /etc/portage/make.conf (see above)</p>
+<ul>
+  <li><a href="/data/gentoo/grub.txt">grub</a></li>
+  <li><a href="/data/gentoo/terminus32.pf2">terminus32.pf2</a></li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emerge <span class="nt">--ask</span> <span class="nt">--update</span> <span class="nt">--newuse</span> <span class="nt">--verbose</span> sys-boot/grub:2
+grub-install <span class="nt">--target</span><span class="o">=</span>x86_64-efi <span class="nt">--efi-directory</span><span class="o">=</span>/boot <span class="nt">--bootloader-id</span><span class="o">=</span>grub
+<span class="c"># See link above to contents</span>
+vim /etc/default/grub
+
+<span class="nb">cd</span> /boot/grub/fonts/
+wget https://d-k-ivanov.github.io/data/gentoo/terminus32.pf2
+
+<span class="nb">mkdir</span> /boot/efi/EFI/boot
+<span class="nb">mkdir</span> /boot/EFI/boot
+<span class="nb">cp</span> /boot/EFI/grub/grubx64.efi /boot/EFI/bootx64.efi
+
+grub-mkconfig <span class="nt">-o</span> /boot/grub/grub.cfg
+</code></pre></div></div>
+
+<h3 id="console">Console</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emerge <span class="nt">--ask</span> media-fonts/terminus-font
+<span class="nb">echo</span> <span class="s2">"FONT=ter-p32n.psf.gz"</span> <span class="o">&gt;</span> /etc/vconsole.conf
+</code></pre></div></div>
+
+<h3 id="post-install">Post install</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>useradd <span class="nt">-m</span> <span class="nt">-G</span> <span class="nb">users</span>,wheel,audio,portage,usb,video <span class="nt">-s</span> /bin/bash &lt;username&gt;
+passwd &lt;username&gt;
+
+<span class="c"># I like to own whole /home directory</span>
+<span class="nb">chown</span> <span class="nt">-R</span> &lt;username&gt;:&lt;username&gt; /home
+
+emerge <span class="nt">--ask</span> sys-process/cronie sys-apps/mlocate <span class="nb">sudo
+</span>emerge <span class="nt">--ask</span> media-fonts/terminus-font
+</code></pre></div></div>
+
+<h3 id="unmount-and-reboot">Unmount and reboot</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">exit
+</span>umount <span class="nt">-l</span> /mnt/gentoo/dev<span class="o">{</span>/shm,/pts,<span class="o">}</span>
+umount <span class="nt">-R</span> /mnt/gentoo
+reboot
+</code></pre></div></div>
+
+<h3 id="my-portage-package-files">My portage package files</h3>
+
+<ul>
+  <li><a href="/data/gentoo/package.accept_keywords.txt">package.accept_keywords</a></li>
+  <li><a href="/data/gentoo/package.license.txt">package.license</a></li>
+  <li><a href="/data/gentoo/package.unmask.txt">package.unmask</a></li>
+  <li><a href="/data/gentoo/package.use.txt">package.use</a></li>
+</ul>
+
+<h3 id="my-xorg-config-files">My Xorg config files</h3>
+<ul>
+  <li><a href="/data/gentoo/xorg.conf.txt">xorg.conf</a></li>
+  <li><a href="/data/gentoo/xorg-10-evdev.conf.txt">10-evdev.conf</a></li>
+  <li><a href="/data/gentoo/xorg-10-keyboard.conf.txt">10-keyboard.conf</a></li>
+  <li><a href="/data/gentoo/xorg-20-trackpoint.conf.txt">20-trackpoint.conf</a></li>
+  <li><a href="/data/gentoo/xorg-20opengl.conf.txt">20opengl.conf</a></li>
+  <li><a href="/data/gentoo/xorg-30-fonts.conf.txt">30-fonts.conf</a></li>
+  <li><a href="/data/gentoo/xorg-70-synaptics.conf.txt">70-synaptics.conf</a></li>
+</ul>
+
+<h3 id="udev-rules">Udev rules</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim /etc/udev/rules.d/01-touchpad.rules
+<span class="c">#---- 01-touchpad.rules ----</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"input"</span>, <span class="nv">KERNEL</span><span class="o">==</span><span class="s2">"mouse[0-9]*"</span>, <span class="nv">ACTION</span><span class="o">==</span><span class="s2">"add"</span>, ENV<span class="o">{</span>DISPLAY<span class="o">}=</span><span class="s2">":0"</span>, ENV<span class="o">{</span>XAUTHORITY<span class="o">}=</span><span class="s2">"/home/id/.Xauthority"</span>, RUN+<span class="o">=</span><span class="s2">"/usr/bin/synclient TouchpadOff=1"</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"input"</span>, <span class="nv">KERNEL</span><span class="o">==</span><span class="s2">"mouse[0-9]*"</span>, <span class="nv">ACTION</span><span class="o">==</span><span class="s2">"remove"</span>, ENV<span class="o">{</span>DISPLAY<span class="o">}=</span><span class="s2">":0"</span>, ENV<span class="o">{</span>XAUTHORITY<span class="o">}=</span><span class="s2">"/home/id/.Xauthority"</span>, RUN+<span class="o">=</span><span class="s2">"/usr/bin/synclient TouchpadOff=0"</span>
+<span class="c">#---------------------------</span>
+
+vim /etc/udev/rules.d/02-lid.rules
+<span class="c">#----    02-lid.rules   ----</span>
+<span class="c"># Settings on battery</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"power_supply"</span>, ENV<span class="o">{</span>POWER_SUPPLY_ONLINE<span class="o">}==</span><span class="s2">"0"</span>, ENV<span class="o">{</span>DISPLAY<span class="o">}=</span><span class="s2">":0"</span>, ENV<span class="o">{</span>XAUTHORITY<span class="o">}=</span><span class="s2">"/home/</span><span class="nv">$USER</span><span class="s2">/.Xauthority"</span>, RUN+<span class="o">=</span><span class="s2">"/usr/local/bin/lid_action.sh battery"</span>
+<span class="c"># Settings on AC</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"power_supply"</span>, ENV<span class="o">{</span>POWER_SUPPLY_ONLINE<span class="o">}==</span><span class="s2">"1"</span>, ENV<span class="o">{</span>DISPLAY<span class="o">}=</span><span class="s2">":0"</span>, ENV<span class="o">{</span>XAUTHORITY<span class="o">}=</span><span class="s2">"/home/</span><span class="nv">$USER</span><span class="s2">/.Xauthority"</span>, RUN+<span class="o">=</span><span class="s2">"/usr/local/bin/lid_action.sh AC"</span>
+<span class="c">#---------------------------</span>
+
+vim /usr/local/bin/lid_action.sh
+<span class="c">#----   lid_action.sh   ----</span>
+<span class="c">#!/bin/bash</span>
+<span class="nv">LID_SWITCH_ACTION_BAT</span><span class="o">=</span><span class="nb">suspend
+</span><span class="nv">LID_SWITCH_ACTION_AC</span><span class="o">=</span>ignore
+<span class="k">case</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="k">in
+    </span>battery<span class="p">)</span>
+        <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^.*</span><span class="se">\b</span><span class="s2">HandleLidSwitch</span><span class="se">\b</span><span class="s2">.*</span><span class="nv">$/</span><span class="s2">HandleLidSwitch=</span><span class="nv">$LID_SWITCH_ACTION_BAT</span><span class="s2">/"</span> /etc/systemd/logind.conf
+        systemctl restart systemd-logind
+        <span class="p">;;</span>
+    AC<span class="p">)</span>
+        <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^.*</span><span class="se">\b</span><span class="s2">HandleLidSwitch</span><span class="se">\b</span><span class="s2">.*</span><span class="nv">$/</span><span class="s2">HandleLidSwitch=</span><span class="nv">$LID_SWITCH_ACTION_AC</span><span class="s2">/"</span> /etc/systemd/logind.conf
+        systemctl restart systemd-logind
+        <span class="p">;;</span>
+<span class="k">esac</span>
+<span class="c">#---------------------------</span>
+
+vim /etc/udev/rules.d/90-backlight.rules
+<span class="c">#---- 90-backlight.rules ----</span>
+<span class="c"># Allow video group to control backlight and leds</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"backlight"</span>, <span class="nv">ACTION</span><span class="o">==</span><span class="s2">"add"</span>, RUN+<span class="o">=</span><span class="s2">"/bin/chgrp video %S%p/brightness"</span>, RUN+<span class="o">=</span><span class="s2">"/bin/chmod g+w %S%p/brightness"</span>
+<span class="nv">SUBSYSTEM</span><span class="o">==</span><span class="s2">"leds"</span>, <span class="nv">ACTION</span><span class="o">==</span><span class="s2">"add"</span>, <span class="nv">KERNEL</span><span class="o">==</span><span class="s2">"*::kbd_backlight"</span>, RUN+<span class="o">=</span><span class="s2">"/bin/chgrp video %S%p/brightness"</span>, RUN+<span class="o">=</span><span class="s2">"/bin/chmod g+w %S%p/brightness"</span>
+<span class="c">#----------------------------</span>
+</code></pre></div></div>
+
+<h3 id="vim-etcsysctlconf">vim /etc/sysctl.conf</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>net.ipv4.ip_forward <span class="o">=</span> 0
+fs.inotify.max_user_watches<span class="o">=</span>100000
+<span class="c"># To rule them all...</span>
+net.ipv4.ip_default_ttl<span class="o">=</span>65
+</code></pre></div></div>
+:ET
