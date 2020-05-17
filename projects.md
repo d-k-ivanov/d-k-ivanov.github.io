@@ -4,26 +4,17 @@ title: Projects
 permalink: /projects/
 ---
 
-### Android
+### Armenian Alphabet for Android
 
-<table style="width:100%" style="border:0px">
-  <tr>
-    <th>Armenian Alphabet</th>
-    <th>Russian Alphabet</th>
-  </tr>
-  <tr>
-    <td style="text-align:center">
-      <a href="https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet" target="_blank">
-        <img src="../images/projects/ArmenianAlphabet.gif" alt="Armeinan Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
-      </a>
-    </td>
-    <td style="text-align:center">
-      <a href="https://play.google.com/store/apps/details?id=com.pupupon.russian_alphabet" target="_blank">
-        <img src="../images/projects/RussianAlphabet.gif" alt="Russian Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
-      </a>
-    </td>
-  </tr>
-</table>
+<a href="https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet" target="_blank">
+  <img src="../images/projects/ArmenianAlphabet.gif" alt="Armeinan Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
+</a>
+
+### Russian Alphabet for Android
+
+<a href="https://play.google.com/store/apps/details?id=com.pupupon.russian_alphabet" target="_blank">
+  <img src="../images/projects/RussianAlphabet.gif" alt="Russian Alphabet" style="width: 200px; margin:0px 50px 0px 50px;"/>
+</a>
 
 ### Arcanoid on OpenGL
 
@@ -31,13 +22,13 @@ permalink: /projects/
 
 ### 2D Action RPG on CSharp
 
-2D Action RPG on CSharp with Godot bases on [Heartbeast Lessons](https://www.youtube.com/watch?v=mAbG8Oi-SvQ&list=PL9FzW-m48fn2SlrW0KoLT4n5egNdX-W9a)
+2D Action RPG on CSharp with Godot based on [Heartbeast Lessons](https://www.youtube.com/watch?v=mAbG8Oi-SvQ&list=PL9FzW-m48fn2SlrW0KoLT4n5egNdX-W9a)
 
 <img src="../images/projects/godot-2d-action-rpg.gif" alt="2D Action RPG on CSharp with Godot" style="width: 1024px; margin:0px 50px 0px 50px;"/>
 
 ### TurboRED Company Website
 
-<img id="myImg" src="../images/projects/TurboRED.png" alt="Turbored Home Page" style="width: 512px; margin:0px 50px 0px 50px;">
+<img id="myImg" src="../images/projects/TurboRED.png" alt="Turbored Home Page" style="width: 1024px; margin:0px 50px 0px 50px;">
 
 <!-- The Modal -->
 <div id="myModal" class="modal">
