@@ -18,13 +18,17 @@ permalink: /projects/
 
 ### Arcanoid on OpenGL
 
-<img src="../images/projects/OpenglArcanoid.gif" alt="Arcanoid Opengl" style="width: 1024px; margin:0px 50px 0px 50px;"/>
+<a href="https://github.com/d-k-ivanov/sandbox-gamedev/tree/master/opengl-arcanoid" target="_blank">
+  <img src="../images/projects/OpenglArcanoid.gif" alt="Arcanoid Opengl" style="width: 1024px; margin:0px 50px 0px 50px;"/>
+</a>
 
 ### 2D Action RPG on CSharp
 
 2D Action RPG on CSharp with Godot based on [Heartbeast Lessons](https://www.youtube.com/watch?v=mAbG8Oi-SvQ&list=PL9FzW-m48fn2SlrW0KoLT4n5egNdX-W9a)
 
-<img src="../images/projects/godot-2d-action-rpg.gif" alt="2D Action RPG on CSharp with Godot" style="width: 1024px; margin:0px 50px 0px 50px;"/>
+<a href="https://github.com/d-k-ivanov/sandbox-gamedev/tree/master/godot-2d-action-rpg" target="_blank">
+  <img src="../images/projects/godot-2d-action-rpg.gif" alt="2D Action RPG on CSharp with Godot" style="width: 1024px; margin:0px 50px 0px 50px;"/>
+</a>
 
 ### TurboRED Company Website
 
