@@ -17,13 +17,13 @@ permalink: /about/
 
 ## Education
 
-Engineering degree, Belgorod State Technological University named after V.G. Shukhov
+Computer Science, Belgorod State Technological University named after V.G. Shukhov
 
 ***
 
 ## Roles
 
-* 07.2018-present - **Lead DevOps Engineer** at Spark Clear Aligners
+* 07.2018-present - **Lead Software Development and Operations Engineer** at Spark Clear Aligners
 * 11.2017-05.2018 - **Senior DevOps Engineer** at Align Technology Inc.
 * 03.2017-11.2017 - **Lead DevOps and Integration Developer** at HotelChat
 * 02.2013-02.2017 - **Lead Engineer** at D8 Corporation
@@ -35,26 +35,25 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 
 ## Experience
 
-### [**Lead DevOps Engineer at Spark Clear Aligner System**](https://ormco.com/spark)
+### [**Lead Software Development and Operations Engineer at Spark Clear Aligner System**](https://ormco.com/spark)
 
-* Lead team to use most efficient automation trends
-* Architect AWS based cloud solutions
-* Architect DevOps pipeline
-* Develop DevOps and Application Support workflow
+* Architect AWS based cloud solutions and DevOps pipeline
 * C++ Application Development
 * Debug and automate builds and compilation for C++/QT for Win and Mac
-* Debug and deploy Java microservices (Spring)
-* Code review
-* Develop a workflow for Atlassian stack
-* Automate CI/CD Pipeline with Java
+* Code Review, Projects Management, Sprint Planning
+* Develop build automation: Common Props, CMake, QMake, Conan, PowerShell, Bash, Makefiles
+* Upgrade C++ frameworks and libraries
+* Automate CI/CD Pipeline with Java API
 * Automate operations in Python and JavaScript
+* GUI test automation: Squish
 * Develop database migration scripts
+* Scripting: PowerShell, Bash, CMake, VBS, sh, cmd
+* Business intelligence activities: SQL, Excel, Python
+* Atlassian Stack administration
+* Develop DevOps and Application Support workflow
 * Manage team learning activity
-* Manage the Local IT Environment
-* Network Administration
-* Interview new team members
+* People management
 * Annual budget planning
-* Scripting: PowerShell, bash, VBS, sh, cmd
 * Languages used: Python, HCL, C/C++, SQL, Java, JavaScript, C#
 
 ### [**Senior DevOps Engineer at Align Technology Inc.**](https://aligntech.com)
@@ -83,9 +82,9 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 ### [**Lead Engineer at D8 Corporation**](http://www.d8corporation.com)
 
 * Develop and implementation of banking solutions:
-    * Payment Systems (FIS CORTEX)
-    * Risk Management Systems (D8 Stronghold)
-    * Loyalty Systems (D8 PointZone)
+  * Payment Systems (FIS CORTEX)
+  * Risk Management Systems (D8 Stronghold)
+  * Loyalty Systems (D8 PointZone)
 * SLA Support and Monitoring (NetXMS)
 * Linux/Windows Systems Administration
 * Virtualization: VMWare, KVM, Power VM, HP-UX VM
@@ -107,10 +106,10 @@ Engineering degree, Belgorod State Technological University named after V.G. Shu
 * Design and implementation of 1C ERP System
 * Migration of 1C Accounting Suite from 7.7 to 8.0
 * Migration pf 1C Warehouse Management System to 1C ERP System
-* Design and implementation of ASoftCRM integration 
+* Design and implementation of ASoftCRM integration
 * Migration of infrastructure from NT4 Domain to Windows Server 2008 Domain
 * Migration from ISA Server to FreeBSD gateway stack
-* Design and implementation of Crechet Service Desk integration 
+* Design and implementation of Crechet Service Desk integration
 * Design and implementation of Project Server + SharePoint integration
 * Languages used: 1C, Batch, Bash
 

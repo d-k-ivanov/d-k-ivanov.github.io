@@ -1,0 +1,151 @@
+I"½<hr />
+
+<h2 id="about-me">About me</h2>
+
+<ul>
+  <li>I am an experienced engineer with various knowledge in Software Development and Tech.</li>
+  <li>Experience within banking, medical devices and enterprise areas from low-level infrastructure development to high-level project management and with various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).</li>
+  <li>Myers-Briggs personality type: ISFJ</li>
+  <li>I have proper time management and planning skills, and I am in love with science and technology.</li>
+</ul>
+
+<hr />
+
+<h2 id="education">Education</h2>
+
+<p>Computer Science, Belgorod State Technological University named after V.G. Shukhov</p>
+
+<hr />
+
+<h2 id="roles">Roles</h2>
+
+<ul>
+  <li>07.2018-present - <strong>Lead Software Development and Operations Engineer</strong> at Spark Clear Aligners</li>
+  <li>11.2017-05.2018 - <strong>Senior DevOps Engineer</strong> at Align Technology Inc.</li>
+  <li>03.2017-11.2017 - <strong>Lead DevOps and Integration Developer</strong> at HotelChat</li>
+  <li>02.2013-02.2017 - <strong>Lead Engineer</strong> at D8 Corporation</li>
+  <li>03.2011-03.2013 - <strong>Lead Infrastructure Engineer</strong> at iTech Systems</li>
+  <li>06.2007-08.2010 - <strong>Senior System and Network Administrator</strong> at Delta-Systems</li>
+  <li>06.2005-05.2007 - <strong>System Administrator</strong> at Akella</li>
+</ul>
+
+<hr />
+
+<h2 id="experience">Experience</h2>
+
+<h3 id="lead-software-development-and-operations-engineer-at-spark-clear-aligner-system"><a href="https://ormco.com/spark"><strong>Lead Software Development and Operations Engineer at Spark Clear Aligner System</strong></a></h3>
+
+<ul>
+  <li>Architect AWS based cloud solutions and DevOps pipeline</li>
+  <li>C++ Application Development</li>
+  <li>Debug and automate builds and compilation for C++/QT for Win and Mac</li>
+  <li>Code Review, Projects Management, Sprint Planning</li>
+  <li>Develop build automation: Common Props, CMake, QMake, Conan, PowerShell, Bash, Makefiles</li>
+  <li>Upgrade C++ frameworks and libraries</li>
+  <li>Automate CI/CD Pipeline with Java API</li>
+  <li>Automate operations in Python and JavaScript</li>
+  <li>GUI test automation: Squish</li>
+  <li>Develop database migration scripts</li>
+  <li>Scripting: PowerShell, Bash, CMake, VBS, sh, cmd</li>
+  <li>Business intelligence activities: SQL, Excel, Python</li>
+  <li>Atlassian Stack administration</li>
+  <li>Develop DevOps and Application Support workflow</li>
+  <li>Manage team learning activity</li>
+  <li>People management</li>
+  <li>Annual budget planning</li>
+  <li>Languages used: Python, HCL, C/C++, SQL, Java, JavaScript, C#</li>
+</ul>
+
+<h3 id="senior-devops-engineer-at-align-technology-inc"><a href="https://aligntech.com"><strong>Senior DevOps Engineer at Align Technology Inc.</strong></a></h3>
+
+<ul>
+  <li>Contribution to the continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments</li>
+  <li>Architect, develop and maintain Docker-based infrastructure platform (Docker and Rancher)</li>
+  <li>Automate environment maintenance, orchestration, and release engineering tasks (in Ruby, Python, and Shell)</li>
+  <li>Define, configure and script builds, metric, test, deploy, release and other steps of deployment pipeline for variety applications</li>
+  <li>Shape and improve SDLC processes</li>
+  <li>Develop AWS, Azure and Heroku based hosting and architecture</li>
+  <li>Identify gaps in current DevOps process, support, fix, and maintain those key areas</li>
+  <li>Share expertise to assist the surrounding team members</li>
+  <li>Linux/Windows Systems Administration. Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over 1000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements</li>
+  <li>Production Support</li>
+  <li>Languages used: Python, Ruby, HCL, Shell</li>
+</ul>
+
+<h3 id="lead-devops-and-integration-developer-at-hotelchat"><a href="http://hotelchat.me"><strong>Lead DevOps and Integration Developer at HotelChat</strong></a></h3>
+
+<ul>
+  <li>Stack: AWS, Docker (swarm), Ubuntu, Consul, Weave, Nginx, MongoDB, Tarantool, Redis, Zookeeper, Java/Scala (Vertx), JavaScript, Go, Snakeskin</li>
+  <li>Design and implementation of deployment processes for code delivery to production, development and demo environments</li>
+  <li>Design and implementation of GitLab-based CI/CD pipeline</li>
+  <li>Design and implementation of the hotelâ€™s solutions</li>
+  <li>Automation deployments with Ansible, Python and Terraform</li>
+  <li>Languages used: Python, Java, JavaScript, HCL</li>
+</ul>
+
+<h3 id="lead-engineer-at-d8-corporation"><a href="http://www.d8corporation.com"><strong>Lead Engineer at D8 Corporation</strong></a></h3>
+
+<ul>
+  <li>Develop and implementation of banking solutions:
+    <ul>
+      <li>Payment Systems (FIS CORTEX)</li>
+      <li>Risk Management Systems (D8 Stronghold)</li>
+      <li>Loyalty Systems (D8 PointZone)</li>
+    </ul>
+  </li>
+  <li>SLA Support and Monitoring (NetXMS)</li>
+  <li>Linux/Windows Systems Administration</li>
+  <li>Virtualization: VMWare, KVM, Power VM, HP-UX VM</li>
+  <li>Debug C/C++ applications</li>
+  <li>Develop database migration scripts</li>
+  <li>Languages used: C/C++, PL/SQL, Java, NXSL, Python, Perl, Bash</li>
+</ul>
+
+<h3 id="lead-infrastructure-engineer-at-itech-systems"><a href="http://itech-systems.com"><strong>Lead Infrastructure Engineer at iTech Systems</strong></a></h3>
+
+<ul>
+  <li>Design and implementation of Loyalty Systems (.NET)</li>
+  <li>Design and implementation of monitoring systems and 24/7 Support</li>
+  <li>PCI DSS certification</li>
+  <li>SLA support and Monitoring</li>
+  <li>Languages used: Bash, Perl, Powershell, Ruby, VBA</li>
+</ul>
+
+<h3 id="senior-system-and-network-administrator-at-delta-systems"><a href="http://delta-systems.ru"><strong>Senior System and Network Administrator at Delta-Systems</strong></a></h3>
+
+<ul>
+  <li>Design and implementation of 1C Warehouse Management System</li>
+  <li>Design and implementation of 1C ERP System</li>
+  <li>Migration of 1C Accounting Suite from 7.7 to 8.0</li>
+  <li>Migration pf 1C Warehouse Management System to 1C ERP System</li>
+  <li>Design and implementation of ASoftCRM integration</li>
+  <li>Migration of infrastructure from NT4 Domain to Windows Server 2008 Domain</li>
+  <li>Migration from ISA Server to FreeBSD gateway stack</li>
+  <li>Design and implementation of Crechet Service Desk integration</li>
+  <li>Design and implementation of Project Server + SharePoint integration</li>
+  <li>Languages used: 1C, Batch, Bash</li>
+</ul>
+
+<h3 id="system-administrator-at-akella"><a href="http://akella.ru"><strong>System Administrator at Akella</strong></a></h3>
+
+<ul>
+  <li>Administration of Windows services and FreeBSD gateways administration</li>
+  <li>Design and implementation of the bug-track system</li>
+  <li>Installation of CCTV</li>
+  <li>Languages used: Batch, VBS</li>
+</ul>
+
+<hr />
+
+<h2 id="activities">Activities</h2>
+
+<p><img style="float: left;" src="https://projecteuler.net/profile/d-k-ivanov.png" alt="Project Euler" />
+<br />
+<br /></p>
+
+<hr />
+
+<h2 id="contact-me">Contact me</h2>
+
+<p><a href="mailto:d.k.ivanov@live.com">d.k.ivanov@live.com</a></p>
+:ET
