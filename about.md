@@ -49,7 +49,7 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 * Develop database migration scripts
 * Scripting: PowerShell, Bash, CMake, VBS, sh, cmd
 * Business intelligence activities: SQL, Excel, Python
-* Spring Boot application for business intelligence activities (reporting system)
+* Spring Boot applications for business intelligence activities (reporting system)
 * Atlassian Stack administration
 * Develop DevOps and Application Support workflow
 * Manage team learning activity
