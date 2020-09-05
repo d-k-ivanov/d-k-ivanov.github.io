@@ -1,8 +1,18 @@
+# IDE
+.idea
+.vs
+.vscode
+
+# Jakyll
 _site/
 .sass-cache/
+.jekyll-cache
 .jekyll-metadata
-*.DS_Store
-.idea
-*.swp
-.Trashes
+
+# Ruby
 Gemfile.lock
+
+# OS Temp
+*.DS_Store
+.Trashes
+*.swp

@@ -8,17 +8,17 @@ permalink: /travel/
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <style>
-        html { 
-            overflow-x: hidden; 
-            overflow-y: hidden; 
+        html {
+            overflow-x: hidden;
+            overflow-y: hidden;
         }
         .active { fill: gray !important;}
         .DatamapDiv {
             /* border:1px dotted gray; */
             /* background-color: #0077be; */
             width: 100vw;
-            height: 100vh; 
-            position: relative; 
+            height: 100vh;
+            position: relative;
         }
         /*.datamaps-key dt, .datamaps-key dd {float: none !important;}
         .datamaps-key {right: -50px; top: 0;}*/

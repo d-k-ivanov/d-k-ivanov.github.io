@@ -1,3 +1,3 @@
-# My Home Page
+# Dmitriy Ivanov's Home Page
 
 [Dmitry Ivanov](https://d-k-ivanov.github.io).
