@@ -11,31 +11,31 @@ url: "d-k-ivanov.github.io"
 
 # Comment module
 comment:
-    # disqus: keepbot
-    # uyan: <uyan_id>
+  # disqus: keepbot
+  # uyan: <uyan_id>
 
 # Social
 social:
-    github: d-k-ivanov
-    facebook: a1231239849
-    # gplus: 117493423659295113944
-    instagram: dkivanov
-    linkedin: dmitriy-ivanov-5b9275b3
-    mail: d.k.ivanov@live.com
-    twitter: Dmitriy24037176
-    vkontakte: d.k.ivanov
-    # weibo: <weibo_id>
+  github: d-k-ivanov
+  facebook: a1231239849
+  # gplus: 117493423659295113944
+  instagram: dkivanov
+  linkedin: dmitriy-ivanov-5b9275b3
+  mail: d.k.ivanov@live.com
+  twitter: Dmitriy24037176
+  vkontakte: d.k.ivanov
+  # weibo: <weibo_id>
 
-# Baidu 
+# Baidu
 # baidu:
-#    id: <baidu_id>  
+#   id: <baidu_id>
 
 # Google Analytics
 ya:
   id: 40819844
 ga:
-    id: UA-80208201-1 
-    host: "d-k-ivanov.github.io"  
+  id: UA-80208201-1
+  host: "d-k-ivanov.github.io"
 
 permalink: /:year/:month/:title/
 # Format
@@ -52,16 +52,17 @@ cover_color: clear
 
 # Navigation buttons in the front page.s
 nav:
-    - {title: Blog, description: blog, url: '/archive'}
-    - {title: Projects, description: projects, url: '/projects'}
-    # - {title: Tags, description: tags, url: '/tags'}
-    - {title: Travel, description: travel, url: '/travel'}
-    - {title: Docs, description: docs, url: '/docs'}
-    - {title: CV, description: about, url: '/about'}
-    - {title: GitHub, description: GitHub, url: 'https://github.com/d-k-ivanov'}
+  - {title: Blog, description: blog, url: '/archive'}
+  - {title: Projects, description: projects, url: '/projects'}
+  # - {title: Tags, description: tags, url: '/tags'}
+  - {title: Travel, description: travel, url: '/travel'}
+  - {title: Docs, description: docs, url: '/docs'}
+  - {title: Slides, description: slides, url: '/slides'}
+  - {title: CV, description: about, url: '/about'}
+  - {title: GitHub, description: GitHub, url: 'https://github.com/d-k-ivanov'}
 
 # Pagination
-plugins: 
+plugins:
   - jekyll-paginate
   - jekyll-sitemap
   - jekyll-feed
