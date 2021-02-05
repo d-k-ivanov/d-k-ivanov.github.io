@@ -23,7 +23,8 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 
 ## Roles
 
-* 07.2018-present - **Lead Software Development and Operations Engineer** at Spark Clear Aligners
+* 01.2021-present - **Lead Systems Engineer** at EPAM Systems
+* 07.2018-01.2021 - **Lead Software Development and Operations Engineer** at Spark Clear Aligners
 * 11.2017-05.2018 - **Senior DevOps Engineer** at Align Technology Inc.
 * 03.2017-11.2017 - **Lead DevOps and Integration Developer** at HotelChat
 * 02.2013-02.2017 - **Lead Engineer** at D8 Corporation
@@ -35,7 +36,9 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 
 ## Experience
 
-### [**Lead Software Development and Operations Engineer at Spark Clear Aligner System**](https://ormco.com/spark)
+### [**Lead Systems Engineer at EPAM Systems**](https://epam.com)
+
+### [**Lead Software Development and Operations Engineer at Spark Clear Aligners**](https://ormco.com/spark)
 
 * Architect AWS based cloud solutions and DevOps pipeline
 * C++ Application Development
