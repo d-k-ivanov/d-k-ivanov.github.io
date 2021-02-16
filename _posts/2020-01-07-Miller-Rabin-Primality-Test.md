@@ -30,7 +30,7 @@ The Miller-Rabin test is based on a third way to prove that a number is composit
  *      Project :  is_prime_miller_rabin.cpp
  *      File    :  is_prime_miller_rabin.cpp
  *      Created :  07.01.2020 20:00:00 +0100
- *      Author  :  Dmitriy Ivanov
+ *      Author  :  Dmitry Ivanov
  * =====================================================================
  */
 
@@ -130,7 +130,7 @@ bool is_prime_mr(const Uint64 n)
  *      Project :  is_prime_simple.cpp
  *      File    :  is_prime_simple.cpp
  *      Created :  07.01.2020 20:30:00 +0100
- *      Author  :  Dmitriy Ivanov
+ *      Author  :  Dmitry Ivanov
  * =====================================================================
  */
 typedef unsigned long long Uint64;
