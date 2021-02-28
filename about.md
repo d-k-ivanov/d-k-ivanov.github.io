@@ -8,9 +8,9 @@ permalink: /about/
 
 ## About me
 
-* I am an experienced engineer with various knowledge in cross-platform software development, devops and technology in general, who in love with science and technology.
-* I have various experience in banking, medical devices and enterprise areas from low-level infrastructure development to high-level project management and with various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
-* At the moment, I'm focusing on Software Development and DevOps practices. Occasionally, I'm appearing in Business Intelligence roles.
+* I am an experienced engineer with various knowledge in cross-platform software development, devops and technology in general. I’m in love with science and technology.
+* I have experience in banking, medical devices and enterprise areas, from low-level infrastructure development to high-level project management and various compliance guidelines and international standards (e.g. ISO 8583, PCI DSS and HIPAA).
+* At the moment, I’m focusing on Software Development and DevOps practices. Occasionally, I appear in Business Intelligence roles.
 * My Myers-Briggs personality type: **ESFJ**
 
 ***
@@ -65,10 +65,10 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 * Contribution to the continual rollout of Chef/Ansible-based deployment automation across multiple Test and Production environments
 * Architect, develop and maintain Docker-based infrastructure platform (Docker and Rancher)
 * Automate environment maintenance, orchestration, and release engineering tasks (in Ruby, Python, and Shell)
-* Define, configure and script builds, metric, test, deploy, release and other steps of deployment pipeline for variety applications
+* Define, configure and script builds, metric, test, deploy, release and other steps of deployment pipeline for a variety of applications
 * Shape and improve SDLC processes
 * Develop AWS, Azure and Heroku based hosting and architecture
-* Identify gaps in current DevOps process, support, fix, and maintain those key areas
+* Identify gaps in the current DevOps process, support, fix, and maintain those key areas
 * Share expertise to assist the surrounding team members
 * Linux/Windows Systems Administration. Maintain uptime and troubleshoot problems in active Dev, QA and Production environments, along with development and deployment infrastructure, counting over 1000+ servers. Manage configuration and patching. Recommend system-wide reliability improvements
 * Production Support
