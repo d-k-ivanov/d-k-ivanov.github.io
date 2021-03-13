@@ -6,26 +6,21 @@ date: 2020-02-02
 tag: cpp
 ---
 
-<script type="application/javascript">
-
-function resizeIFrameToFitContent( iFrame ) {
-
-    iFrame.width  = iFrame.contentWindow.document.body.scrollWidth;
-    iFrame.height = iFrame.contentWindow.document.body.scrollHeight;
+<style>
+.iframe-container {
+    overflow: hidden;
+    padding-top: 100%;
+    position: relative;
 }
 
-window.addEventListener('DOMContentLoaded', function(e) {
+.iframe-container iframe {
+    border: 0;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+</style>
 
-    var iFrame = document.getElementById( 'cpp_containers_frame' );
-    resizeIFrameToFitContent( iFrame );
-
-    // or, to resize all iframes:
-    var iframes = document.querySelectorAll("iframe");
-    for( var i = 0; i < iframes.length; i++) {
-        resizeIFrameToFitContent( iframes[i] );
-    }
-} );
-
-</script>
-
-<iframe src="/data/cpp_containers.html" id="cpp_containers_frame" title="CPP Containers"></iframe>
+<div class="iframe-container"><iframe loading="lazy" src="/data/cpp_containers.html"></iframe></div>
