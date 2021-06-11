@@ -2,8 +2,7 @@
 
 #[ "$1" ] || $(echo "Please provide commit message" && exit)
 
-jekyll build
-
+bundle exec jekyll build
 git add --all . && git commit -am "Post $(date +%Y-%m-%d-%H:%M:%S)" && git push -u origin master
 
 #Debug
