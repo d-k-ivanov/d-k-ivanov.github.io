@@ -23,6 +23,7 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 
 ## Roles
 
+* 06.2021-present - **Software Engineer** at ClearCorrect (Straumann Brand)
 * 01.2021-06.2021 - **Lead Systems Engineer** at EPAM Systems
 * 07.2018-01.2021 - **Lead Software Development Engineer** at Spark Clear Aligners
 * 11.2017-05.2018 - **Senior DevOps Engineer** at Align Technology Inc.
@@ -35,6 +36,8 @@ Computer Science, Belgorod State Technological University named after V.G. Shukh
 ***
 
 ## Experience
+
+### [**Software Engineer at ClearCorrect**](https://clearcorrect.com)
 
 ### [**Lead Systems Engineer at EPAM Systems**](https://epam.com)
 
