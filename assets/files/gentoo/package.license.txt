@@ -1,0 +1,11 @@
+app-emulation/virtualbox-extpack-oracle   PUEL
+
+dev-java/oracle-jdk-bin                   Oracle-BCLA-JavaSE
+
+dev-util/nvidia-cuda-toolkit              NVIDIA-CUDA
+
+net-misc/teamviewer                       TeamViewer
+
+www-client/google-chrome                  google-chrome
+www-client/google-chrome-beta             google-chrome
+www-client/opera                          OPERA-2014

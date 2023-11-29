@@ -1,0 +1,12 @@
+main:
+
+  - title: "Some Title"
+    authors: Dmitry Ivanov, Other Author1, Other Author2, etc.
+    conference_short: SIGGRAPH
+    conference: Special Interest Group on Computer Graphics and Interactive Techniques <strong>(SIGGRAPH)</strong>, 2023.
+    pdf: http://link_to_pdf
+    code: http://link_to_source_code
+    page: https://class-il.mpi-inf.mpg.de/mnemonics/
+    bibtex: http://link_to_bibtex
+    image: ./assets/img/publication_teaser.png
+    notes: Early Accept | Oral Presentation

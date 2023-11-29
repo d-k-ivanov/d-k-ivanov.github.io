@@ -1,0 +1,39 @@
+# These settings were set by the catalyst build script that automatically
+# built this stage.
+# Please consult /usr/share/portage/config/make.conf.example for a more
+# detailed example.
+CFLAGS="-march=native -O2 -pipe"
+CXXFLAGS="${CFLAGS}"
+# WARNING: Changing your CHOST is not something that should be done lightly.
+# Please consult http://www.gentoo.org/doc/en/change-chost.xml before changing.
+CHOST="x86_64-pc-linux-gnu"
+# These are the USE flags that were used in addition to what is provided by the
+# profile used for building.
+
+USE="                                                           \
+      cjk gtk gtk3 icu ncurses nls truetype unicode infinality  \
+      alsa bluetooth dbus pulseaudio sound udev udisks wifi     \
+      -bindist mmx python sse sse2 systemd threads              \
+      apng cairo djvu jpeg opengl pdf png tiff                  \
+      libnotify X xcb xinerama xkb                              \
+      cups scanner samba mtp                                    \
+    "        
+
+PORTDIR="/usr/portage"
+DISTDIR="${PORTDIR}/distfiles"
+PKGDIR="${PORTDIR}/packages"
+
+MAKEOPTS="-j8"
+
+GENTOO_MIRRORS="http://mirror.yandex.ru/gentoo-distfiles/ ftp://mirror.yandex.ru/gentoo-distfiles/"
+GRUB_PLATFORMS="efi-64"
+#INPUT_DEVICES="evdev libinput synaptics"
+INPUT_DEVICES="evdev synaptics"
+VIDEO_CARDS="nvidia"
+
+SANE_BACKENDS="hp"
+
+L10N="en es ru en-GB en-US ru-RU en_GB en_US ru_RU"
+LINGUAS="en es ru en_GB en_US ru_RU en-GB en-US ru-RU"
+
+

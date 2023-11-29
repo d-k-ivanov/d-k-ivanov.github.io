@@ -1,0 +1,54 @@
+# Basic Information
+title: Dmitry Ivanov
+position: Software Engineer
+# affiliation: Straumann
+# affiliation_link: https://straumann.com/
+# affiliation_logo: /assets/img/favicon.png
+email: d.k.ivanov (at) live.com
+
+# Search Engine Optimization (SEO)
+# The following information is used to improve the website traffic from search engines, e.g., Google.
+keywords: dmitry_ivanov personal_blog
+description: Dmitry Ivanov's homepage
+canonical: https://d-k-ivanov.github.io/
+
+# Social Links
+# google_scholar: https://scholar.google.com/
+# cv_link: /assets/files/curriculum_vitae.pdf
+github_link: https://github.com/d-k-ivanov
+linkedin: https://www.linkedin.com/in/dmitry-ivanov-5b9275b3
+twitter: http://twitter.com/Dmitriy24037176
+facebook: https://www.facebook.com/a1231239849
+# vk: https://vk.com/a1231239849
+
+# Images (e.g., your profile picture and your website's favicon)
+# "favicon" and "favicon_dark" are used for the light and dark modes, respectively.
+avatar: /assets/img/avatar.png
+favicon: /assets/img/favicon.png
+favicon_dark: /assets/img/favicon.png
+
+# Auto Dark Mode
+# You may use the option to disable the automatic dark theme
+auto_dark_mode: true
+
+# Font
+# You can use this option to choose between Serif or Sans Serif fonts.
+font: "Serif" # or "Sans Serif"
+# font: "Sans Seri/f"
+
+# Google Analytics ID
+google_analytics: G-D6JPE9NE28
+
+# The following files will be removed from the generated website.
+exclude:
+  - .idea
+  - .markdownlint.json
+  - .vs
+  - .vscode
+  - CNAME
+  - Gemfile
+  - Gemfile.lock
+  - html_source_file/
+  - LICENSE
+  - minimal-light.gemspec
+  - README.md

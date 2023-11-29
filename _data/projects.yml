@@ -1,0 +1,16 @@
+main:
+  - title: "Russian Alphabet for Android"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/android-russian-alphabet
+    badge: Android
+    image: /assets/img/projects/RussianAlphabet.png
+    page: https://play.google.com/store/apps/details?id=com.pupupon.russian_alphabet
+    # notes: Early Accept
+
+  - title: "Armenian Alphabet for Android"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/android-armenianalphabet
+    badge: Android
+    image: /assets/img/projects/ArmenianAlphabet.png
+    page: https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet
+    # notes: Oral Presentation

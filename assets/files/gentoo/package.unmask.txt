@@ -1,0 +1,51 @@
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=virtual/wine-0-r4
+# required by virtual/wine-0-r4::gentoo
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-vanilla-2.16
+# required by app-emulation/wine-d3d9-2.16::gentoo[gecko]
+# required by virtual/wine-0-r4::gentoo[d3d9]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-gecko-2.47-r1
+# required by virtual/wine-0-r4::gentoo[d3d9]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-d3d9-2.16
+# required by virtual/wine-0-r4::gentoo[staging]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-staging-2.16
+# required by app-emulation/wine-d3d9-2.16::gentoo
+# required by virtual/wine-0-r4::gentoo[d3d9]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-eselect/eselect-wine-1.2.2
+# required by app-emulation/wine-d3d9-2.16::gentoo[mono]
+# required by virtual/wine-0-r4::gentoo[d3d9]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-mono-4.7.1
+# required by app-emulation/wine-d3d9-2.16::gentoo
+# required by virtual/wine-0-r4::gentoo[d3d9]
+# required by virtual/wine (argument)
+# /usr/portage/profiles/package.mask:
+# NP-Hardass <NP-Hardass@gentoo.org> (10 Apr 2017)
+# Masked for testing
+=app-emulation/wine-desktop-common-20150204

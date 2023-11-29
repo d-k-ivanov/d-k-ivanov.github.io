@@ -1,0 +1,42 @@
+<div class="topnav">
+    <!-- <a href="{{ site.affiliation_link }}"><img width="190" src="{{ site.affiliation_logo }}"></a> -->
+    <div id="myLinks">
+        {% for link in site.data.navigation.main %}
+            {% if link.right %}
+                {% if link.external %}
+                    <a class="normal right" href="{{ link.url }}" target="_blank">{{ link.title }}</a>
+                {% else %}
+                    <a class="normal right" href="{{ link.url }}">{{ link.title }}</a>
+                {% endif %}
+            {% else %}
+                {% if link.external %}
+                    <a class="normal" href="{{ link.url }}" target="_blank">{{ link.title }}</a>
+                {% else %}
+                    <a class="normal" href="{{ link.url }}">{{ link.title }}</a>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+
+<script src="/assets/js/vanilla-back-to-top.min.js""></script>
+<script>addBackToTop({
+        backgroundColor: '#fff',
+        innerHTML: 'Back to Top',
+        textColor: '#333'
+    })
+</script>
+<style>
+    #back-to-top {
+        border: 1px solid #ccc;
+        border-radius: 0;
+        font-size: 15px;
+        width: 100px;
+        text-align: center;
+        line-height: 30px;
+        height: 30px;
+    }
+</style>

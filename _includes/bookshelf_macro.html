@@ -1,0 +1,32 @@
+{% assign books = site.data.books | where: "year", include.year %}
+
+{% if books.size > 0 %}
+<div style="margin-top: 32px;">
+    <h2>
+        {% if include.year %}
+        {{ include.year }}
+        {% else %}
+        ???
+        {% endif %}
+    </h2>
+    <div class="bookshelf">
+        {% for book in books %}
+        <div class="book">
+            <div class="side spine">
+                {{ book.author}} - {{ book.title }}
+                <!-- {{ book.author}} - {{ book.author | split: " " | first | slice: 0 }}{{ book.author | split: " " | last | slice: 0 }} - {{book.title }} -->
+                <!--
+                <span class="spine-title"> {{ book.title }} </span>
+                <span class="spine-author">
+                    {{ book.author | split: " " | first | slice: 0 }}{{ book.author | split: " " | last | slice: 0 }}
+                </span>
+                -->
+            </div>
+            <div class="side top"></div>
+            <div class="side cover" style="background-image: url({{ book.cover }})">{{ book.author}} - {{ book.title }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <hr />
+</div>
+{% endif %}

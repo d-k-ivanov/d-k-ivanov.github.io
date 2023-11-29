@@ -1,0 +1,1272 @@
+# - title:
+#   year:
+#   author:
+#   cover:
+#   notes: >
+
+# - title: "The Rust Programming Language"
+#   year: 2023
+#   author: Steve Klabnik, Carol Nichols
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1669769792i/63891183.jpg
+#   notes: >
+
+# - title: "The Ph.D. Grind: A Ph.D. Student Memoir"
+#   year: 2023
+#   author: Philip J. Guo
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1476268481i/15731248.jpg
+#   notes: >
+
+- title: "Surviving the C++ Coding Interview"
+  year: 2023
+  author: Šimon Tóth
+  cover: https://raw.githubusercontent.com/HappyCerberus/cpp-coding-interview/main/book_cover.png
+  notes: >
+
+- title: "A Complete Guide to Standard C++ Algorithms"
+  year: 2023
+  author: Šimon Tóth
+  cover: https://raw.githubusercontent.com/HappyCerberus/book-cpp-algorithms/main/static/book_cover.png
+  notes: >
+
+- title: "The Anglicization of European Lexis"
+  year: 2023
+  author: Cristiano Furiassi, Virginia Pulcini, Félix Rodríguez González
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1404960873i/17598278.jpg
+  notes: >
+
+- title: "Двенадцать Стульев"
+  year: 2023
+  author: Ильф Илья, Петров Евгений
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1451567551i/889132.jpg
+  notes: >
+
+- title: "Золотой Телёнок"
+  year: 2023
+  author: Ильф Илья, Петров Евгений
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1696743857i/167131852.jpg
+  notes: >
+
+- title: "Красавицы"
+  year: 2023
+  author: Антон Павлович Чехов
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1431461510i/25528063.jpg
+  notes: >
+
+- title: "Бедная Лиза"
+  year: 2023
+  author: Николай Михайлович Карамзин
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1657731390i/61435656.jpg
+  notes: >
+
+- title: "La sombra del viento"
+  year: 2023
+  author: Carlos Ruiz Zafón
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
+  notes: >
+
+- title: "МЫ"
+  year: 2023
+  author: Евгений Замятин
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1300090334i/1321877.jpg
+  notes: >
+
+- title: "Spare"
+  year: 2023
+  author: Prince Harry, The Duke of Sussex
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1673458354i/62296528.jpg
+  notes: >
+
+- title: "Homo Deus: A History of Tomorrow"
+  year: 2023
+  author: Yuval Noah Harari
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1468760805i/31138556.jpg
+  notes: >
+
+- title: "Sapiens: A Brief History of Humankind"
+  year: 2023
+  author: Yuval Noah Harari
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1595674533i/23692271.jpg
+  notes: >
+
+- title: "The Adventure of English"
+  year: 2023
+  author: Melvyn Bragg
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1405803468i/73888.jpg
+  notes: >
+
+- title: "Mathematical Problems"
+  year: 2023
+  author: David Hilbert
+  cover: https://ia600306.us.archive.org/8/items/LibrivoxCdCoverArt20/mathematicalproblems_1206.jpg
+  notes: >
+
+- title: "Una operación arriesgada"
+  year: 2023
+  author: Alicia Estopiñá, Neus Sans
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1357023039i/17200924.jpg
+  notes: >
+
+- title: "Fantasmas en la escalera"
+  year: 2023
+  author: Alicia Estopiñá, Neus Sans
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1257346888i/7098101.jpg
+  notes: >
+
+- title: "The Cathedral & the Bazaar: Musings on Linux and Open Source by an Accidental Revolutionary"
+  year: 2023
+  author: Eric S. Raymond
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328835964i/134825.jpg
+  notes: >
+
+- title: "Cenizas calientes"
+  year: 2023
+  author: Alicia Estopiñá, Neus Sans
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1404383437i/22622020.jpg
+  notes: >
+
+- title: "Apartamento en la Costa Brava"
+  year: 2023
+  author: Alicia Estopiñá, Neus Sans
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1386436789i/19265810.jpg
+  notes: >
+
+- title: "The Story of Electricity"
+  year: 2023
+  author: John Munro
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1677897948i/73452414.jpg
+  notes: >
+
+- title: "¿Eres tú, María?"
+  year: 2023
+  author: Lourdes Miquel
+  cover: https://m.media-amazon.com/images/I/511YPD31RbL.jpg
+  notes: >
+
+- title: "Ireland"
+  year: 2022
+  author: Tim Vicary
+  cover: https://m.media-amazon.com/images/I/71B+kq9+T1L.jpg
+  notes: >
+
+- title: "Do Dice Play God? The Mathematics of Uncertainty"
+  year: 2022
+  author: Ian Stewart
+  cover: https://m.media-amazon.com/images/I/41rsShilNvL.jpg
+  notes: >
+
+- title: "A Game of Thrones"
+  year: 2022
+  author: George R.R. Martin
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661026809i/11264999.jpg
+  notes: >
+
+- title: "Por Amor Al Arte"
+  year: 2022
+  author: Lourdes Miquel
+  cover: https://m.media-amazon.com/images/I/61SKDk6k3VL.jpg
+  notes: >
+
+- title: "Vacaciones Al Sol"
+  year: 2022
+  author: Lourdes Miquel
+  cover: https://m.media-amazon.com/images/I/517GH886-CL._SX340_BO1,204,203,200_.jpg
+  notes: >
+
+- title: "Una Nota Falsa"
+  year: 2022
+  author: Lourdes Miquel
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1446219734i/27394686.jpg
+  notes: >
+
+- title: "El hombre que veia demadiado"
+  year: 2022
+  author: Loreto De Miguel
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1356230349i/3939355.jpg
+  notes: >
+
+- title: "The Peculiar Sensation Of Being Irish"
+  year: 2022
+  author: Pat Ingoldsby
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1589962228i/4804726.jpg
+  notes: >
+
+- title: "The Manager's Handbook"
+  year: 2022
+  author: Alex MacCaw
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1631475371i/58980153.jpg
+  notes: >
+
+- title: "Shōgun"
+  year: 2022
+  author: James Clavell
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1397228842i/402093.jpg
+  notes: >
+
+- title: "Greenlights"
+  year: 2022
+  author: Matthew McConaughey
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1604281659i/52838315.jpg
+  notes: >
+
+- title: "Пиши, сокращай"
+  year: 2021
+  author: Максим Ильяхов
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1473234980i/31855502.jpg
+  notes: >
+
+- title: "Prelude to Foundation"
+  year: 2021
+  author: Isaac Asimov
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1335782474i/30013.jpg
+  notes: >
+
+- title: "Learn C++ Quickly"
+  year: 2021
+  author: Code Quickly
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1596265392i/54773889.jpg
+  notes: >
+
+- title: "The Three Musketeers"
+  year: 2021
+  author: Alexandre Dumas
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1630475503i/7190.jpg
+  notes: >
+
+- title: "The Magician's Nephew"
+  year: 2021
+  author: C.S. Lewis
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1426454853i/7806728.jpg
+  notes: >
+
+- title: "The Lion, the Witch and the Wardrobe"
+  year: 2021
+  author: C.S. Lewis
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1659993302i/7806720.jpg
+  notes: >
+
+- title: "The Horse and His Boy"
+  year: 2021
+  author: C.S. Lewis
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1362934706i/7806746.jpg
+  notes: >
+
+- title: "Don Quixote"
+  year: 2020
+  author: Miguel de Cervantes Saavedra
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1352119282i/601299.jpg
+  notes: >
+
+- title: "Winnie-the-Pooh"
+  year: 2020
+  author: A.A. Milne
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1298440130i/99107.jpg
+  notes: >
+
+- title: "The Good People"
+  year: 2020
+  author: Hannah Kent
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1467899607i/29248613.jpg
+  notes: >
+
+- title: "Getting Things Done: The Art of Stress-Free Productivity"
+  year: 2020
+  author: David Allen
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1312474060i/1633.jpg
+  notes: >
+
+- title: "Veronika Decides to Die"
+  year: 2020
+  author: Paulo Coelho
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348139939i/1431.jpg
+  notes: >
+
+- title: "Antifragile: Things That Gain from Disorder"
+  year: 2020
+  author: Nassim Nicholas Taleb
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1352422827i/13530973.jpg
+  notes: >
+
+- title: "The Alchemist"
+  year: 2020
+  author: Paulo Coelho
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1483412266i/865.jpg
+  notes: >
+
+- title: "Astrophysics for People in a Hurry"
+  year: 2020
+  author: Neil deGrasse Tyson
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1562761669i/32191710.jpg
+  notes: >
+
+- title: "The Martian"
+  year: 2020
+  author: Andy Weir
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1413706054i/18007564.jpg
+  notes: >
+
+- title: "The Ideal Executive"
+  year: 2020
+  author: Ichak Kalderon Adizes
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1559830432i/46181072.jpg
+  notes: >
+
+- title: "Solaris"
+  year: 2020
+  author: Stanisław Lem
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1656780285i/28770.jpg
+  notes: >
+
+- title: "Effective Modern C++"
+  year: 2019
+  author: Scott Meyers
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1416178786i/22800553.jpg
+  notes: >
+
+- title: "C++ Coding Standards: 101 Rules, Guidelines, and Best Practices"
+  year: 2019
+  author: Herb Sutter, Andrei Alexandrescu
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1331666120i/1105780.jpg
+  notes: >
+
+- title: "Dubliners"
+  year: 2019
+  author: James Joyce
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1547310618i/77233.jpg
+  notes: >
+
+- title: "A Portrait of the Artist as a Young Man"
+  year: 2019
+  author: James Joyce
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1353164052i/15806216.jpg
+  notes: >
+
+- title: "Ulysses"
+  year: 2019
+  author: James Joyce
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1339600422i/8131775.jpg
+  notes: >
+
+- title: "My Not So Perfect Life"
+  year: 2019
+  author: Sophie Kinsella
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1498911971i/30821598.jpg
+  notes: >
+
+- title: "Dive Into Design Patterns"
+  year: 2019
+  author: Alexander Shvets
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1543945452i/43125355.jpg
+  notes: >
+
+- title: "Memoirs of a Geisha"
+  year: 2019
+  author: Arthur Golden
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1388367666i/930.jpg
+  notes: >
+
+- title: "Geisha, a Life"
+  year: 2019
+  author: Mineko Iwasaki
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1359402937i/522534.jpg
+  notes: >
+
+- title: "Surely You're Joking, Mr. Feynman!"
+  year: 2019
+  author: Richard P. Feynman
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348445281i/5544.jpg
+  notes: >
+
+- title: "The Gunslinger"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554220416i/43615.jpg
+  notes: >
+
+- title: "The Drawing of the Three"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1370918050i/5094.jpg
+  notes: >
+
+- title: "The Waste Lands"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1532334476i/34084.jpg
+  notes: >
+
+- title: "Wizard and Glass"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1327946510i/5096.jpg
+  notes: >
+
+- title: "The Wind Through the Keyhole"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328001524i/12341557.jpg
+  notes: >
+
+- title: "Wolves of the Calla"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1419360231i/4978.jpg
+  notes: >
+
+- title: "Song of Susannah"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554221361i/5093.jpg
+  notes: >
+
+- title: "The Dark Tower"
+  year: 2019
+  author: Stephen King
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1372296329i/5091.jpg
+  notes: >
+
+- title: "Никогда-нибудь. Как выйти из тупика и найти себя"
+  year: 2019
+  author: Елена Резанова
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1517570979i/38328268.jpg
+  notes: >
+
+- title: "Омон Ра"
+  year: 2019
+  author: Виктор Пелевин
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1419843275i/24165853.jpg
+  notes: >
+
+- title: "Все о Винни-Пухе"
+  year: 2019
+  author: A.A. Milne
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1581019536i/51030741.jpg
+  notes: >
+
+- title: "Жили-были ежики"
+  year: 2019
+  author: Андрей Усачёв
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1336680630i/13643957.jpg
+  notes: >
+
+- title: "Знаменитая собачка Соня"
+  year: 2019
+  author: Андрей Усачёв
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1532183594i/40891567.jpg
+  notes: >
+
+- title: "Умная собачка Соня"
+  year: 2019
+  author: Андрей Усачёв
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1581965781i/51408929.jpg
+  notes: >
+
+- title: "The Jungle Book"
+  year: 2019
+  author: Rudyard Kipling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1327873594i/77270.jpg
+  notes: >
+
+- title: "Городок в табакерке. Сказки русских писателей."
+  year: 2019
+  author: Русские Писатели
+  cover: https://greybooks.ru/images/pravd/28665b.jpg
+  notes: >
+
+- title: "Про девочку Веру и обезьянку Анфису"
+  year: 2019
+  author: Эдуард Успенский
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1569435023l/49460030.jpg
+  notes: >
+
+- title: "Крокодил Гена и его друзья"
+  year: 2019
+  author: Эдуард Успенский
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1569508476l/49529972.jpg
+  notes: >
+
+- title: "Evie and the Strawberry Patch Rescue"
+  year: 2019
+  author: Stefanie Dahle
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554993441i/45021518.jpg
+  notes: >
+
+- title: "Evie and the Strawberry Surprise"
+  year: 2019
+  author: Stefanie Dahle
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1615489630i/56018640.jpg
+  notes: >
+
+- title: "Evie and the Strawberry Balloon Ride"
+  year: 2019
+  author: Stefanie Dahle
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1582133629i/45309032.jpg
+  notes: >
+
+- title: "Hacker's Delight"
+  year: 2018
+  author: Henry S. Warren
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1628180647i/58707823.jpg
+  notes: >
+
+- title: "Fluent Python"
+  year: 2018
+  author: Luciano Ramalho
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1442848456i/22800567.jpg
+  notes: >
+
+- title: "Big Data: Principles and best practices of scalable realtime data systems"
+  year: 2018
+  author: Nathan Marz, James Warren
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1602182257i/13421400.jpg
+  notes: >
+
+- title: "The C Programming Language"
+  year: 2018
+  author: Brian W. Kernighan, Dennis M. Ritchie
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1391032531i/515601.jpg
+  notes: >
+
+- title: "A Mind for Numbers: How to Excel at Math and Science"
+  year: 2018
+  author: Barbara Oakley
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1575009552i/18693655.jpg
+  notes: >
+
+- title: "Animal Farm"
+  year: 2018
+  author: George Orwell
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1424037542i/7613.jpg
+  notes: >
+
+- title: "Atlas Shrugged"
+  year: 2018
+  author: Ayn Rand
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1405868167i/662.jpg
+  notes: >
+
+- title: "Flatland: A Romance of Many Dimensions"
+  year: 2017
+  author: Edwin A. Abbott
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1435435775i/433567.jpg
+  notes: >
+
+- title: "One Flew Over the Cuckoo's Nest"
+  year: 2017
+  author: Ken Kesey
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1516211014i/332613.jpg
+  notes: >
+
+- title: "Schindler's List"
+  year: 2017
+  author: Thomas Keneally
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348163457i/375013.jpg
+  notes: >
+
+- title: "Breakfast at Tiffany's"
+  year: 2017
+  author: Truman Capote
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1477015353i/251688.jpg
+  notes: >
+
+- title: "Fahrenheit 451"
+  year: 2017
+  author: Ray Bradbury
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1351643740i/4381.jpg
+  notes: >
+
+- title: "1984"
+  year: 2017
+  author: George Orwell
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1504611957i/9577857.jpg
+  notes: >
+
+- title: "Docker for Data Science"
+  year: 2017
+  author: Joshua Cook
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1504364167i/36168696.jpg
+  notes: >
+
+- title: "The Shunned House"
+  year: 2017
+  author: H.P. Lovecraft
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1428986157i/25356209.jpg
+  notes: >
+
+- title: "The Odyssey"
+  year: 2017
+  author: Homer
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1390173285i/1381.jpg
+  notes: >
+
+- title: "The Hitchhiker's Guide to the Galaxy"
+  year: 2017
+  author: Douglas Adams
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1660621883i/14.jpg
+  notes: >
+
+- title: "The Restaurant at the End of the Universe"
+  year: 2017
+  author: Douglas Adams
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1528125333i/823658.jpg
+  notes: >
+
+- title: "Life, the Universe and Everything"
+  year: 2017
+  author: Douglas Adams
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1653404672i/823659.jpg
+  notes: >
+
+- title: "So Long, and Thanks for All the Fish"
+  year: 2017
+  author: Douglas Adams
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1217138231i/452405.jpg
+  notes: >
+
+- title: "Fractals"
+  year: 2017
+  author: Jens Feder
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1406513167i/558164.jpg
+  notes: >
+
+- title: "Concrete Mathematics: A Foundation for Computer Science"
+  year: 2017
+  author: Ronald L. Graham, Donald Ervin Knuth, Oren Patashnik
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348780612i/112243.jpg
+  notes: >
+
+- title: "The Analects"
+  year: 2017
+  author: Confucius
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1309201523i/27297.jpg
+  notes: >
+
+- title: "Absolutely Small: How Quantum Theory Explains Our Everyday World"
+  year: 2017
+  author: Michael D. Fayer
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348262074i/8581223.jpg
+  notes: >
+
+- title: "Learn You a Haskell for Great Good!"
+  year: 2017
+  author: Miran Lipovača
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328753505i/9282423.jpg
+  notes: >
+
+- title: "The Hitchhiker's Guide to Python"
+  year: 2017
+  author: Kenneth Reitz
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1452463644i/28321007.jpg
+  notes: >
+
+- title: "Python for Scientists"
+  year: 2017
+  author: John M. Stewart
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1408082455i/22907133.jpg
+  notes: >
+
+- title: "Code Complete"
+  year: 2017
+  author: Steve McConnell
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1386923921i/4846.jpg
+  notes: >
+
+- title: "The Phoenix Project"
+  year: 2017
+  author: Gene Kim, Kevin Behr, George Spafford
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1361113128i/17255186.jpg
+  notes: >
+
+- title: "The Goal: A Process of Ongoing Improvement"
+  year: 2017
+  author: Eliyahu M. Goldratt
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1475538019i/113934.jpg
+  notes: >
+
+- title: "The DevOps Handbook"
+  year: 2017
+  author: Gene Kim, Jez Humble, Patrick Debois, John Willis
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1473461230i/26083308.jpg
+  notes: >
+
+- title: "King Leopold's Ghost"
+  year: 2016
+  author: Adam Hochschild
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1532716127i/40961621.jpg
+  notes: >
+
+- title: "One Hundred Years of Solitude"
+  year: 2016
+  author: Gabriel García Márquez
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1347626503i/370523.jpg
+  notes: >
+
+- title: Uncle Tom's Cabin
+  year: 2016
+  author: Harriet Beecher Stowe
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1414349231i/46787.jpg
+  notes: >
+
+- title: "The Roman Guide to Slave Management"
+  year: 2016
+  author: Jerry Toner
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1400864774i/20821438.jpg
+  notes: >
+
+- title: "Hopscotch"
+  year: 2016
+  author: Julio Cortázar
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1367728486i/53413.jpg
+  notes: >
+
+- title: "The Kojiki: Records of Ancient Matters"
+  year: 2016
+  author: Ō no Yasumaro
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1389164885i/846101.jpg
+  notes: >
+
+- title: "House of the Sleeping Beauties"
+  year: 2016
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1321362689i/4475699.jpg
+  notes: >
+
+- title: "The Dancing Girl of Izu"
+  year: 2016
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328698047i/14030.jpg
+  notes: >
+
+- title: "A Brief History of Time"
+  year: 2016
+  author: Stephen Hawking
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1333578746i/3869.jpg
+  notes: >
+
+- title: "Programming: Principles and Practice Using C++"
+  year: 2016
+  author: Bjarne Stroustrup
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348045634i/2914066.jpg
+  notes: >
+
+- title: "Cuda by Example"
+  year: 2016
+  author: Jason Sanders
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348723588i/8115844.jpg
+  notes: >
+
+- title: "Beginning Android Games"
+  year: 2016
+  author: Mario Zechner
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1352794728i/15945024.jpg
+  notes: >
+
+- title: "Digital Design and Computer Architecture"
+  year: 2016
+  author: David Money Harris
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348276944i/2558730.jpg
+  notes: >
+
+- title: "But How Do It Know?"
+  year: 2016
+  author: J. Clark Scott
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1375433017i/18276352.jpg
+  notes: >
+
+- title: "Pro Puppet"
+  year: 2016
+  author: Spencer Krum
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1379334130i/17919001.jpg
+  notes: >
+
+- title: "Ansible for DevOps"
+  year: 2016
+  author: Jeff Geerling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1443194963i/26814221.jpg
+  notes: >
+
+- title: "A Tour of C++"
+  year: 2015
+  author: Bjarne Stroustrup
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1377629336i/18197265.jpg
+  notes: >
+
+- title: "The C++ Programming Language"
+  year: 2015
+  author: Bjarne Stroustrup
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1347400993i/112251.jpg
+  notes: >
+
+- title: "Operating Systems Design and Implementation"
+  year: 2015
+  author: Andrew S. Tanenbaum
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1349012572i/166193.jpg
+  notes: >
+
+- title: "Modern Operating Systems"
+  year: 2015
+  author: Andrew S. Tanenbaum
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1387702085i/166195.jpg
+  notes: >
+
+- title: "UNIX and Linux System Administration Handbook"
+  year: 2015
+  author: Evi Nemeth
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1415581344i/8772005.jpg
+  notes: >
+
+- title: "Assembly language programming on the x86-64 platform"
+  year: 2015
+  author: Ruslan Ablyazov
+  cover: https://pictures.abebooks.com/isbn/9785940746768-uk.jpg
+  notes: >
+
+- title: "Assembler. Для DOS, Windows и Unix"
+  year: 2015
+  author: Sergey Zubkov
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1360542768i/9017406.jpg
+  notes: >
+
+- title: "The Master of Go"
+  year: 2015
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1594068892i/5155431.jpg
+  notes: >
+
+- title: "The Sound of the Mountain"
+  year: 2015
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1652456149i/59950.jpg
+  notes: >
+
+- title: "Snow Country"
+  year: 2015
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1579982486i/14028.jpg
+  notes: >
+
+- title: "Японские дзуйхицу"
+  year: 2015
+  author: Григорий Чхартишвили
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1510944156i/36613071.jpg
+  notes: >
+
+- title: "Alice's Adventures in Wonderland"
+  year: 2015
+  author: Lewis Carroll
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1391204048i/6324090.jpg
+  notes: >
+
+- title: "Through the Looking-Glass"
+  year: 2015
+  author: Lewis Carroll
+  cover: https://upload.wikimedia.org/wikipedia/commons/6/6c/Through_the_looking_glass.jpg
+  notes: >
+
+- title: "Tao Te Ching"
+  year: 2015
+  author: Lao Tzu
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1333578861i/67896.jpg
+  notes: >
+
+- title: "Записки у изголовья. Записки из кельи. Записки от скуки"
+  year: 2015
+  author: Sei Shōnagon, Yoshida Kenkō , Kamo no Chōmei
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1346509727i/15979963.jpg
+  notes: >
+
+- title: "枕草子 (Записки у изголовья)"
+  year: 2015
+  author: Sei Shōnagon
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1185583594i/1592335.jpg
+  notes: >
+
+- title: "徒然草 (Записки от скуки)"
+  year: 2015
+  author: Yoshida Kenkō
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1578905794i/50422161.jpg
+  notes: >
+
+- title: "方丈記 (Записки из кельи)"
+  year: 2015
+  author: Kamo no Chōmei
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1384805734i/18713709.jpg
+  notes: >
+
+- title: "Bird by Bird: Some Instructions on Writing and Life"
+  year: 2014
+  author: Anne Lamott
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1631772636i/12543.jpg
+  notes: >
+
+- title: "Programming Perl"
+  year: 2014
+  author: Tom Christiansen
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328835945i/154155.jpg
+  notes: >
+
+- title: "The Design of the UNIX Operating System"
+  year: 2014
+  author: Maurice J. Bach
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348774568i/337343.jpg
+  notes: >
+
+- title: "Sendmail for Linux"
+  year: 2014
+  author: Richard Blum
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348828170i/810013.jpg
+  notes: >
+
+- title: "Sendmail"
+  year: 2014
+  author: Bryan Costales
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328834708i/1987194.jpg
+  notes: >
+
+- title: "The Little Prince"
+  year: 2013
+  author: Antoine de Saint-Exupéry
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1367545443i/157993.jpg
+  notes: >
+
+- title: "The World According to Clarkson"
+  year: 2013
+  author: Jeremy Clarkson
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1442063745i/300118.jpg
+  notes: >
+
+- title: "Motorworld"
+  year: 2013
+  author: Jeremy Clarkson
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1328365019i/90695.jpg
+  notes: >
+
+- title: "The Old Capital"
+  year: 2013
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1388290351i/14034.jpg
+  notes: >
+
+- title: "The Lake"
+  year: 2013
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1347222617i/83024.jpg
+  notes: >
+
+- title: "Цикада и Сверчёк"
+  year: 2013
+  author: Yasunari Kawabata
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554490648i/44792796.jpg
+  notes: >
+
+- title: "Lolita"
+  year: 2012
+  author: Vladimir Nabokov
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1377756377i/7604.jpg
+  notes: >
+
+- title: "The Empire of the Angels"
+  year: 2011
+  author: Bernard Werber
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1368870164i/967294.jpg
+  notes: >
+
+- title: "We, the Gods"
+  year: 2011
+  author: Bernard Werber
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1186935564i/1688677.jpg
+  notes: >
+
+- title: "We, the Gods"
+  year: 2011
+  author: Bernard Werber
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1186935494i/1688672.jpg
+  notes: >
+
+- title: "We, the Gods"
+  year: 2011
+  author: Bernard Werber
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1327878390i/1688670.jpg
+  notes: >
+
+- title: "Harry Potter and the Sorcerer's Stone"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1474154022i/3.jpg
+  notes: >
+
+- title: "Harry Potter and the Chamber of Secrets"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1474169725i/15881.jpg
+  notes: >
+
+- title: "Harry Potter and the Prisoner of Azkaban"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1630547330i/5.jpg
+  notes: >
+
+- title: "Harry Potter and the Goblet of Fire"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554006152i/6.jpg
+  notes: >
+
+- title: "Harry Potter and the Order of the Phoenix"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1660911061i/2.jpg
+  notes: >
+
+- title: "Harry Potter and the Half-Blood Prince"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1587697303i/1.jpg
+  notes: >
+
+- title: "Harry Potter and the Deathly Hallows"
+  year: 2010
+  author: J.K. Rowling
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661250233i/136251.jpg
+  notes: >
+
+- title: "The Master and Margarita"
+  year: 2010
+  author: Mikhail Bulgakov
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1327867963i/117833.jpg
+  notes: >
+
+- title: "Записки на манжетах кимоно"
+  year: 2008
+  author: Дмитрий Бандура
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1582190000i/23150212.jpg
+  notes: >
+
+- title: "The Shack"
+  year: 2008
+  author: William Paul Young
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1532013572i/40874325.jpg
+  notes: >
+
+- title: "The Dresden Files: Storm Front"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1572991273i/47212.jpg
+  notes: >
+
+- title: "The Dresden Files: Fool Moon"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661018595i/91477.jpg
+  notes: >
+
+- title: "The Dresden Files: Grave Peril"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1266470209i/91476.jpg
+  notes: >
+
+- title: "The Dresden Files: Summer Knight"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661018511i/91478.jpg
+  notes: >
+
+- title: "The Dresden Files: Death Masks"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661016943i/91479.jpg
+  notes: >
+
+- title: "The Dresden Files: Blood Rites"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1661018414i/99383.jpg
+  notes: >
+
+- title: "The Dresden Files: Dead Beat"
+  year: 2008
+  author: Jim Butcher
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1627927030i/17683.jpg
+  notes: >
+
+- title: "The Incompleat Enchanter"
+  year: 2004
+  author: L. Sprague de Camp
+  cover: https://images-na.ssl-images-amazon.com/images/I/51vLfSLCkXL._SX297_BO1,204,203,200_.jpg
+  notes: >
+
+- title: "Chronicles of the Black Company"
+  year: 2003
+  author: Glen Cook
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1557478911i/400924.jpg
+  notes: >
+
+- title: "Черная Книга Арды: Исповедь Стража"
+  year: 2003
+  author: Наталья Васильева
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1496907011i/35387723.jpg
+  notes: >
+
+- title: "The Silmarillion"
+  year: 2002
+  author: J.R.R. Tolkien
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1610045590i/7332.jpg
+  notes: >
+
+- title: "Черная Книга Арды"
+  year: 2002
+  author: Наталья Васильева
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1381312103i/18655813.jpg
+  notes: >
+
+
+- title: "The Lord of the Rings: The Fellowship of the Ring"
+  year: 2000
+  author: J.R.R. Tolkien
+  cover: https://images-na.ssl-images-amazon.com/images/I/51HNV1J3UyL._SX331_BO1,204,203,200_.jpg
+  notes: >
+
+- title: "The Lord of the Rings: The Two Towers"
+  year: 2000
+  author: J.R.R. Tolkien
+  cover: https://images-na.ssl-images-amazon.com/images/I/41sMe18lj+L._SY344_BO1,204,203,200_.jpg
+  notes: >
+
+- title: "The Lord of the Rings: The Return of the King"
+  year: 2000
+  author: J.R.R. Tolkien
+  cover: https://images-na.ssl-images-amazon.com/images/I/51VYSm49SUL._SY264_BO1,204,203,200_QL40_ML2_.jpg
+  notes: >
+
+- title: "Трое из Леса"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/134/13493.jpg
+  notes: >
+
+- title: "Трое в песках"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13536.jpg
+  notes: >
+
+- title: "Трое и боги"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/134/13494.jpg
+  notes: >
+
+- title: "Трое в долине"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/119/11900.jpg
+  notes: >
+
+- title: "Мрак"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/119/11901.jpg
+  notes: >
+
+- title: "Передышка в Барбусе"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/119/11902.jpg
+  notes: >
+
+- title: "Семеро тайных"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/119/11903.jpg
+  notes: >
+
+- title: "Изгой"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13537.jpg
+  notes: >
+
+- title: "Истребивший магию"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13538.jpg
+  notes: >
+
+- title: "Фарамунд"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13539.jpg
+  notes: >
+
+- title: "Гиперборей"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13540.jpg
+  notes: >
+
+- title: Святой Грааль
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13541.jpg
+  notes: >
+
+- title: "Стоунхендж"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13542.jpg
+  notes: >
+
+- title: "Откровение"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13559.jpg
+  notes: >
+
+- title: "Возвращение Томаса"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/135/13560.jpg
+  notes: >
+
+- title: "Башня-2"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/140/14028.jpg
+  notes: >
+
+- title: "Человек с топором"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/140/14029.jpg
+  notes: >
+
+- title: "Зачеловек"
+  year: 2000
+  author: Юрий Никитин
+  cover: https://fantasy-worlds.org/img/preview/140/14030.jpg
+  notes: >
+
+- title: "The Hobbit"
+  year: 1999
+  author: J.R.R. Tolkien
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1546071216i/5907.jpg
+  notes: >
+
+- title: "Solar Queen: Sargasso of Space"
+  year: 1999
+  author: Andre Norton
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1507901424i/94721.jpg
+  notes: >
+
+- title: "Solar Queen: Plague Ship"
+  year: 1999
+  author: Andre Norton
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1179836717i/961291.jpg
+  notes: >
+
+- title: "Solar Queen: Voodoo Planet"
+  year: 1999
+  author: Andre Norton
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1348086659i/1183805.jpg
+  notes: >

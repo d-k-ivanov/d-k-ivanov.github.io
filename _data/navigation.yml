@@ -1,0 +1,21 @@
+main:
+
+  - title: "Code"
+    url: https://github.com/d-k-ivanov
+    external: true
+    right: true
+
+  - title: "Books"
+    url: /books
+
+  - title: "Travel"
+    url: /travel
+
+  - title: "Playground"
+    url: /playground
+
+  - title: "Blog"
+    url: /blog
+
+  - title: "Home"
+    url: /

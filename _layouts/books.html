@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: " en-US" }}">
+
+{% include head.html %}
+
+<body>
+    {% include navigation.html %}
+    <div class="wrapper">
+        {% include header.html %}
+        <section>
+            {{ content }}
+            {% include bookshelf_macro.html year=2023 %}
+            {% include bookshelf_macro.html year=2022 %}
+            {% include bookshelf_macro.html year=2021 %}
+            {% include bookshelf_macro.html year=2020 %}
+            {% include bookshelf_macro.html year=2019 %}
+            {% include bookshelf_macro.html year=2018 %}
+            {% include bookshelf_macro.html year=2017 %}
+            {% include bookshelf_macro.html year=2016 %}
+            {% include bookshelf_macro.html year=2015 %}
+            {% include bookshelf_macro.html year=2014 %}
+            {% include bookshelf_macro.html year=2013 %}
+            {% include bookshelf_macro.html year=2012 %}
+            {% include bookshelf_macro.html year=2011 %}
+            {% include bookshelf_macro.html year=2010 %}
+            {% include bookshelf_macro.html year=2009 %}
+            {% include bookshelf_macro.html year=2008 %}
+            {% include bookshelf_macro.html year=2007 %}
+            {% include bookshelf_macro.html year=2006 %}
+            {% include bookshelf_macro.html year=2005 %}
+            {% include bookshelf_macro.html year=2004 %}
+            {% include bookshelf_macro.html year=2003 %}
+            {% include bookshelf_macro.html year=2002 %}
+            {% include bookshelf_macro.html year=2001 %}
+            {% include bookshelf_macro.html year=2000 %}
+            {% include bookshelf_macro.html year=1999 %}
+
+        </section>
+        <footer>
+        </footer>
+    </div>
+    <script type="module" src="/assets/js/bookshelf.js"></script>
+
+    <!-- The Modal Window -->
+    <div id="books_modal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="placeholder">
+        <div id="caption"></div>
+    </div>
+
+    <script>
+        var modal = document.getElementById('books_modal');
+        var images = document.getElementsByClassName("cover");
+        var spines = document.getElementsByClassName("spine");
+        var modalImg = document.getElementById("placeholder");
+        var captionText = document.getElementById("caption");
+
+        for (var i = 0; i < images.length; i++)
+        {
+            images[i].onclick = showBook;
+            spines[i].onclick = showBook;
+        }
+
+        function showBook(eventObj)
+        {
+            modal.style.display = "block";
+            // slice(5, -2) removes url(" from the start and ") from the end
+            // of the returned backgroundImage string
+            var backimagestring = eventObj.target.style.backgroundImage.slice(5, -2);
+            modalImg.src = backimagestring;
+            captionText.innerHTML = eventObj.target.innerHTML;
+        }
+
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function ()
+        {
+            modal.style.display = "none";
+        }
+
+        modalImg.onclick = function ()
+        {
+            modal.style.display = "none";
+        }
+    </script>
+
+    <script src="/assets/js/scale.fix.js"></script>
+    {% include analytics.html %}
+</body>
+
+</html>
