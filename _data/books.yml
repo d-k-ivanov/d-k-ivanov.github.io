@@ -5,15 +5,21 @@
 #   notes: >
 
 # - title: "The Rust Programming Language"
-#   year: 2023
+#   year: 2024
 #   author: Steve Klabnik, Carol Nichols
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1669769792i/63891183.jpg
 #   notes: >
 
 # - title: "The Ph.D. Grind: A Ph.D. Student Memoir"
-#   year: 2023
+#   year: 2024
 #   author: Philip J. Guo
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1476268481i/15731248.jpg
+#   notes: >
+
+# - title: "La sombra del viento"
+#   year: 2024
+#   author: Carlos Ruiz Zafón
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
 #   notes: >
 
 - title: "Surviving the C++ Coding Interview"
@@ -56,12 +62,6 @@
   year: 2023
   author: Николай Михайлович Карамзин
   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1657731390i/61435656.jpg
-  notes: >
-
-- title: "La sombra del viento"
-  year: 2023
-  author: Carlos Ruiz Zafón
-  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
   notes: >
 
 - title: "МЫ"
