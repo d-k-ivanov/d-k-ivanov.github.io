@@ -9,33 +9,9 @@
         {% include header.html %}
         <section>
             {{ content }}
-            {% include bookshelf_macro.html year=2024 %}
-            {% include bookshelf_macro.html year=2023 %}
-            {% include bookshelf_macro.html year=2022 %}
-            {% include bookshelf_macro.html year=2021 %}
-            {% include bookshelf_macro.html year=2020 %}
-            {% include bookshelf_macro.html year=2019 %}
-            {% include bookshelf_macro.html year=2018 %}
-            {% include bookshelf_macro.html year=2017 %}
-            {% include bookshelf_macro.html year=2016 %}
-            {% include bookshelf_macro.html year=2015 %}
-            {% include bookshelf_macro.html year=2014 %}
-            {% include bookshelf_macro.html year=2013 %}
-            {% include bookshelf_macro.html year=2012 %}
-            {% include bookshelf_macro.html year=2011 %}
-            {% include bookshelf_macro.html year=2010 %}
-            {% include bookshelf_macro.html year=2009 %}
-            {% include bookshelf_macro.html year=2008 %}
-            {% include bookshelf_macro.html year=2007 %}
-            {% include bookshelf_macro.html year=2006 %}
-            {% include bookshelf_macro.html year=2005 %}
-            {% include bookshelf_macro.html year=2004 %}
-            {% include bookshelf_macro.html year=2003 %}
-            {% include bookshelf_macro.html year=2002 %}
-            {% include bookshelf_macro.html year=2001 %}
-            {% include bookshelf_macro.html year=2000 %}
-            {% include bookshelf_macro.html year=1999 %}
-
+            {% for year in range(1990,2100) %}
+            {% include bookshelf_macro.html year={{ year }} %}
+            {% endfor %}
         </section>
         <footer>
         </footer>
