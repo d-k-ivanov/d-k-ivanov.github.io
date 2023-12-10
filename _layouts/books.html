@@ -9,8 +9,8 @@
         {% include header.html %}
         <section>
             {{ content }}
-            {% for year in range(1990,2100) %}
-                {% include bookshelf_macro.html year={{ year }} %}
+            {% for yyyy in (1900..2100) reversed %}
+                {% include bookshelf_macro.html year=yyyy %}
             {% endfor %}
         </section>
         <footer>
