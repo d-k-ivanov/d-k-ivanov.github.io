@@ -10,7 +10,7 @@
         <section>
             {{ content }}
             {% for year in range(1990,2100) %}
-            {% include bookshelf_macro.html year={{ year }} %}
+                {% include bookshelf_macro.html year={{ year }} %}
             {% endfor %}
         </section>
         <footer>
