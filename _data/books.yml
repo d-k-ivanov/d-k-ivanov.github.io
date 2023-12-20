@@ -22,6 +22,24 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
 #   notes: >
 
+# - title: "Ray Tracing: The Rest Of Your Life"
+#   year: 2023
+#   author: Peter Shirley
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1459495837i/29753199.jpg
+#   notes: >
+
+# - title: "Ray Tracing: the Next Week"
+#   year: 2023
+#   author: Peter Shirley
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1457439872i/29451570.jpg
+#   notes: >
+
+- title: "Learn OpenGL: Learn modern OpenGL graphics programming in a step-by-step fashion"
+  year: 2023
+  author: Joey de Vries
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1595751650i/54679217.jpg
+  notes: >
+
 - title: "The Internet of Things"
   year: 2023
   author: Samuel Greengard
@@ -32,18 +50,6 @@
   year: 2023
   author: Joey Bernal, Bharath Sridhar
   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1672862472i/75576619.jpg
-  notes: >
-
-- title: "Ray Tracing: The Rest Of Your Life"
-  year: 2023
-  author: Peter Shirley
-  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1459495837i/29753199.jpg
-  notes: >
-
-- title: "Ray Tracing: the Next Week"
-  year: 2023
-  author: Peter Shirley
-  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1457439872i/29451570.jpg
   notes: >
 
 - title: "Ray Tracing in One Weekend"
