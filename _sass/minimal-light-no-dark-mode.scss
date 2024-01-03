@@ -1,3 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,500;1,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");
+
+body {
+    background-color: #fff;
+    padding: 0px;
+    font: 16.0px/1.5 Crimson Pro, serif;
+    color: #595959;
+    font-weight: 400;
+    margin: 0;
+}
+
 .pub-row {
     display: flex;
     align-items: center;
@@ -8,39 +20,23 @@
     height: 2.4rem;
     width: 2.4rem;
     background-color: transparent;
-    color: #043361 !important;
+    color: #002D72 !important;
     border-radius: 100%;
     text-align: center;
     font-size: 1.15rem;
     line-height: 2.5rem;
-    margin-right: 1rem
+    margin-right: 1rem;
 }
 
 .social-icons a:last-child {
-    margin-right: 0
+    margin-right: 0;
 }
 
 .social-icons a:hover {
     background-color: white;
     color: black;
-    transform: scale(1.2)
+    transform: scale(1.2);
 }
-
-/*
-    .social-icons a:after {
-        content: '';
-        display: block;
-        margin: 0px;
-        height: 1px;
-        width: 0px;
-        background: transparent;
-        transition: width .5s ease, background-color .5s ease;
-      }
-      .social-icons a:hover:after {
-        width: 100%;
-        background: #337ab7;
-      }
-     */
 
 .icon-button {
     background-color: white;
@@ -57,7 +53,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    width: 3.6rem
+    width: 3.6rem;
 }
 
 .icon-button span {
@@ -72,30 +68,30 @@
     -moz-transition: all 0.3s;
     -o-transition: all 0.3s;
     transition: all 0.3s;
-    width: 0
+    width: 0;
 }
 
 .icon-button:hover span {
     width: 3.6rem;
     height: 3.6rem;
     border-radius: 3.6rem;
-    margin: -1.8rem
+    margin: -1.8rem;
 }
 
 .twitter span {
-    background-color: #4099ff
+    background-color: #4099ff;
 }
 
 .facebook span {
-    background-color: #4286f4
+    background-color: #4286f4;
 }
 
 .linkedin span {
-    background-color: #0077B5
+    background-color: #0077B5;
 }
 
 .github span {
-    background-color: #000
+    background-color: #000;
 }
 
 email {
@@ -116,15 +112,15 @@ email {
     -o-transition: all 0.3s;
     transition: all 0.3s;
     width: 3.6rem;
-    z-index: 10
+    z-index: 10;
 }
 
 .icon-button .icon-twitter {
-    color: #4099ff
+    color: #4099ff;
 }
 
 .icon-button .icon-facebook {
-    color: #4286f4
+    color: #4286f4;
 }
 
 .icon-button .icon-github {
@@ -132,14 +128,14 @@ email {
 }
 
 .icon-button .icon-linkedin {
-    color: #0077B5
+    color: #0077B5;
 }
 
 .icon-button:hover .icon-twitter,
 .icon-button:hover .icon-facebook,
 .icon-button:hover .icon-github,
 .icon-button:hover .icon-linkedin {
-    color: white
+    color: white;
 }
 
 autocolor {
@@ -199,9 +195,6 @@ papertitle {
     border-radius: 100%;
     width: 45%;
     padding: 20px;
-    // border: 1px solid #ddd;
-    // padding: 3px;
-    // box-shadow: 0 -1px 5px 1px rgba(200, 200, 200, 0.3);
 }
 
 #header .image.avatar {
@@ -214,18 +207,18 @@ h4,
 h5,
 h6 {
     font-weight: 600;
-    color: #043361;
+    color: #002D72;
     margin: 0 0 20px;
 }
 
 h1 {
     font-weight: 500;
-    color: #043361;
+    color: #002D72;
     margin: 0 0 20px;
 }
 
 h2 {
-    color: #043361;
+    color: #002D72;
     font-weight: 500;
     margin: 2px 0px 15px;
     font-size: 157%;
@@ -285,13 +278,12 @@ blockquote {
 code,
 pre {
     font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, Consolas, Liberation Mono, DejaVu Sans Mono, Courier New, monospace;
-    font-size: 12px;
     color: #333;
 }
 
 pre {
-    // width: 100%;
-    max-width: 500px;
+    width: 100%;
+    // max-width: 500px;
     padding: 8px 15px;
     background: #f8f8f8;
     border-radius: 5px;
@@ -329,8 +321,8 @@ header {
     float: left;
     position: fixed;
     -webkit-font-smoothing: subpixel-antialiased;
-    padding-top: 4.0em;
-    text-align: center
+    padding-top: 5.5em;
+    text-align: center;
 }
 
 header ul {
@@ -395,7 +387,7 @@ header ul a strong {
 section {
     width: 650px;
     float: right;
-    padding-top: 4.0em;
+    padding-top: 1.2em;
     padding-bottom: 50px;
 }
 
@@ -421,7 +413,6 @@ footer {
 
 @media print,
 screen and (max-width: 960px) {
-
     .pub-row {
         display: flex;
         align-items: center;
@@ -441,7 +432,7 @@ screen and (max-width: 960px) {
     }
 
     header {
-        padding-right: 320px;
+        padding-top: 80px;
     }
 
     section {
@@ -464,15 +455,11 @@ screen and (max-width: 960px) {
     .image.avatar img {
         border-radius: 100%;
         width: 117px;
-        padding: 20px;
+        padding: 20px 20px 20px 20px;
     }
 
-    #head1o2 {
-        visibility: hidden;
-    }
-
-    #head2o2 {
-        visibility: hidden;
+    section {
+        padding: 20px 20px
     }
 }
 
@@ -480,20 +467,13 @@ screen and (max-width: 960px) {
 screen and (max-width: 960px) {
     body {
         word-wrap: break-word;
-        padding: 15px;
+        padding: 0px;
     }
 
     .pub-row {
         display: flex;
         align-items: center;
     }
-
-    header {
-        padding: 0;
-    }
-
-    header ul,
-    header p.view {}
 
     pre,
     code {
@@ -503,14 +483,13 @@ screen and (max-width: 960px) {
 
 @media print,
 screen and (max-width: 480px) {
-
     .pub-row {
         display: block;
         align-items: center;
     }
 
     body {
-        padding: 15px;
+        padding: 0px;
     }
 
     header ul {
@@ -526,14 +505,6 @@ screen and (max-width: 480px) {
         border-radius: 100%;
         width: 95px;
         padding: 20px;
-    }
-
-    #head1o2 {
-        visibility: hidden;
-    }
-
-    #head2o2 {
-        visibility: hidden;
     }
 }
 
