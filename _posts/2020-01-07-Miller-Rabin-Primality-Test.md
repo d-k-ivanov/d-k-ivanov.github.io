@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Miller-Rabin Primality Test
 description: Miller-Rabin Primality Test
 date: 2020-01-07
 ---
+# Miller-Rabin Primality Test
 
 <h2>Table of Contents</h2>
 

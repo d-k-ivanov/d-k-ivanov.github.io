@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Lorem Ipsum Sample
 description: Lorem Ipsum Sample
 date: 2020-10-15
 ---
+# Lorem Ipsum Sample
 
 Lorem ipsum dolor sit amet, nec ea voluptua neglegentur vituperatoribus. Maiestatis contentiones eum et, dico omnium perfecto no quo. No sed aliquid euripidis, cu vis nemore inciderint. Sed at bonorum atomorum, cu usu falli postea labore, ullum denique usu ei.
 

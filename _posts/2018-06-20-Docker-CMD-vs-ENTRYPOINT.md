@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Docker CMD vs ENTRYPOINT
 description: "Docker CMD vs ENTRYPOINT"
 date: 2018-06-20
 ---
+# Docker CMD vs ENTRYPOINT
 
 Stackoverflow reference: [docker - What is the difference between CMD and ENTRYPOINT in a Dockerfile? - Stack Overflow](https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile)
 <br>
@@ -18,7 +18,7 @@ CMD should be used to define default arguments for an ENTRYPOINT command or for 
 CMD will be overridden when running the container with alternative arguments.
 <br>
 
-## The tables below show what command is executed for different ENTRYPOINT / CMD combinations
+## The tables below show which command executed for different ENTRYPOINT / CMD combinations
 
 ```txt
 -- No ENTRYPOINT

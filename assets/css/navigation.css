@@ -1,5 +1,6 @@
 /* Add a black background color to the top navigation */
 .topnav {
+    display: inline-flex;
     background-color: #002D72;
     overflow: hidden;
     position: fixed;
@@ -8,10 +9,12 @@
 }
 
 .topnav #myLinks {
-    /* display: inline; */
     display: inline-flex;
+    margin-left: 20%;
+}
+
+.topnav #myLogo {
     margin-left: 25%;
-    margin-top: 0px;
 }
 
 .topnav a.icon {
@@ -21,8 +24,6 @@
 .topnav img {
     margin-bottom: -16pt;
     margin-top: -12pt;
-    margin-left: 30%;
-    height: 72px;
 }
 
 /* Style the links inside the navigation bar */
@@ -130,6 +131,12 @@ screen and (max-width: 480px) {
 screen and (max-width: 960px) {
     .topnav #myLinks {
         display: none;
+        width: 100%;
+        margin-left: 0%;
+    }
+
+    .topnav #myLogo {
+        margin-left: 0%;
     }
 
     .topnav a.normal {

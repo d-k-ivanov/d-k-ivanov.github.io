@@ -1,16 +1,16 @@
 ---
 layout: post
-title: Linux kernel for Dell 7510
 description: "Linux kernel for Dell 7510"
 date: 2017-12-02
 ---
+# Linux kernel for Dell 7510
 
 <h2>Table of Contents</h2>
 
 * TOC
 {:toc}
 
-### config-4.12.12-gentoo
+## config-4.12.12-gentoo
 
 ```bash
 #

@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Using R in C++
 description: Using R in C++
 date: 2021-01-01
 ---
+# Using R in C++
 
 <h2>Table of Contents</h2>
 
