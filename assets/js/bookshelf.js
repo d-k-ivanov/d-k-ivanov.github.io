@@ -37,7 +37,7 @@ let availableColors = [
 // assign a random height, pattern and colour to each book
 spines.map(function (s, i)
 {
-    let randomHeight            = getRandomInt(220, 240);
+    let randomHeight            = getRandomInt(230, 260);
     s.style.height              = `${randomHeight}px`;
     s.style.top                 = `${280 - randomHeight}px`;
 

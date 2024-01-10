@@ -1,61 +1,71 @@
 :root {
-    --pyramid: linear-gradient(
-            315deg,
+    --pyramid: linear-gradient(315deg,
             transparent 75%,
-            rgba(255, 255, 255, 0.1) 0
-        ),
+            rgba(255, 255, 255, 0.1) 0),
         linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 0),
         linear-gradient(135deg, rgba(255, 255, 255, 0.2) 166px, transparent 0),
         linear-gradient(45deg, rgba(0, 0, 0, 0.1) 75%, transparent 0);
     background-size: 20px 20px;
-    --stairs: repeating-linear-gradient(
-            63deg,
+
+    --stairs: repeating-linear-gradient(63deg,
             rgba(255, 255, 255, 0.1),
             rgba(255, 255, 255, 0.1) 1px,
             transparent 3px,
-            transparent 0
-        ),
-        linear-gradient(
-            127deg,
+            transparent 0),
+        linear-gradient(127deg,
             rgba(255, 255, 255, 0.1),
             rgba(255, 255, 255, 0.1) 90px,
             transparent 55%,
-            transparent 0
-        ),
+            transparent 0),
         linear-gradient(transparent 51%, rgba(0, 0, 0, 0.1) 170px);
     background-size: 70px 120px;
-    --argyle: repeating-linear-gradient(
-            120deg,
+
+    --argyle: repeating-linear-gradient(120deg,
             rgba(255, 255, 255, 0.1),
             rgba(255, 255, 255, 0.1) 1px,
             transparent 1px,
-            transparent 60px
-        ),
-        repeating-linear-gradient(
-            60deg,
+            transparent 60px),
+        repeating-linear-gradient(60deg,
             rgba(255, 255, 255, 0.1),
             rgba(255, 255, 255, 0.1) 1px,
             transparent 1px,
-            transparent 60px
-        ),
-        linear-gradient(
-            60deg,
+            transparent 60px),
+        linear-gradient(60deg,
             rgba(0, 0, 0, 0.1) 25%,
             transparent 25%,
             transparent 75%,
             rgba(0, 0, 0, 0.1) 75%,
-            rgba(0, 0, 0, 0.1)
-        ),
-        linear-gradient(
-            120deg,
+            rgba(0, 0, 0, 0.1)),
+        linear-gradient(120deg,
             rgba(0, 0, 0, 0.1) 25%,
             transparent 25%,
             transparent 75%,
             rgba(0, 0, 0, 0.1) 75%,
-            rgba(0, 0, 0, 0.1)
-        );
+            rgba(0, 0, 0, 0.1));
     background-size: 70px 120px;
-    --tartan: repeating-linear-gradient(
+
+    --tartan: repeating-linear-gradient(transparent,
+            transparent 50px,
+            rgba(0, 0, 0, 0.4) 50px,
+            rgba(0, 0, 0, 0.4) 53px,
+            transparent 53px,
+            transparent 63px,
+            rgba(0, 0, 0, 0.4) 63px,
+            rgba(0, 0, 0, 0.4) 66px,
+            transparent 66px,
+            transparent 116px,
+            rgba(0, 0, 0, 0.5) 116px,
+            rgba(0, 0, 0, 0.5) 166px,
+            rgba(255, 255, 255, 0.2) 166px,
+            rgba(255, 255, 255, 0.2) 169px,
+            rgba(0, 0, 0, 0.5) 169px,
+            rgba(0, 0, 0, 0.5) 179px,
+            rgba(255, 255, 255, 0.2) 179px,
+            rgba(255, 255, 255, 0.2) 182px,
+            rgba(0, 0, 0, 0.5) 182px,
+            rgba(0, 0, 0, 0.5) 232px,
+            transparent 232px),
+        repeating-linear-gradient(270deg,
             transparent,
             transparent 50px,
             rgba(0, 0, 0, 0.4) 50px,
@@ -76,45 +86,17 @@
             rgba(255, 255, 255, 0.2) 182px,
             rgba(0, 0, 0, 0.5) 182px,
             rgba(0, 0, 0, 0.5) 232px,
-            transparent 232px
-        ),
-        repeating-linear-gradient(
-            270deg,
-            transparent,
-            transparent 50px,
-            rgba(0, 0, 0, 0.4) 50px,
-            rgba(0, 0, 0, 0.4) 53px,
-            transparent 53px,
-            transparent 63px,
-            rgba(0, 0, 0, 0.4) 63px,
-            rgba(0, 0, 0, 0.4) 66px,
-            transparent 66px,
-            transparent 116px,
-            rgba(0, 0, 0, 0.5) 116px,
-            rgba(0, 0, 0, 0.5) 166px,
-            rgba(255, 255, 255, 0.2) 166px,
-            rgba(255, 255, 255, 0.2) 169px,
-            rgba(0, 0, 0, 0.5) 169px,
-            rgba(0, 0, 0, 0.5) 179px,
-            rgba(255, 255, 255, 0.2) 179px,
-            rgba(255, 255, 255, 0.2) 182px,
-            rgba(0, 0, 0, 0.5) 182px,
-            rgba(0, 0, 0, 0.5) 232px,
-            transparent 232px
-        ),
-        repeating-linear-gradient(
-            125deg,
+            transparent 232px),
+        repeating-linear-gradient(125deg,
             transparent,
             transparent 2px,
             rgba(0, 0, 0, 0.2) 2px,
             rgba(0, 0, 0, 0.2) 3px,
             transparent 3px,
             transparent 5px,
-            rgba(0, 0, 0, 0.2) 5px
-        );
+            rgba(0, 0, 0, 0.2) 5px);
 
-    --madras: repeating-linear-gradient(
-            45deg,
+    --madras: repeating-linear-gradient(45deg,
             transparent 5px,
             hsla(197, 62%, 11%, 0.5) 5px,
             hsla(197, 62%, 11%, 0.5) 10px,
@@ -137,10 +119,8 @@
             hsla(5, 53%, 63%, 0) 110px,
             hsla(5, 53%, 63%, 0) 120px,
             hsla(197, 62%, 11%, 0.5) 120px,
-            hsla(197, 62%, 11%, 0.5) 140px
-        ),
-        repeating-linear-gradient(
-            135deg,
+            hsla(197, 62%, 11%, 0.5) 140px),
+        repeating-linear-gradient(135deg,
             transparent 5px,
             hsla(197, 62%, 11%, 0.5) 5px,
             hsla(197, 62%, 11%, 0.5) 10px,
@@ -163,26 +143,49 @@
             hsla(5, 53%, 63%, 0) 110px,
             hsla(5, 53%, 63%, 0) 140px,
             hsla(197, 62%, 11%, 0.5) 140px,
-            hsla(197, 62%, 11%, 0.5) 160px
-        );
-    --diagonal: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 35px,
-        rgba(255, 255, 255, 0.5) 35px,
-        rgba(255, 255, 255, 0.5) 70px
-    );
+            hsla(197, 62%, 11%, 0.5) 160px);
+
+    --diagonal: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 35px,
+            rgba(255, 255, 255, 0.5) 35px,
+            rgba(255, 255, 255, 0.5) 70px);
+
+    --bookshelf-deeps:
+        linear-gradient(90deg,
+            rgba(64, 44, 16, 1) 0%,
+            rgba(42, 29, 11, 1) 30%,
+            #402c10 50%,
+            rgba(42, 29, 11, 1) 70%,
+            rgba(64, 44, 16, 1) 100%);
+    --bookshelf-deeps2:
+        repeating-linear-gradient(0deg,
+            #A87328 0%,
+            #A87328 3%,
+            #81571c 3%,
+            #402C10 13%,
+            #402C10 50%,
+            #402C10 95%,
+            #81571c 96%,
+            #A87328 96%,
+            #A87328 100%);
 }
 
 .bookshelf {
     width: 100%;
-    margin-top: 32px;
+    height: 100%;
     display: flex;
     flex-wrap: wrap;
+    /* overflow: hidden; */
+    margin: 0 auto;
+    border: 9px #A87328 solid;
+    background: var(--bookshelf-deeps2);
+    background-size: 44px 280px;
+    box-shadow: 8px 8px 5px 1px #A8732880;
 }
 
 .book {
-    width: 50px;
+    width: 44px;
     height: 280px;
     position: relative;
     margin-left: 1px;
@@ -206,7 +209,7 @@
 
 .spine {
     position: relative;
-    width: 50px;
+    width: 44px;
     height: 280px;
     /* Patterns from: https://projects.verou.me/css3patterns/ */
     background-image: var(--tartan);
@@ -233,13 +236,15 @@
     /* color: rgb(255, 255, 255); */
     /* mix-blend-mode: difference; */
     bottom: 0px;
-    left: 20%; /* no idea why 20% centers it */
+    left: 20%;
+    /* no idea why 20% centers it */
 }
 
 .top {
-    width: 50px;
+    width: 44px;
     height: 190px;
-    top: -2px; /* hmm, why -2 and not 0? */
+    top: -2px;
+    /* hmm, why -2 and not 0? */
     background-image: linear-gradient(90deg, white 90%, gray 10%);
     background-size: 5px 5px;
     transform: rotateX(90deg) translateZ(95px) translateY(-95px);
@@ -253,13 +258,12 @@
     background-image: url("https://picsum.photos/190/280");
     background-size: contain;
     background-repeat: round;
-    left: 50px;
+    left: 44px;
     transform: rotateY(90deg) translateZ(0);
     transition: transform 1s;
 }
 
 .book:hover {
     z-index: 1;
-    transform: rotateX(-25deg) rotateY(-40deg) rotateZ(-15deg) translateY(50px)
-        translateX(-30px);
+    transform: rotateX(-25deg) rotateY(-40deg) rotateZ(-15deg) translateY(50px) translateX(-30px);
 }

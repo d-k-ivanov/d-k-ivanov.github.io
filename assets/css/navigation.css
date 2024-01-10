@@ -8,7 +8,9 @@
 }
 
 .topnav #myLinks {
-    display: inline;
+    /* display: inline; */
+    display: inline-flex;
+    margin-left: 25%;
 }
 
 .topnav a.icon {
@@ -16,9 +18,10 @@
 }
 
 .topnav img {
-    margin-bottom: -16.5pt;
-    margin-top: -12.5pt;
+    margin-bottom: -16pt;
+    margin-top: -12pt;
     margin-left: 30%;
+    height: 4em;
 }
 
 /* Style the links inside the navigation bar */
@@ -28,7 +31,7 @@
     text-align: center;
     padding: 10px 9px;
     text-decoration: none;
-    font-size: 17px;
+    font-size: 16px;
 }
 
 /* Change the color of links on hover */

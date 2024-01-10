@@ -17,10 +17,24 @@
             {% endif %}
         {% endfor %}
     </div>
-    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <a href="javascript:void(0);" class="icon" onclick="barsOnClick()">
         <i class="fa fa-bars"></i>
     </a>
 </div>
+
+<script>
+    function barsOnClick()
+    {
+        var x = document.getElementById("myLinks");
+        if (x.style.display === "initial")
+        {
+            x.style.display = "none";
+        } else
+        {
+            x.style.display = "initial";
+        }
+    }
+</script>
 
 <script src="/assets/js/vanilla-back-to-top.min.js""></script>
 <script>addBackToTop({

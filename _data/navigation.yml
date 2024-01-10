@@ -1,9 +1,13 @@
 main:
 
-  - title: "Code"
-    url: https://github.com/d-k-ivanov
-    external: true
-    right: true
+  - title: "Home"
+    url: /
+
+  - title: "Blog"
+    url: /blog
+
+  - title: "Playground"
+    url: /playground
 
   - title: "Books"
     url: /books
@@ -11,11 +15,6 @@ main:
   - title: "Travel"
     url: /travel
 
-  - title: "Playground"
-    url: /playground
-
-  - title: "Blog"
-    url: /blog
-
-  - title: "Home"
-    url: /
+  - title: "Code"
+    url: https://github.com/d-k-ivanov
+    external: true
