@@ -11,6 +11,7 @@
     /* display: inline; */
     display: inline-flex;
     margin-left: 25%;
+    margin-top: 0px;
 }
 
 .topnav a.icon {
@@ -21,7 +22,7 @@
     margin-bottom: -16pt;
     margin-top: -12pt;
     margin-left: 30%;
-    height: 4em;
+    height: 72px;
 }
 
 /* Style the links inside the navigation bar */
@@ -31,18 +32,13 @@
     text-align: center;
     padding: 10px 9px;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 17px;
 }
 
 /* Change the color of links on hover */
 .topnav a.normal:hover {
     background-color: #ddd;
     color: black;
-}
-
-/* Add a color to the active/current link */
-.topnav a.right {
-    margin-right: 30%;
 }
 
 @media print,
