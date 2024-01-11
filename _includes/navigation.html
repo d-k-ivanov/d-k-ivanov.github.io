@@ -1,14 +1,14 @@
 <div class="topnav">
     <div id="myLogo">
-        <a href="{{ site.affiliation_link }}"><img width="190" src="{{ site.affiliation_logo }}"></a>
+        <a href="{{ site.affiliation_link }}"><img src="{{ site.affiliation_logo }}"></a>
     </div>
     <div id="myLinks">
         {% for link in site.data.navigation.main %}
-            {% if link.external %}
-                <a class="normal" href="{{ link.url }}" target="_blank">{{ link.title }}</a>
-            {% else %}
-                <a class="normal" href="{{ link.url }}">{{ link.title }}</a>
-            {% endif %}
+        {% if link.external %}
+        <a class="normal" href="{{ link.url }}" target="_blank">{{ link.title }}</a>
+        {% else %}
+        <a class="normal" href="{{ link.url }}">{{ link.title }}</a>
+        {% endif %}
         {% endfor %}
     </div>
     <a href="javascript:void(0);" class="icon" onclick="barsOnClick()">
@@ -20,12 +20,13 @@
     function barsOnClick()
     {
         var x = document.getElementById("myLinks");
-        if (x.style.display === "initial")
+        if (x.style.display === "flex")
         {
             x.style.display = "none";
         } else
         {
-            x.style.display = "initial";
+            x.style.display = "flex";
+            x.style.flexDirection = "column";
         }
     }
 </script>
