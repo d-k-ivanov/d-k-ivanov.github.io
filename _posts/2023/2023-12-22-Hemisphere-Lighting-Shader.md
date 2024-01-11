@@ -5,11 +5,13 @@ date: 2023-12-22
 ---
 # Shader: Hemispheric Lighting
 
-| Spot                   | Blub                      | Mushroom                   | Oozey the Slime          |
-|------------------------|---------------------------|----------------------------|--------------------------|
+## Demo
+
+| Spot | Blub | Mushroom | Oozey the Slime |
+|------|------|----------|-----------------|
 | ![Spot](/assets/blog/2023/spotH.png) | ![cruiser](/assets/blog/2023/blubH.png) | ![shroom](/assets/blog/2023/shroomH.png) | ![oozey](/assets/blog/2023/oozeyH.png) |
 
-## Hemispheric vertex shader
+## Vertex Shader
 
 The Vertex shader is straightforward. We compute the relative vertex position and a normal for the current view to pass it to the Fragment shader.
 
@@ -34,7 +36,7 @@ void main() {
 }
 ```
 
-## Hemispheric fragment shader
+## Fragment Shader
 
 In the Fragment shader, we're mixing Sky colour and ground colour using a linear interpolation function (mix) and weight equation for hemisphere illumination:
 
@@ -49,8 +51,6 @@ Where:
 The weighted linear interpolation function for two colours:
 
 $$ Color =  (1 - weight) \times GroundColor +  weight \times SkyColor $$
-
-<div class="page"/>
 
 **Shader Code:**
 
@@ -78,7 +78,7 @@ void main() {
 }
 ```
 
-## Hemispheric shader usage with Light Source
+## Real Life Demo
 
 ![Hemispheric Demo](/assets/blog/2023/hemisphere_demo.png)
 
