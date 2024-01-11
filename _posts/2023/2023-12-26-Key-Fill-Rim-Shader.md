@@ -86,8 +86,8 @@ struct LightSource {
     vec3 Id;
     vec3 Is;
 };
-#define NR_LIGHTS 3
-uniform LightSource lights[NR_LIGHTS];
+#define NUMBER_OF_LIGHTS 3
+uniform LightSource lights[NUMBER_OF_LIGHTS];
 
 uniform vec3 cameraPosition;
 
@@ -96,7 +96,7 @@ uniform sampler2D texSampler;
 
 layout(location = 0) out vec4 fragColor;
 
-vec3 directLightColor(LightSource light, vec3 diffuseColor) {
+vec3 getLightColor(LightSource light, vec3 diffuseColor) {
     vec3 n = normalize(normal);
     vec3 l = normalize(light.Position - position);
     vec3 v = normalize(cameraPosition - position);
@@ -108,23 +108,23 @@ vec3 directLightColor(LightSource light, vec3 diffuseColor) {
     float spec = pow(max(dot(v, r), 0.0), shininess);
     vec3 specular = Ks * spec * light.Is;
 
-    return diffuse * diffuseColor + specular;;
+    return diffuse * diffuseColor + specular;
 }
 
-vec3 ads(vec3 diffuseColor) {
+vec3 getPixelColor(vec3 diffuseColor) {
     vec3 color = Ia * diffuseColor;
-    for(int i = 0; i < NR_LIGHTS; i++)
+    for(int i = 0; i < NUMBER_OF_LIGHTS; i++)
         if(lights[i].Enabled)
-            color += directLightColor(lights[i], diffuseColor);
+            color += getLightColor(lights[i], diffuseColor);
     return color;
 }
 
 void main() {
     if(useTexture) {
         vec4 texColor = texture(texSampler, texCoord);
-        fragColor = vec4(ads(texColor.rgb), 1.0);
+        fragColor = vec4(getPixelColor(texColor.rgb), 1.0);
     } else {
-        fragColor = vec4(ads(Kd), 1.0);
+        fragColor = vec4(getPixelColor(Kd), 1.0);
     }
 }
 ```
