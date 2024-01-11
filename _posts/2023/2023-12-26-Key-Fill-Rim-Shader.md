@@ -13,7 +13,7 @@ I've taken models from here:
 
 ## Demo
 
-| Spot 2                      | Blub                        | Spot 2            | Space Cruiser               |
+| Spot 1                      | Blub                        | Spot 2            | Space Cruiser               |
 |-----------------------------|-----------------------------|-------------------|-----------------------------|
 | ![Spot](/assets/blog/2023/spotRFL.png)    | ![cruiser](/assets/blog/2023/blubRFL.png) | ![shroom](/assets/blog/2023/spotRFL2.png)   | ![oozey](/assets/blog/2023/cruiserRFL.png) |
 | ![3L-even](/assets/blog/2023/3L-even.png) | ![3L-even](/assets/blog/2023/3L-even.png) | ![3L-green](/assets/blog/2023/3L-green.png) | ![3L-even](/assets/blog/2023/3L-even.png)  |
