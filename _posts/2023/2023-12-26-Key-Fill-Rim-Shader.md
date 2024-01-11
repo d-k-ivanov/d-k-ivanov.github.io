@@ -5,6 +5,12 @@ date: 2023-12-22
 ---
 # Shader: Key-Fill-Rim Light Sources
 
+I've taken models from here:
+
+- [Keenan's 3D Model Repository](https://www.cs.cmu.edu/~kmcrane/Projects/ModelRepository/)
+- [Principia Mathematica](https://www.prinmath.com/csci5229/OBJ/index.html)
+- [OpenGameArt](http://opengameart.org/)
+
 ## Demo
 
 | Spot 2                      | Blub                        | Spot 2            | Space Cruiser               |

@@ -5,6 +5,12 @@ date: 2023-12-22
 ---
 # Shader: Hemispheric Lighting
 
+I've taken models from here:
+
+- [Keenan's 3D Model Repository](https://www.cs.cmu.edu/~kmcrane/Projects/ModelRepository/)
+- [Principia Mathematica](https://www.prinmath.com/csci5229/OBJ/index.html)
+- [OpenGameArt](http://opengameart.org/)
+
 ## Demo
 
 | Spot | Blub | Mushroom | Oozey the Slime |
