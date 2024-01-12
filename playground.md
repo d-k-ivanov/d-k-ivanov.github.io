@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: post
 title: Playground
 permalink: /playground/
 ---
@@ -27,37 +27,3 @@ permalink: /playground/
 ## TurboRED Company Website
 
 <img id="myImg" src="/assets/img/projects/TurboRED.png" alt="Turbored Home Page">
-
-<!-- The Modal Window -->
-<div id="projects_modal" class="modal">
-  <span class="close">&times;</span>
-  <img class="modal-content" id="placeholder" alt="">
-  <div id="caption"></div>
-</div>
-
-<script>
-    var modal       = document.getElementById('projects_modal');
-    var img         = document.getElementById('myImg');
-    var modalImg    = document.getElementById("placeholder");
-    var captionText = document.getElementById("caption");
-
-    img.onclick = function(){
-        modal.style.display = "block";
-        modalImg.src = this.src;
-        captionText.innerHTML = this.alt;
-    }
-
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function()
-    {
-        modal.style.display = "none";
-    }
-
-modal.onclick = function ()
-    {
-        modal.style.display = "none";
-    }
-</script>

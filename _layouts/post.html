@@ -12,11 +12,19 @@
         <footer>
         </footer>
     </div>
+
+    <!-- Modal popup for images -->
+    {% include image_modal_popup.html %}
     <script src="/assets/js/scale.fix.js"></script>
     {% include analytics.html %}
+
+    <!-- Code Highlighting -->
     <script type="text/javascript" src="/assets/js/highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- LaTeX Support -->
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config"> MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
 </body>
 
 </html>
