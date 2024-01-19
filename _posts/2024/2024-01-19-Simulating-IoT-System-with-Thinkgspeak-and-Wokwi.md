@@ -27,7 +27,7 @@ To bring my simulated project to reality, I've downloaded a cool map of [Seaport
 | Smart Suite   | Temperature, Humidity, Rooms          | Recreation point              |
 | Village Gate  | Temperature, Humidity, Lights, Servo  | Access-control point          |
 
-## ThingSpeak Channels
+### ThingSpeak Channels
 
 Let's create a couple of channels in ThingSpeak. I will need three channels for smart devices and one for analytics, but I won't cover analytics on a decent level here.
 
