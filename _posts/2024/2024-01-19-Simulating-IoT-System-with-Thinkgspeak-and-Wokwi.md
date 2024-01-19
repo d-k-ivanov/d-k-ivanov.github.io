@@ -27,24 +27,24 @@ To bring my simulated project to reality, I've downloaded a cool map of [Seaport
 | Smart Suite   | Temperature, Humidity, Rooms          | Recreation point              |
 | Village Gate  | Temperature, Humidity, Lights, Servo  | Access-control point          |
 
-## Thnkgspeak Channels
+## ThingSpeak Channels
 
-Let's create a couple of channels in Thingspeak. I will need three channels for smart devices and one for analytics, but I won't cover analytics on a decent level here.
+Let's create a couple of channels in ThingSpeak. I will need three channels for smart devices and one for analytics, but I won't cover analytics on a decent level here.
 
-<img id="myImg" alt="Smart Village" src="/assets/blog/2024/01-IoT-ThingspeakChannels.png" width="100%"/>
+<img id="myImg" alt="ThingSpeak Channels" src="/assets/blog/2024/01-IoT-ThingspeakChannels.png" width="100%"/>
 
 Then, let's define devices and metrics.
 
 ## Control Tower
 
 * [Control Tower on Wokwi](https://wokwi.com/projects/387266278511027201)
-* [Village Gate on Thinkgspeak](https://thingspeak.com/channels/2405835)
+* [Village Gate on ThingSpeak](https://thingspeak.com/channels/2405835)
 
 The Control Tower has basic sensors, generic for a whole site. The sensor implementation is based on the ESP32 platform with DHT22 (Digital Temperature and Humidity Sensor) and LED for indication of dangerous weather.
 
 ### Control Tower Diagram
 
-<img id="myImg" alt="Control Tower Channel" src="/assets/blog/2024/01-IoT-Control-Tower-Sensor.png" width="50%"/>
+<img id="myImg" alt="Control Tower Sensors" src="/assets/blog/2024/01-IoT-Control-Tower-Sensor.png" width="50%"/>
 
 ### Control Tower Arduino Sketch
 
@@ -107,20 +107,20 @@ void loop() {
 }
 ```
 
-### Control Tower Thnkgspeak Dashboard
+### Control Tower ThingSpeak Dashboard
 
 <img id="myImg" alt="Control Tower Channel" src="/assets/blog/2024/01-IoT-Control-Tower-Channel.png" width="100%"/>
 
 ## Smart Suite
 
 * [Smart Suite on Wokwi](https://wokwi.com/projects/387290485474569217)
-* [Smart Suite on Thinkgspeak](https://thingspeak.com/channels/2405104)
+* [Smart Suite on ThingSpeak](https://thingspeak.com/channels/2405104)
 
 The Smart Suit has sensors to control the environment. The temperature sensor automatically enables the Heater, and the motion sensors control living spaces. The sensor implementation is based on the ESP32 platform with DHT22 (Digital Temperature and Humidity Sensor), Relays, and Motion sensors. LEDs serve to indicate enabled relays.
 
 ### Smart Suite Diagram
 
-<img id="myImg" alt="Control Tower Channel" src="/assets/blog/2024/01-IoT-Smart-Suit-Sensor.png" width="100%"/>
+<img id="myImg" alt="Smart Suite Sensors" src="/assets/blog/2024/01-IoT-Smart-Suit-Sensor.png" width="100%"/>
 
 ### Smart Suite Arduino Sketch
 
@@ -281,18 +281,18 @@ void loop()
 }
 ```
 
-### Smart Suite Thnkgspeak Dashboard
+### Smart Suite ThingSpeak Dashboard
 
-<img id="myImg" alt="Smart Suit Channe" src="/assets/blog/2024/01-IoT-Smart-Suit-Channel.png" width="100%"/>
+<img id="myImg" alt="Smart Suit Channel" src="/assets/blog/2024/01-IoT-Smart-Suit-Channel.png" width="100%"/>
 
 ## Village Gate
 
 * [Village Gate on Wokwi](https://wokwi.com/projects/387302369951455233)
-* [Village Gate on Thinkgspeak](https://thingspeak.com/channels/2405836)
+* [Village Gate on ThingSpeak](https://thingspeak.com/channels/2405836)
 
 ### Village Gate Diagram
 
-<img id="myImg" alt="Control Tower Channel" src="/assets/blog/2024/01-IoT-Village-Gate-Sensor.png" width="100%"/>
+<img id="myImg" alt="Village Gate Sensors" src="/assets/blog/2024/01-IoT-Village-Gate-Sensor.png" width="100%"/>
 
 ### Village Gate Arduino Sketch
 
@@ -408,13 +408,13 @@ void loop()
 }
 ```
 
-### Village Gate Thnkgspeak Dashboard
+### Village Gate ThingSpeak Dashboard
 
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-Viladge-Gate-Channel.png" width="100%"/>
+<img id="myImg" alt="Village Gate Channel" src="/assets/blog/2024/01-IoT-Viladge-Gate-Channel.png" width="100%"/>
 
-## Thingspeak Features
+## ThingSpeak Features
 
-The Thingspeak platform has many additional features. I briefly describe four of them:
+The ThingSpeak platform has many additional features. I briefly describe four of them:
 
 * [MATLAB Analysis](https://thingspeak.com/apps/matlab_analyses)
 * [MATLAB Visualization](https://thingspeak.com/apps/matlab_visualizations)
@@ -423,9 +423,9 @@ The Thingspeak platform has many additional features. I briefly describe four of
 
 All of them are straightforward, and you just need to click on the appropriate button and fill in gaps in a template with your channel specifications. Below, I post a couple of screenshots.
 
-### Thingspeak MATLAB Analysis
+### ThingSpeak MATLAB Analysis
 
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-MATLAB-Average-Humidity.png" width="100%"/>
+<img id="myImg" alt="MATLAB Average Humidity" src="/assets/blog/2024/01-IoT-MATLAB-Average-Humidity.png" width="100%"/>
 
 **Code:**
 
@@ -457,9 +457,9 @@ writeAPIKey = '34UF5KAH58EBRN5Q';
 thingSpeakWrite(writeChannelID,avgHumidity,'WriteKey',writeAPIKey);
 ```
 
-### Thingspeak MATLAB Visualization
+### ThingSpeak MATLAB Visualization
 
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-MATLAB-Humidity-Temperature-Visualization.png" width="100%"/>
+<img id="myImg" alt="MATLAB Humidity Temperature Visualization" src="/assets/blog/2024/01-IoT-MATLAB-Humidity-Temperature-Visualization.png" width="100%"/>
 
 **Code:**
 
@@ -485,13 +485,13 @@ humidity = thingSpeakRead(readChannelID, 'Field', fieldID2, 'NumPoints', 30, 'Re
 scatter(temperature, humidity);
 ```
 
-### Thingspeak TimeControls
+### ThingSpeak TimeControls
 
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-TimeControl_1.png" width="45%"/>
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-TimeControl_2.png" width="50%"/>
+<img id="myImg" alt="TimeControl 1" src="/assets/blog/2024/01-IoT-TimeControl_1.png" width="45%"/>
+<img id="myImg" alt="TimeControl 2" src="/assets/blog/2024/01-IoT-TimeControl_2.png" width="50%"/>
 
-### Thingspeak Reacts
+### ThingSpeak Reacts
 
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-React_1.png" width="45%"/>
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-React_3.png" width="50%"/>
-<img id="myImg" alt="Viladge Gate Channel" src="/assets/blog/2024/01-IoT-React_2.png" width="50%"/>
+<img id="myImg" alt="React 1" src="/assets/blog/2024/01-IoT-React_1.png" width="45%"/>
+<img id="myImg" alt="React 3" src="/assets/blog/2024/01-IoT-React_3.png" width="50%"/>
+<img id="myImg" alt="React 2" src="/assets/blog/2024/01-IoT-React_2.png" width="50%"/>
