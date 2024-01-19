@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: playground
 title: Playground
 permalink: /playground/
 ---
@@ -7,7 +7,7 @@ permalink: /playground/
 ## Android Development
 
 | **Armenian Alphabet for Android** | **Russian Alphabet for Android** |
-|:=================================:|:================================:|
+|:----------------------------------:|:-------------------------------:|
 | <a href="https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet" target="_blank"><img src="/assets/img/projects/ArmenianAlphabet.gif" alt="Armeinan Alphabet"/></a> | <a href="https://play.google.com/store/apps/details?id=com.pupupon.russian_alphabet" target="_blank"><img src="/assets/img/projects/RussianAlphabet.gif" alt="Russian Alphabet"/></a> |
 
 ## Arcanoid on OpenGL
