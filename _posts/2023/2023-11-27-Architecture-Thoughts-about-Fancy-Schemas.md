@@ -15,7 +15,7 @@ I'm always going with schemas. Initial schemas, describing basics. Post-factum s
 - **Technical Domain: AWS.** They should be understandable for AWS Architects from the first sight. So, in general, look to the AWS Architecting framework. They have specialised icons for every purpose. But the most important part is don't forget about the non-domain people, schemas should be still readable but the «common folk».
 - **Technical Domain: Project Management.** Normally, I'm just using Jira workflow to represent the project idea.
 
-Okay, enough talking. Let's do the project. Something with the microservice architecture. Let's say it's some cloud-based file synchronisation services, like Dropbox, Google Drive, or OneDrive.
+Okay, enough talking. Let's do the project. Something with the microservice architecture. Let's say it's some cloud-based file synchronisation services, like Dropbox, Google Drive, or OneDrive. I'm using [yEd](https://www.yworks.com/products/yed) and [Draw.io](https://app.diagrams.net/).
 
 ## Business
 
