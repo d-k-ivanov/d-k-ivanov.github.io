@@ -14,7 +14,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    width: 90%;
+    width: 99%;
     height: 90%;
     overflow: auto;
     padding-top: 4em;
@@ -28,7 +28,10 @@
 .modal-content {
     margin: auto;
     display: block;
-    height: 90%;
+    max-width: 95%;
+    max-height: 90%;
+    /* width: 90%; */
+    /* height: 90%; */
 }
 
 /* Caption of Modal Image (Image Text) - Same Width as the Image */
