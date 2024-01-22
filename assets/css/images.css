@@ -28,10 +28,10 @@
 .modal-content {
     margin: auto;
     display: block;
-    max-width: 95%;
-    max-height: 90%;
+    /* max-width: 95%; */
+    /* max-height: 90%; */
     /* width: 90%; */
-    /* height: 90%; */
+    height: 90%;
 }
 
 /* Caption of Modal Image (Image Text) - Same Width as the Image */
