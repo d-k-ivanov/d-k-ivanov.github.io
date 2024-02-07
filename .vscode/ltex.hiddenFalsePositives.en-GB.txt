@@ -1,0 +1,1 @@
+{"rule":"SENTENCE_WHITESPACE","sentence":"^\\QNet or a similar image editing tool.\\E$"}

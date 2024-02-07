@@ -2,3 +2,7 @@ shroom
 ThingSpeak
 Wokwi
 TimeControls
+Shotcut
+OpenShot
+FreeSound
+FullHD
