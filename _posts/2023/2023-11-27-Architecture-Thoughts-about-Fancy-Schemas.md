@@ -12,10 +12,10 @@ I'm always going with schemas. Initial schemas, describing basics. Post-factum s
 - **Business.** Colourful and Simple. Yeah, I know, maybe a little kiddish. But you literally should think about the time of people who are going to read this.
 - **Technical Generic.** Just a schema. Terminology involved.
 - **Technical and Business.** Colourful, but slightly more technical to understand the implementation details.
-- **Technical Domain: AWS.** They should be understandable for AWS Architects from the first sight. So, in general, look to the AWS Architecting framework. They have specialised icons for every purpose. But the most important part is don't forget about the non-domain people, schemas should be still readable but the «common folk».
+- **Technical Domain: AWS.** They should be understandable for AWS Architects from the first sight. So, in general, look to the AWS Architecting framework. They have specialized icons for every purpose. But the most important part is don't forget about the non-domain people, schemas should be still readable but the «common folk».
 - **Technical Domain: Project Management.** Normally, I'm just using Jira workflow to represent the project idea.
 
-Okay, enough talking. Let's do the project. Something with the microservice architecture. Let's say it's some cloud-based file synchronisation services, like Dropbox, Google Drive, or OneDrive. I'm using [yEd](https://www.yworks.com/products/yed) and [Draw.io](https://app.diagrams.net/).
+Okay, enough talking. Let's do the project. Something with the microservice architecture. Let's say it's some cloud-based file synchronization services, like Dropbox, Google Drive, or OneDrive. I'm using [yEd](https://www.yworks.com/products/yed) and [Draw.io](https://app.diagrams.net/).
 
 ## Business
 
