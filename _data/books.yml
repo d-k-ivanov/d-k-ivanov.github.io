@@ -22,12 +22,23 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
 #   notes: >
 
+- title: "Ray Tracing Gems I"
+  year: 2024
+  author: Eric Haines, Tomas Akenine-Möller, Alexander Keller
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1554919058i/45016297.jpg
+  notes: >
+
+- title: "Ray Tracing Gems II"
+  year: 2024
+  author: Adam Marrs, Peter Shirley, Ingo Wald
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1631063745i/58946858.jpg
+  notes: >
+
 - title: "An Introduction to Ray Tracing"
   year: 2024
   author: Eric Haines, Pat Hanrahan, Robert L. Cook, James Arvo, David Kirk, Paul S. Heckbert, Andrew S. Glassner
   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1347584566i/1441550.jpg
   notes: >
-
 
 - title: "Computational Geometry: Algorithms and Applications"
   year: 2024
