@@ -22,6 +22,12 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
 #   notes: >
 
+- title: "An Introduction to Ray Tracing"
+  year: 2024
+  author: Eric Haines, Pat Hanrahan, Robert L. Cook, James Arvo, David Kirk, Paul S. Heckbert, Andrew S. Glassner
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1347584566i/1441550.jpg
+  notes: >
+
 - title: "Computational Geometry: Algorithms and Applications"
   year: 2024
   author: Mark de Berg, Marc van Kreveld, Mark Overmars, Otfried Cheong Schwarzkopf
