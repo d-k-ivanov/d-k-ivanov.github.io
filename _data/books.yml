@@ -22,6 +22,12 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1172523503i/184834.jpg
 #   notes: >
 
+- title: "Physically Based Rendering: From Theory to Implementation"
+  year: 2024
+  author: Matthew Pharr, Wenzel Jakob, Greg Humphreys
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1671522031i/61150883.jpg
+  notes: >
+
 - title: "Ray Tracing Gems I"
   year: 2024
   author: Eric Haines, Tomas Akenine-Möller, Alexander Keller
