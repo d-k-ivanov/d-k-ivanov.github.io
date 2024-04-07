@@ -6,8 +6,8 @@ main:
   - title: "Blog"
     url: /blog
 
-  - title: "Playground"
-    url: /playground
+  # - title: "Playground"
+  #   url: /playground
 
   - title: "Books"
     url: /books
