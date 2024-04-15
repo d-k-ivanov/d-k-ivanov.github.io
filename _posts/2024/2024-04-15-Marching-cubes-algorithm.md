@@ -507,7 +507,7 @@ Shift + End              slow source point animation on/off
 
 ### Demo
 
-<iframe width="1280" height="868" src="https://www.youtube.com/embed/g1hMBADRBHU" title="Marching Cubes Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="100%" height="868" src="https://www.youtube.com/embed/g1hMBADRBHU" title="Marching Cubes Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Links
 

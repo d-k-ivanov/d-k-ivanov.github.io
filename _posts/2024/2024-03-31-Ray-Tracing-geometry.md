@@ -96,8 +96,8 @@ As was shown, the computational geometry is the essential part of the ray tracin
 
 ## Links
 
-- [Eric Haines and Tomas Akenine-Möller. Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs.](http://link.springer.com/10.1007/978-1-4842-4427-2)
-- [Eric Haines. Essential ray tracing algorithms.](https://dl.acm.org/doi/10.5555/94788.94790)
-- [Gabor Szauer. Game Physics Cookbook.](https://gamephysicscookbook.com/)
-- [James Arvo and David Kirk. A survey of ray tracing acceleration techniques.](https://dl.acm.org/doi/10.5555/94788.94794)
-- [Alexander Reshetov. Cool Patches: A Geometric Approach to Ray/Bilinear Patch Intersections.](http://link.springer.com/10.1007/978-1-4842-4427-2_8)
+* [Eric Haines and Tomas Akenine-Möller. Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs.](http://link.springer.com/10.1007/978-1-4842-4427-2)
+* [Eric Haines. Essential ray tracing algorithms.](https://dl.acm.org/doi/10.5555/94788.94790)
+* [Gabor Szauer. Game Physics Cookbook.](https://gamephysicscookbook.com/)
+* [James Arvo and David Kirk. A survey of ray tracing acceleration techniques.](https://dl.acm.org/doi/10.5555/94788.94794)
+* [Alexander Reshetov. Cool Patches: A Geometric Approach to Ray/Bilinear Patch Intersections.](http://link.springer.com/10.1007/978-1-4842-4427-2_8)
