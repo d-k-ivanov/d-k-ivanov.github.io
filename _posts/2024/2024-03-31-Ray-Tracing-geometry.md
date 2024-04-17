@@ -94,7 +94,7 @@ The figure below shows the performance measurements performed by the author by c
 
 As was shown, the computational geometry is the essential part of the ray tracing ecosystem that works in different areas: scene construction, object relations, and optimizations.
 
-## Links
+## References
 
 * [Eric Haines and Tomas Akenine-Möller. Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs.](http://link.springer.com/10.1007/978-1-4842-4427-2)
 * [Eric Haines. Essential ray tracing algorithms.](https://dl.acm.org/doi/10.5555/94788.94790)

@@ -73,7 +73,7 @@ I never can't remember the parameters of popular resolutions, so decided to make
 
 <img id="myImg" alt="Pixel Count" src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Video_Resolution_Chart.svg" align="left"/>
 
-## Links
+## References
 
 - [Display resolution — Wikipedia](https://en.wikipedia.org/wiki/Display_resolution)
 - [Display size — Wikipedia](https://en.wikipedia.org/wiki/Display_size)

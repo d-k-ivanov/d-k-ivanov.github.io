@@ -48,6 +48,7 @@ The list of the edges intersected by the surface for all $256$ possible vertex s
 <details>
 <summary>CubeEdgeFlags Lookup Table</summary>
 <pre>
+<code class="language-cpp">
 // For any edge, if one vertex is inside the surface and the other is outside the surface then the edge intersects the surface
 // For each of the 8 vertices of the cube can be two possible states: either inside or outside the surface
 // For any cube, there are 2^8=256 possible sets of vertex states
@@ -71,6 +72,7 @@ const GLint CubeEdgeFlags[256] = {
     0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c, 0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x099, 0x190,
     0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c, 0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x000
     };
+</code>
 </pre>
 </details>
 <br>
@@ -82,6 +84,7 @@ For each of the possible vertex states listed in **CubeEdgeFlags** there is a sp
 <details>
 <summary>TriangleConnection Lookup Table</summary>
 <pre>
+<code class="language-cpp">
 // For each of the possible vertex states listed in CubeEdgeFlags there is a specific triangulation of the edge intersection
 // points. TriangleConnectionTable lists all of them in the form of 0-5 edge triples with the list terminated by the invalid
 // value -1.
@@ -347,6 +350,7 @@ static const GLint TriangleConnectionTable[256][16] = {
     { 0,  3,  8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 };
+</code>
 </pre>
 </details>
 <br>
@@ -358,6 +362,7 @@ VertexOffset table lists the positions, relative to vertex0, of each of the 8 ve
 <details>
 <summary>VertexOffset Lookup Table</summary>
 <pre>
+<code class="language-cpp">
 // VertexOffset lists the positions, relative to vertex0, of each of the 8 vertices of a cube
 const GLfloat VertexOffset[8][3] = {
     {0.0, 0.0, 0.0},
@@ -369,6 +374,7 @@ const GLfloat VertexOffset[8][3] = {
     {1.0, 1.0, 1.0},
     {0.0, 1.0, 1.0}
 };
+</code>
 </pre>
 </details>
 <br>
@@ -380,6 +386,7 @@ EdgeConnection table lists the index of the endpoint vertices for each of the 12
 <details>
 <summary>EdgeConnection Lookup Table</summary>
 <pre>
+<code class="language-cpp">
 // EdgeConnection lists the index of the endpoint vertices for each of the 12 edges of the cube
 const GLint EdgeConnection[12][2] = {
     {0, 1},
@@ -395,6 +402,7 @@ const GLint EdgeConnection[12][2] = {
     {2, 6},
     {3, 7}
 };
+</code>
 </pre>
 </details>
 <br>
@@ -509,7 +517,7 @@ Shift + End              slow source point animation on/off
 
 <iframe width="100%" height="868" src="https://www.youtube.com/embed/g1hMBADRBHU" title="Marching Cubes Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-## Links
+## References
 
 * [Marching Cubes: A High Resolution 3D Surface Construction Algorithm (original paper)](https://www.researchgate.net/publication/202232897_Marching_Cubes_A_High_Resolution_3D_Surface_Construction_Algorithm)
 * [Polygonizing a scalar field (Marching Cubes)](https://paulbourke.net/geometry/polygonise/) by [Paul Bourke](https://paulbourke.net/geometry/)
