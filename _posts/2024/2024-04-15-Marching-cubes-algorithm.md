@@ -463,7 +463,7 @@ The code below is self-sufficient, but requires linking with the [GLUT](https://
 * Navigate to the folder with the unpacked MarchingCubes.zip
 * Run `build.sh`
 
-## Compilation: Windows
+### Compilation: Windows
 
 * [Install Visual Studio](https://visualstudio.microsoft.com/downloads/)
 * [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
