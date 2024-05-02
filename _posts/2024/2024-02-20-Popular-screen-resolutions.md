@@ -67,6 +67,35 @@ I never can't remember the parameters of popular resolutions, so decided to make
 | $7680\times4320$ | $33'177'600$  | 8K UHD        |
 | $8192\times4608$ | $37'748'736$  | 8K Full       |
 
+## 16:10 (Ratio: 1.6, Reciprocal: 0.625)
+
+| Width x Height   | Pixels       | Name       |
+|:----------------:|:------------:|:----------:|
+| $256\times160$   | $40'960$     | CGA        |
+| $320\times200$   | $64'000$     | CGA        |
+| $384\times240$   | $92'160$     |            |
+| $640\times400$   | $256'000$    |            |
+| $768\times480$   | $368'640$    |            |
+| $960\times600$   | $576'000$    |            |
+| $1024\times640$  | $655'360$    |            |
+| $1152\times720$  | $829'440$    |            |
+| $1224\times768$  | $940'032$    |            |
+| $1280\times800$  | $1'024'000$  | WXGA       |
+| $1440\times900$  | $1'296'000$  | WXGA+      |
+| $1680\times1050$ | $1'764'000$  | WSXGA+     |
+| $1728\times1080$ | $1'866'240$  |            |
+| $1920\times1200$ | $2'304'000$  | WUXGA      |
+| $2048\times1280$ | $2'621'440$  |            |
+| $2456\times1536$ | $3'772'416$  |            |
+| $2560\times1600$ | $4'096'000$  | WQXGA      |
+| $2880\times1800$ | $5'184'000$  | WQXGA+     |
+| $3072\times1920$ | $5'898'240$  | 3K+        |
+| $3200\times2048$ | $6'553'600$  | WQSXGA     |
+| $3456\times2160$ | $7'464'960$  | 3.5K       |
+| $3840\times2400$ | $9'216'000$  | WQUXGA     |
+| $4096\times2560$ | $10'485'760$ |            |
+| $4608\times2880$ | $13'271'040$ |            |
+
 ## Summary
 
 <img id="myImg" alt="Display Resolutions" src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Vector_Video_Standards8.svg" align="left"/>
