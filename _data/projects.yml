@@ -1,4 +1,20 @@
 main:
+  - title: "Ray-Tracing Framework and Visualizer"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/ray-tracing
+    badge: C++, Graphics
+    image: /assets/img/projects/RayTracingFramework.png
+    page: https://github.com/d-k-ivanov/ray-tracing
+    # notes: Early Accept
+
+  - title: "Geometric Algorithms"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/geometric-algorithms
+    badge: C++, Geometry
+    image: https://github.com/d-k-ivanov/geometric-algorithms/raw/main/Docs/p4/images/p4-5.gif
+    page: https://github.com/d-k-ivanov/geometric-algorithms
+    # notes: Early Accept
+
   - title: "Russian Alphabet for Android"
     authors: Dmitry Ivanov
     code: https://github.com/d-k-ivanov/android-russian-alphabet
