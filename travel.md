@@ -54,6 +54,7 @@ permalink: /travel/
         "CHN": { "fillColor":  getRandomColor() },
         "CYP": { "fillColor":  getRandomColor() },
         "CZE": { "fillColor":  getRandomColor() },
+        "DEU": { "fillColor":  getRandomColor() },
         "ECU": { "fillColor":  getRandomColor() },
         "EGY": { "fillColor":  getRandomColor() },
         "ESP": { "fillColor":  getRandomColor(), isHome: true },
