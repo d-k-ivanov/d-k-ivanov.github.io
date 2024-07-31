@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <link href="https://unpkg.com/nes.css/css/nes.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="style.css"> -->
+
+    <script rel="text/javascript" src="script.js"></script>
+
+    <title>Random Line Picker</title>
+
+    <style>
+        body,
+        code,
+        html {
+            font-family: "Press Start 2P";
+        }
+
+        body {
+            font-size: 12px;
+            color: #212529;
+            background-color: #fff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        textarea {
+            width: 100%;
+            height: 170px;
+            white-space: nowrap;
+        }
+
+        .nes-container {
+            margin-top: 2.5rem;
+            display: block;
+        }
+
+        .controls {
+            margin-top: 1.0rem;
+            display: block;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2 class="title"><i class="snes-jp-logo brand-logo"></i> Random Lines Picker</h2>
+        </div>
+        <main class="main-content">
+            <section class="nes-container with-title">
+                <h3 class="title">Input</h3>
+                <label for="text_input">Enter the text to get the random lines from:</label>
+                <textarea name="text_input" id="text_input" class="nes-textarea" spellcheck="false" data-gramm="false"></textarea>
+            </section>
+
+            <section class="controls">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="nes-field is-inline">
+                                    <label for="number_of_lines">Number of Lines:</label>
+                                    <input type="number" id="number_of_lines" class="nes-input is-success" value="1">
+                                </div>
+                            </td>
+                            <td align="center">
+                                <button class="nes-btn is-success" onclick="selectLines()">Select Lines</button>
+                            </td>
+                            <td align="center">
+                                <button class="nes-btn is-warning" onclick="clearOutput()">Clear Output</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="nes-container with-title">
+                <h3 class="title">Output</h3>
+                <textarea name="text_output" id="text_output" class="nes-textarea" spellcheck="false" data-gramm="false"></textarea>
+                <div style="display: flex; justify-content:flex-end">
+                    <button type="button" class="nes-btn copycode" onclick="copyOutput(event)">copy</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
