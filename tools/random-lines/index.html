@@ -35,7 +35,7 @@
         }
 
         .nes-container {
-            margin-top: 2.5rem;
+            margin-top: 4rem;
             display: block;
         }
 
@@ -62,29 +62,26 @@
                 <h3 class="title">Input</h3>
                 <label for="text_input">Enter the text to get the random lines from:</label>
                 <textarea name="text_input" id="text_input" class="nes-textarea" spellcheck="false" data-gramm="false"></textarea>
-            </section>
-
-            <section class="controls">
                 <div style="display: flex; justify-content:flex-end;">
-                    <div class="nes-field is-inline" style="margin-left: 10px; margin-right: 10px;">
+                    <div class="nes-field is-inline" style="margin-top: 12px; margin-left: 10px; margin-right: 10px;">
                         <label for="number_of_lines">Lines:</label>
                         <input type="number" id="number_of_lines" class="nes-input is-success" value="1" size="10">
                     </div>
-                    <button class="nes-btn is-success" onclick="selectLines()" style="margin-left: 10px; margin-right: 10px;">Pick Lines</button>
-                    <button class="nes-btn is-error" onclick="clearInput()" style="margin-left: 10px; margin-right: 10px;">Clear Input</button>
+                    <button class="nes-btn is-success" onclick="selectLines()" style="margin-top: 20px; margin-left: 10px; margin-right: 10px;">Pick Lines</button>
+                    <button class="nes-btn is-error" onclick="clearInput()" style="margin-top: 20px; margin-left: 10px; margin-right: 10px;">Clear Input</button>
                 </div>
             </section>
 
             <section class="nes-container with-title">
                 <h3 class="title">Output</h3>
                 <label>
-                    <input type="checkbox"  id="preserve_output" class="nes-checkbox" checked />
+                    <input type="checkbox" id="preserve_output" class="nes-checkbox" checked />
                     <span>Preserve already selected lines</span>
                 </label>
                 <textarea name="text_output" id="text_output" class="nes-textarea" spellcheck="false" data-gramm="false"></textarea>
                 <div style="display: flex; justify-content:flex-end;">
-                    <button type="button" class="nes-btn copycode" onclick="copyOutput(event)" style="margin: 10px;">Copy</button>
-                    <button class="nes-btn is-warning" onclick="clearOutput()" style="margin: 10px;">Clear Output</button>
+                    <button type="button" class="nes-btn copycode" onclick="copyOutput(event)" style="margin-top: 20px; margin-left: 10px; margin-right: 10px;">Copy</button>
+                    <button class="nes-btn is-warning" onclick="clearOutput()" style="margin-top: 20px; margin-left: 10px; margin-right: 10px;">Clear Output</button>
                 </div>
             </section>
         </main>
