@@ -65,34 +65,26 @@
             </section>
 
             <section class="controls">
-                <table style="width: 100%;">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="nes-field is-inline">
-                                    <label for="number_of_lines">Number of Lines:</label>
-                                    <input type="number" id="number_of_lines" class="nes-input is-success" value="1">
-                                </div>
-                            </td>
-                            <td align="center">
-                                <button class="nes-btn is-success" onclick="selectLines()">Select Lines</button>
-                            </td>
-                            <td align="center">
-                                <button class="nes-btn is-warning" onclick="clearOutput()">Clear Output</button>
-                            </td>
-                            <td align="center">
-                                <button class="nes-btn is-error" onclick="clearInput()">Clear Input</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="display: flex; justify-content:flex-end;">
+                    <div class="nes-field is-inline" style="margin-left: 10px; margin-right: 10px;">
+                        <label for="number_of_lines">Lines:</label>
+                        <input type="number" id="number_of_lines" class="nes-input is-success" value="1" size="10">
+                    </div>
+                    <button class="nes-btn is-success" onclick="selectLines()" style="margin-left: 10px; margin-right: 10px;">Pick Lines</button>
+                    <button class="nes-btn is-error" onclick="clearInput()" style="margin-left: 10px; margin-right: 10px;">Clear Input</button>
+                </div>
             </section>
 
             <section class="nes-container with-title">
                 <h3 class="title">Output</h3>
+                <label>
+                    <input type="checkbox"  id="preserve_output" class="nes-checkbox" checked />
+                    <span>Preserve already selected lines</span>
+                </label>
                 <textarea name="text_output" id="text_output" class="nes-textarea" spellcheck="false" data-gramm="false"></textarea>
-                <div style="display: flex; justify-content:flex-end">
-                    <button type="button" class="nes-btn copycode" onclick="copyOutput(event)">copy</button>
+                <div style="display: flex; justify-content:flex-end;">
+                    <button type="button" class="nes-btn copycode" onclick="copyOutput(event)" style="margin: 10px;">Copy</button>
+                    <button class="nes-btn is-warning" onclick="clearOutput()" style="margin: 10px;">Clear Output</button>
                 </div>
             </section>
         </main>

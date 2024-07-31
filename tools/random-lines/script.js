@@ -23,12 +23,18 @@ function selectLines()
         numberOfLinesToSelect = arrayOfLines.length;
     }
 
-    var result = [];
+    var result;
+    if(document.getElementById('preserve_output').checked && document.getElementById('text_output').value != '')
+    {
+        result = document.getElementById('text_output').value.replace(/\r/g, '').split('\n');
+    } else {
+        result = [];
+    }
+
     for (var i = 0; i < numberOfLinesToSelect; i++)
     {
         // Select a random line
         var selectedLineNum = Math.floor(Math.random() * arrayOfLines.length);
-        console.log(selectedLineNum);
         result.push(arrayOfLines[selectedLineNum]);
 
         // Remove the selected line from the input
