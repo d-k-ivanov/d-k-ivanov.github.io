@@ -1,3 +1,8 @@
+function clearInput()
+{
+    document.getElementById('text_input').value = '';
+}
+
 function clearOutput()
 {
     document.getElementById('text_output').value = '';
