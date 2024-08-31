@@ -47,6 +47,12 @@
         </a>
         {% endif %}
 
+        {% if site.orcid %}
+        <a style="margin: 0 5px 0 0" href="{{ site.orcid }}" target="_blank">
+            <i class="ai ai-orcid" style="font-size:1.3rem"></i>
+        </a>
+        {% endif %}
+
         {% if site.twitter %}
         <a style="margin: 0 0 0 0" href="{{ site.twitter }}" target="_blank">
             <i class="fab fa-twitter"></i>
