@@ -48,10 +48,10 @@ After defining intersections with spherical geometries, the ray tracing engine s
 We know a point is on the surface of a plane if it satisfies the plane equation:
 
 $$
-Plane = Ax + Bx + Cz + D = 0 \\ where: A^2 + B^2 + C^2 = 1
+Ax + Bx + Cz + D = 0 \\ where: A^2 + B^2 + C^2 = 1
 $$
 
-If no point along the ray satisfies the plane equation, the ray, and plane do not intersect [\[Sza17\]](https://gamephysicscookbook.com/):
+A point with coordinates $(x, y, z)$ is in the plane only when the values $x$, $y$ and $z$ make the equation hold true. If no point along the ray satisfies the plane equation, the ray, and plane do not intersect [\[Sza17\]](https://gamephysicscookbook.com/):
 
 <img id="myImg" alt="Ray-Plane Intersection" src="https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/ray-plane-intersection.png" width="100%"/>
 <sub>Figure 4. Ray-Plane intersection diagram.</sub>
@@ -63,6 +63,13 @@ Once the ray-plane intersection is defined, the ray-polygon intersection can be 
 
 This algorithm works by shooting rays in an arbitrary direction and counting the number of intersections with the polygon. If the number is odd, the point is inside the polygon; otherwise, it is outside. The Jordan curve theorem is a fundamental concept in computational geometry. Once the ray-polygon interacting achieved, the ray tracing engine can construct more complex geometries like triangles quadrilaterals, and other polygons.
 
+Möller and Trumbore presented [\[MT97\]](https://www.tandfonline.com/doi/abs/10.1080/10867651.1997.10487468) the faster and simpler ray-triangle intersection algorithm. The algorithm translates the origin of the ray to triangle-specific barycentric coordinates, then changes the base to yield a vector containing the distance $t$ and the coordinates $(u,v)$ of the intersection, as illustrated on the figure 6:
+
+<img id="myImg" alt="Jordan Curve Theorem" src="https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/moller_trumbore_algorithm.png" width="100%"/>
+<sub>Figure 6. Geometrical illustration of Möller-Trumbore intersection algorithm.</sub>
+
+It is shown that the Möller-Trumbore algorithm is comparable in speed to previous methods while significantly reducing memory storage costs, by avoiding storing triangle plane equations. Baldwin and Weber presented [\[BW16\]](https://jcgt.org/published/0005/03/03/) a faster ray-triangle intersection calculation at the expense of pre-computing and storing a small amount of extra information for each triangle. The Baldwin-Weber algorithm is 1-6\% faster than the Möller-Trumbore algorithm.
+
 ## Optimizations
 
 Another important area in ray tracing is performance optimizations and acceleration techniques. Using different geometry structures allows for the reduction of complicated computations, increasing the rendering time of a scene. The figure below presents the broad classification of various optimization approaches described by Arvo and Kirk [\[AK89\]](https://dl.acm.org/doi/10.5555/94788.94794).
@@ -70,13 +77,15 @@ Another important area in ray tracing is performance optimizations and accelerat
 <img id="myImg" alt="Acceleration Techniques" src="https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/acceleration-techniques.png" width="100%"/>
 <sub>Figure 6. A broad classification of acceleration techniques.</sub>
 
-BVH trees are the most important optimization technology in ray tracing. A scene can consist of thousands of objects. Some of them are visible, some of them are not. If an object invisible, it could be traceable or not traceable. BVH constructions and bounding box hit-checking algorithms help to the time of initial scene construction and ray-tracing computations. The figures below show the increasing number of objects on the ray traced scene. Each of the spheres wrapped into a bounding box and the whole scene exists as one BVH construction.
+Bounding Volumes Hierarchy (BVH) trees are the most important optimization technology in ray tracing. A scene can consist of thousands of objects. BVH structure makes it possible to avoid computing the intersections between a single ray and each object in a large group of objects when the bounding box of the group does not intersect the ray. BVH constructions and bounding box hit-checking algorithms help to the time of initial scene construction and ray-tracing computations. The figures below show the increasing number of objects on the ray traced scene. Each of the spheres wrapped into a bounding box and the whole scene exists as one BVH construction.
 
 | 100 objects (5s) | 1000 objects (27s) | 5000 objects (106s) | 10000 objects (112s) | 20000 objects (149s) |
 |------------------|--------------------|---------------------|----------------------|----------------------|
 |![100](https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/bvh-100.png)|![1000](https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/bvh-1000.png)|![5000](https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/bvh-5000.png)|![10000](https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/bvh-10000.png)|![20000](https://raw.githubusercontent.com/d-k-ivanov/geometric-algorithms/main/Docs/p5/images/bvh-20000.png)|
 
 As was shown in the figures above, the computation time for 100 samples per pixel doesn't increase too much when sphered starting to overlap each other.
+
+For surfaces defined by its parametric equations (like Bézier and B-splines), the usage of binary trees with small parts of the surfaces enclosed by parallelepipeds and testing these enclosures which part of the surface may be hit by the ray is a good idea, as proposed by Barth and Stürzlinger [\[BS93\]](https://www.sciencedirect.com/science/article/abs/pii/0097849393900314).
 
 Another interesting optimization approach proposed by Alexander Reshetov [\[Res19\]](http://link.springer.com/10.1007/978-1-4842-4427-2_8). Their GARP method (Geometric Approach to Ray/bilinear Patch intersections) is trying to find a balance between the simplicity of triangles and the richness of such smooth shapes as subdivision surfaces, NURBS, and Bézier patches.
 
@@ -100,4 +109,7 @@ As was shown, the computational geometry is the essential part of the ray tracin
 * [Eric Haines. Essential ray tracing algorithms.](https://dl.acm.org/doi/10.5555/94788.94790)
 * [Gabor Szauer. Game Physics Cookbook.](https://gamephysicscookbook.com/)
 * [James Arvo and David Kirk. A survey of ray tracing acceleration techniques.](https://dl.acm.org/doi/10.5555/94788.94794)
+* [Tomas Möller and Ben Trumbore. Fast, Minimum Storage Ray-Triangle Intersection.](https://www.tandfonline.com/doi/abs/10.1080/10867651.1997.10487468)
+* [Doug Baldwin and Michael Weber. Fast Ray-Triangle Intersections by Coordinate Transformation](https://jcgt.org/published/0005/03/03/)
+* [W. Barth and W. Stürzlinger. Efficient ray tracing for Bezier and B-spline surfaces.](https://www.sciencedirect.com/science/article/abs/pii/0097849393900314)
 * [Alexander Reshetov. Cool Patches: A Geometric Approach to Ray/Bilinear Patch Intersections.](http://link.springer.com/10.1007/978-1-4842-4427-2_8)
