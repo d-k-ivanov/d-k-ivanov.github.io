@@ -5,7 +5,9 @@ main:
     badge: C++, Graphics
     image: /assets/img/projects/RayTracingFramework.png
     page: https://github.com/d-k-ivanov/ray-tracing
-    # notes: Early Accept
+    pdf: https://raw.githubusercontent.com/d-k-ivanov/ray-tracing/main/Docs/tfm.pdf
+    demo: https://www.youtube.com/watch?v=koZc1S7LPkQ
+    # notes: Oral Presentation
 
   - title: "Geometric Algorithms"
     authors: Dmitry Ivanov
