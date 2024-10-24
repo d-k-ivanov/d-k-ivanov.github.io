@@ -13,6 +13,10 @@
 
     for (var i = 0; i < images.length; i++)
     {
+        if (images[i].alt === "no_popup")
+        {
+            continue;
+        }
         images[i].onclick = function ()
         {
             modal.style.display = "block";
