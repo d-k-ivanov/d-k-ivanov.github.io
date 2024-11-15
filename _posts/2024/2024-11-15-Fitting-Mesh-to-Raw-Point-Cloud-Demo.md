@@ -1,6 +1,6 @@
 ---
 layout: post
-description: Fitting Deformable Mesh Models to Raw Point Cloud
+description: Fitting Deformable Mesh Models to Raw Point Cloud (Demo Only)
 date: 2024-11-15
 ---
 <h1> Fitting Deformable Mesh Models to Raw Point Cloud </h1>
