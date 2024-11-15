@@ -1,9 +1,9 @@
 ---
 layout: post
-description: Fitting Deformable Mesh Models to Raw Point Clouds
+description: Fitting Deformable Mesh Models to Raw Point Cloud
 date: 2024-11-15
 ---
-<h1> Fitting Deformable Mesh Models to Raw Point Clouds </h1>
+<h1> Fitting Deformable Mesh Models to Raw Point Cloud </h1>
 
 I have begun experimenting with artificial intelligence in Computer Graphics, and find even the smallest details captivating. Currently, I'm reading [3D Deep Learning with Python](https://www.packtpub.com/en-es/product/3d-deep-learning-with-python-9781803247823) and definitely can recommend this book as a brief introduction to the initial stage of AI in Computer Graphics.
 
