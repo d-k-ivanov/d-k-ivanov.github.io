@@ -9,7 +9,7 @@ I have begun experimenting with artificial intelligence in Computer Graphics, an
 
 As the first try, I made a small video which contains a frame for the state of a spherical point cloud that is slowly optimizing towards the sample point cloud (pedestrian.ply)
 
-<iframe width="100%" height="760" src="https://www.youtube.com/embed/Hk902Jvl8ik" title="Fitting Deformable Mesh Models to Raw Point Clouds" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="100%" height="760" src="https://www.youtube.com/embed/VaN-kVNxADk" title="Fitting Deformable Mesh Models to Raw Point Clouds" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## References
 
