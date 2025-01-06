@@ -10,12 +10,6 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1669769792i/63891183.jpg
 #   notes: >
 
-# - title: "The Ph.D. Grind: A Ph.D. Student Memoir"
-#   year: 2024
-#   author: Philip J. Guo
-#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1476268481i/15731248.jpg
-#   notes: >
-
 # - title: "La sombra del viento"
 #   year: 2024
 #   author: Carlos Ruiz Zafón
@@ -26,6 +20,12 @@
   year: 2025
   author: David Foster
   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1562579441i/44144492.jpg
+  notes: >
+
+- title: "The Ph.D. Grind: A Ph.D. Student Memoir"
+  year: 2024
+  author: Philip J. Guo
+  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1476268481i/15731248.jpg
   notes: >
 
 - title: "Ikabog"
