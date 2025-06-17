@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Compare Two Lists</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --field-width: 320px;
+            --field-height: 200px;
+            --gap: 1.5rem;
+            --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f8f9fa;
+            color: #222;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--gap);
+        }
+
+        .inputs,
+        .outputs {
+            display: flex;
+            gap: var(--gap);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: var(--field-width);
+            max-width: var(--field-width);
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        textarea,
+        .output {
+            width: var(--field-width);
+            height: var(--field-height);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            background: #fff;
+            resize: vertical;
+            margin-bottom: 0.5rem;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus,
+        .output:focus {
+            border-color: #1976d2;
+            outline: none;
+        }
+
+        .output {
+            user-select: text;
+            white-space: pre;
+            overflow: auto;
+            cursor: text;
+            background: #f4f6fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .counter {
+            font-size: 0.95em;
+            color: #555;
+            margin-top: 0.1rem;
+            text-align: right;
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.3em 1em;
+            font-size: 1em;
+            border: 1px solid #1976d2;
+            background: #1976d2;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+
+        button:hover,
+        button:focus {
+            background: #145ea8;
+            border-color: #145ea8;
+        }
+
+        @media (max-width: 900px) {
+
+            .inputs,
+            .outputs {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Compare Two Lists</h1>
+    <div class="container">
+        <div class="inputs">
+            <div class="field-group">
+                <label for="list1">List 1</label>
+                <textarea id="list1" placeholder="Enter one item per line"></textarea>
+                <div class="actions">
+                    <button type="button" id="load1">Load from file</button>
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="list2">List 2</label>
+                <textarea id="list2" placeholder="Enter one item per line"></textarea>
+                <div class="actions">
+                    <button type="button" id="load2">Load from file</button>
+                </div>
+            </div>
+        </div>
+        <div class="options">
+            <label>
+                <input type="checkbox" id="caseInsensitive">
+                Case-insensitive comparison
+            </label>
+        </div>
+        <div class="outputs">
+            <div class="field-group">
+                <label for="only1">Only in List 1</label>
+                <div class="actions">
+                    <button type="button" data-copy="only1">Copy</button>
+                </div>
+                <pre id="only1" class="output" tabindex="0" aria-label="Only in List 1" readonly></pre>
+                <div class="counter" id="count-only1">0 lines</div>
+            </div>
+            <div class="field-group">
+                <label for="both">In Both Lists</label>
+                <div class="actions">
+                    <button type="button" data-copy="both">Copy</button>
+                </div>
+                <pre id="both" class="output" tabindex="0" aria-label="In Both Lists" readonly></pre>
+                <div class="counter" id="count-both">0 lines</div>
+            </div>
+            <div class="field-group">
+                <label for="only2">Only in List 2</label>
+                <div class="actions">
+                    <button type="button" data-copy="only2">Copy</button>
+                </div>
+                <pre id="only2" class="output" tabindex="0" aria-label="Only in List 2" readonly></pre>
+                <div class="counter" id="count-only2">0 lines</div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="fileInput" style="display:none" accept=".txt,text/plain">
+    <script>
+        // Utility: get trimmed, non-empty lines from textarea
+        function getLines(text)
+        {
+            return text
+                .split(/\r?\n/)
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+        }
+
+        // Compare two lists, return {only1, only2, both}
+        function compareLists(list1, list2, caseInsensitive)
+        {
+            const norm = s => caseInsensitive ? s.toLowerCase() : s;
+            const set1 = new Set(list1.map(norm));
+            const set2 = new Set(list2.map(norm));
+            const only1 = [];
+            const only2 = [];
+            const both = [];
+
+            // Map normalized value to original for output
+            const map1 = new Map();
+            const map2 = new Map();
+            list1.forEach(s => map1.set(norm(s), s));
+            list2.forEach(s => map2.set(norm(s), s));
+
+            set1.forEach(val =>
+            {
+                if (set2.has(val))
+                {
+                    both.push(map1.get(val));
+                } else
+                {
+                    only1.push(map1.get(val));
+                }
+            });
+            set2.forEach(val =>
+            {
+                if (!set1.has(val))
+                {
+                    only2.push(map2.get(val));
+                }
+            });
+            return { only1, only2, both };
+        }
+
+        // DOM elements
+        const list1El = document.getElementById('list1');
+        const list2El = document.getElementById('list2');
+        const only1El = document.getElementById('only1');
+        const only2El = document.getElementById('only2');
+        const bothEl = document.getElementById('both');
+        const caseInsensitiveEl = document.getElementById('caseInsensitive');
+        const countOnly1 = document.getElementById('count-only1');
+        const countOnly2 = document.getElementById('count-only2');
+        const countBoth = document.getElementById('count-both');
+        const fileInput = document.getElementById('fileInput');
+
+        function updateOutputs()
+        {
+            const lines1 = getLines(list1El.value);
+            const lines2 = getLines(list2El.value);
+            const caseInsensitive = caseInsensitiveEl.checked;
+            const { only1, only2, both } = compareLists(lines1, lines2, caseInsensitive);
+
+            only1El.textContent = only1.join('\n');
+            only2El.textContent = only2.join('\n');
+            bothEl.textContent = both.join('\n');
+            countOnly1.textContent = `${only1.length} line${only1.length !== 1 ? 's' : ''}`;
+            countOnly2.textContent = `${only2.length} line${only2.length !== 1 ? 's' : ''}`;
+            countBoth.textContent = `${both.length} line${both.length !== 1 ? 's' : ''}`;
+        }
+
+        // Event listeners for live update
+        [list1El, list2El, caseInsensitiveEl].forEach(el =>
+            el.addEventListener('input', updateOutputs)
+        );
+        caseInsensitiveEl.addEventListener('change', updateOutputs);
+
+        // Copy to clipboard
+        document.querySelectorAll('button[data-copy]').forEach(btn =>
+        {
+            btn.addEventListener('click', () =>
+            {
+                const id = btn.getAttribute('data-copy');
+                const el = document.getElementById(id);
+                if (el.textContent.length === 0) return;
+                navigator.clipboard.writeText(el.textContent);
+            });
+        });
+
+        // Enable Ctrl+A to select all in output fields
+        document.querySelectorAll('.output').forEach(el =>
+        {
+            el.addEventListener('keydown', e =>
+            {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a')
+                {
+                    e.preventDefault();
+                    // Select all text in the pre element
+                    const range = document.createRange();
+                    range.selectNodeContents(el);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            });
+            // Allow clicking to focus for keyboard selection
+            el.addEventListener('click', () => el.focus());
+        });
+
+        // File loading
+        function handleFileLoad(targetTextarea)
+        {
+            fileInput.onchange = function ()
+            {
+                const file = fileInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e)
+                {
+                    targetTextarea.value = e.target.result;
+                    updateOutputs();
+                };
+                reader.readAsText(file);
+                fileInput.value = '';
+            };
+            fileInput.click();
+        }
+        document.getElementById('load1').addEventListener('click', () => handleFileLoad(list1El));
+        document.getElementById('load2').addEventListener('click', () => handleFileLoad(list2El));
+
+        // Initial update
+        updateOutputs();
+    </script>
+</body>
+
+</html>
