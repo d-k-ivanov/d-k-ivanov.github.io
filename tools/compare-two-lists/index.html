@@ -2,12 +2,16 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Compare Two Lists</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Font Awesome -->
+    <!-- _iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_ -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- _iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_ -->
+    <meta charset="utf-8">
+    <!-- _iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_ -->
+    <title>Compare Two Lists</title>
+    <!-- _iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_ -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- _iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_iddi_ -->
 
     <style>
         :root {
@@ -371,6 +375,23 @@
 
         // Initial update
         updateOutputs();
+
+        // Utility to detect hard refresh (Ctrl+R or Cmd+R)
+        window.addEventListener('keydown', function (e) {
+            // Check for Ctrl+R (Windows/Linux) or Cmd+R (macOS)
+            const isHardRefresh =
+                (e.key === 'r' || e.key === 'R') &&
+                (e.ctrlKey || e.metaKey) &&
+                !e.shiftKey && !e.altKey;
+
+            if (isHardRefresh) {
+                // Remove only the relevant keys to avoid clearing unrelated data
+                localStorage.removeItem('compare-lists-list1');
+                localStorage.removeItem('compare-lists-list2');
+                // Optionally, show a quick notification (non-blocking)
+                // alert('Compare lists data cleared!');
+            }
+        });
     </script>
 </body>
 
