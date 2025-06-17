@@ -237,7 +237,12 @@
     <div class="container">
         <div class="inputs">
             <div class="field-group">
-                <label for="list1">List 1</label>
+                <div class="actions">
+                    <label for="list1">List 1</label>
+                    <button type="button" class="copy-btn" data-copy="list1" title="Copy List 1 to clipboard">
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off"></textarea>
                 <div class="actions">
                     <button type="button" id="load1">Load from file</button>
@@ -245,7 +250,12 @@
                 </div>
             </div>
             <div class="field-group">
-                <label for="list2">List 2</label>
+                <div class="actions">
+                    <label for="list2">List 2</label>
+                    <button type="button" class="copy-btn" data-copy="list2" title="Copy List 2 to clipboard">
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off"></textarea>
                 <div class="actions">
                     <button type="button" id="load2">Load from file</button>
@@ -432,15 +442,17 @@
             updateOutputs();
         });
 
-        // Copy to clipboard
+        // Copy to clipboard for all copy buttons (inputs and outputs)
         document.querySelectorAll('button[data-copy]').forEach(btn =>
         {
             btn.addEventListener('click', (event) =>
             {
                 const id = btn.getAttribute('data-copy');
                 const el = document.getElementById(id);
-                if (el.textContent.length === 0) return;
-                navigator.clipboard.writeText(el.textContent);
+                // For textarea, use .value; for pre, use .textContent
+                const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+                if (!text.length) return;
+                navigator.clipboard.writeText(text);
 
                 // Show a quick notification (non-blocking)
                 const originalText = btn.innerHTML;
@@ -450,12 +462,11 @@
                     btn.innerHTML = originalText;
                 }, 500);
 
-                // Show a quick notification baloon
-
-                // Get the cursor location with an offset
+                // Position the notification near the click
                 var x = event.clientX - 50;
                 var y = event.clientY - 50;
 
+                // Show a quick notification baloon
                 const notification = document.createElement('div');
                 notification.textContent = `Copied`;
                 notification.style.position = 'absolute';
