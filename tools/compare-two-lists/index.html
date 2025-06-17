@@ -79,14 +79,19 @@
             gap: var(--gap);
             justify-content: center;
             flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: flex-start;
         }
 
         .field-group {
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            min-width: var(--field-width);
-            max-width: var(--field-width);
+            min-width: 180px;
+            flex: 1 1 0;
+            /* Allow field to shrink/grow, but not below 180px */
+            max-width: 100%;
         }
 
         label {
@@ -96,7 +101,9 @@
 
         textarea,
         .output {
-            width: var(--field-width);
+            min-width: 120px;
+            min-height: 60px;
+            width: 100%;
             height: var(--field-height);
             font-family: var(--font-mono);
             font-size: 1rem;
@@ -108,7 +115,8 @@
             color: var(--fg);
             resize: vertical;
             margin-bottom: 0.5rem;
-            transition: border-color 0.2s, background 0.2s, color 0.2s;
+            transition: border-color 0.2s, background 0.2s, color 0.2s, width 0.2s;
+            overflow: auto;
         }
 
         textarea:focus,
@@ -184,7 +192,11 @@
             .inputs,
             .outputs {
                 flex-direction: column;
-                align-items: center;
+                align-items: stretch;
+            }
+
+            .field-group {
+                min-width: 0;
             }
         }
 
