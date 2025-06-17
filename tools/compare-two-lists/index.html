@@ -337,7 +337,7 @@
                 btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                }, 1000);
+                }, 500);
 
                 // Show a quick notification baloon
 
@@ -361,8 +361,8 @@
                     notification.style.opacity = '0';
                     setTimeout(() => {
                         document.body.removeChild(notification);
-                    }, 10);
-                }, 200);
+                    }, 100);
+                }, 500);
             });
         });
 
