@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <title>Compare Two Lists</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --field-width: 320px;
@@ -88,7 +92,19 @@
             display: flex;
             gap: 0.5rem;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 0.25rem;
+        }
+
+        .copy-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 1rem;
         }
 
         .counter {
@@ -163,25 +179,31 @@
         </div>
         <div class="outputs">
             <div class="field-group">
-                <label for="only1">Only in List 1</label>
                 <div class="actions">
-                    <button type="button" data-copy="only1">Copy</button>
+                    <label for="only1">Only in List 1</label>
+                    <button type="button" class="copy-btn" data-copy="only1">
+                        <i class="fas fa-clipboard"></i>
+                    </button>
                 </div>
                 <pre id="only1" class="output" tabindex="0" aria-label="Only in List 1" readonly></pre>
                 <div class="counter" id="count-only1">0 lines</div>
             </div>
             <div class="field-group">
-                <label for="both">In Both Lists</label>
                 <div class="actions">
-                    <button type="button" data-copy="both">Copy</button>
+                    <label for="both">In Both Lists</label>
+                    <button type="button" class="copy-btn" data-copy="both">
+                        <i class="fas fa-clipboard"></i>
+                    </button>
                 </div>
                 <pre id="both" class="output" tabindex="0" aria-label="In Both Lists" readonly></pre>
                 <div class="counter" id="count-both">0 lines</div>
             </div>
             <div class="field-group">
-                <label for="only2">Only in List 2</label>
                 <div class="actions">
-                    <button type="button" data-copy="only2">Copy</button>
+                    <label for="only2">Only in List 2</label>
+                    <button type="button" class="copy-btn" data-copy="only2">
+                        <i class="fas fa-clipboard"></i>
+                    </button>
                 </div>
                 <pre id="only2" class="output" tabindex="0" aria-label="Only in List 2" readonly></pre>
                 <div class="counter" id="count-only2">0 lines</div>
@@ -283,11 +305,13 @@
         caseInsensitiveEl.addEventListener('change', updateOutputs);
 
         // Clear buttons
-        clear1Btn.addEventListener('click', () => {
+        clear1Btn.addEventListener('click', () =>
+        {
             list1El.value = '';
             updateOutputs();
         });
-        clear2Btn.addEventListener('click', () => {
+        clear2Btn.addEventListener('click', () =>
+        {
             list2El.value = '';
             updateOutputs();
         });
