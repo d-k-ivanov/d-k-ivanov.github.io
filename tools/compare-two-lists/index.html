@@ -19,19 +19,51 @@
             --field-height: 200px;
             --gap: 1.5rem;
             --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+
+            /* Light theme colors */
+            --bg: #f8f9fa;
+            --fg: #222;
+            --border: #bbb;
+            --primary: #1976d2;
+            --primary-dark: #145ea8;
+            --output-bg: #f4f6fa;
+            --output-fg: #222;
+            --counter: #555;
         }
 
         body {
             font-family: system-ui, sans-serif;
-            background: #f8f9fa;
-            color: #222;
+            background: var(--bg);
+            color: var(--fg);
             margin: 0;
             padding: 2rem;
+            transition: background 0.2s, color 0.2s;
         }
 
         h1 {
             text-align: center;
             margin-bottom: 2rem;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1.2rem;
+            right: 2rem;
+            z-index: 10;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.7rem;
+            cursor: pointer;
+            padding: 0.2em 0.4em;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .theme-toggle:focus,
+        .theme-toggle:hover {
+            background: rgba(25, 118, 210, 0.08);
+            outline: none;
         }
 
         .container {
@@ -68,19 +100,20 @@
             height: var(--field-height);
             font-family: var(--font-mono);
             font-size: 1rem;
-            border: 1px solid #bbb;
+            border: 1px solid var(--border);
             border-radius: 4px;
             padding: 0.5rem;
             box-sizing: border-box;
             background: #fff;
+            color: var(--fg);
             resize: vertical;
             margin-bottom: 0.5rem;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
         }
 
         textarea:focus,
         .output:focus {
-            border-color: #1976d2;
+            border-color: var(--primary);
             outline: none;
         }
 
@@ -89,7 +122,8 @@
             white-space: pre;
             overflow: auto;
             cursor: text;
-            background: #f4f6fa;
+            background: var(--output-bg);
+            color: var(--output-fg);
         }
 
         .actions {
@@ -105,7 +139,7 @@
             height: 36px;
             padding: 0;
             display: inline-flex;
-            color:  #1976d2 !important;
+            color: var(--primary) !important;
             background: none !important;
             align-items: center;
             justify-content: center;
@@ -115,7 +149,7 @@
 
         .counter {
             font-size: 0.95em;
-            color: #555;
+            color: var(--counter);
             margin-top: 0.1rem;
             text-align: right;
         }
@@ -131,8 +165,8 @@
         button {
             padding: 0.3em 1em;
             font-size: 1em;
-            border: 1px solid #1976d2;
-            background: #1976d2;
+            border: 1px solid var(--primary);
+            background: var(--primary);
             color: #fff;
             border-radius: 3px;
             cursor: pointer;
@@ -141,8 +175,8 @@
 
         button:hover,
         button:focus {
-            background: #145ea8;
-            border-color: #145ea8;
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
 
         @media (max-width: 900px) {
@@ -153,16 +187,53 @@
                 align-items: center;
             }
         }
+
+        /* Dark theme overrides */
+        body.dark {
+            --bg: #181c20;
+            --fg: #e4e7eb;
+            --border: #333a42;
+            --primary: #90caf9;
+            --primary-dark: #42a5f5;
+            --output-bg: #23272e;
+            --output-fg: #e4e7eb;
+            --counter: #b0b8c1;
+        }
+
+        body.dark textarea,
+        body.dark .output {
+            background: #23272e;
+            color: #e4e7eb;
+            border-color: #333a42;
+        }
+
+        body.dark .output {
+            background: var(--output-bg);
+            color: var(--output-fg);
+        }
+
+        body.dark .copy-btn {
+            color: var(--primary) !important;
+        }
+
+        body.dark .theme-toggle {
+            color: var(--primary);
+        }
     </style>
 </head>
 
 <body>
+    <button class="theme-toggle" id="themeToggleBtn" title="Toggle dark/light theme" aria-label="Toggle dark/light theme">
+        <i class="fa-solid fa-moon"></i>
+    </button>
     <h1>Compare Two Lists</h1>
     <div class="container">
         <div class="inputs">
             <div class="field-group">
                 <label for="list1">List 1</label>
-                <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+                <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false"
+                    data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+                    spellcheck="false"></textarea>
                 <div class="actions">
                     <button type="button" id="load1">Load from file</button>
                     <button type="button" id="clear1" title="Clear List 1">Clear</button>
@@ -170,7 +241,9 @@
             </div>
             <div class="field-group">
                 <label for="list2">List 2</label>
-                <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+                <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false"
+                    data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+                    spellcheck="false"></textarea>
                 <div class="actions">
                     <button type="button" id="load2">Load from file</button>
                     <button type="button" id="clear2" title="Clear List 2">Clear</button>
@@ -218,6 +291,35 @@
     </div>
     <input type="file" id="fileInput" style="display:none" accept=".txt,text/plain">
     <script>
+        // --- Dark Theme Support ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const THEME_KEY = 'compare-lists-theme';
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                document.body.classList.remove('dark');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+
+        // Load theme from localStorage or system preference
+        let savedTheme = localStorage.getItem(THEME_KEY);
+        if (!savedTheme) {
+            savedTheme = prefersDark ? 'dark' : 'light';
+        }
+        setTheme(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark');
+            const newTheme = isDark ? 'dark' : 'light';
+            setTheme(newTheme);
+            localStorage.setItem(THEME_KEY, newTheme);
+        });
+
         // Utility: get trimmed, non-empty lines from textarea
         function getLines(text)
         {
@@ -325,7 +427,7 @@
         // Copy to clipboard
         document.querySelectorAll('button[data-copy]').forEach(btn =>
         {
-            btn.addEventListener('click', () =>
+            btn.addEventListener('click', (event) =>
             {
                 const id = btn.getAttribute('data-copy');
                 const el = document.getElementById(id);
@@ -350,7 +452,7 @@
                 notification.style.position = 'absolute';
                 notification.style.top = y + "px";
                 notification.style.left = x + "px";
-                notification.style.background = '#1976d2';
+                notification.style.background = 'var(--primary)';
                 notification.style.color = '#fff';
                 notification.style.padding = '5px 5px';
                 notification.style.borderRadius = '5px';
@@ -421,8 +523,6 @@
                 // Remove only the relevant keys to avoid clearing unrelated data
                 localStorage.removeItem('compare-lists-list1');
                 localStorage.removeItem('compare-lists-list2');
-                // Optionally, show a quick notification (non-blocking)
-                // alert('Compare lists data cleared!');
             }
         });
     </script>
