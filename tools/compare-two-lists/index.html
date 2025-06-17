@@ -61,6 +61,31 @@
             outline: none;
         }
 
+        .back-btn {
+            position: absolute;
+            top: 1.2rem;
+            left: 2rem;
+            z-index: 10;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.7rem;
+            cursor: pointer;
+            padding: 0.2em 0.4em;
+            border-radius: 50%;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .back-btn:focus,
+        .back-btn:hover {
+            background: rgba(25, 118, 210, 0.08);
+            outline: none;
+            color: var(--primary-dark);
+        }
+
         .container {
             display: flex;
             flex-direction: column;
@@ -230,6 +255,9 @@
 </head>
 
 <body>
+    <a href="/tools/" class="back-btn" title="Back" aria-label="Back">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
     <button class="theme-toggle" id="themeToggleBtn" title="Toggle dark/light theme" aria-label="Toggle dark/light theme">
         <i class="fa-solid fa-moon"></i>
     </button>
