@@ -231,9 +231,7 @@
         <div class="inputs">
             <div class="field-group">
                 <label for="list1">List 1</label>
-                <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false"
-                    data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false"></textarea>
+                <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off"></textarea>
                 <div class="actions">
                     <button type="button" id="load1">Load from file</button>
                     <button type="button" id="clear1" title="Clear List 1">Clear</button>
@@ -241,9 +239,7 @@
             </div>
             <div class="field-group">
                 <label for="list2">List 2</label>
-                <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false"
-                    data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false"></textarea>
+                <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" wrap="off"></textarea>
                 <div class="actions">
                     <button type="button" id="load2">Load from file</button>
                     <button type="button" id="clear2" title="Clear List 2">Clear</button>
@@ -296,11 +292,14 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const THEME_KEY = 'compare-lists-theme';
 
-        function setTheme(theme) {
-            if (theme === 'dark') {
+        function setTheme(theme)
+        {
+            if (theme === 'dark')
+            {
                 document.body.classList.add('dark');
                 themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-            } else {
+            } else
+            {
                 document.body.classList.remove('dark');
                 themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
             }
@@ -308,12 +307,14 @@
 
         // Load theme from localStorage or system preference
         let savedTheme = localStorage.getItem(THEME_KEY);
-        if (!savedTheme) {
+        if (!savedTheme)
+        {
             savedTheme = prefersDark ? 'dark' : 'light';
         }
         setTheme(savedTheme);
 
-        themeToggleBtn.addEventListener('click', () => {
+        themeToggleBtn.addEventListener('click', () =>
+        {
             const isDark = document.body.classList.toggle('dark');
             const newTheme = isDark ? 'dark' : 'light';
             setTheme(newTheme);
@@ -437,7 +438,8 @@
                 // Show a quick notification (non-blocking)
                 const originalText = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
-                setTimeout(() => {
+                setTimeout(() =>
+                {
                     btn.innerHTML = originalText;
                 }, 500);
 
@@ -459,9 +461,11 @@
                 notification.style.zIndex = '1000';
                 notification.style.transition = 'opacity 0.3s';
                 document.body.appendChild(notification);
-                setTimeout(() => {
+                setTimeout(() =>
+                {
                     notification.style.opacity = '0';
-                    setTimeout(() => {
+                    setTimeout(() =>
+                    {
                         document.body.removeChild(notification);
                     }, 100);
                 }, 500);
@@ -513,13 +517,15 @@
         updateOutputs();
 
         // Utility to detect hard refresh (Ctrl+R or Cmd+R)
-        window.addEventListener('keydown', function (e) {
+        window.addEventListener('keydown', function (e)
+        {
             // Check for Ctrl+R (Windows/Linux) or Cmd+R (macOS)
             const isHardRefresh =
                 (e.key === 'r' || e.key === 'R') &&
                 (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey;
 
-            if (isHardRefresh) {
+            if (isHardRefresh)
+            {
                 // Remove only the relevant keys to avoid clearing unrelated data
                 localStorage.removeItem('compare-lists-list1');
                 localStorage.removeItem('compare-lists-list2');
