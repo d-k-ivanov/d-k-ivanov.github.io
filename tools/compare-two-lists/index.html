@@ -140,16 +140,18 @@
         <div class="inputs">
             <div class="field-group">
                 <label for="list1">List 1</label>
-                <textarea id="list1" placeholder="Enter one item per line"></textarea>
+                <textarea id="list1" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
                 <div class="actions">
                     <button type="button" id="load1">Load from file</button>
+                    <button type="button" id="clear1" title="Clear List 1">Clear</button>
                 </div>
             </div>
             <div class="field-group">
                 <label for="list2">List 2</label>
-                <textarea id="list2" placeholder="Enter one item per line"></textarea>
+                <textarea id="list2" placeholder="Enter one item per line" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
                 <div class="actions">
                     <button type="button" id="load2">Load from file</button>
+                    <button type="button" id="clear2" title="Clear List 2">Clear</button>
                 </div>
             </div>
         </div>
@@ -244,9 +246,23 @@
         const countOnly2 = document.getElementById('count-only2');
         const countBoth = document.getElementById('count-both');
         const fileInput = document.getElementById('fileInput');
+        const clear1Btn = document.getElementById('clear1');
+        const clear2Btn = document.getElementById('clear2');
+
+        // LocalStorage keys
+        const STORAGE_KEY_1 = 'compare-lists-list1';
+        const STORAGE_KEY_2 = 'compare-lists-list2';
+
+        // Load from localStorage on page load
+        list1El.value = localStorage.getItem(STORAGE_KEY_1) || '';
+        list2El.value = localStorage.getItem(STORAGE_KEY_2) || '';
 
         function updateOutputs()
         {
+            // Save to localStorage
+            localStorage.setItem(STORAGE_KEY_1, list1El.value);
+            localStorage.setItem(STORAGE_KEY_2, list2El.value);
+
             const lines1 = getLines(list1El.value);
             const lines2 = getLines(list2El.value);
             const caseInsensitive = caseInsensitiveEl.checked;
@@ -260,11 +276,21 @@
             countBoth.textContent = `${both.length} line${both.length !== 1 ? 's' : ''}`;
         }
 
-        // Event listeners for live update
+        // Event listeners for live update and storage
         [list1El, list2El, caseInsensitiveEl].forEach(el =>
             el.addEventListener('input', updateOutputs)
         );
         caseInsensitiveEl.addEventListener('change', updateOutputs);
+
+        // Clear buttons
+        clear1Btn.addEventListener('click', () => {
+            list1El.value = '';
+            updateOutputs();
+        });
+        clear2Btn.addEventListener('click', () => {
+            list2El.value = '';
+            updateOutputs();
+        });
 
         // Copy to clipboard
         document.querySelectorAll('button[data-copy]').forEach(btn =>
