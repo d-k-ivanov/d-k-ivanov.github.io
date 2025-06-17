@@ -105,6 +105,8 @@
             height: 36px;
             padding: 0;
             display: inline-flex;
+            color:  #1976d2 !important;
+            background: none !important;
             align-items: center;
             justify-content: center;
             border-radius: 4px;
@@ -186,7 +188,7 @@
                 <div class="actions">
                     <label for="only1">Only in List 1</label>
                     <button type="button" class="copy-btn" data-copy="only1">
-                        <i class="fas fa-clipboard"></i>
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
                     </button>
                 </div>
                 <pre id="only1" class="output" tabindex="0" aria-label="Only in List 1" readonly></pre>
@@ -196,7 +198,7 @@
                 <div class="actions">
                     <label for="both">In Both Lists</label>
                     <button type="button" class="copy-btn" data-copy="both">
-                        <i class="fas fa-clipboard"></i>
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
                     </button>
                 </div>
                 <pre id="both" class="output" tabindex="0" aria-label="In Both Lists" readonly></pre>
@@ -206,7 +208,7 @@
                 <div class="actions">
                     <label for="only2">Only in List 2</label>
                     <button type="button" class="copy-btn" data-copy="only2">
-                        <i class="fas fa-clipboard"></i>
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
                     </button>
                 </div>
                 <pre id="only2" class="output" tabindex="0" aria-label="Only in List 2" readonly></pre>
@@ -329,6 +331,38 @@
                 const el = document.getElementById(id);
                 if (el.textContent.length === 0) return;
                 navigator.clipboard.writeText(el.textContent);
+
+                // Show a quick notification (non-blocking)
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 1000);
+
+                // Show a quick notification baloon
+
+                // Get the cursor location with an offset
+                var x = event.clientX - 50;
+                var y = event.clientY - 50;
+
+                const notification = document.createElement('div');
+                notification.textContent = `Copied`;
+                notification.style.position = 'absolute';
+                notification.style.top = y + "px";
+                notification.style.left = x + "px";
+                notification.style.background = '#1976d2';
+                notification.style.color = '#fff';
+                notification.style.padding = '5px 5px';
+                notification.style.borderRadius = '5px';
+                notification.style.zIndex = '1000';
+                notification.style.transition = 'opacity 0.3s';
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 10);
+                }, 200);
             });
         });
 
@@ -381,8 +415,7 @@
             // Check for Ctrl+R (Windows/Linux) or Cmd+R (macOS)
             const isHardRefresh =
                 (e.key === 'r' || e.key === 'R') &&
-                (e.ctrlKey || e.metaKey) &&
-                !e.shiftKey && !e.altKey;
+                (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey;
 
             if (isHardRefresh) {
                 // Remove only the relevant keys to avoid clearing unrelated data
