@@ -381,82 +381,6 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Enhanced particle creation with higher density for cloud-like appearance
-     */
-    createAtmosphereLayer(radius, color, particleCount, opacity)
-    {
-        // Increase particle count for denser clouds
-        const enhancedParticleCount = Math.floor(particleCount * 1.8);
-        const positions = new Float32Array(enhancedParticleCount * 3);
-        const colors = new Float32Array(enhancedParticleCount * 3);
-
-        for (let i = 0; i < enhancedParticleCount; i++)
-        {
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Cluster particles more toward specific regions for cloud-like distribution
-            let clusterBias = 0.7; // Bias toward certain regions
-            if (Math.random() < clusterBias)
-            {
-                // Create clusters
-                let clusterCenterTheta = Math.random() * Math.PI * 2;
-                let clusterCenterPhi = Math.random() * Math.PI;
-                let clusterSpread = 0.3;
-
-                u = Math.max(0, Math.min(1, u + (Math.random() - 0.5) * clusterSpread));
-                v = (clusterCenterTheta / (2 * Math.PI)) + (Math.random() - 0.5) * clusterSpread;
-                w = (clusterCenterPhi / Math.PI) + (Math.random() - 0.5) * clusterSpread;
-
-                v = Math.max(0, Math.min(1, v));
-                w = Math.max(0, Math.min(1, w));
-            }
-
-            // Modified shell distribution for more natural clustering
-            let shellThickness = 0.4; // Thicker shells for more volume
-            let r = radius * (0.6 + u * shellThickness); // Start further from center
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Enhanced color variation for cloud appearance
-            let atmosphereColor = color.clone();
-            let distanceFactor = r / radius;
-            let randomVariation = 0.8 + Math.random() * 0.4;
-
-            // Add cloud-like color variation
-            atmosphereColor.multiplyScalar(randomVariation * (0.6 + distanceFactor * 0.4));
-
-            colors[i * 3] = atmosphereColor.r;
-            colors[i * 3 + 1] = atmosphereColor.g;
-            colors[i * 3 + 2] = atmosphereColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 0.6,  // Smaller particles for denser appearance
-            vertexColors: true,
-            transparent: true,
-            opacity: opacity * 0.8, // Slightly more transparent for cloud effect
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
      * Sets up the window manager and callbacks.
      */
     setupWindowManager()
@@ -732,7 +656,7 @@ class LinkedWindows3DApp
         for (let i = 0; i < coreCount; i++)
         {
             velocities.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.05,  // Reduced initial velocity
+                (Math.random() - 0.5) * 0.05,
                 (Math.random() - 0.5) * 0.05,
                 (Math.random() - 0.5) * 0.05
             ));
@@ -751,7 +675,6 @@ class LinkedWindows3DApp
                 let z = positions[i * 3 + 2];
 
                 // Calculate orbital velocity for stable circulation
-                let distance = Math.sqrt(x * x + y * y + z * z);
                 let orbitalSpeed = 0.1 + layerIndex * 0.05;
 
                 // Perpendicular velocity for orbital motion
@@ -879,11 +802,11 @@ class LinkedWindows3DApp
                 let velocity = velocities[particleIndex];
                 let totalForce = new THREE.Vector3();
 
-                // 1. GRAVITATIONAL ATTRACTION TO PLANET CENTER
+                // GRAVITATIONAL ATTRACTION TO PLANET CENTER
                 let gravitationalForce = currentPos.clone().normalize().multiplyScalar(-0.5 * densityTarget);
                 totalForce.add(gravitationalForce);
 
-                // 2. VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
+                // VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
                 let noiseX = this.generateTurbulence(x * noiseScale, y * noiseScale, z * noiseScale, time * 0.1);
                 let noiseY = this.generateTurbulence((x + 1000) * noiseScale, (y + 1000) * noiseScale, (z + 2000) * noiseScale, time * 0.1);
                 let noiseZ = this.generateTurbulence((x + 2000) * noiseScale, (y + 2000) * noiseScale, (z + 3000) * noiseScale, time * 0.1);
@@ -891,7 +814,7 @@ class LinkedWindows3DApp
                 let turbulenceForce = new THREE.Vector3(noiseX, noiseY, noiseZ).multiplyScalar(turbulenceStrength);
                 totalForce.add(turbulenceForce);
 
-                // 3. PARTICLE DENSITY CLUSTERING (Flocking behavior)
+                // PARTICLE DENSITY CLUSTERING (Flocking behavior)
                 let neighborhoodRadius = 15 + layerIndex * 5;
                 let cohesionForce = new THREE.Vector3();
                 let separationForce = new THREE.Vector3();
@@ -933,17 +856,17 @@ class LinkedWindows3DApp
                     totalForce.add(separationForce);
                 }
 
-                // 4. CONVECTION CURRENTS (Vertical circulation)
+                // CONVECTION CURRENTS (Vertical circulation)
                 let convectionStrength = 0.3 * Math.sin(time * 0.5 + distance * 0.01);
                 let convectionForce = new THREE.Vector3(0, 0, convectionStrength);
                 totalForce.add(convectionForce);
 
-                // 5. ATMOSPHERIC DENSITY GRADIENT
+                // ATMOSPHERIC DENSITY GRADIENT
                 let densityGradient = Math.max(0, 1 - distance / maxRadius);
                 let densityForce = currentPos.clone().normalize().multiplyScalar(-densityGradient * 0.4);
                 totalForce.add(densityForce);
 
-                // 6. WIND PATTERNS (Horizontal circulation with varying speeds)
+                // WIND PATTERNS (Horizontal circulation with varying speeds)
                 let windAngle = time * baseFlowSpeed + Math.sin(distance * 0.02 + time) * 0.5;
                 let windStrength = 0.2 * Math.sin(time * 0.3 + distance * 0.015) * densityGradient;
                 let windForce = new THREE.Vector3(
