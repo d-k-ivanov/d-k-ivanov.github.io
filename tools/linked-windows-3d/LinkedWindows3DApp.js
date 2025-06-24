@@ -8,8 +8,10 @@ import WindowManager from './WindowManager.js';
  * @class LinkedWindows3DApp
  * @implements {WebGL Performance Best Practices}
  */
-class LinkedWindows3DApp {
-    constructor() {
+class LinkedWindows3DApp
+{
+    constructor()
+    {
         this.camera = null;
         this.scene = null;
         this.renderer = null;
@@ -34,7 +36,7 @@ class LinkedWindows3DApp {
         this.atmosphereConstraintStrength = 5.0;   // New: atmospheric boundary force
         this.bridgeActivationDistance = 300;       // Distance threshold for bridge formation
         this.lastFrameTime = 0;
-        
+
         // Spatial optimization for performance
         this.spatialGrid = new Map();              // For spatial partitioning
         this.gridCellSize = 100;                   // Grid cell size for optimization
@@ -92,12 +94,13 @@ class LinkedWindows3DApp {
             preserveDrawingBuffer: false, // Optimize for performance
             failIfMajorPerformanceCaveat: false // Allow software rendering as fallback
         });
-        
+
         this.renderer.setPixelRatio(this.pixR);
         this.renderer.sortObjects = false; // Optimize for particle rendering
 
         // Add WebGL context loss handling
-        this.renderer.domElement.addEventListener('webglcontextlost', (event) => {
+        this.renderer.domElement.addEventListener('webglcontextlost', (event) =>
+        {
             event.preventDefault();
             this.handleContextLoss();
         }, false);
@@ -273,7 +276,8 @@ class LinkedWindows3DApp {
     /**
      * Creates a particle planet with dense core and flowing atmosphere.
      */
-    createParticlePlanet(radius, color, planetIndex) {
+    createParticlePlanet(radius, color, planetIndex)
+    {
         // Scale up planet size by 40% while maintaining density
         const scaledRadius = radius * 1.4;
         let planetGroup = new THREE.Group();
@@ -318,43 +322,45 @@ class LinkedWindows3DApp {
      * Creates dense planetary core with smaller, more numerous particles.
      * Uses advanced particle distribution algorithms for realistic density gradients.
      */
-    createPlanetCore(radius, color, particleCount) {
+    createPlanetCore(radius, color, particleCount)
+    {
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        
-        for (let i = 0; i < particleCount; i++) {
+
+        for (let i = 0; i < particleCount; i++)
+        {
             // Enhanced spherical distribution with density bias toward center
             let u = Math.random();
             let v = Math.random();
             let w = Math.random();
-            
+
             // Power law distribution for realistic planetary density
             let r = radius * Math.pow(u, 0.4);  // Stronger bias toward center
             let theta = 2 * Math.PI * v;
             let phi = Math.acos(2 * w - 1);
-            
+
             let x = r * Math.sin(phi) * Math.cos(theta);
             let y = r * Math.sin(phi) * Math.sin(theta);
             let z = r * Math.cos(phi);
-            
+
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
-            
+
             // Enhanced color variation with metallic reflectance simulation
             let coreColor = color.clone();
             let intensity = 0.9 + Math.random() * 0.3;
             coreColor.multiplyScalar(intensity);
-            
+
             colors[i * 3] = coreColor.r;
             colors[i * 3 + 1] = coreColor.g;
             colors[i * 3 + 2] = coreColor.b;
         }
-        
+
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
+
         // Optimized material settings for smaller, denser particles
         const material = new THREE.PointsMaterial({
             size: 1.2,                    // Reduced size for density
@@ -364,7 +370,7 @@ class LinkedWindows3DApp {
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
-        
+
         return new THREE.Points(geometry, material);
     }
 
@@ -372,43 +378,45 @@ class LinkedWindows3DApp {
      * Creates atmosphere layers with enhanced particle physics constraints.
      * Implements shell-based distribution with proper boundary enforcement.
      */
-    createAtmosphereLayer(radius, color, particleCount, opacity) {
+    createAtmosphereLayer(radius, color, particleCount, opacity)
+    {
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        
-        for (let i = 0; i < particleCount; i++) {
+
+        for (let i = 0; i < particleCount; i++)
+        {
             let u = Math.random();
             let v = Math.random();
             let w = Math.random();
-            
+
             // Shell distribution with controlled thickness
             let shellThickness = 0.25;
             let r = radius * (1 - shellThickness + u * shellThickness);
             let theta = 2 * Math.PI * v;
             let phi = Math.acos(2 * w - 1);
-            
+
             let x = r * Math.sin(phi) * Math.cos(theta);
             let y = r * Math.sin(phi) * Math.sin(theta);
             let z = r * Math.cos(phi);
-            
+
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
-            
+
             // Atmospheric color gradients with distance-based variation
             let atmosphereColor = color.clone();
             let distanceFactor = r / radius;
             atmosphereColor.multiplyScalar(0.7 + Math.random() * 0.4 * (1 - distanceFactor));
-            
+
             colors[i * 3] = atmosphereColor.r;
             colors[i * 3 + 1] = atmosphereColor.g;
             colors[i * 3 + 2] = atmosphereColor.b;
         }
-        
+
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
+
         const material = new THREE.PointsMaterial({
             size: 0.8,                    // Smaller atmospheric particles
             vertexColors: true,
@@ -417,19 +425,21 @@ class LinkedWindows3DApp {
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
-        
+
         return new THREE.Points(geometry, material);
     }
 
     /**
      * Enhanced particle data extraction with physics metadata.
      */
-    extractParticleData(pointsObject) {
+    extractParticleData(pointsObject)
+    {
         let positions = pointsObject.geometry.attributes.position.array;
         let colors = pointsObject.geometry.attributes.color.array;
         let particles = [];
-        
-        for (let i = 0; i < positions.length; i += 3) {
+
+        for (let i = 0; i < positions.length; i += 3)
+        {
             particles.push({
                 position: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
                 originalPosition: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
@@ -438,7 +448,7 @@ class LinkedWindows3DApp {
                 isCore: pointsObject.material.size > 1.0  // Distinguish core vs atmosphere
             });
         }
-        
+
         return particles;
     }
 
@@ -446,47 +456,51 @@ class LinkedWindows3DApp {
      * Initializes particle velocities with atmospheric constraints.
      * Implements orbital mechanics for stable atmospheric circulation.
      */
-    initializeConstrainedVelocities(coreParticles, atmosphereLayers) {
+    initializeConstrainedVelocities(coreParticles, atmosphereLayers)
+    {
         let velocities = [];
-        
+
         // Core particles: minimal velocities for stability
         let coreCount = coreParticles.geometry.attributes.position.count;
-        for (let i = 0; i < coreCount; i++) {
+        for (let i = 0; i < coreCount; i++)
+        {
             velocities.push(new THREE.Vector3(
                 (Math.random() - 0.5) * 0.05,  // Reduced initial velocity
                 (Math.random() - 0.5) * 0.05,
                 (Math.random() - 0.5) * 0.05
             ));
         }
-        
+
         // Atmosphere particles: orbital-biased velocities
-        atmosphereLayers.forEach((layer, layerIndex) => {
+        atmosphereLayers.forEach((layer, layerIndex) =>
+        {
             let count = layer.geometry.attributes.position.count;
             let positions = layer.geometry.attributes.position.array;
-            
-            for (let i = 0; i < count; i++) {
+
+            for (let i = 0; i < count; i++)
+            {
                 let x = positions[i * 3];
                 let y = positions[i * 3 + 1];
                 let z = positions[i * 3 + 2];
-                
+
                 // Calculate orbital velocity for stable circulation
                 let distance = Math.sqrt(x * x + y * y + z * z);
                 let orbitalSpeed = 0.1 + layerIndex * 0.05;
-                
+
                 // Perpendicular velocity for orbital motion
                 let orbitalVelocity = new THREE.Vector3(-y, x, 0).normalize().multiplyScalar(orbitalSpeed);
-                
+
                 // Add small random component
                 orbitalVelocity.add(new THREE.Vector3(
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1
                 ));
-                
+
                 velocities.push(orbitalVelocity);
             }
         });
-        
+
         return velocities;
     }
 
@@ -494,23 +508,27 @@ class LinkedWindows3DApp {
      * Advanced particle physics simulation with atmospheric constraints.
      * Implements spatial partitioning and distance-based interaction culling.
      */
-    updateParticlePhysics(deltaTime) {
+    updateParticlePhysics(deltaTime)
+    {
         if (this.planets.length === 0) return;
 
         // Calculate inter-planetary distances for bridge activation
         let planetDistances = this.calculatePlanetDistances();
         let bridgeActive = planetDistances.some(d => d < this.bridgeActivationDistance);
 
-        if (bridgeActive) {
+        if (bridgeActive)
+        {
             // Update global bridge particles only when planets are close
             this.updateBridgeParticles(deltaTime, planetDistances);
-        } else {
+        } else
+        {
             // Focus on atmospheric containment when planets are distant
             this.constrainAtmosphericParticles(deltaTime);
         }
 
         // Always update planet atmosphere circulation
-        this.planets.forEach(planet => {
+        this.planets.forEach(planet =>
+        {
             this.updateConstrainedAtmosphere(planet, deltaTime);
         });
     }
@@ -518,10 +536,13 @@ class LinkedWindows3DApp {
     /**
      * Calculates distances between all planet pairs for bridge activation.
      */
-    calculatePlanetDistances() {
+    calculatePlanetDistances()
+    {
         let distances = [];
-        for (let i = 0; i < this.planets.length; i++) {
-            for (let j = i + 1; j < this.planets.length; j++) {
+        for (let i = 0; i < this.planets.length; i++)
+        {
+            for (let j = i + 1; j < this.planets.length; j++)
+            {
                 let distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
                 distances.push(distance);
             }
@@ -533,13 +554,16 @@ class LinkedWindows3DApp {
      * Updates bridge particles with Einstein-Rosen bridge physics.
      * Only active when planets are within interaction distance.
      */
-    updateBridgeParticles(deltaTime, planetDistances) {
-        this.globalParticles.forEach(bridgeSystem => {
+    updateBridgeParticles(deltaTime, planetDistances)
+    {
+        this.globalParticles.forEach(bridgeSystem =>
+        {
             let positions = bridgeSystem.geometry.attributes.position.array;
             let colors = bridgeSystem.geometry.attributes.color.array;
             let velocities = bridgeSystem.userData.velocities;
 
-            for (let i = 0; i < velocities.length; i++) {
+            for (let i = 0; i < velocities.length; i++)
+            {
                 let particlePos = new THREE.Vector3(
                     positions[i * 3],
                     positions[i * 3 + 1],
@@ -551,18 +575,21 @@ class LinkedWindows3DApp {
                 let minDistance = Infinity;
 
                 // Enhanced gravitational calculation with distance scaling
-                this.planets.forEach(planet => {
+                this.planets.forEach(planet =>
+                {
                     let planetCenter = planet.group.position;
                     let direction = planetCenter.clone().sub(particlePos);
                     let distance = direction.length();
 
-                    if (distance > 0 && distance < this.bridgeActivationDistance * 2) {
+                    if (distance > 0 && distance < this.bridgeActivationDistance * 2)
+                    {
                         // Scaled gravitational force based on planet mass and distance
                         let force = (this.gravitationalConstant * planet.mass) / (distance * distance + 50);
                         direction.normalize().multiplyScalar(force);
                         totalForce.add(direction);
 
-                        if (distance < minDistance) {
+                        if (distance < minDistance)
+                        {
                             minDistance = distance;
                             nearestPlanetColor = planet.color;
                         }
@@ -603,28 +630,31 @@ class LinkedWindows3DApp {
      * Applies Einstein-Rosen bridge spacetime curvature effects.
      * Creates tunnel-like particle flow between nearby planets.
      */
-    applyBridgeCurvature(particlePos, force, deltaTime) {
+    applyBridgeCurvature(particlePos, force, deltaTime)
+    {
         if (this.planets.length < 2) return;
 
         // Find the two nearest planets for bridge formation
         let distances = [];
-        this.planets.forEach((planet, index) => {
+        this.planets.forEach((planet, index) =>
+        {
             let dist = particlePos.distanceTo(planet.group.position);
             distances.push({ index, distance: dist, planet });
         });
-        
+
         distances.sort((a, b) => a.distance - b.distance);
-        
-        if (distances.length >= 2 && 
+
+        if (distances.length >= 2 &&
             distances[0].distance < this.bridgeActivationDistance &&
-            distances[1].distance < this.bridgeActivationDistance) {
-            
+            distances[1].distance < this.bridgeActivationDistance)
+        {
+
             // Create tunnel effect between the two nearest planets
             let planet1 = distances[0].planet.group.position;
             let planet2 = distances[1].planet.group.position;
             let bridgeVector = planet2.clone().sub(planet1);
             let bridgeCenter = planet1.clone().add(bridgeVector.clone().multiplyScalar(0.5));
-            
+
             // Apply curvature toward the bridge tunnel
             let toBridgeCenter = bridgeCenter.clone().sub(particlePos);
             let bridgeInfluence = 1.0 / (toBridgeCenter.length() + 10);
@@ -636,32 +666,37 @@ class LinkedWindows3DApp {
      * Constrains atmospheric particles to remain within planetary boundaries.
      * Implements soft boundary constraints with spring-like restoration forces.
      */
-    constrainAtmosphericParticles(deltaTime) {
-        this.planets.forEach(planet => {
+    constrainAtmosphericParticles(deltaTime)
+    {
+        this.planets.forEach(planet =>
+        {
             let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-            
-            atmosphereLayers.forEach((layer, layerIndex) => {
+
+            atmosphereLayers.forEach((layer, layerIndex) =>
+            {
                 let positions = layer.geometry.attributes.position.array;
                 let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-                
-                for (let i = 0; i < positions.length; i += 3) {
+
+                for (let i = 0; i < positions.length; i += 3)
+                {
                     let x = positions[i];
                     let y = positions[i + 1];
                     let z = positions[i + 2];
-                    
+
                     let distance = Math.sqrt(x * x + y * y + z * z);
-                    
+
                     // Apply soft boundary constraint
-                    if (distance > maxRadius) {
+                    if (distance > maxRadius)
+                    {
                         let constraintForce = (distance - maxRadius) / maxRadius;
                         let constraintFactor = 1.0 - (constraintForce * this.atmosphereConstraintStrength * deltaTime);
-                        
+
                         positions[i] *= constraintFactor;
                         positions[i + 1] *= constraintFactor;
                         positions[i + 2] *= constraintFactor;
                     }
                 }
-                
+
                 layer.geometry.attributes.position.needsUpdate = true;
             });
         });
@@ -671,49 +706,53 @@ class LinkedWindows3DApp {
      * Updates atmospheric circulation with enhanced fluid dynamics.
      * Implements vorticity confinement and turbulence modeling.
      */
-    updateConstrainedAtmosphere(planet, deltaTime) {
+    updateConstrainedAtmosphere(planet, deltaTime)
+    {
         let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-        
-        atmosphereLayers.forEach((layer, layerIndex) => {
+
+        atmosphereLayers.forEach((layer, layerIndex) =>
+        {
             let positions = layer.geometry.attributes.position.array;
             let flowSpeed = 0.3 + layerIndex * 0.2;  // Reduced flow speed
             let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-            
-            for (let i = 0; i < positions.length; i += 3) {
+
+            for (let i = 0; i < positions.length; i += 3)
+            {
                 let x = positions[i];
                 let y = positions[i + 1];
                 let z = positions[i + 2];
-                
+
                 let distance = Math.sqrt(x * x + y * y + z * z);
                 let angle = Math.atan2(y, x);
                 let time = this.getTime() * flowSpeed;
-                
+
                 // Enhanced orbital motion with turbulence
                 let orbitalSpeed = flowSpeed * deltaTime * 0.15;
                 let turbulence = Math.sin(time * 3 + distance * 0.02) * 0.05;
                 let newAngle = angle + orbitalSpeed + turbulence;
-                
+
                 // Controlled radial oscillation
                 let radialOscillation = Math.sin(time * 1.5 + distance * 0.015) * 2;
                 let newRadius = Math.min(distance + radialOscillation, maxRadius);
-                
+
                 // Vertical circulation
                 let verticalMotion = Math.sin(time + distance * 0.01) * 1.5;
-                
+
                 positions[i] = newRadius * Math.cos(newAngle);
                 positions[i + 1] = newRadius * Math.sin(newAngle);
                 positions[i + 2] = z + verticalMotion;
-                
+
                 // Ensure particles stay within atmospheric bounds
                 let finalDistance = Math.sqrt(positions[i] * positions[i] + positions[i + 1] * positions[i + 1] + positions[i + 2] * positions[i + 2]);
-                if (finalDistance > maxRadius) {
+                if (finalDistance > maxRadius)
+                {
                     let scale = maxRadius / finalDistance;
                     positions[i] *= scale;
                     positions[i + 1] *= scale;
                     positions[i + 2] *= scale;
                 }
             }
-            
+
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
@@ -722,9 +761,11 @@ class LinkedWindows3DApp {
      * Initializes global particles for inter-planetary bridges.
      * Implements optimized particle distribution for Einstein-Rosen bridge effects.
      */
-    initializeGlobalParticles() {
+    initializeGlobalParticles()
+    {
         // Remove existing global particles with proper cleanup
-        this.globalParticles.forEach(particle => {
+        this.globalParticles.forEach(particle =>
+        {
             this.world.remove(particle);
             if (particle.geometry) particle.geometry.dispose();
             if (particle.material) particle.material.dispose();
@@ -740,21 +781,24 @@ class LinkedWindows3DApp {
         const bridgeVelocities = [];
 
         // Distribute particles strategically in inter-planetary space
-        for (let i = 0; i < this.bridgeParticleCount; i++) {
+        for (let i = 0; i < this.bridgeParticleCount; i++)
+        {
             // Strategic positioning between planets rather than random distribution
-            if (this.planets.length >= 2) {
+            if (this.planets.length >= 2)
+            {
                 let planet1 = this.planets[0].group.position;
                 let planet2 = this.planets[1].group.position;
                 let interpolation = Math.random();
-                
+
                 // Bias distribution toward mid-space for bridge formation
                 let midpoint = planet1.clone().lerp(planet2, interpolation);
                 let spread = 500; // Controlled spread around interpolation path
-                
+
                 bridgePositions[i * 3] = midpoint.x + (Math.random() - 0.5) * spread;
                 bridgePositions[i * 3 + 1] = midpoint.y + (Math.random() - 0.5) * spread;
                 bridgePositions[i * 3 + 2] = midpoint.z + (Math.random() - 0.5) * 100;
-            } else {
+            } else
+            {
                 // Fallback random distribution
                 bridgePositions[i * 3] = (Math.random() - 0.5) * 2000;
                 bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
@@ -792,7 +836,7 @@ class LinkedWindows3DApp {
         const bridgeParticles = new THREE.Points(bridgeGeometry, bridgeMaterial);
         bridgeParticles.userData = { velocities: bridgeVelocities };
         bridgeParticles.name = 'BridgeParticleSystem';
-        
+
         this.world.add(bridgeParticles);
         this.globalParticles.push(bridgeParticles);
     }
@@ -803,16 +847,18 @@ class LinkedWindows3DApp {
      * 
      * @param {boolean} easing - Whether to apply smooth interpolation to position changes
      */
-    updateWindowShape(easing = true) {
+    updateWindowShape(easing = true)
+    {
         // Calculate the new scene offset based on window screen position
         // This is essential for multi-window 3D coordinate system alignment
-        this.sceneOffsetTarget = { 
-            x: -window.screenX, 
-            y: -window.screenY 
+        this.sceneOffsetTarget = {
+            x: -window.screenX,
+            y: -window.screenY
         };
 
         // Immediate update for initialization or when easing is disabled
-        if (!easing) {
+        if (!easing)
+        {
             this.sceneOffset = { ...this.sceneOffsetTarget };
         }
 
@@ -820,10 +866,11 @@ class LinkedWindows3DApp {
         // This ensures proper pixel ratio and viewport handling
         const currentWidth = window.innerWidth;
         const currentHeight = window.innerHeight;
-        
-        if (this.renderer && 
-            (this.renderer.domElement.width !== currentWidth || 
-             this.renderer.domElement.height !== currentHeight)) {
+
+        if (this.renderer &&
+            (this.renderer.domElement.width !== currentWidth ||
+                this.renderer.domElement.height !== currentHeight))
+        {
             this.resize();
         }
     }
@@ -832,18 +879,21 @@ class LinkedWindows3DApp {
      * Enhanced resize method with WebGL context loss recovery.
      * Implements best practices for responsive 3D applications.
      */
-    resize() {
+    resize()
+    {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
         // Validate dimensions to prevent WebGL errors
-        if (width <= 0 || height <= 0) {
+        if (width <= 0 || height <= 0)
+        {
             console.warn('LinkedWindows3DApp: Invalid viewport dimensions', { width, height });
             return;
         }
 
         // Update orthographic camera projection matrix
-        if (this.camera) {
+        if (this.camera)
+        {
             this.camera.left = 0;
             this.camera.right = width;
             this.camera.top = height;
@@ -852,21 +902,25 @@ class LinkedWindows3DApp {
         }
 
         // Update renderer size with proper pixel ratio handling
-        if (this.renderer) {
+        if (this.renderer)
+        {
             // Recalculate pixel ratio in case it changed (e.g., window moved between monitors)
             const newPixR = Math.min(window.devicePixelRatio || 1, 2);
-            if (newPixR !== this.pixR) {
+            if (newPixR !== this.pixR)
+            {
                 this.pixR = newPixR;
                 this.renderer.setPixelRatio(this.pixR);
             }
-            
+
             this.renderer.setSize(width, height);
         }
 
         // Update any planet-specific viewport calculations if needed
-        this.planets.forEach(planet => {
+        this.planets.forEach(planet =>
+        {
             // Recalculate any viewport-dependent particle distributions
-            if (planet.atmosphereRadius) {
+            if (planet.atmosphereRadius)
+            {
                 // Scale atmospheric boundaries based on new viewport
                 const scaleFactor = Math.min(width, height) / 1000;
                 planet.viewportScale = Math.max(0.5, Math.min(2.0, scaleFactor));
@@ -878,14 +932,16 @@ class LinkedWindows3DApp {
      * Enhanced error recovery and context loss handling.
      * Implements WebGL best practices for production deployment.
      */
-    handleContextLoss() {
+    handleContextLoss()
+    {
         console.warn('LinkedWindows3DApp: WebGL context lost, attempting recovery...');
-        
+
         // Dispose of current resources
         this.dispose();
-        
+
         // Reinitialize after a brief delay
-        setTimeout(() => {
+        setTimeout(() =>
+        {
             this.initialized = false;
             this.init();
         }, 1000);
@@ -895,38 +951,49 @@ class LinkedWindows3DApp {
      * Enhanced dispose method with comprehensive resource cleanup.
      * Prevents memory leaks in long-running applications.
      */
-    dispose() {
+    dispose()
+    {
         // Remove event listeners to prevent memory leaks
         window.removeEventListener('resize', this.resize.bind(this));
-        
-        if (this.renderer) {
+
+        if (this.renderer)
+        {
             // Handle WebGL context loss events
             this.renderer.domElement.removeEventListener('webglcontextlost', this.handleContextLoss.bind(this));
         }
 
         // Dispose of all scene resources recursively
-        if (this.scene) {
-            this.scene.traverse((child) => {
-                if (child.geometry) {
+        if (this.scene)
+        {
+            this.scene.traverse((child) =>
+            {
+                if (child.geometry)
+                {
                     child.geometry.dispose();
                 }
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
+                if (child.material)
+                {
+                    if (Array.isArray(child.material))
+                    {
                         child.material.forEach(material => material.dispose());
-                    } else {
+                    } else
+                    {
                         child.material.dispose();
                     }
                 }
-                if (child.texture) {
+                if (child.texture)
+                {
                     child.texture.dispose();
                 }
             });
         }
 
         // Dispose of renderer and free WebGL context
-        if (this.renderer) {
+        if (this.renderer)
+        {
             this.renderer.dispose();
-            if (this.renderer.domElement && this.renderer.domElement.parentNode) {
+            if (this.renderer.domElement && this.renderer.domElement.parentNode)
+            {
                 this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
             }
         }
@@ -942,7 +1009,8 @@ class LinkedWindows3DApp {
     /**
      * Enhanced setupScene with WebGL context loss recovery.
      */
-    setupScene() {
+    setupScene()
+    {
         this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -10000, 10000);
         this.camera.position.z = 2.5;
         this.near = this.camera.position.z - 0.5;
@@ -963,12 +1031,13 @@ class LinkedWindows3DApp {
             preserveDrawingBuffer: false, // Optimize for performance
             failIfMajorPerformanceCaveat: false // Allow software rendering as fallback
         });
-        
+
         this.renderer.setPixelRatio(this.pixR);
         this.renderer.sortObjects = false; // Optimize for particle rendering
 
         // Add WebGL context loss handling
-        this.renderer.domElement.addEventListener('webglcontextlost', (event) => {
+        this.renderer.domElement.addEventListener('webglcontextlost', (event) =>
+        {
             event.preventDefault();
             this.handleContextLoss();
         }, false);
@@ -1144,7 +1213,8 @@ class LinkedWindows3DApp {
     /**
      * Creates a particle planet with dense core and flowing atmosphere.
      */
-    createParticlePlanet(radius, color, planetIndex) {
+    createParticlePlanet(radius, color, planetIndex)
+    {
         // Scale up planet size by 40% while maintaining density
         const scaledRadius = radius * 1.4;
         let planetGroup = new THREE.Group();
@@ -1189,43 +1259,45 @@ class LinkedWindows3DApp {
      * Creates dense planetary core with smaller, more numerous particles.
      * Uses advanced particle distribution algorithms for realistic density gradients.
      */
-    createPlanetCore(radius, color, particleCount) {
+    createPlanetCore(radius, color, particleCount)
+    {
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        
-        for (let i = 0; i < particleCount; i++) {
+
+        for (let i = 0; i < particleCount; i++)
+        {
             // Enhanced spherical distribution with density bias toward center
             let u = Math.random();
             let v = Math.random();
             let w = Math.random();
-            
+
             // Power law distribution for realistic planetary density
             let r = radius * Math.pow(u, 0.4);  // Stronger bias toward center
             let theta = 2 * Math.PI * v;
             let phi = Math.acos(2 * w - 1);
-            
+
             let x = r * Math.sin(phi) * Math.cos(theta);
             let y = r * Math.sin(phi) * Math.sin(theta);
             let z = r * Math.cos(phi);
-            
+
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
-            
+
             // Enhanced color variation with metallic reflectance simulation
             let coreColor = color.clone();
             let intensity = 0.9 + Math.random() * 0.3;
             coreColor.multiplyScalar(intensity);
-            
+
             colors[i * 3] = coreColor.r;
             colors[i * 3 + 1] = coreColor.g;
             colors[i * 3 + 2] = coreColor.b;
         }
-        
+
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
+
         // Optimized material settings for smaller, denser particles
         const material = new THREE.PointsMaterial({
             size: 1.2,                    // Reduced size for density
@@ -1235,7 +1307,7 @@ class LinkedWindows3DApp {
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
-        
+
         return new THREE.Points(geometry, material);
     }
 
@@ -1243,43 +1315,45 @@ class LinkedWindows3DApp {
      * Creates atmosphere layers with enhanced particle physics constraints.
      * Implements shell-based distribution with proper boundary enforcement.
      */
-    createAtmosphereLayer(radius, color, particleCount, opacity) {
+    createAtmosphereLayer(radius, color, particleCount, opacity)
+    {
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        
-        for (let i = 0; i < particleCount; i++) {
+
+        for (let i = 0; i < particleCount; i++)
+        {
             let u = Math.random();
             let v = Math.random();
             let w = Math.random();
-            
+
             // Shell distribution with controlled thickness
             let shellThickness = 0.25;
             let r = radius * (1 - shellThickness + u * shellThickness);
             let theta = 2 * Math.PI * v;
             let phi = Math.acos(2 * w - 1);
-            
+
             let x = r * Math.sin(phi) * Math.cos(theta);
             let y = r * Math.sin(phi) * Math.sin(theta);
             let z = r * Math.cos(phi);
-            
+
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
-            
+
             // Atmospheric color gradients with distance-based variation
             let atmosphereColor = color.clone();
             let distanceFactor = r / radius;
             atmosphereColor.multiplyScalar(0.7 + Math.random() * 0.4 * (1 - distanceFactor));
-            
+
             colors[i * 3] = atmosphereColor.r;
             colors[i * 3 + 1] = atmosphereColor.g;
             colors[i * 3 + 2] = atmosphereColor.b;
         }
-        
+
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
+
         const material = new THREE.PointsMaterial({
             size: 0.8,                    // Smaller atmospheric particles
             vertexColors: true,
@@ -1288,19 +1362,21 @@ class LinkedWindows3DApp {
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
-        
+
         return new THREE.Points(geometry, material);
     }
 
     /**
      * Enhanced particle data extraction with physics metadata.
      */
-    extractParticleData(pointsObject) {
+    extractParticleData(pointsObject)
+    {
         let positions = pointsObject.geometry.attributes.position.array;
         let colors = pointsObject.geometry.attributes.color.array;
         let particles = [];
-        
-        for (let i = 0; i < positions.length; i += 3) {
+
+        for (let i = 0; i < positions.length; i += 3)
+        {
             particles.push({
                 position: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
                 originalPosition: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
@@ -1309,7 +1385,7 @@ class LinkedWindows3DApp {
                 isCore: pointsObject.material.size > 1.0  // Distinguish core vs atmosphere
             });
         }
-        
+
         return particles;
     }
 
@@ -1317,47 +1393,51 @@ class LinkedWindows3DApp {
      * Initializes particle velocities with atmospheric constraints.
      * Implements orbital mechanics for stable atmospheric circulation.
      */
-    initializeConstrainedVelocities(coreParticles, atmosphereLayers) {
+    initializeConstrainedVelocities(coreParticles, atmosphereLayers)
+    {
         let velocities = [];
-        
+
         // Core particles: minimal velocities for stability
         let coreCount = coreParticles.geometry.attributes.position.count;
-        for (let i = 0; i < coreCount; i++) {
+        for (let i = 0; i < coreCount; i++)
+        {
             velocities.push(new THREE.Vector3(
                 (Math.random() - 0.5) * 0.05,  // Reduced initial velocity
                 (Math.random() - 0.5) * 0.05,
                 (Math.random() - 0.5) * 0.05
             ));
         }
-        
+
         // Atmosphere particles: orbital-biased velocities
-        atmosphereLayers.forEach((layer, layerIndex) => {
+        atmosphereLayers.forEach((layer, layerIndex) =>
+        {
             let count = layer.geometry.attributes.position.count;
             let positions = layer.geometry.attributes.position.array;
-            
-            for (let i = 0; i < count; i++) {
+
+            for (let i = 0; i < count; i++)
+            {
                 let x = positions[i * 3];
                 let y = positions[i * 3 + 1];
                 let z = positions[i * 3 + 2];
-                
+
                 // Calculate orbital velocity for stable circulation
                 let distance = Math.sqrt(x * x + y * y + z * z);
                 let orbitalSpeed = 0.1 + layerIndex * 0.05;
-                
+
                 // Perpendicular velocity for orbital motion
                 let orbitalVelocity = new THREE.Vector3(-y, x, 0).normalize().multiplyScalar(orbitalSpeed);
-                
+
                 // Add small random component
                 orbitalVelocity.add(new THREE.Vector3(
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1
                 ));
-                
+
                 velocities.push(orbitalVelocity);
             }
         });
-        
+
         return velocities;
     }
 
@@ -1365,23 +1445,27 @@ class LinkedWindows3DApp {
      * Advanced particle physics simulation with atmospheric constraints.
      * Implements spatial partitioning and distance-based interaction culling.
      */
-    updateParticlePhysics(deltaTime) {
+    updateParticlePhysics(deltaTime)
+    {
         if (this.planets.length === 0) return;
 
         // Calculate inter-planetary distances for bridge activation
         let planetDistances = this.calculatePlanetDistances();
         let bridgeActive = planetDistances.some(d => d < this.bridgeActivationDistance);
 
-        if (bridgeActive) {
+        if (bridgeActive)
+        {
             // Update global bridge particles only when planets are close
             this.updateBridgeParticles(deltaTime, planetDistances);
-        } else {
+        } else
+        {
             // Focus on atmospheric containment when planets are distant
             this.constrainAtmosphericParticles(deltaTime);
         }
 
         // Always update planet atmosphere circulation
-        this.planets.forEach(planet => {
+        this.planets.forEach(planet =>
+        {
             this.updateConstrainedAtmosphere(planet, deltaTime);
         });
     }
@@ -1389,10 +1473,13 @@ class LinkedWindows3DApp {
     /**
      * Calculates distances between all planet pairs for bridge activation.
      */
-    calculatePlanetDistances() {
+    calculatePlanetDistances()
+    {
         let distances = [];
-        for (let i = 0; i < this.planets.length; i++) {
-            for (let j = i + 1; j < this.planets.length; j++) {
+        for (let i = 0; i < this.planets.length; i++)
+        {
+            for (let j = i + 1; j < this.planets.length; j++)
+            {
                 let distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
                 distances.push(distance);
             }
@@ -1404,13 +1491,16 @@ class LinkedWindows3DApp {
      * Updates bridge particles with Einstein-Rosen bridge physics.
      * Only active when planets are within interaction distance.
      */
-    updateBridgeParticles(deltaTime, planetDistances) {
-        this.globalParticles.forEach(bridgeSystem => {
+    updateBridgeParticles(deltaTime, planetDistances)
+    {
+        this.globalParticles.forEach(bridgeSystem =>
+        {
             let positions = bridgeSystem.geometry.attributes.position.array;
             let colors = bridgeSystem.geometry.attributes.color.array;
             let velocities = bridgeSystem.userData.velocities;
 
-            for (let i = 0; i < velocities.length; i++) {
+            for (let i = 0; i < velocities.length; i++)
+            {
                 let particlePos = new THREE.Vector3(
                     positions[i * 3],
                     positions[i * 3 + 1],
@@ -1422,18 +1512,21 @@ class LinkedWindows3DApp {
                 let minDistance = Infinity;
 
                 // Enhanced gravitational calculation with distance scaling
-                this.planets.forEach(planet => {
+                this.planets.forEach(planet =>
+                {
                     let planetCenter = planet.group.position;
                     let direction = planetCenter.clone().sub(particlePos);
                     let distance = direction.length();
 
-                    if (distance > 0 && distance < this.bridgeActivationDistance * 2) {
+                    if (distance > 0 && distance < this.bridgeActivationDistance * 2)
+                    {
                         // Scaled gravitational force based on planet mass and distance
                         let force = (this.gravitationalConstant * planet.mass) / (distance * distance + 50);
                         direction.normalize().multiplyScalar(force);
                         totalForce.add(direction);
 
-                        if (distance < minDistance) {
+                        if (distance < minDistance)
+                        {
                             minDistance = distance;
                             nearestPlanetColor = planet.color;
                         }
@@ -1474,28 +1567,31 @@ class LinkedWindows3DApp {
      * Applies Einstein-Rosen bridge spacetime curvature effects.
      * Creates tunnel-like particle flow between nearby planets.
      */
-    applyBridgeCurvature(particlePos, force, deltaTime) {
+    applyBridgeCurvature(particlePos, force, deltaTime)
+    {
         if (this.planets.length < 2) return;
 
         // Find the two nearest planets for bridge formation
         let distances = [];
-        this.planets.forEach((planet, index) => {
+        this.planets.forEach((planet, index) =>
+        {
             let dist = particlePos.distanceTo(planet.group.position);
             distances.push({ index, distance: dist, planet });
         });
-        
+
         distances.sort((a, b) => a.distance - b.distance);
-        
-        if (distances.length >= 2 && 
+
+        if (distances.length >= 2 &&
             distances[0].distance < this.bridgeActivationDistance &&
-            distances[1].distance < this.bridgeActivationDistance) {
-            
+            distances[1].distance < this.bridgeActivationDistance)
+        {
+
             // Create tunnel effect between the two nearest planets
             let planet1 = distances[0].planet.group.position;
             let planet2 = distances[1].planet.group.position;
             let bridgeVector = planet2.clone().sub(planet1);
             let bridgeCenter = planet1.clone().add(bridgeVector.clone().multiplyScalar(0.5));
-            
+
             // Apply curvature toward the bridge tunnel
             let toBridgeCenter = bridgeCenter.clone().sub(particlePos);
             let bridgeInfluence = 1.0 / (toBridgeCenter.length() + 10);
@@ -1507,32 +1603,37 @@ class LinkedWindows3DApp {
      * Constrains atmospheric particles to remain within planetary boundaries.
      * Implements soft boundary constraints with spring-like restoration forces.
      */
-    constrainAtmosphericParticles(deltaTime) {
-        this.planets.forEach(planet => {
+    constrainAtmosphericParticles(deltaTime)
+    {
+        this.planets.forEach(planet =>
+        {
             let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-            
-            atmosphereLayers.forEach((layer, layerIndex) => {
+
+            atmosphereLayers.forEach((layer, layerIndex) =>
+            {
                 let positions = layer.geometry.attributes.position.array;
                 let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-                
-                for (let i = 0; i < positions.length; i += 3) {
+
+                for (let i = 0; i < positions.length; i += 3)
+                {
                     let x = positions[i];
                     let y = positions[i + 1];
                     let z = positions[i + 2];
-                    
+
                     let distance = Math.sqrt(x * x + y * y + z * z);
-                    
+
                     // Apply soft boundary constraint
-                    if (distance > maxRadius) {
+                    if (distance > maxRadius)
+                    {
                         let constraintForce = (distance - maxRadius) / maxRadius;
                         let constraintFactor = 1.0 - (constraintForce * this.atmosphereConstraintStrength * deltaTime);
-                        
+
                         positions[i] *= constraintFactor;
                         positions[i + 1] *= constraintFactor;
                         positions[i + 2] *= constraintFactor;
                     }
                 }
-                
+
                 layer.geometry.attributes.position.needsUpdate = true;
             });
         });
@@ -1542,49 +1643,53 @@ class LinkedWindows3DApp {
      * Updates atmospheric circulation with enhanced fluid dynamics.
      * Implements vorticity confinement and turbulence modeling.
      */
-    updateConstrainedAtmosphere(planet, deltaTime) {
+    updateConstrainedAtmosphere(planet, deltaTime)
+    {
         let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-        
-        atmosphereLayers.forEach((layer, layerIndex) => {
+
+        atmosphereLayers.forEach((layer, layerIndex) =>
+        {
             let positions = layer.geometry.attributes.position.array;
             let flowSpeed = 0.3 + layerIndex * 0.2;  // Reduced flow speed
             let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-            
-            for (let i = 0; i < positions.length; i += 3) {
+
+            for (let i = 0; i < positions.length; i += 3)
+            {
                 let x = positions[i];
                 let y = positions[i + 1];
                 let z = positions[i + 2];
-                
+
                 let distance = Math.sqrt(x * x + y * y + z * z);
                 let angle = Math.atan2(y, x);
                 let time = this.getTime() * flowSpeed;
-                
+
                 // Enhanced orbital motion with turbulence
                 let orbitalSpeed = flowSpeed * deltaTime * 0.15;
                 let turbulence = Math.sin(time * 3 + distance * 0.02) * 0.05;
                 let newAngle = angle + orbitalSpeed + turbulence;
-                
+
                 // Controlled radial oscillation
                 let radialOscillation = Math.sin(time * 1.5 + distance * 0.015) * 2;
                 let newRadius = Math.min(distance + radialOscillation, maxRadius);
-                
+
                 // Vertical circulation
                 let verticalMotion = Math.sin(time + distance * 0.01) * 1.5;
-                
+
                 positions[i] = newRadius * Math.cos(newAngle);
                 positions[i + 1] = newRadius * Math.sin(newAngle);
                 positions[i + 2] = z + verticalMotion;
-                
+
                 // Ensure particles stay within atmospheric bounds
                 let finalDistance = Math.sqrt(positions[i] * positions[i] + positions[i + 1] * positions[i + 1] + positions[i + 2] * positions[i + 2]);
-                if (finalDistance > maxRadius) {
+                if (finalDistance > maxRadius)
+                {
                     let scale = maxRadius / finalDistance;
                     positions[i] *= scale;
                     positions[i + 1] *= scale;
                     positions[i + 2] *= scale;
                 }
             }
-            
+
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
