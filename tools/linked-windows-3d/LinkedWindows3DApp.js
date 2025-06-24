@@ -58,7 +58,7 @@ class LinkedWindows3DApp
     {
         this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -10000, 10000);
         this.camera.position.z = 2.5;
-        this.near = this.camera.position.z - .5;
+        this.near = this.camera.position.z - 0.5;
         this.far = this.camera.position.z + 0.5;
 
         this.scene = new THREE.Scene();
@@ -197,7 +197,6 @@ class LinkedWindows3DApp
 
             this.world.add(sphere);
             this.cubes.push(sphere);
-
         }
     }
 
@@ -213,7 +212,6 @@ class LinkedWindows3DApp
         let outerColor = color;
 
         let complexSphere = new THREE.Group();
-
 
         let sphereWireframeOuter = new THREE.Mesh(
             new THREE.OctahedronGeometry(outerSize, 6),
@@ -245,10 +243,7 @@ class LinkedWindows3DApp
         complexSphere.add(particlesOuter5);
 
         return complexSphere;
-
     }
-
-    // --- Replace createParticles and createSecondParticles with BufferGeometry versions ---
 
     /**
      * Creates a particle system using BufferGeometry for performance.
