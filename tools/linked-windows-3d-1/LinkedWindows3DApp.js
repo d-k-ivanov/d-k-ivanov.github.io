@@ -948,7 +948,8 @@ class LinkedWindows3DApp
         this.windowManager.update();
 
         // Update scene offset with smoothing
-        let falloff = 0.05;
+        // let falloff = 0.05;
+        let falloff = 1;
         this.sceneOffset.x += (this.sceneOffsetTarget.x - this.sceneOffset.x) * falloff;
         this.sceneOffset.y += (this.sceneOffsetTarget.y - this.sceneOffset.y) * falloff;
 
