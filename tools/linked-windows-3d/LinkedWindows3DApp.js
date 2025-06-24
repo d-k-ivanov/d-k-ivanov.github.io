@@ -119,7 +119,7 @@ class LinkedWindows3DApp
         directionalLight.position.set(100, 100, 50);
         this.scene.add(directionalLight);
 
-        // Add atmospheric rim lighting
+        // Add atmospheric rim lighting for depth
         const rimLight = new THREE.DirectionalLight(0xff6b9d, 0.4);
         rimLight.position.set(-100, -100, -50);
         this.scene.add(rimLight);
@@ -703,8 +703,9 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Updates atmospheric circulation with enhanced fluid dynamics.
-     * Implements vorticity confinement and turbulence modeling.
+     * Enhanced atmospheric circulation with volumetric cloud simulation.
+     * Implements Perlin noise turbulence, density clustering, and fluid dynamics
+     * for realistic cloud-like particle behavior around planetary bodies.
      */
     updateConstrainedAtmosphere(planet, deltaTime)
     {
@@ -713,57 +714,184 @@ class LinkedWindows3DApp
         atmosphereLayers.forEach((layer, layerIndex) =>
         {
             let positions = layer.geometry.attributes.position.array;
-            let flowSpeed = 0.3 + layerIndex * 0.2;  // Reduced flow speed
+            let colors = layer.geometry.attributes.color.array;
+            let velocities = planet.velocities || [];
+
+            // Enhanced parameters for cloud-like behavior
+            let baseFlowSpeed = 0.1 + layerIndex * 0.05;  // Reduced base speed
             let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
+            let densityTarget = 0.6 + layerIndex * 0.2;  // Higher density for inner layers
+            let turbulenceStrength = 0.8 - layerIndex * 0.2;  // More turbulence in outer layers
+
+            // Cloud formation parameters
+            let cloudCohesion = 0.3;  // Particle attraction to nearby particles
+            let cloudSeparation = 0.2;  // Particle repulsion when too close
+            let noiseScale = 0.008;  // Scale for Perlin-like noise
+            let time = this.getTime();
 
             for (let i = 0; i < positions.length; i += 3)
             {
+                let particleIndex = i / 3;
                 let x = positions[i];
                 let y = positions[i + 1];
                 let z = positions[i + 2];
 
-                let distance = Math.sqrt(x * x + y * y + z * z);
-                let angle = Math.atan2(y, x);
-                let time = this.getTime() * flowSpeed;
+                let currentPos = new THREE.Vector3(x, y, z);
+                let distance = currentPos.length();
 
-                // Enhanced orbital motion with turbulence
-                let orbitalSpeed = flowSpeed * deltaTime * 0.15;
-                let turbulence = Math.sin(time * 3 + distance * 0.02) * 0.05;
-                let newAngle = angle + orbitalSpeed + turbulence;
+                // Initialize velocity if not exists
+                if (!velocities[particleIndex])
+                {
+                    velocities[particleIndex] = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.1,
+                        (Math.random() - 0.5) * 0.1,
+                        (Math.random() - 0.5) * 0.1
+                    );
+                }
 
-                // Controlled radial oscillation
-                let radialOscillation = Math.sin(time * 1.5 + distance * 0.015) * 2;
-                let newRadius = Math.min(distance + radialOscillation, maxRadius);
+                let velocity = velocities[particleIndex];
+                let totalForce = new THREE.Vector3();
 
-                // Vertical circulation
-                let verticalMotion = Math.sin(time + distance * 0.01) * 1.5;
+                // 1. GRAVITATIONAL ATTRACTION TO PLANET CENTER
+                let gravitationalForce = currentPos.clone().normalize().multiplyScalar(-0.5 * densityTarget);
+                totalForce.add(gravitationalForce);
 
-                positions[i] = newRadius * Math.cos(newAngle);
-                positions[i + 1] = newRadius * Math.sin(newAngle);
-                positions[i + 2] = z + verticalMotion;
+                // 2. VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
+                let noiseX = this.generateTurbulence(x * noiseScale, y * noiseScale, z * noiseScale, time * 0.1);
+                let noiseY = this.generateTurbulence((x + 1000) * noiseScale, (y + 1000) * noiseScale, (z + 2000) * noiseScale, time * 0.1);
+                let noiseZ = this.generateTurbulence((x + 2000) * noiseScale, (y + 2000) * noiseScale, (z + 3000) * noiseScale, time * 0.1);
 
-                // Ensure particles stay within atmospheric bounds
-                let finalDistance = Math.sqrt(positions[i] * positions[i] + positions[i + 1] * positions[i + 1] + positions[i + 2] * positions[i + 2]);
+                let turbulenceForce = new THREE.Vector3(noiseX, noiseY, noiseZ).multiplyScalar(turbulenceStrength);
+                totalForce.add(turbulenceForce);
+
+                // 3. PARTICLE DENSITY CLUSTERING (Flocking behavior)
+                let neighborhoodRadius = 15 + layerIndex * 5;
+                let cohesionForce = new THREE.Vector3();
+                let separationForce = new THREE.Vector3();
+                let neighborCount = 0;
+
+                // Sample nearby particles for clustering
+                let sampleStep = Math.max(1, Math.floor(positions.length / (300 * 3))); // Optimize by sampling
+                for (let j = 0; j < positions.length; j += sampleStep * 3)
+                {
+                    if (j === i) continue;
+
+                    let neighborPos = new THREE.Vector3(positions[j], positions[j + 1], positions[j + 2]);
+                    let distance = currentPos.distanceTo(neighborPos);
+
+                    if (distance < neighborhoodRadius)
+                    {
+                        neighborCount++;
+
+                        // Cohesion: move toward average position of neighbors
+                        cohesionForce.add(neighborPos);
+
+                        // Separation: avoid crowding
+                        if (distance < 8)
+                        {
+                            let separationVector = currentPos.clone().sub(neighborPos);
+                            separationVector.normalize().multiplyScalar(cloudSeparation / distance);
+                            separationForce.add(separationVector);
+                        }
+                    }
+                }
+
+                if (neighborCount > 0)
+                {
+                    cohesionForce.divideScalar(neighborCount);
+                    cohesionForce.sub(currentPos);
+                    cohesionForce.multiplyScalar(cloudCohesion);
+                    totalForce.add(cohesionForce);
+                    totalForce.add(separationForce);
+                }
+
+                // 4. CONVECTION CURRENTS (Vertical circulation)
+                let convectionStrength = 0.3 * Math.sin(time * 0.5 + distance * 0.01);
+                let convectionForce = new THREE.Vector3(0, 0, convectionStrength);
+                totalForce.add(convectionForce);
+
+                // 5. ATMOSPHERIC DENSITY GRADIENT
+                let densityGradient = Math.max(0, 1 - distance / maxRadius);
+                let densityForce = currentPos.clone().normalize().multiplyScalar(-densityGradient * 0.4);
+                totalForce.add(densityForce);
+
+                // 6. WIND PATTERNS (Horizontal circulation with varying speeds)
+                let windAngle = time * baseFlowSpeed + Math.sin(distance * 0.02 + time) * 0.5;
+                let windStrength = 0.2 * Math.sin(time * 0.3 + distance * 0.015) * densityGradient;
+                let windForce = new THREE.Vector3(
+                    Math.cos(windAngle) * windStrength,
+                    Math.sin(windAngle) * windStrength,
+                    0
+                );
+                totalForce.add(windForce);
+
+                // Apply forces to velocity with realistic damping
+                velocity.add(totalForce.multiplyScalar(deltaTime));
+                velocity.multiplyScalar(0.92); // Natural damping
+                velocity.clampLength(0, 1.5); // Limit maximum velocity
+
+                // Update position with enhanced integration
+                currentPos.add(velocity.clone().multiplyScalar(deltaTime * 60)); // Scale for frame rate independence
+
+                // SOFT BOUNDARY CONSTRAINTS with realistic compression
+                let finalDistance = currentPos.length();
                 if (finalDistance > maxRadius)
                 {
-                    let scale = maxRadius / finalDistance;
-                    positions[i] *= scale;
-                    positions[i + 1] *= scale;
-                    positions[i + 2] *= scale;
+                    let compressionFactor = maxRadius / finalDistance;
+                    currentPos.multiplyScalar(compressionFactor);
+
+                    // Add inward velocity when hitting boundary
+                    velocity.add(currentPos.clone().normalize().multiplyScalar(-0.3));
                 }
+
+                // Prevent particles from getting too close to planet core
+                let minRadius = planet.radius * 0.4;
+                if (finalDistance < minRadius)
+                {
+                    currentPos.normalize().multiplyScalar(minRadius);
+                    velocity.add(currentPos.clone().normalize().multiplyScalar(0.2));
+                }
+
+                // Update positions
+                positions[i] = currentPos.x;
+                positions[i + 1] = currentPos.y;
+                positions[i + 2] = currentPos.z;
+
+                // DYNAMIC COLOR BASED ON DENSITY AND MOVEMENT
+                let speedFactor = velocity.length() / 1.5;
+                let densityFactor = Math.max(0, 1 - finalDistance / maxRadius);
+
+                // Enhanced color calculation for cloud appearance
+                let baseColor = planet.color.clone();
+                let intensity = 0.4 + densityFactor * 0.6 + speedFactor * 0.3;
+
+                // Add atmospheric scattering effect
+                let scatteringBlue = Math.min(1, densityFactor * 0.3);
+                baseColor.r = Math.min(1, baseColor.r * intensity + scatteringBlue * 0.2);
+                baseColor.g = Math.min(1, baseColor.g * intensity + scatteringBlue * 0.3);
+                baseColor.b = Math.min(1, baseColor.b * intensity + scatteringBlue * 0.5);
+
+                colors[i] = baseColor.r;
+                colors[i + 1] = baseColor.g;
+                colors[i + 2] = baseColor.b;
             }
 
+            // Store velocities back to planet data
+            if (!planet.velocities) planet.velocities = [];
+            planet.velocities = velocities;
+
             layer.geometry.attributes.position.needsUpdate = true;
+            layer.geometry.attributes.color.needsUpdate = true;
         });
     }
 
     /**
      * Initializes global particles for inter-planetary bridges.
-     * Implements optimized particle distribution for Einstein-Rosen bridge effects.
+     * Implements strategic particle distribution for Einstein-Rosen bridge effects.
      */
     initializeGlobalParticles()
     {
-        // Remove existing global particles with proper cleanup
+        // Remove existing global particles with proper WebGL resource cleanup
         this.globalParticles.forEach(particle =>
         {
             this.world.remove(particle);
@@ -774,38 +902,38 @@ class LinkedWindows3DApp
 
         if (this.planets.length < 2) return;
 
-        // Create bridge particles between planets using optimized buffer allocation
+        // Create bridge particles with optimized buffer allocation
         const bridgeGeometry = new THREE.BufferGeometry();
         const bridgePositions = new Float32Array(this.bridgeParticleCount * 3);
         const bridgeColors = new Float32Array(this.bridgeParticleCount * 3);
         const bridgeVelocities = [];
 
-        // Distribute particles strategically in inter-planetary space
+        // Strategic inter-planetary particle distribution
         for (let i = 0; i < this.bridgeParticleCount; i++)
         {
-            // Strategic positioning between planets rather than random distribution
+            // Distribute particles in potential bridge zones between planets
             if (this.planets.length >= 2)
             {
                 let planet1 = this.planets[0].group.position;
                 let planet2 = this.planets[1].group.position;
                 let interpolation = Math.random();
 
-                // Bias distribution toward mid-space for bridge formation
+                // Create bridge-biased distribution
                 let midpoint = planet1.clone().lerp(planet2, interpolation);
-                let spread = 500; // Controlled spread around interpolation path
+                let spread = 500;
 
                 bridgePositions[i * 3] = midpoint.x + (Math.random() - 0.5) * spread;
                 bridgePositions[i * 3 + 1] = midpoint.y + (Math.random() - 0.5) * spread;
                 bridgePositions[i * 3 + 2] = midpoint.z + (Math.random() - 0.5) * 100;
             } else
             {
-                // Fallback random distribution
+                // Fallback distribution
                 bridgePositions[i * 3] = (Math.random() - 0.5) * 2000;
                 bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
                 bridgePositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
             }
 
-            // Neutral bridge color with quantum field appearance
+            // Quantum field appearance with HSL color space for consistency
             let bridgeColor = new THREE.Color();
             bridgeColor.setHSL(0.6 + Math.random() * 0.2, 0.8, 0.5 + Math.random() * 0.3);
             bridgeColors[i * 3] = bridgeColor.r;
@@ -823,7 +951,7 @@ class LinkedWindows3DApp
         bridgeGeometry.setAttribute('position', new THREE.BufferAttribute(bridgePositions, 3));
         bridgeGeometry.setAttribute('color', new THREE.BufferAttribute(bridgeColors, 3));
 
-        // Optimized material for bridge particles with quantum appearance
+        // Optimized material for quantum bridge effects
         const bridgeMaterial = new THREE.PointsMaterial({
             size: 1.0,
             vertexColors: true,
@@ -849,8 +977,8 @@ class LinkedWindows3DApp
      */
     updateWindowShape(easing = true)
     {
-        // Calculate the new scene offset based on window screen position
-        // This is essential for multi-window 3D coordinate system alignment
+        // Calculate scene offset based on window screen position
+        // Essential for multi-window 3D coordinate system alignment
         this.sceneOffsetTarget = {
             x: -window.screenX,
             y: -window.screenY
@@ -862,8 +990,7 @@ class LinkedWindows3DApp
             this.sceneOffset = { ...this.sceneOffsetTarget };
         }
 
-        // Optional: Update renderer size if window dimensions changed
-        // This ensures proper pixel ratio and viewport handling
+        // Performance optimization: only resize if dimensions actually changed
         const currentWidth = window.innerWidth;
         const currentHeight = window.innerHeight;
 
@@ -876,8 +1003,8 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Enhanced resize method with WebGL context loss recovery.
-     * Implements best practices for responsive 3D applications.
+     * Enhanced resize method with WebGL context validation.
+     * Implements responsive design patterns for 3D applications.
      */
     resize()
     {
@@ -901,10 +1028,10 @@ class LinkedWindows3DApp
             this.camera.updateProjectionMatrix();
         }
 
-        // Update renderer size with proper pixel ratio handling
+        // Update renderer with pixel ratio optimization
         if (this.renderer)
         {
-            // Recalculate pixel ratio in case it changed (e.g., window moved between monitors)
+            // Dynamic pixel ratio adjustment for multi-monitor setups
             const newPixR = Math.min(window.devicePixelRatio || 1, 2);
             if (newPixR !== this.pixR)
             {
@@ -915,13 +1042,11 @@ class LinkedWindows3DApp
             this.renderer.setSize(width, height);
         }
 
-        // Update any planet-specific viewport calculations if needed
+        // Update planet viewport scaling for responsive design
         this.planets.forEach(planet =>
         {
-            // Recalculate any viewport-dependent particle distributions
             if (planet.atmosphereRadius)
             {
-                // Scale atmospheric boundaries based on new viewport
                 const scaleFactor = Math.min(width, height) / 1000;
                 planet.viewportScale = Math.max(0.5, Math.min(2.0, scaleFactor));
             }
@@ -929,40 +1054,42 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Enhanced error recovery and context loss handling.
-     * Implements WebGL best practices for production deployment.
+     * WebGL context loss recovery handler.
+     * Implements graceful degradation and automatic recovery.
      */
     handleContextLoss()
     {
         console.warn('LinkedWindows3DApp: WebGL context lost, attempting recovery...');
 
-        // Dispose of current resources
+        // Mark for reinitialization
+        this.initialized = false;
+
+        // Clean up current resources
         this.dispose();
 
-        // Reinitialize after a brief delay
+        // Attempt recovery after brief delay
         setTimeout(() =>
         {
-            this.initialized = false;
             this.init();
         }, 1000);
     }
 
     /**
-     * Enhanced dispose method with comprehensive resource cleanup.
+     * Production-grade dispose method with comprehensive cleanup.
      * Prevents memory leaks in long-running applications.
      */
     dispose()
     {
         // Remove event listeners to prevent memory leaks
-        window.removeEventListener('resize', this.resize.bind(this));
+        window.removeEventListener('resize', this.resizeHandler);
 
-        if (this.renderer)
+        // Cleanup WebGL context event handlers
+        if (this.renderer && this.renderer.domElement)
         {
-            // Handle WebGL context loss events
-            this.renderer.domElement.removeEventListener('webglcontextlost', this.handleContextLoss.bind(this));
+            this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLossHandler);
         }
 
-        // Dispose of all scene resources recursively
+        // Recursive disposal of all scene resources
         if (this.scene)
         {
             this.scene.traverse((child) =>
@@ -988,7 +1115,7 @@ class LinkedWindows3DApp
             });
         }
 
-        // Dispose of renderer and free WebGL context
+        // Dispose renderer and free WebGL context
         if (this.renderer)
         {
             this.renderer.dispose();
@@ -998,7 +1125,7 @@ class LinkedWindows3DApp
             }
         }
 
-        // Clear arrays and references
+        // Clear data structures
         this.planets = [];
         this.globalParticles = [];
         this.spatialGrid.clear();
@@ -1007,7 +1134,7 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Enhanced setupScene with WebGL context loss recovery.
+     * Enhanced setup method with proper event handler binding.
      */
     setupScene()
     {
@@ -1028,19 +1155,24 @@ class LinkedWindows3DApp
             antialias: true,
             alpha: true,
             powerPreference: "high-performance",
-            preserveDrawingBuffer: false, // Optimize for performance
-            failIfMajorPerformanceCaveat: false // Allow software rendering as fallback
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false
         });
 
         this.renderer.setPixelRatio(this.pixR);
         this.renderer.sortObjects = false; // Optimize for particle rendering
 
-        // Add WebGL context loss handling
-        this.renderer.domElement.addEventListener('webglcontextlost', (event) =>
+        // Bind event handlers with proper context
+        this.contextLossHandler = (event) =>
         {
             event.preventDefault();
             this.handleContextLoss();
-        }, false);
+        };
+
+        this.resizeHandler = () => this.resize();
+
+        // Add WebGL context loss handling
+        this.renderer.domElement.addEventListener('webglcontextlost', this.contextLossHandler, false);
 
         this.world = new THREE.Object3D();
         this.scene.add(this.world);
@@ -1056,72 +1188,194 @@ class LinkedWindows3DApp
         directionalLight.position.set(100, 100, 50);
         this.scene.add(directionalLight);
 
-        // Add atmospheric rim lighting
+        // Add atmospheric rim lighting for depth
         const rimLight = new THREE.DirectionalLight(0xff6b9d, 0.4);
         rimLight.position.set(-100, -100, -50);
         this.scene.add(rimLight);
     }
 
     /**
-     * Creates an enhanced starfield with nebula-like effects.
+     * Enhanced initialization with proper event binding.
      */
-    createEnhancedStarfield()
+    init()
     {
-        const starGeometry = new THREE.BufferGeometry();
-        const starCount = 8000;
-        const positions = new Float32Array(starCount * 3);
-        const colors = new Float32Array(starCount * 3);
-        const sizes = new Float32Array(starCount);
+        if (this.initialized) return;
+        this.initialized = true;
 
-        for (let i = 0; i < starCount; i++)
+        setTimeout(() =>
         {
-            // More distributed star positioning
-            const x = (Math.random() - 0.5) * 8000;
-            const y = (Math.random() - 0.5) * 8000;
-            const z = (Math.random() - 0.5) * 8000;
+            this.setupScene();
+            this.setupWindowManager();
+            this.resize();
+            this.updateWindowShape(false);
+            this.initializeGlobalParticles();
+            this.render();
+
+            // Bind resize handler with proper context
+            window.addEventListener('resize', this.resizeHandler);
+        }, 500);
+    }
+
+    /**
+     * Missing noise generation methods for atmospheric simulation.
+     */
+    generateTurbulence(x, y, z, time)
+    {
+        // Multi-octave noise implementation for atmospheric turbulence
+        let noise = 0;
+        let amplitude = 1;
+        let frequency = 1;
+
+        // Multiple octaves for natural-looking turbulence
+        for (let octave = 0; octave < 4; octave++)
+        {
+            noise += amplitude * this.simplexNoise(
+                x * frequency + time,
+                y * frequency + time * 0.7,
+                z * frequency + time * 0.5
+            );
+            amplitude *= 0.5;
+            frequency *= 2;
+        }
+
+        return noise;
+    }
+
+    /**
+     * Simplified 3D noise function for atmospheric simulation.
+     */
+    simplexNoise(x, y, z)
+    {
+        // Value noise implementation with smooth interpolation
+        let xi = Math.floor(x);
+        let yi = Math.floor(y);
+        let zi = Math.floor(z);
+
+        let xf = x - xi;
+        let yf = y - yi;
+        let zf = z - zi;
+
+        // Smooth interpolation curves
+        let u = this.fade(xf);
+        let v = this.fade(yf);
+        let w = this.fade(zf);
+
+        // Hash coordinates for deterministic randomness
+        let aaa = this.hash(xi, yi, zi);
+        let aba = this.hash(xi, yi + 1, zi);
+        let aab = this.hash(xi, yi, zi + 1);
+        let abb = this.hash(xi, yi + 1, zi + 1);
+        let baa = this.hash(xi + 1, yi, zi);
+        let bba = this.hash(xi + 1, yi + 1, zi);
+        let bab = this.hash(xi + 1, yi, zi + 1);
+        let bbb = this.hash(xi + 1, yi + 1, zi + 1);
+
+        // Trilinear interpolation
+        let x1 = this.lerp(aaa, baa, u);
+        let x2 = this.lerp(aba, bba, u);
+        let y1 = this.lerp(x1, x2, v);
+
+        let x3 = this.lerp(aab, bab, u);
+        let x4 = this.lerp(abb, bbb, u);
+        let y2 = this.lerp(x3, x4, v);
+
+        return this.lerp(y1, y2, w);
+    }
+
+    /**
+     * Utility functions for noise generation.
+     */
+    fade(t)
+    {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    lerp(a, b, t)
+    {
+        return a + t * (b - a);
+    }
+
+    hash(x, y, z)
+    {
+        // Simple hash function for noise generation
+        let n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+        return 2 * (n - Math.floor(n)) - 1;
+    }
+
+    /**
+     * Enhanced particle creation with higher density for cloud-like appearance
+     */
+    createAtmosphereLayer(radius, color, particleCount, opacity)
+    {
+        // Increase particle count for denser clouds
+        const enhancedParticleCount = Math.floor(particleCount * 1.8);
+        const positions = new Float32Array(enhancedParticleCount * 3);
+        const colors = new Float32Array(enhancedParticleCount * 3);
+
+        for (let i = 0; i < enhancedParticleCount; i++)
+        {
+            let u = Math.random();
+            let v = Math.random();
+            let w = Math.random();
+
+            // Cluster particles more toward specific regions for cloud-like distribution
+            let clusterBias = 0.7; // Bias toward certain regions
+            if (Math.random() < clusterBias)
+            {
+                // Create clusters
+                let clusterCenterTheta = Math.random() * Math.PI * 2;
+                let clusterCenterPhi = Math.random() * Math.PI;
+                let clusterSpread = 0.3;
+
+                u = Math.max(0, Math.min(1, u + (Math.random() - 0.5) * clusterSpread));
+                v = (clusterCenterTheta / (2 * Math.PI)) + (Math.random() - 0.5) * clusterSpread;
+                w = (clusterCenterPhi / Math.PI) + (Math.random() - 0.5) * clusterSpread;
+
+                v = Math.max(0, Math.min(1, v));
+                w = Math.max(0, Math.min(1, w));
+            }
+
+            // Modified shell distribution for more natural clustering
+            let shellThickness = 0.4; // Thicker shells for more volume
+            let r = radius * (0.6 + u * shellThickness); // Start further from center
+            let theta = 2 * Math.PI * v;
+            let phi = Math.acos(2 * w - 1);
+
+            let x = r * Math.sin(phi) * Math.cos(theta);
+            let y = r * Math.sin(phi) * Math.sin(theta);
+            let z = r * Math.cos(phi);
 
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
 
-            const color = new THREE.Color();
-            const starType = Math.random();
+            // Enhanced color variation for cloud appearance
+            let atmosphereColor = color.clone();
+            let distanceFactor = r / radius;
+            let randomVariation = 0.8 + Math.random() * 0.4;
 
-            if (starType < 0.3)
-            {
-                // Blue-white stars
-                color.setHSL(0.6, 0.8, Math.random() * 0.5 + 0.5);
-            } else if (starType < 0.6)
-            {
-                // Yellow-white stars
-                color.setHSL(0.1, 0.3, Math.random() * 0.4 + 0.6);
-            } else
-            {
-                // Red giants and distant stars
-                color.setHSL(0.0, 0.6, Math.random() * 0.3 + 0.3);
-            }
+            // Add cloud-like color variation
+            atmosphereColor.multiplyScalar(randomVariation * (0.6 + distanceFactor * 0.4));
 
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
-
-            sizes[i] = Math.random() * 3 + 1;
+            colors[i * 3] = atmosphereColor.r;
+            colors[i * 3 + 1] = atmosphereColor.g;
+            colors[i * 3 + 2] = atmosphereColor.b;
         }
 
-        starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-        const starMaterial = new THREE.PointsMaterial({
-            size: 2,
+        const material = new THREE.PointsMaterial({
+            size: 0.6,  // Smaller particles for denser appearance
             vertexColors: true,
             transparent: true,
-            opacity: 0.8,
+            opacity: opacity * 0.8, // Slightly more transparent for cloud effect
+            blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
 
-        const starField = new THREE.Points(starGeometry, starMaterial);
-        this.scene.add(starField);
+        return new THREE.Points(geometry, material);
     }
 
     /**
@@ -1640,8 +1894,9 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Updates atmospheric circulation with enhanced fluid dynamics.
-     * Implements vorticity confinement and turbulence modeling.
+     * Enhanced atmospheric circulation with volumetric cloud simulation.
+     * Implements Perlin noise turbulence, density clustering, and fluid dynamics
+     * for realistic cloud-like particle behavior around planetary bodies.
      */
     updateConstrainedAtmosphere(planet, deltaTime)
     {
@@ -1650,47 +1905,175 @@ class LinkedWindows3DApp
         atmosphereLayers.forEach((layer, layerIndex) =>
         {
             let positions = layer.geometry.attributes.position.array;
-            let flowSpeed = 0.3 + layerIndex * 0.2;  // Reduced flow speed
+            let colors = layer.geometry.attributes.color.array;
+            let velocities = planet.velocities || [];
+
+            // Enhanced parameters for cloud-like behavior
+            let baseFlowSpeed = 0.1 + layerIndex * 0.05;  // Reduced base speed
             let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
+            let densityTarget = 0.6 + layerIndex * 0.2;  // Higher density for inner layers
+            let turbulenceStrength = 0.8 - layerIndex * 0.2;  // More turbulence in outer layers
+
+            // Cloud formation parameters
+            let cloudCohesion = 0.3;  // Particle attraction to nearby particles
+            let cloudSeparation = 0.2;  // Particle repulsion when too close
+            let noiseScale = 0.008;  // Scale for Perlin-like noise
+            let time = this.getTime();
 
             for (let i = 0; i < positions.length; i += 3)
             {
+                let particleIndex = i / 3;
                 let x = positions[i];
                 let y = positions[i + 1];
                 let z = positions[i + 2];
 
-                let distance = Math.sqrt(x * x + y * y + z * z);
-                let angle = Math.atan2(y, x);
-                let time = this.getTime() * flowSpeed;
+                let currentPos = new THREE.Vector3(x, y, z);
+                let distance = currentPos.length();
 
-                // Enhanced orbital motion with turbulence
-                let orbitalSpeed = flowSpeed * deltaTime * 0.15;
-                let turbulence = Math.sin(time * 3 + distance * 0.02) * 0.05;
-                let newAngle = angle + orbitalSpeed + turbulence;
+                // Initialize velocity if not exists
+                if (!velocities[particleIndex])
+                {
+                    velocities[particleIndex] = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.1,
+                        (Math.random() - 0.5) * 0.1,
+                        (Math.random() - 0.5) * 0.1
+                    );
+                }
 
-                // Controlled radial oscillation
-                let radialOscillation = Math.sin(time * 1.5 + distance * 0.015) * 2;
-                let newRadius = Math.min(distance + radialOscillation, maxRadius);
+                let velocity = velocities[particleIndex];
+                let totalForce = new THREE.Vector3();
 
-                // Vertical circulation
-                let verticalMotion = Math.sin(time + distance * 0.01) * 1.5;
+                // 1. GRAVITATIONAL ATTRACTION TO PLANET CENTER
+                let gravitationalForce = currentPos.clone().normalize().multiplyScalar(-0.5 * densityTarget);
+                totalForce.add(gravitationalForce);
 
-                positions[i] = newRadius * Math.cos(newAngle);
-                positions[i + 1] = newRadius * Math.sin(newAngle);
-                positions[i + 2] = z + verticalMotion;
+                // 2. VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
+                let noiseX = this.generateTurbulence(x * noiseScale, y * noiseScale, z * noiseScale, time * 0.1);
+                let noiseY = this.generateTurbulence((x + 1000) * noiseScale, (y + 1000) * noiseScale, (z + 2000) * noiseScale, time * 0.1);
+                let noiseZ = this.generateTurbulence((x + 2000) * noiseScale, (y + 2000) * noiseScale, (z + 3000) * noiseScale, time * 0.1);
 
-                // Ensure particles stay within atmospheric bounds
-                let finalDistance = Math.sqrt(positions[i] * positions[i] + positions[i + 1] * positions[i + 1] + positions[i + 2] * positions[i + 2]);
+                let turbulenceForce = new THREE.Vector3(noiseX, noiseY, noiseZ).multiplyScalar(turbulenceStrength);
+                totalForce.add(turbulenceForce);
+
+                // 3. PARTICLE DENSITY CLUSTERING (Flocking behavior)
+                let neighborhoodRadius = 15 + layerIndex * 5;
+                let cohesionForce = new THREE.Vector3();
+                let separationForce = new THREE.Vector3();
+                let neighborCount = 0;
+
+                // Sample nearby particles for clustering
+                let sampleStep = Math.max(1, Math.floor(positions.length / (300 * 3))); // Optimize by sampling
+                for (let j = 0; j < positions.length; j += sampleStep * 3)
+                {
+                    if (j === i) continue;
+
+                    let neighborPos = new THREE.Vector3(positions[j], positions[j + 1], positions[j + 2]);
+                    let distance = currentPos.distanceTo(neighborPos);
+
+                    if (distance < neighborhoodRadius)
+                    {
+                        neighborCount++;
+
+
+                        // Cohesion: move toward average position of neighbors
+                        cohesionForce.add(neighborPos);
+
+                        // Separation: avoid crowding
+                        if (distance < 8)
+                        {
+                            let separationVector = currentPos.clone().sub(neighborPos);
+                            separationVector.normalize().multiplyScalar(cloudSeparation / distance);
+                            separationForce.add(separationVector);
+                        }
+                    }
+                }
+
+                if (neighborCount > 0)
+                {
+                    cohesionForce.divideScalar(neighborCount);
+                    cohesionForce.sub(currentPos);
+                    cohesionForce.multiplyScalar(cloudCohesion);
+                    totalForce.add(cohesionForce);
+                    totalForce.add(separationForce);
+                }
+
+                // 4. CONVECTION CURRENTS (Vertical circulation)
+                let convectionStrength = 0.3 * Math.sin(time * 0.5 + distance * 0.01);
+                let convectionForce = new THREE.Vector3(0, 0, convectionStrength);
+                totalForce.add(convectionForce);
+
+                // 5. ATMOSPHERIC DENSITY GRADIENT
+                let densityGradient = Math.max(0, 1 - distance / maxRadius);
+                let densityForce = currentPos.clone().normalize().multiplyScalar(-densityGradient * 0.4);
+                totalForce.add(densityForce);
+
+                // 6. WIND PATTERNS (Horizontal circulation with varying speeds)
+                let windAngle = time * baseFlowSpeed + Math.sin(distance * 0.02 + time) * 0.5;
+                let windStrength = 0.2 * Math.sin(time * 0.3 + distance * 0.015) * densityGradient;
+                let windForce = new THREE.Vector3(
+                    Math.cos(windAngle) * windStrength,
+                    Math.sin(windAngle) * windStrength,
+                    0
+                );
+                totalForce.add(windForce);
+
+                // Apply forces to velocity with realistic damping
+                velocity.add(totalForce.multiplyScalar(deltaTime));
+                velocity.multiplyScalar(0.92); // Natural damping
+                velocity.clampLength(0, 1.5); // Limit maximum velocity
+
+                // Update position with enhanced integration
+                currentPos.add(velocity.clone().multiplyScalar(deltaTime * 60)); // Scale for frame rate independence
+
+                // SOFT BOUNDARY CONSTRAINTS with realistic compression
+                let finalDistance = currentPos.length();
                 if (finalDistance > maxRadius)
                 {
-                    let scale = maxRadius / finalDistance;
-                    positions[i] *= scale;
-                    positions[i + 1] *= scale;
-                    positions[i + 2] *= scale;
+                    let compressionFactor = maxRadius / finalDistance;
+                    currentPos.multiplyScalar(compressionFactor);
+
+                    // Add inward velocity when hitting boundary
+                    velocity.add(currentPos.clone().normalize().multiplyScalar(-0.3));
                 }
+
+                // Prevent particles from getting too close to planet core
+                let minRadius = planet.radius * 0.4;
+                if (finalDistance < minRadius)
+                {
+                    currentPos.normalize().multiplyScalar(minRadius);
+                    velocity.add(currentPos.clone().normalize().multiplyScalar(0.2));
+                }
+
+                // Update positions
+                positions[i] = currentPos.x;
+                positions[i + 1] = currentPos.y;
+                positions[i + 2] = currentPos.z;
+
+                // DYNAMIC COLOR BASED ON DENSITY AND MOVEMENT
+                let speedFactor = velocity.length() / 1.5;
+                let densityFactor = Math.max(0, 1 - finalDistance / maxRadius);
+
+                // Enhanced color calculation for cloud appearance
+                let baseColor = planet.color.clone();
+                let intensity = 0.4 + densityFactor * 0.6 + speedFactor * 0.3;
+
+                // Add atmospheric scattering effect
+                let scatteringBlue = Math.min(1, densityFactor * 0.3);
+                baseColor.r = Math.min(1, baseColor.r * intensity + scatteringBlue * 0.2);
+                baseColor.g = Math.min(1, baseColor.g * intensity + scatteringBlue * 0.3);
+                baseColor.b = Math.min(1, baseColor.b * intensity + scatteringBlue * 0.5);
+
+                colors[i] = baseColor.r;
+                colors[i + 1] = baseColor.g;
+                colors[i + 2] = baseColor.b;
             }
 
+            // Store velocities back to planet data
+            if (!planet.velocities) planet.velocities = [];
+            planet.velocities = velocities;
+
             layer.geometry.attributes.position.needsUpdate = true;
+            layer.geometry.attributes.color.needsUpdate = true;
         });
     }
 
@@ -1768,26 +2151,169 @@ class LinkedWindows3DApp
      */
     dispose()
     {
-        // Dispose of all geometries and materials
-        this.scene.traverse((child) =>
-        {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) child.material.dispose();
-        });
+        // Remove event listeners to prevent memory leaks
+        window.removeEventListener('resize', this.resizeHandler);
 
+        // Cleanup WebGL context event handlers
+        if (this.renderer && this.renderer.domElement)
+        {
+            this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLossHandler);
+        }
+
+        // Recursive disposal of all scene resources
+        if (this.scene)
+        {
+            this.scene.traverse((child) =>
+            {
+                if (child.geometry)
+                {
+                    child.geometry.dispose();
+                }
+                if (child.material)
+                {
+                    if (Array.isArray(child.material))
+                    {
+                        child.material.forEach(material => material.dispose());
+                    } else
+                    {
+                        child.material.dispose();
+                    }
+                }
+                if (child.texture)
+                {
+                    child.texture.dispose();
+                }
+            });
+        }
+
+        // Dispose renderer and free WebGL context
         if (this.renderer)
         {
             this.renderer.dispose();
+            if (this.renderer.domElement && this.renderer.domElement.parentNode)
+            {
+                this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
+            }
         }
+
+        // Clear data structures
+        this.planets = [];
+        this.globalParticles = [];
+        this.spatialGrid.clear();
+
+        console.log('LinkedWindows3DApp: Resources disposed successfully');
+    }
+
+    /**
+     * Enhanced setup method with proper event handler binding.
+     */
+    setupScene()
+    {
+        this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -10000, 10000);
+        this.camera.position.z = 2.5;
+        this.near = this.camera.position.z - 0.5;
+        this.far = this.camera.position.z + 0.5;
+
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000a1a); // Deep space blue
+
+        this.scene.add(this.camera);
+
+        // Enhanced starfield for cosmic atmosphere
+        this.createEnhancedStarfield();
+
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            powerPreference: "high-performance",
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false
+        });
+
+        this.renderer.setPixelRatio(this.pixR);
+        this.renderer.sortObjects = false; // Optimize for particle rendering
+
+        // Bind event handlers with proper context
+        this.contextLossHandler = (event) =>
+        {
+            event.preventDefault();
+            this.handleContextLoss();
+        };
+
+        this.resizeHandler = () => this.resize();
+
+        // Add WebGL context loss handling
+        this.renderer.domElement.addEventListener('webglcontextlost', this.contextLossHandler, false);
+
+        this.world = new THREE.Object3D();
+        this.scene.add(this.world);
+
+        this.renderer.domElement.setAttribute("id", "scene");
+        document.body.appendChild(this.renderer.domElement);
+
+        // Enhanced lighting setup for particle visualization
+        const ambientLight = new THREE.AmbientLight(0x1a1a2e, 0.3);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0x4a9eff, 0.8);
+        directionalLight.position.set(100, 100, 50);
+        this.scene.add(directionalLight);
+
+        // Add atmospheric rim lighting for depth
+        const rimLight = new THREE.DirectionalLight(0xff6b9d, 0.4);
+        rimLight.position.set(-100, -100, -50);
+        this.scene.add(rimLight);
+    }
+
+    /**
+     * Enhanced initialization with proper event binding.
+     */
+    init()
+    {
+        if (this.initialized) return;
+        this.initialized = true;
+
+        setTimeout(() =>
+        {
+            this.setupScene();
+            this.setupWindowManager();
+            this.resize();
+            this.updateWindowShape(false);
+            this.initializeGlobalParticles();
+            this.render();
+
+            // Bind resize handler with proper context
+            window.addEventListener('resize', this.resizeHandler);
+        }, 500);
     }
 }
 
-// Entry point
+// Entry point with proper error handling
 const app = new LinkedWindows3DApp();
-window.onload = () => app.init();
+
+window.onload = () =>
+{
+    try
+    {
+        app.init();
+    } catch (error)
+    {
+        console.error('LinkedWindows3DApp initialization failed:', error);
+    }
+};
+
 document.addEventListener("visibilitychange", () =>
 {
-    if (document.visibilityState !== 'hidden') app.init();
+    if (document.visibilityState !== 'hidden' && !app.initialized)
+    {
+        try
+        {
+            app.init();
+        } catch (error)
+        {
+            console.error('LinkedWindows3DApp visibility init failed:', error);
+        }
+    }
 });
 
 // Cleanup on page unload
