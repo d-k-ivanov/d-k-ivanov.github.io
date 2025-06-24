@@ -153,12 +153,16 @@ class LinkedWindows3DApp
         }
 
         // Update orthographic camera projection matrix
+        // this.camera = new THREE.OrthographicCamera(left, right, top, bottom,   near,   far)
+        // this.camera = new THREE.OrthographicCamera(   0, width,   0, height, -10000, 10000);
         if (this.camera)
         {
             this.camera.left = 0;
             this.camera.right = width;
-            this.camera.top = height;
-            this.camera.bottom = 0;
+            this.camera.top = 0;
+            this.camera.bottom = height;
+            this.camera.near = -10000;
+            this.camera.far = 10000;
             this.camera.updateProjectionMatrix();
         }
 
