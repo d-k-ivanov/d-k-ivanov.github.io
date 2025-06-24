@@ -17,7 +17,6 @@ class LinkedWindows3DApp
         this.renderer = null;
         this.world = null;
         this.planets = [];
-        this.globalParticles = [];
         this.windowManager = null;
         this.initialized = false;
         this.sceneOffset = { x: 0, y: 0 };
@@ -25,15 +24,8 @@ class LinkedWindows3DApp
         this.pixR = Math.min(window.devicePixelRatio || 1, 2);
         this.today = new Date();
         this.today.setHours(0, 0, 0, 0);
-        this.today = this.today.getTime();
 
-        // Gravitational simulation parameters
-        this.gravitationalConstant = 800.0;        // Increased for stronger planet gravity
-        this.dampingFactor = 0.95;                 // Reduced for more controlled motion
-        this.maxVelocity = 2.0;                    // Reduced max velocity
-        this.particleRepulsion = 1.2;              // Increased repulsion at planet centers
         this.atmosphereConstraintStrength = 5.0;   // New: atmospheric boundary force
-        this.bridgeActivationDistance = 300;       // Distance threshold for bridge formation
         this.lastFrameTime = 0;
 
         // Spatial optimization for performance
@@ -508,7 +500,8 @@ class LinkedWindows3DApp
         {
             let win = wins[i];
             let planetColor = this.generatePlanetColor(i, win.id);
-            let radius = 150 + i * 20;
+            let s = 300 + i * 50;
+            let radius = s / 2;
 
             let planet = this.createParticlePlanet(radius, planetColor, i);
             planet.group.position.x = win.shape.x + (win.shape.w * 0.5);
@@ -554,7 +547,7 @@ class LinkedWindows3DApp
         planetGroup.name = `Planet_${planetIndex}`;
 
         // Create denser, smaller particles for more realistic appearance
-        let coreParticles = this.createPlanetCore(scaledRadius * 0.35, color, 2000);      // Increased count
+        let coreParticles = this.createPlanetCore(scaledRadius * 0.15, color, 1000);
         planetGroup.add(coreParticles);
 
         // Multi-layered atmosphere with progressive density falloff
@@ -633,7 +626,7 @@ class LinkedWindows3DApp
 
         // Optimized material settings for smaller, denser particles
         const material = new THREE.PointsMaterial({
-            size: 1.2,                    // Reduced size for density
+            size: 1.5,
             vertexColors: true,
             transparent: true,
             opacity: 0.95,
@@ -688,7 +681,7 @@ class LinkedWindows3DApp
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
         const material = new THREE.PointsMaterial({
-            size: 0.8,                    // Smaller atmospheric particles
+            size: 1.0,
             vertexColors: true,
             transparent: true,
             opacity: opacity,
@@ -715,7 +708,7 @@ class LinkedWindows3DApp
                 originalPosition: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
                 color: new THREE.Color(colors[i], colors[i + 1], colors[i + 2]),
                 mass: 1.0,
-                isCore: pointsObject.material.size > 1.0  // Distinguish core vs atmosphere
+                isCore: pointsObject.material.size > 1.4  // Distinguish core vs atmosphere
             });
         }
 
@@ -782,154 +775,14 @@ class LinkedWindows3DApp
     {
         if (this.planets.length === 0) return;
 
-        // Calculate inter-planetary distances for bridge activation
-        let planetDistances = this.calculatePlanetDistances();
-        let bridgeActive = planetDistances.some(d => d < this.bridgeActivationDistance);
-
-        if (bridgeActive)
-        {
-            // Update global bridge particles only when planets are close
-            this.updateBridgeParticles(deltaTime, planetDistances);
-        } else
-        {
-            // Focus on atmospheric containment when planets are distant
-            this.constrainAtmosphericParticles(deltaTime);
-        }
+        // Atmospheric containment
+        this.constrainAtmosphericParticles(deltaTime);
 
         // Always update planet atmosphere circulation
         this.planets.forEach(planet =>
         {
             this.updateConstrainedAtmosphere(planet, deltaTime);
         });
-    }
-
-    /**
-     * Calculates distances between all planet pairs for bridge activation.
-     */
-    calculatePlanetDistances()
-    {
-        let distances = [];
-        for (let i = 0; i < this.planets.length; i++)
-        {
-            for (let j = i + 1; j < this.planets.length; j++)
-            {
-                let distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
-                distances.push(distance);
-            }
-        }
-        return distances;
-    }
-
-    /**
-     * Updates bridge particles with Einstein-Rosen bridge physics.
-     * Only active when planets are within interaction distance.
-     */
-    updateBridgeParticles(deltaTime, planetDistances)
-    {
-        this.globalParticles.forEach(bridgeSystem =>
-        {
-            let positions = bridgeSystem.geometry.attributes.position.array;
-            let colors = bridgeSystem.geometry.attributes.color.array;
-            let velocities = bridgeSystem.userData.velocities;
-
-            for (let i = 0; i < velocities.length; i++)
-            {
-                let particlePos = new THREE.Vector3(
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2]
-                );
-
-                let totalForce = new THREE.Vector3();
-                let nearestPlanetColor = new THREE.Color(0.3, 0.6, 1.0);
-                let minDistance = Infinity;
-
-                // Enhanced gravitational calculation with distance scaling
-                this.planets.forEach(planet =>
-                {
-                    let planetCenter = planet.group.position;
-                    let direction = planetCenter.clone().sub(particlePos);
-                    let distance = direction.length();
-
-                    if (distance > 0 && distance < this.bridgeActivationDistance * 2)
-                    {
-                        // Scaled gravitational force based on planet mass and distance
-                        let force = (this.gravitationalConstant * planet.mass) / (distance * distance + 50);
-                        direction.normalize().multiplyScalar(force);
-                        totalForce.add(direction);
-
-                        if (distance < minDistance)
-                        {
-                            minDistance = distance;
-                            nearestPlanetColor = planet.color;
-                        }
-                    }
-                });
-
-                // Apply Einstein-Rosen bridge curvature effect
-                this.applyBridgeCurvature(particlePos, totalForce, deltaTime);
-
-                // Update velocity with enhanced damping
-                velocities[i].add(totalForce.multiplyScalar(deltaTime));
-                velocities[i].multiplyScalar(this.dampingFactor);
-                velocities[i].clampLength(0, this.maxVelocity);
-
-                particlePos.add(velocities[i].clone().multiplyScalar(deltaTime));
-
-                // Update position and color
-                positions[i * 3] = particlePos.x;
-                positions[i * 3 + 1] = particlePos.y;
-                positions[i * 3 + 2] = particlePos.z;
-
-                // Dynamic color blending based on proximity
-                let colorInfluence = Math.max(0, 1 - minDistance / 400);
-                let currentColor = new THREE.Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
-                currentColor.lerp(nearestPlanetColor, colorInfluence * 0.15);
-
-                colors[i * 3] = currentColor.r;
-                colors[i * 3 + 1] = currentColor.g;
-                colors[i * 3 + 2] = currentColor.b;
-            }
-
-            bridgeSystem.geometry.attributes.position.needsUpdate = true;
-            bridgeSystem.geometry.attributes.color.needsUpdate = true;
-        });
-    }
-
-    /**
-     * Applies Einstein-Rosen bridge spacetime curvature effects.
-     * Creates tunnel-like particle flow between nearby planets.
-     */
-    applyBridgeCurvature(particlePos, force, deltaTime)
-    {
-        if (this.planets.length < 2) return;
-
-        // Find the two nearest planets for bridge formation
-        let distances = [];
-        this.planets.forEach((planet, index) =>
-        {
-            let dist = particlePos.distanceTo(planet.group.position);
-            distances.push({ index, distance: dist, planet });
-        });
-
-        distances.sort((a, b) => a.distance - b.distance);
-
-        if (distances.length >= 2 &&
-            distances[0].distance < this.bridgeActivationDistance &&
-            distances[1].distance < this.bridgeActivationDistance)
-        {
-
-            // Create tunnel effect between the two nearest planets
-            let planet1 = distances[0].planet.group.position;
-            let planet2 = distances[1].planet.group.position;
-            let bridgeVector = planet2.clone().sub(planet1);
-            let bridgeCenter = planet1.clone().add(bridgeVector.clone().multiplyScalar(0.5));
-
-            // Apply curvature toward the bridge tunnel
-            let toBridgeCenter = bridgeCenter.clone().sub(particlePos);
-            let bridgeInfluence = 1.0 / (toBridgeCenter.length() + 10);
-            force.add(toBridgeCenter.normalize().multiplyScalar(bridgeInfluence * 100));
-        }
     }
 
     /**
@@ -1182,6 +1035,8 @@ class LinkedWindows3DApp
         {
             let planet = this.planets[i];
             let win = wins[i];
+
+            // Skip if win or win.shape is undefined
             if (!win || !win.shape) continue;
 
             let posTarget = {
@@ -1197,8 +1052,8 @@ class LinkedWindows3DApp
             planet.center.copy(planet.group.position);
 
             // Gentle rotation for visual appeal
-            planet.group.rotation.y += deltaTime * 0.1;
-            planet.group.rotation.x += deltaTime * 0.05;
+            planet.group.rotation.y += deltaTime * 0.2;
+            planet.group.rotation.x += deltaTime * 0.1;
         }
 
         // Run particle physics simulation
@@ -1260,7 +1115,6 @@ class LinkedWindows3DApp
 
         // Clear data structures
         this.planets = [];
-        this.globalParticles = [];
         this.spatialGrid.clear();
 
         console.log('LinkedWindows3DApp: Resources disposed successfully');
