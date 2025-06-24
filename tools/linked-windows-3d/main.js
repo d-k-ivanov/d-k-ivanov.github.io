@@ -81,7 +81,8 @@ else
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
 
-        for (let i = 0; i < starCount; i++) {
+        for (let i = 0; i < starCount; i++)
+        {
             const x = Math.random() * 5000 - 2000;
             const y = Math.random() * 5000 - 2000;
             const z = Math.random() * 5000 - 2000;
@@ -90,9 +91,11 @@ else
             positions[i * 3 + 2] = z;
 
             const color = new t.Color();
-            if (Math.random() < 0.5) {
+            if (Math.random() < 0.5)
+            {
                 color.setHSL(0.16, 0.5, Math.random() * 0.5 + 0.25);
-            } else {
+            } else
+            {
                 color.setHSL(0.0, 0.0, Math.random() * 0.5 + 0.5);
             }
             colors[i * 3] = color.r;
@@ -324,13 +327,14 @@ else
         {
             let complexSphere = cubes[i];
             let win = wins[i];
+            if (!win || !win.shape) continue; // <-- Fix: skip if win or win.shape is undefined
+
             let _t = t;
 
             let posTarget = { x: win.shape.x + (win.shape.w * .5), y: win.shape.y + (win.shape.h * .5) }
 
             complexSphere.position.x = complexSphere.position.x + (posTarget.x - complexSphere.position.x) * falloff;
             complexSphere.position.y = complexSphere.position.y + (posTarget.y - complexSphere.position.y) * falloff;
-
 
             complexSphere.rotation.x = _t * 1.1;
             complexSphere.rotation.y = _t * 1.1;
