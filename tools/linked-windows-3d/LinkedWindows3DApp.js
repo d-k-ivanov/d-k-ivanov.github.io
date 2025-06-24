@@ -4,7 +4,7 @@ import WindowManager from './WindowManager.js';
 /**
  * Main application class for the Linked Windows 3D visualization.
  * Features gravitational particle planets with constrained atmospheric physics.
- * 
+ *
  * @class LinkedWindows3DApp
  * @implements {WebGL Performance Best Practices}
  */
@@ -27,7 +27,7 @@ class LinkedWindows3DApp
         this.today.setHours(0, 0, 0, 0);
         this.today = this.today.getTime();
 
-        // Gravitational simulation parameters 
+        // Gravitational simulation parameters
         this.gravitationalConstant = 800.0;        // Increased for stronger planet gravity
         this.dampingFactor = 0.95;                 // Reduced for more controlled motion
         this.maxVelocity = 2.0;                    // Reduced max velocity
@@ -972,7 +972,7 @@ class LinkedWindows3DApp
     /**
      * Updates the window shape and position for multi-window synchronization.
      * Critical for maintaining proper viewport coordination across browser windows.
-     * 
+     *
      * @param {boolean} easing - Whether to apply smooth interpolation to position changes
      */
     updateWindowShape(easing = true)
