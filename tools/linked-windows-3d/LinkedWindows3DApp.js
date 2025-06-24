@@ -32,7 +32,6 @@ class LinkedWindows3DApp
         this.dampingFactor = 0.95;                 // Reduced for more controlled motion
         this.maxVelocity = 2.0;                    // Reduced max velocity
         this.particleRepulsion = 1.2;              // Increased repulsion at planet centers
-        this.bridgeParticleCount = 1500;           // Optimized particle count
         this.atmosphereConstraintStrength = 5.0;   // New: atmospheric boundary force
         this.bridgeActivationDistance = 300;       // Distance threshold for bridge formation
         this.lastFrameTime = 0;
@@ -110,90 +109,6 @@ class LinkedWindows3DApp
 
         const starField = new THREE.Points(starGeometry, starMaterial);
         this.scene.add(starField);
-    }
-
-    /**
-     * Initializes global particles for inter-planetary bridges.
-     * Implements strategic particle distribution for Einstein-Rosen bridge effects.
-     */
-    initializeGlobalParticles()
-    {
-        // Remove existing global particles with proper WebGL resource cleanup
-        this.globalParticles.forEach(particle =>
-        {
-            this.world.remove(particle);
-            if (particle.geometry) particle.geometry.dispose();
-            if (particle.material) particle.material.dispose();
-        });
-        this.globalParticles = [];
-
-        if (this.planets.length < 2) return;
-
-        // Create bridge particles with optimized buffer allocation
-        const bridgeGeometry = new THREE.BufferGeometry();
-        const bridgePositions = new Float32Array(this.bridgeParticleCount * 3);
-        const bridgeColors = new Float32Array(this.bridgeParticleCount * 3);
-        const bridgeVelocities = [];
-
-        // Strategic inter-planetary particle distribution
-        for (let i = 0; i < this.bridgeParticleCount; i++)
-        {
-            // Distribute particles in potential bridge zones between planets
-            if (this.planets.length >= 2)
-            {
-                let planet1 = this.planets[0].group.position;
-                let planet2 = this.planets[1].group.position;
-                let interpolation = Math.random();
-
-                // Create bridge-biased distribution
-                let midpoint = planet1.clone().lerp(planet2, interpolation);
-                let spread = 500;
-
-                bridgePositions[i * 3] = midpoint.x + (Math.random() - 0.5) * spread;
-                bridgePositions[i * 3 + 1] = midpoint.y + (Math.random() - 0.5) * spread;
-                bridgePositions[i * 3 + 2] = midpoint.z + (Math.random() - 0.5) * 100;
-            } else
-            {
-                // Fallback distribution
-                bridgePositions[i * 3] = (Math.random() - 0.5) * 2000;
-                bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-                bridgePositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
-            }
-
-            // Quantum field appearance with HSL color space for consistency
-            let bridgeColor = new THREE.Color();
-            bridgeColor.setHSL(0.6 + Math.random() * 0.2, 0.8, 0.5 + Math.random() * 0.3);
-            bridgeColors[i * 3] = bridgeColor.r;
-            bridgeColors[i * 3 + 1] = bridgeColor.g;
-            bridgeColors[i * 3 + 2] = bridgeColor.b;
-
-            // Initialize with minimal velocities for stability
-            bridgeVelocities.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.1,
-                (Math.random() - 0.5) * 0.1,
-                (Math.random() - 0.5) * 0.1
-            ));
-        }
-
-        bridgeGeometry.setAttribute('position', new THREE.BufferAttribute(bridgePositions, 3));
-        bridgeGeometry.setAttribute('color', new THREE.BufferAttribute(bridgeColors, 3));
-
-        // Optimized material for quantum bridge effects
-        const bridgeMaterial = new THREE.PointsMaterial({
-            size: 1.0,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.7,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        const bridgeParticles = new THREE.Points(bridgeGeometry, bridgeMaterial);
-        bridgeParticles.userData = { velocities: bridgeVelocities };
-        bridgeParticles.name = 'BridgeParticleSystem';
-
-        this.world.add(bridgeParticles);
-        this.globalParticles.push(bridgeParticles);
     }
 
     /**
@@ -376,7 +291,6 @@ class LinkedWindows3DApp
             this.setupWindowManager();
             this.resize();
             this.updateWindowShape(false);
-            this.initializeGlobalParticles();
             this.render();
 
             // Bind resize handler with proper context
@@ -603,9 +517,6 @@ class LinkedWindows3DApp
             this.world.add(planet.group);
             this.planets.push(planet);
         }
-
-        // Reinitialize global particles for inter-planetary bridges
-        this.initializeGlobalParticles();
     }
 
     /**
