@@ -211,6 +211,7 @@ class LinkedWindows3DApp
 
     /**
      * Creates and updates particle planets to match window count.
+     * Fixed to ensure planet centers remain properly positioned relative to windows.
      */
     updatePlanets()
     {
@@ -235,11 +236,23 @@ class LinkedWindows3DApp
         {
             let win = wins[i];
             let planetColor = this.generatePlanetColor(i, win.id);
-            let radius = 80 + i * 20;
+            // Increased base radius for bigger spheres
+            let radius = 120 + i * 25; // Increased from 80 + i * 20
 
             let planet = this.createParticlePlanet(radius, planetColor, i);
+
+            // Fix: Use absolute window center coordinates without scene offset
+            // This ensures planets stay centered in their respective windows
             planet.group.position.x = win.shape.x + (win.shape.w * 0.5);
             planet.group.position.y = win.shape.y + (win.shape.h * 0.5);
+            planet.group.position.z = 0; // Ensure Z is consistent
+
+            // Store the target position for stable positioning
+            planet.targetPosition = {
+                x: win.shape.x + (win.shape.w * 0.5),
+                y: win.shape.y + (win.shape.h * 0.5),
+                z: 0
+            };
 
             this.world.add(planet.group);
             this.planets.push(planet);
@@ -250,61 +263,39 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Generates unique liquid colors for each planet.
-     */
-    generatePlanetColor(index, windowId)
-    {
-        const liquidColors = [
-            { h: 0.55, s: 0.9, l: 0.6 }, // Cyan liquid
-            { h: 0.75, s: 0.8, l: 0.7 }, // Purple liquid
-            { h: 0.15, s: 0.9, l: 0.6 }, // Orange liquid
-            { h: 0.35, s: 0.8, l: 0.5 }, // Green liquid
-            { h: 0.95, s: 0.9, l: 0.6 }, // Magenta liquid
-            { h: 0.05, s: 1.0, l: 0.5 }, // Red liquid
-        ];
-
-        let colorIndex = (index + windowId) % liquidColors.length;
-        let colorData = liquidColors[colorIndex];
-
-        return new THREE.Color().setHSL(
-            colorData.h + (Math.random() - 0.5) * 0.1,
-            colorData.s,
-            colorData.l + (Math.random() - 0.5) * 0.2
-        );
-    }
-
-    /**
      * Creates a particle planet with dense core and flowing atmosphere.
+     * Increased size for better visibility and bridge formation.
      */
     createParticlePlanet(radius, color, planetIndex)
     {
-        // Scale up planet size by 40% while maintaining density
-        const scaledRadius = radius * 1.4;
+        // Increased scale for bigger spheres
+        const scaledRadius = radius * 1.6; // Increased from 1.4
         let planetGroup = new THREE.Group();
         planetGroup.name = `Planet_${planetIndex}`;
 
-        // Create denser, smaller particles for more realistic appearance
-        let coreParticles = this.createPlanetCore(scaledRadius * 0.35, color, 2000);      // Increased count
+        // Create denser, larger particles for more realistic appearance
+        let coreParticles = this.createPlanetCore(scaledRadius * 0.4, color, 2500); // Increased from 0.35 and 2000
         planetGroup.add(coreParticles);
 
-        // Multi-layered atmosphere with progressive density falloff
-        let innerAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.6, color, 3000, 0.7);
+        // Multi-layered atmosphere with enhanced density for bridge formation
+        let innerAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.7, color, 3500, 0.8); // Increased
         planetGroup.add(innerAtmosphere);
 
-        let middleAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.85, color, 2200, 0.5);
+        let middleAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.9, color, 2800, 0.6); // Increased
         planetGroup.add(middleAtmosphere);
 
-        let outerAtmosphere = this.createAtmosphereLayer(scaledRadius * 1.0, color, 1200, 0.3);
+        let outerAtmosphere = this.createAtmosphereLayer(scaledRadius * 1.2, color, 2000, 0.4); // Increased
         planetGroup.add(outerAtmosphere);
 
         // Enhanced particle data structure for physics simulation
         let particleData = {
             group: planetGroup,
             radius: scaledRadius,
-            atmosphereRadius: scaledRadius * 1.2,     // Atmospheric boundary
+            atmosphereRadius: scaledRadius * 1.5, // Increased for better bridge formation
             color: color,
             center: new THREE.Vector3(),
-            mass: 1000,                               // Gravitational mass
+            mass: 1500, // Increased mass for stronger gravitational pull
+            targetPosition: { x: 0, y: 0, z: 0 }, // Will be set in updatePlanets
             coreParticles: this.extractParticleData(coreParticles),
             atmosphereParticles: [
                 this.extractParticleData(innerAtmosphere),
@@ -312,582 +303,15 @@ class LinkedWindows3DApp
                 this.extractParticleData(outerAtmosphere)
             ],
             velocities: this.initializeConstrainedVelocities(coreParticles, [innerAtmosphere, middleAtmosphere, outerAtmosphere]),
-            lastPositions: []  // For Verlet integration stability
+            lastPositions: []
         };
 
         return particleData;
     }
 
     /**
-     * Creates dense planetary core with smaller, more numerous particles.
-     * Uses advanced particle distribution algorithms for realistic density gradients.
-     */
-    createPlanetCore(radius, color, particleCount)
-    {
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++)
-        {
-            // Enhanced spherical distribution with density bias toward center
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Power law distribution for realistic planetary density
-            let r = radius * Math.pow(u, 0.4);  // Stronger bias toward center
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Enhanced color variation with metallic reflectance simulation
-            let coreColor = color.clone();
-            let intensity = 0.9 + Math.random() * 0.3;
-            coreColor.multiplyScalar(intensity);
-
-            colors[i * 3] = coreColor.r;
-            colors[i * 3 + 1] = coreColor.g;
-            colors[i * 3 + 2] = coreColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        // Optimized material settings for smaller, denser particles
-        const material = new THREE.PointsMaterial({
-            size: 1.2,                    // Reduced size for density
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.95,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
-     * Creates atmosphere layers with enhanced particle physics constraints.
-     * Implements shell-based distribution with proper boundary enforcement.
-     */
-    createAtmosphereLayer(radius, color, particleCount, opacity)
-    {
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++)
-        {
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Shell distribution with controlled thickness
-            let shellThickness = 0.25;
-            let r = radius * (1 - shellThickness + u * shellThickness);
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Atmospheric color gradients with distance-based variation
-            let atmosphereColor = color.clone();
-            let distanceFactor = r / radius;
-            atmosphereColor.multiplyScalar(0.7 + Math.random() * 0.4 * (1 - distanceFactor));
-
-            colors[i * 3] = atmosphereColor.r;
-            colors[i * 3 + 1] = atmosphereColor.g;
-            colors[i * 3 + 2] = atmosphereColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 0.8,                    // Smaller atmospheric particles
-            vertexColors: true,
-            transparent: true,
-            opacity: opacity,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
-     * Enhanced particle data extraction with physics metadata.
-     */
-    extractParticleData(pointsObject)
-    {
-        let positions = pointsObject.geometry.attributes.position.array;
-        let colors = pointsObject.geometry.attributes.color.array;
-        let particles = [];
-
-        for (let i = 0; i < positions.length; i += 3)
-        {
-            particles.push({
-                position: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                originalPosition: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                color: new THREE.Color(colors[i], colors[i + 1], colors[i + 2]),
-                mass: 1.0,
-                isCore: pointsObject.material.size > 1.0  // Distinguish core vs atmosphere
-            });
-        }
-
-        return particles;
-    }
-
-    /**
-     * Initializes particle velocities with atmospheric constraints.
-     * Implements orbital mechanics for stable atmospheric circulation.
-     */
-    initializeConstrainedVelocities(coreParticles, atmosphereLayers)
-    {
-        let velocities = [];
-
-        // Core particles: minimal velocities for stability
-        let coreCount = coreParticles.geometry.attributes.position.count;
-        for (let i = 0; i < coreCount; i++)
-        {
-            velocities.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.05,  // Reduced initial velocity
-                (Math.random() - 0.5) * 0.05,
-                (Math.random() - 0.5) * 0.05
-            ));
-        }
-
-        // Atmosphere particles: orbital-biased velocities
-        atmosphereLayers.forEach((layer, layerIndex) =>
-        {
-            let count = layer.geometry.attributes.position.count;
-            let positions = layer.geometry.attributes.position.array;
-
-            for (let i = 0; i < count; i++)
-            {
-                let x = positions[i * 3];
-                let y = positions[i * 3 + 1];
-                let z = positions[i * 3 + 2];
-
-                // Calculate orbital velocity for stable circulation
-                let distance = Math.sqrt(x * x + y * y + z * z);
-                let orbitalSpeed = 0.1 + layerIndex * 0.05;
-
-                // Perpendicular velocity for orbital motion
-                let orbitalVelocity = new THREE.Vector3(-y, x, 0).normalize().multiplyScalar(orbitalSpeed);
-
-                // Add small random component
-                orbitalVelocity.add(new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.1,
-                    (Math.random() - 0.5) * 0.1,
-                    (Math.random() - 0.5) * 0.1
-                ));
-
-                velocities.push(orbitalVelocity);
-            }
-        });
-
-        return velocities;
-    }
-
-    /**
-     * Advanced particle physics simulation with atmospheric constraints.
-     * Implements spatial partitioning and distance-based interaction culling.
-     */
-    updateParticlePhysics(deltaTime)
-    {
-        if (this.planets.length === 0) return;
-
-        // Calculate inter-planetary distances for bridge activation
-        let planetDistances = this.calculatePlanetDistances();
-        let bridgeActive = planetDistances.some(d => d < this.bridgeActivationDistance);
-
-        if (bridgeActive)
-        {
-            // Update global bridge particles only when planets are close
-            this.updateBridgeParticles(deltaTime, planetDistances);
-        } else
-        {
-            // Focus on atmospheric containment when planets are distant
-            this.constrainAtmosphericParticles(deltaTime);
-        }
-
-        // Always update planet atmosphere circulation
-        this.planets.forEach(planet =>
-        {
-            this.updateConstrainedAtmosphere(planet, deltaTime);
-        });
-    }
-
-    /**
-     * Calculates distances between all planet pairs for bridge activation.
-     */
-    calculatePlanetDistances()
-    {
-        let distances = [];
-        for (let i = 0; i < this.planets.length; i++)
-        {
-            for (let j = i + 1; j < this.planets.length; j++)
-            {
-                let distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
-                distances.push(distance);
-            }
-        }
-        return distances;
-    }
-
-    /**
-     * Updates bridge particles with Einstein-Rosen bridge physics.
-     * Only active when planets are within interaction distance.
-     */
-    updateBridgeParticles(deltaTime, planetDistances)
-    {
-        this.globalParticles.forEach(bridgeSystem =>
-        {
-            let positions = bridgeSystem.geometry.attributes.position.array;
-            let colors = bridgeSystem.geometry.attributes.color.array;
-            let velocities = bridgeSystem.userData.velocities;
-
-            for (let i = 0; i < velocities.length; i++)
-            {
-                let particlePos = new THREE.Vector3(
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2]
-                );
-
-                let totalForce = new THREE.Vector3();
-                let nearestPlanetColor = new THREE.Color(0.3, 0.6, 1.0);
-                let minDistance = Infinity;
-
-                // Enhanced gravitational calculation with distance scaling
-                this.planets.forEach(planet =>
-                {
-                    let planetCenter = planet.group.position;
-                    let direction = planetCenter.clone().sub(particlePos);
-                    let distance = direction.length();
-
-                    if (distance > 0 && distance < this.bridgeActivationDistance * 2)
-                    {
-                        // Scaled gravitational force based on planet mass and distance
-                        let force = (this.gravitationalConstant * planet.mass) / (distance * distance + 50);
-                        direction.normalize().multiplyScalar(force);
-                        totalForce.add(direction);
-
-                        if (distance < minDistance)
-                        {
-                            minDistance = distance;
-                            nearestPlanetColor = planet.color;
-                        }
-                    }
-                });
-
-                // Apply Einstein-Rosen bridge curvature effect
-                this.applyBridgeCurvature(particlePos, totalForce, deltaTime);
-
-                // Update velocity with enhanced damping
-                velocities[i].add(totalForce.multiplyScalar(deltaTime));
-                velocities[i].multiplyScalar(this.dampingFactor);
-                velocities[i].clampLength(0, this.maxVelocity);
-
-                particlePos.add(velocities[i].clone().multiplyScalar(deltaTime));
-
-                // Update position and color
-                positions[i * 3] = particlePos.x;
-                positions[i * 3 + 1] = particlePos.y;
-                positions[i * 3 + 2] = particlePos.z;
-
-                // Dynamic color blending based on proximity
-                let colorInfluence = Math.max(0, 1 - minDistance / 400);
-                let currentColor = new THREE.Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
-                currentColor.lerp(nearestPlanetColor, colorInfluence * 0.15);
-
-                colors[i * 3] = currentColor.r;
-                colors[i * 3 + 1] = currentColor.g;
-                colors[i * 3 + 2] = currentColor.b;
-            }
-
-            bridgeSystem.geometry.attributes.position.needsUpdate = true;
-            bridgeSystem.geometry.attributes.color.needsUpdate = true;
-        });
-    }
-
-    /**
-     * Applies Einstein-Rosen bridge spacetime curvature effects.
-     * Creates tunnel-like particle flow between nearby planets.
-     */
-    applyBridgeCurvature(particlePos, force, deltaTime)
-    {
-        if (this.planets.length < 2) return;
-
-        // Find the two nearest planets for bridge formation
-        let distances = [];
-        this.planets.forEach((planet, index) =>
-        {
-            let dist = particlePos.distanceTo(planet.group.position);
-            distances.push({ index, distance: dist, planet });
-        });
-
-        distances.sort((a, b) => a.distance - b.distance);
-
-        if (distances.length >= 2 &&
-            distances[0].distance < this.bridgeActivationDistance &&
-            distances[1].distance < this.bridgeActivationDistance)
-        {
-
-            // Create tunnel effect between the two nearest planets
-            let planet1 = distances[0].planet.group.position;
-            let planet2 = distances[1].planet.group.position;
-            let bridgeVector = planet2.clone().sub(planet1);
-            let bridgeCenter = planet1.clone().add(bridgeVector.clone().multiplyScalar(0.5));
-
-            // Apply curvature toward the bridge tunnel
-            let toBridgeCenter = bridgeCenter.clone().sub(particlePos);
-            let bridgeInfluence = 1.0 / (toBridgeCenter.length() + 10);
-            force.add(toBridgeCenter.normalize().multiplyScalar(bridgeInfluence * 100));
-        }
-    }
-
-    /**
-     * Constrains atmospheric particles to remain within planetary boundaries.
-     * Implements soft boundary constraints with spring-like restoration forces.
-     */
-    constrainAtmosphericParticles(deltaTime)
-    {
-        this.planets.forEach(planet =>
-        {
-            let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-
-            atmosphereLayers.forEach((layer, layerIndex) =>
-            {
-                let positions = layer.geometry.attributes.position.array;
-                let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-
-                for (let i = 0; i < positions.length; i += 3)
-                {
-                    let x = positions[i];
-                    let y = positions[i + 1];
-                    let z = positions[i + 2];
-
-                    let distance = Math.sqrt(x * x + y * y + z * z);
-
-                    // Apply soft boundary constraint
-                    if (distance > maxRadius)
-                    {
-                        let constraintForce = (distance - maxRadius) / maxRadius;
-                        let constraintFactor = 1.0 - (constraintForce * this.atmosphereConstraintStrength * deltaTime);
-
-                        positions[i] *= constraintFactor;
-                        positions[i + 1] *= constraintFactor;
-                        positions[i + 2] *= constraintFactor;
-                    }
-                }
-
-                layer.geometry.attributes.position.needsUpdate = true;
-            });
-        });
-    }
-
-    /**
-     * Enhanced atmospheric circulation with volumetric cloud simulation.
-     * Implements Perlin noise turbulence, density clustering, and fluid dynamics
-     * for realistic cloud-like particle behavior around planetary bodies.
-     */
-    updateConstrainedAtmosphere(planet, deltaTime)
-    {
-        let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-
-        atmosphereLayers.forEach((layer, layerIndex) =>
-        {
-            let positions = layer.geometry.attributes.position.array;
-            let colors = layer.geometry.attributes.color.array;
-            let velocities = planet.velocities || [];
-
-            // Enhanced parameters for cloud-like behavior
-            let baseFlowSpeed = 0.1 + layerIndex * 0.05;  // Reduced base speed
-            let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-            let densityTarget = 0.6 + layerIndex * 0.2;  // Higher density for inner layers
-            let turbulenceStrength = 0.8 - layerIndex * 0.2;  // More turbulence in outer layers
-
-            // Cloud formation parameters
-            let cloudCohesion = 0.3;  // Particle attraction to nearby particles
-            let cloudSeparation = 0.2;  // Particle repulsion when too close
-            let noiseScale = 0.008;  // Scale for Perlin-like noise
-            let time = this.getTime();
-
-            for (let i = 0; i < positions.length; i += 3)
-            {
-                let particleIndex = i / 3;
-                let x = positions[i];
-                let y = positions[i + 1];
-                let z = positions[i + 2];
-
-                let currentPos = new THREE.Vector3(x, y, z);
-                let distance = currentPos.length();
-
-                // Initialize velocity if not exists
-                if (!velocities[particleIndex])
-                {
-                    velocities[particleIndex] = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.1,
-                        (Math.random() - 0.5) * 0.1,
-                        (Math.random() - 0.5) * 0.1
-                    );
-                }
-
-                let velocity = velocities[particleIndex];
-                let totalForce = new THREE.Vector3();
-
-                // 1. GRAVITATIONAL ATTRACTION TO PLANET CENTER
-                let gravitationalForce = currentPos.clone().normalize().multiplyScalar(-0.5 * densityTarget);
-                totalForce.add(gravitationalForce);
-
-                // 2. VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
-                let noiseX = this.generateTurbulence(x * noiseScale, y * noiseScale, z * noiseScale, time * 0.1);
-                let noiseY = this.generateTurbulence((x + 1000) * noiseScale, (y + 1000) * noiseScale, (z + 2000) * noiseScale, time * 0.1);
-                let noiseZ = this.generateTurbulence((x + 2000) * noiseScale, (y + 2000) * noiseScale, (z + 3000) * noiseScale, time * 0.1);
-
-                let turbulenceForce = new THREE.Vector3(noiseX, noiseY, noiseZ).multiplyScalar(turbulenceStrength);
-                totalForce.add(turbulenceForce);
-
-                // 3. PARTICLE DENSITY CLUSTERING (Flocking behavior)
-                let neighborhoodRadius = 15 + layerIndex * 5;
-                let cohesionForce = new THREE.Vector3();
-                let separationForce = new THREE.Vector3();
-                let neighborCount = 0;
-
-                // Sample nearby particles for clustering
-                let sampleStep = Math.max(1, Math.floor(positions.length / (300 * 3))); // Optimize by sampling
-                for (let j = 0; j < positions.length; j += sampleStep * 3)
-                {
-                    if (j === i) continue;
-
-                    let neighborPos = new THREE.Vector3(positions[j], positions[j + 1], positions[j + 2]);
-                    let distance = currentPos.distanceTo(neighborPos);
-
-                    if (distance < neighborhoodRadius)
-                    {
-                        neighborCount++;
-
-                        // Cohesion: move toward average position of neighbors
-                        cohesionForce.add(neighborPos);
-
-                        // Separation: avoid crowding
-                        if (distance < 8)
-                        {
-                            let separationVector = currentPos.clone().sub(neighborPos);
-                            separationVector.normalize().multiplyScalar(cloudSeparation / distance);
-                            separationForce.add(separationVector);
-                        }
-                    }
-                }
-
-                if (neighborCount > 0)
-                {
-                    cohesionForce.divideScalar(neighborCount);
-                    cohesionForce.sub(currentPos);
-                    cohesionForce.multiplyScalar(cloudCohesion);
-                    totalForce.add(cohesionForce);
-                    totalForce.add(separationForce);
-                }
-
-                // 4. CONVECTION CURRENTS (Vertical circulation)
-                let convectionStrength = 0.3 * Math.sin(time * 0.5 + distance * 0.01);
-                let convectionForce = new THREE.Vector3(0, 0, convectionStrength);
-                totalForce.add(convectionForce);
-
-                // 5. ATMOSPHERIC DENSITY GRADIENT
-                let densityGradient = Math.max(0, 1 - distance / maxRadius);
-                let densityForce = currentPos.clone().normalize().multiplyScalar(-densityGradient * 0.4);
-                totalForce.add(densityForce);
-
-                // 6. WIND PATTERNS (Horizontal circulation with varying speeds)
-                let windAngle = time * baseFlowSpeed + Math.sin(distance * 0.02 + time) * 0.5;
-                let windStrength = 0.2 * Math.sin(time * 0.3 + distance * 0.015) * densityGradient;
-                let windForce = new THREE.Vector3(
-                    Math.cos(windAngle) * windStrength,
-                    Math.sin(windAngle) * windStrength,
-                    0
-                );
-                totalForce.add(windForce);
-
-                // Apply forces to velocity with realistic damping
-                velocity.add(totalForce.multiplyScalar(deltaTime));
-                velocity.multiplyScalar(0.92); // Natural damping
-                velocity.clampLength(0, 1.5); // Limit maximum velocity
-
-                // Update position with enhanced integration
-                currentPos.add(velocity.clone().multiplyScalar(deltaTime * 60)); // Scale for frame rate independence
-
-                // SOFT BOUNDARY CONSTRAINTS with realistic compression
-                let finalDistance = currentPos.length();
-                if (finalDistance > maxRadius)
-                {
-                    let compressionFactor = maxRadius / finalDistance;
-                    currentPos.multiplyScalar(compressionFactor);
-
-                    // Add inward velocity when hitting boundary
-                    velocity.add(currentPos.clone().normalize().multiplyScalar(-0.3));
-                }
-
-                // Prevent particles from getting too close to planet core
-                let minRadius = planet.radius * 0.4;
-                if (finalDistance < minRadius)
-                {
-                    currentPos.normalize().multiplyScalar(minRadius);
-                    velocity.add(currentPos.clone().normalize().multiplyScalar(0.2));
-                }
-
-                // Update positions
-                positions[i] = currentPos.x;
-                positions[i + 1] = currentPos.y;
-                positions[i + 2] = currentPos.z;
-
-                // DYNAMIC COLOR BASED ON DENSITY AND MOVEMENT
-                let speedFactor = velocity.length() / 1.5;
-                let densityFactor = Math.max(0, 1 - finalDistance / maxRadius);
-
-                // Enhanced color calculation for cloud appearance
-                let baseColor = planet.color.clone();
-                let intensity = 0.4 + densityFactor * 0.6 + speedFactor * 0.3;
-
-                // Add atmospheric scattering effect
-                let scatteringBlue = Math.min(1, densityFactor * 0.3);
-                baseColor.r = Math.min(1, baseColor.r * intensity + scatteringBlue * 0.2);
-                baseColor.g = Math.min(1, baseColor.g * intensity + scatteringBlue * 0.3);
-                baseColor.b = Math.min(1, baseColor.b * intensity + scatteringBlue * 0.5);
-
-                colors[i] = baseColor.r;
-                colors[i + 1] = baseColor.g;
-                colors[i + 2] = baseColor.b;
-            }
-
-            // Store velocities back to planet data
-            if (!planet.velocities) planet.velocities = [];
-            planet.velocities = velocities;
-
-            layer.geometry.attributes.position.needsUpdate = true;
-            layer.geometry.attributes.color.needsUpdate = true;
-        });
-    }
-
-    /**
-     * Initializes global particles for inter-planetary bridges.
-     * Implements strategic particle distribution for Einstein-Rosen bridge effects.
+     * Enhanced bridge particle initialization with improved distribution.
+     * Creates particles that naturally flow between planets.
      */
     initializeGlobalParticles()
     {
@@ -902,61 +326,108 @@ class LinkedWindows3DApp
 
         if (this.planets.length < 2) return;
 
-        // Create bridge particles with optimized buffer allocation
+        // Increased particle count for better bridge effects
+        const enhancedBridgeCount = this.bridgeParticleCount * 1.5;
         const bridgeGeometry = new THREE.BufferGeometry();
-        const bridgePositions = new Float32Array(this.bridgeParticleCount * 3);
-        const bridgeColors = new Float32Array(this.bridgeParticleCount * 3);
+        const bridgePositions = new Float32Array(enhancedBridgeCount * 3);
+        const bridgeColors = new Float32Array(enhancedBridgeCount * 3);
         const bridgeVelocities = [];
 
-        // Strategic inter-planetary particle distribution
-        for (let i = 0; i < this.bridgeParticleCount; i++)
+        // Enhanced inter-planetary particle distribution
+        for (let i = 0; i < enhancedBridgeCount; i++)
         {
-            // Distribute particles in potential bridge zones between planets
-            if (this.planets.length >= 2)
-            {
-                let planet1 = this.planets[0].group.position;
-                let planet2 = this.planets[1].group.position;
-                let interpolation = Math.random();
+            let distributionType = Math.random();
 
-                // Create bridge-biased distribution
-                let midpoint = planet1.clone().lerp(planet2, interpolation);
-                let spread = 500;
-
-                bridgePositions[i * 3] = midpoint.x + (Math.random() - 0.5) * spread;
-                bridgePositions[i * 3 + 1] = midpoint.y + (Math.random() - 0.5) * spread;
-                bridgePositions[i * 3 + 2] = midpoint.z + (Math.random() - 0.5) * 100;
-            } else
+            if (distributionType < 0.6 && this.planets.length >= 2)
             {
-                // Fallback distribution
-                bridgePositions[i * 3] = (Math.random() - 0.5) * 2000;
-                bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-                bridgePositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+                // 60% of particles distributed along potential bridge paths
+                let planetA = this.planets[Math.floor(Math.random() * this.planets.length)];
+                let planetB = this.planets[Math.floor(Math.random() * this.planets.length)];
+
+                if (planetA !== planetB)
+                {
+                    let posA = planetA.targetPosition || planetA.group.position;
+                    let posB = planetB.targetPosition || planetB.group.position;
+
+                    // Create particles along the path between planets
+                    let interpolation = Math.random();
+                    let bridgePoint = {
+                        x: posA.x + (posB.x - posA.x) * interpolation,
+                        y: posA.y + (posB.y - posA.y) * interpolation,
+                        z: posA.z + (posB.z - posA.z) * interpolation
+                    };
+
+                    // Add some spread around the bridge path
+                    let spread = 200;
+                    bridgePositions[i * 3] = bridgePoint.x + (Math.random() - 0.5) * spread;
+                    bridgePositions[i * 3 + 1] = bridgePoint.y + (Math.random() - 0.5) * spread;
+                    bridgePositions[i * 3 + 2] = bridgePoint.z + (Math.random() - 0.5) * 50;
+
+                    // Initialize with velocity toward the destination planet
+                    let direction = {
+                        x: posB.x - bridgePoint.x,
+                        y: posB.y - bridgePoint.y,
+                        z: posB.z - bridgePoint.z
+                    };
+                    let distance = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+                    if (distance > 0)
+                    {
+                        direction.x /= distance;
+                        direction.y /= distance;
+                        direction.z /= distance;
+                    }
+
+                    bridgeVelocities.push(new THREE.Vector3(
+                        direction.x * 0.3 + (Math.random() - 0.5) * 0.1,
+                        direction.y * 0.3 + (Math.random() - 0.5) * 0.1,
+                        direction.z * 0.3 + (Math.random() - 0.5) * 0.1
+                    ));
+                }
+                else
+                {
+                    // Fallback to random distribution
+                    bridgePositions[i * 3] = (Math.random() - 0.5) * 2000;
+                    bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+                    bridgePositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+
+                    bridgeVelocities.push(new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2
+                    ));
+                }
+            }
+            else
+            {
+                // 40% random distribution for ambient particles
+                bridgePositions[i * 3] = (Math.random() - 0.5) * 3000;
+                bridgePositions[i * 3 + 1] = (Math.random() - 0.5) * 3000;
+                bridgePositions[i * 3 + 2] = (Math.random() - 0.5) * 300;
+
+                bridgeVelocities.push(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1
+                ));
             }
 
-            // Quantum field appearance with HSL color space for consistency
+            // Enhanced quantum field appearance
             let bridgeColor = new THREE.Color();
-            bridgeColor.setHSL(0.6 + Math.random() * 0.2, 0.8, 0.5 + Math.random() * 0.3);
+            bridgeColor.setHSL(0.55 + Math.random() * 0.3, 0.9, 0.6 + Math.random() * 0.3);
             bridgeColors[i * 3] = bridgeColor.r;
             bridgeColors[i * 3 + 1] = bridgeColor.g;
             bridgeColors[i * 3 + 2] = bridgeColor.b;
-
-            // Initialize with minimal velocities for stability
-            bridgeVelocities.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.1,
-                (Math.random() - 0.5) * 0.1,
-                (Math.random() - 0.5) * 0.1
-            ));
         }
 
         bridgeGeometry.setAttribute('position', new THREE.BufferAttribute(bridgePositions, 3));
         bridgeGeometry.setAttribute('color', new THREE.BufferAttribute(bridgeColors, 3));
 
-        // Optimized material for quantum bridge effects
+        // Enhanced material for better bridge visibility
         const bridgeMaterial = new THREE.PointsMaterial({
-            size: 1.0,
+            size: 1.2, // Slightly larger for better visibility
             vertexColors: true,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.8, // Increased opacity
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
@@ -970,780 +441,8 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Updates the window shape and position for multi-window synchronization.
-     * Critical for maintaining proper viewport coordination across browser windows.
-     *
-     * @param {boolean} easing - Whether to apply smooth interpolation to position changes
-     */
-    updateWindowShape(easing = true)
-    {
-        // Calculate scene offset based on window screen position
-        // Essential for multi-window 3D coordinate system alignment
-        this.sceneOffsetTarget = {
-            x: -window.screenX,
-            y: -window.screenY
-        };
-
-        // Immediate update for initialization or when easing is disabled
-        if (!easing)
-        {
-            this.sceneOffset = { ...this.sceneOffsetTarget };
-        }
-
-        // Performance optimization: only resize if dimensions actually changed
-        const currentWidth = window.innerWidth;
-        const currentHeight = window.innerHeight;
-
-        if (this.renderer &&
-            (this.renderer.domElement.width !== currentWidth ||
-                this.renderer.domElement.height !== currentHeight))
-        {
-            this.resize();
-        }
-    }
-
-    /**
-     * Enhanced resize method with WebGL context validation.
-     * Implements responsive design patterns for 3D applications.
-     */
-    resize()
-    {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        // Validate dimensions to prevent WebGL errors
-        if (width <= 0 || height <= 0)
-        {
-            console.warn('LinkedWindows3DApp: Invalid viewport dimensions', { width, height });
-            return;
-        }
-
-        // Update orthographic camera projection matrix
-        if (this.camera)
-        {
-            this.camera.left = 0;
-            this.camera.right = width;
-            this.camera.top = height;
-            this.camera.bottom = 0;
-            this.camera.updateProjectionMatrix();
-        }
-
-        // Update renderer with pixel ratio optimization
-        if (this.renderer)
-        {
-            // Dynamic pixel ratio adjustment for multi-monitor setups
-            const newPixR = Math.min(window.devicePixelRatio || 1, 2);
-            if (newPixR !== this.pixR)
-            {
-                this.pixR = newPixR;
-                this.renderer.setPixelRatio(this.pixR);
-            }
-
-            this.renderer.setSize(width, height);
-        }
-
-        // Update planet viewport scaling for responsive design
-        this.planets.forEach(planet =>
-        {
-            if (planet.atmosphereRadius)
-            {
-                const scaleFactor = Math.min(width, height) / 1000;
-                planet.viewportScale = Math.max(0.5, Math.min(2.0, scaleFactor));
-            }
-        });
-    }
-
-    /**
-     * WebGL context loss recovery handler.
-     * Implements graceful degradation and automatic recovery.
-     */
-    handleContextLoss()
-    {
-        console.warn('LinkedWindows3DApp: WebGL context lost, attempting recovery...');
-
-        // Mark for reinitialization
-        this.initialized = false;
-
-        // Clean up current resources
-        this.dispose();
-
-        // Attempt recovery after brief delay
-        setTimeout(() =>
-        {
-            this.init();
-        }, 1000);
-    }
-
-    /**
-     * Production-grade dispose method with comprehensive cleanup.
-     * Prevents memory leaks in long-running applications.
-     */
-    dispose()
-    {
-        // Remove event listeners to prevent memory leaks
-        window.removeEventListener('resize', this.resizeHandler);
-
-        // Cleanup WebGL context event handlers
-        if (this.renderer && this.renderer.domElement)
-        {
-            this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLossHandler);
-        }
-
-        // Recursive disposal of all scene resources
-        if (this.scene)
-        {
-            this.scene.traverse((child) =>
-            {
-                if (child.geometry)
-                {
-                    child.geometry.dispose();
-                }
-                if (child.material)
-                {
-                    if (Array.isArray(child.material))
-                    {
-                        child.material.forEach(material => material.dispose());
-                    } else
-                    {
-                        child.material.dispose();
-                    }
-                }
-                if (child.texture)
-                {
-                    child.texture.dispose();
-                }
-            });
-        }
-
-        // Dispose renderer and free WebGL context
-        if (this.renderer)
-        {
-            this.renderer.dispose();
-            if (this.renderer.domElement && this.renderer.domElement.parentNode)
-            {
-                this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
-            }
-        }
-
-        // Clear data structures
-        this.planets = [];
-        this.globalParticles = [];
-        this.spatialGrid.clear();
-
-        console.log('LinkedWindows3DApp: Resources disposed successfully');
-    }
-
-    /**
-     * Enhanced setup method with proper event handler binding.
-     */
-    setupScene()
-    {
-        this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -10000, 10000);
-        this.camera.position.z = 2.5;
-        this.near = this.camera.position.z - 0.5;
-        this.far = this.camera.position.z + 0.5;
-
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x000a1a); // Deep space blue
-
-        this.scene.add(this.camera);
-
-        // Enhanced starfield for cosmic atmosphere
-        this.createEnhancedStarfield();
-
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-            powerPreference: "high-performance",
-            preserveDrawingBuffer: false,
-            failIfMajorPerformanceCaveat: false
-        });
-
-        this.renderer.setPixelRatio(this.pixR);
-        this.renderer.sortObjects = false; // Optimize for particle rendering
-
-        // Bind event handlers with proper context
-        this.contextLossHandler = (event) =>
-        {
-            event.preventDefault();
-            this.handleContextLoss();
-        };
-
-        this.resizeHandler = () => this.resize();
-
-        // Add WebGL context loss handling
-        this.renderer.domElement.addEventListener('webglcontextlost', this.contextLossHandler, false);
-
-        this.world = new THREE.Object3D();
-        this.scene.add(this.world);
-
-        this.renderer.domElement.setAttribute("id", "scene");
-        document.body.appendChild(this.renderer.domElement);
-
-        // Enhanced lighting setup for particle visualization
-        const ambientLight = new THREE.AmbientLight(0x1a1a2e, 0.3);
-        this.scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0x4a9eff, 0.8);
-        directionalLight.position.set(100, 100, 50);
-        this.scene.add(directionalLight);
-
-        // Add atmospheric rim lighting for depth
-        const rimLight = new THREE.DirectionalLight(0xff6b9d, 0.4);
-        rimLight.position.set(-100, -100, -50);
-        this.scene.add(rimLight);
-    }
-
-    /**
-     * Enhanced initialization with proper event binding.
-     */
-    init()
-    {
-        if (this.initialized) return;
-        this.initialized = true;
-
-        setTimeout(() =>
-        {
-            this.setupScene();
-            this.setupWindowManager();
-            this.resize();
-            this.updateWindowShape(false);
-            this.initializeGlobalParticles();
-            this.render();
-
-            // Bind resize handler with proper context
-            window.addEventListener('resize', this.resizeHandler);
-        }, 500);
-    }
-
-    /**
-     * Missing noise generation methods for atmospheric simulation.
-     */
-    generateTurbulence(x, y, z, time)
-    {
-        // Multi-octave noise implementation for atmospheric turbulence
-        let noise = 0;
-        let amplitude = 1;
-        let frequency = 1;
-
-        // Multiple octaves for natural-looking turbulence
-        for (let octave = 0; octave < 4; octave++)
-        {
-            noise += amplitude * this.simplexNoise(
-                x * frequency + time,
-                y * frequency + time * 0.7,
-                z * frequency + time * 0.5
-            );
-            amplitude *= 0.5;
-            frequency *= 2;
-        }
-
-        return noise;
-    }
-
-    /**
-     * Simplified 3D noise function for atmospheric simulation.
-     */
-    simplexNoise(x, y, z)
-    {
-        // Value noise implementation with smooth interpolation
-        let xi = Math.floor(x);
-        let yi = Math.floor(y);
-        let zi = Math.floor(z);
-
-        let xf = x - xi;
-        let yf = y - yi;
-        let zf = z - zi;
-
-        // Smooth interpolation curves
-        let u = this.fade(xf);
-        let v = this.fade(yf);
-        let w = this.fade(zf);
-
-        // Hash coordinates for deterministic randomness
-        let aaa = this.hash(xi, yi, zi);
-        let aba = this.hash(xi, yi + 1, zi);
-        let aab = this.hash(xi, yi, zi + 1);
-        let abb = this.hash(xi, yi + 1, zi + 1);
-        let baa = this.hash(xi + 1, yi, zi);
-        let bba = this.hash(xi + 1, yi + 1, zi);
-        let bab = this.hash(xi + 1, yi, zi + 1);
-        let bbb = this.hash(xi + 1, yi + 1, zi + 1);
-
-        // Trilinear interpolation
-        let x1 = this.lerp(aaa, baa, u);
-        let x2 = this.lerp(aba, bba, u);
-        let y1 = this.lerp(x1, x2, v);
-
-        let x3 = this.lerp(aab, bab, u);
-        let x4 = this.lerp(abb, bbb, u);
-        let y2 = this.lerp(x3, x4, v);
-
-        return this.lerp(y1, y2, w);
-    }
-
-    /**
-     * Utility functions for noise generation.
-     */
-    fade(t)
-    {
-        return t * t * t * (t * (t * 6 - 15) + 10);
-    }
-
-    lerp(a, b, t)
-    {
-        return a + t * (b - a);
-    }
-
-    hash(x, y, z)
-    {
-        // Simple hash function for noise generation
-        let n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
-        return 2 * (n - Math.floor(n)) - 1;
-    }
-
-    /**
-     * Enhanced particle creation with higher density for cloud-like appearance
-     */
-    createAtmosphereLayer(radius, color, particleCount, opacity)
-    {
-        // Increase particle count for denser clouds
-        const enhancedParticleCount = Math.floor(particleCount * 1.8);
-        const positions = new Float32Array(enhancedParticleCount * 3);
-        const colors = new Float32Array(enhancedParticleCount * 3);
-
-        for (let i = 0; i < enhancedParticleCount; i++)
-        {
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Cluster particles more toward specific regions for cloud-like distribution
-            let clusterBias = 0.7; // Bias toward certain regions
-            if (Math.random() < clusterBias)
-            {
-                // Create clusters
-                let clusterCenterTheta = Math.random() * Math.PI * 2;
-                let clusterCenterPhi = Math.random() * Math.PI;
-                let clusterSpread = 0.3;
-
-                u = Math.max(0, Math.min(1, u + (Math.random() - 0.5) * clusterSpread));
-                v = (clusterCenterTheta / (2 * Math.PI)) + (Math.random() - 0.5) * clusterSpread;
-                w = (clusterCenterPhi / Math.PI) + (Math.random() - 0.5) * clusterSpread;
-
-                v = Math.max(0, Math.min(1, v));
-                w = Math.max(0, Math.min(1, w));
-            }
-
-            // Modified shell distribution for more natural clustering
-            let shellThickness = 0.4; // Thicker shells for more volume
-            let r = radius * (0.6 + u * shellThickness); // Start further from center
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Enhanced color variation for cloud appearance
-            let atmosphereColor = color.clone();
-            let distanceFactor = r / radius;
-            let randomVariation = 0.8 + Math.random() * 0.4;
-
-            // Add cloud-like color variation
-            atmosphereColor.multiplyScalar(randomVariation * (0.6 + distanceFactor * 0.4));
-
-            colors[i * 3] = atmosphereColor.r;
-            colors[i * 3 + 1] = atmosphereColor.g;
-            colors[i * 3 + 2] = atmosphereColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 0.6,  // Smaller particles for denser appearance
-            vertexColors: true,
-            transparent: true,
-            opacity: opacity * 0.8, // Slightly more transparent for cloud effect
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
-     * Sets up the window manager and callbacks.
-     */
-    setupWindowManager()
-    {
-        this.windowManager = new WindowManager();
-        this.windowManager.setWinShapeChangeCallback(this.updateWindowShape.bind(this));
-        this.windowManager.setWinChangeCallback(this.windowsUpdated.bind(this));
-
-        let metaData = { planetType: "liquid", atmosphereIntensity: Math.random() + 0.5 };
-        this.windowManager.init(metaData);
-        this.windowsUpdated();
-    }
-
-    /**
-     * Updates planet configuration when windows change.
-     */
-    windowsUpdated()
-    {
-        this.updatePlanets();
-    }
-
-    /**
-     * Creates and updates particle planets to match window count.
-     */
-    updatePlanets()
-    {
-        let wins = this.windowManager.getWindows();
-
-        // Remove existing planets
-        this.planets.forEach((planet) =>
-        {
-            this.world.remove(planet.group);
-            // Dispose of geometries and materials for memory management
-            planet.group.traverse((child) =>
-            {
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) child.material.dispose();
-            });
-        });
-
-        this.planets = [];
-
-        // Create new planets for each window
-        for (let i = 0; i < wins.length; i++)
-        {
-            let win = wins[i];
-            let planetColor = this.generatePlanetColor(i, win.id);
-            let radius = 80 + i * 20;
-
-            let planet = this.createParticlePlanet(radius, planetColor, i);
-            planet.group.position.x = win.shape.x + (win.shape.w * 0.5);
-            planet.group.position.y = win.shape.y + (win.shape.h * 0.5);
-
-            this.world.add(planet.group);
-            this.planets.push(planet);
-        }
-
-        // Reinitialize global particles for inter-planetary bridges
-        this.initializeGlobalParticles();
-    }
-
-    /**
-     * Generates unique liquid colors for each planet.
-     */
-    generatePlanetColor(index, windowId)
-    {
-        const liquidColors = [
-            { h: 0.55, s: 0.9, l: 0.6 }, // Cyan liquid
-            { h: 0.75, s: 0.8, l: 0.7 }, // Purple liquid
-            { h: 0.15, s: 0.9, l: 0.6 }, // Orange liquid
-            { h: 0.35, s: 0.8, l: 0.5 }, // Green liquid
-            { h: 0.95, s: 0.9, l: 0.6 }, // Magenta liquid
-            { h: 0.05, s: 1.0, l: 0.5 }, // Red liquid
-        ];
-
-        let colorIndex = (index + windowId) % liquidColors.length;
-        let colorData = liquidColors[colorIndex];
-
-        return new THREE.Color().setHSL(
-            colorData.h + (Math.random() - 0.5) * 0.1,
-            colorData.s,
-            colorData.l + (Math.random() - 0.5) * 0.2
-        );
-    }
-
-    /**
-     * Creates a particle planet with dense core and flowing atmosphere.
-     */
-    createParticlePlanet(radius, color, planetIndex)
-    {
-        // Scale up planet size by 40% while maintaining density
-        const scaledRadius = radius * 1.4;
-        let planetGroup = new THREE.Group();
-        planetGroup.name = `Planet_${planetIndex}`;
-
-        // Create denser, smaller particles for more realistic appearance
-        let coreParticles = this.createPlanetCore(scaledRadius * 0.35, color, 2000);      // Increased count
-        planetGroup.add(coreParticles);
-
-        // Multi-layered atmosphere with progressive density falloff
-        let innerAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.6, color, 3000, 0.7);
-        planetGroup.add(innerAtmosphere);
-
-        let middleAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.85, color, 2200, 0.5);
-        planetGroup.add(middleAtmosphere);
-
-        let outerAtmosphere = this.createAtmosphereLayer(scaledRadius * 1.0, color, 1200, 0.3);
-        planetGroup.add(outerAtmosphere);
-
-        // Enhanced particle data structure for physics simulation
-        let particleData = {
-            group: planetGroup,
-            radius: scaledRadius,
-            atmosphereRadius: scaledRadius * 1.2,     // Atmospheric boundary
-            color: color,
-            center: new THREE.Vector3(),
-            mass: 1000,                               // Gravitational mass
-            coreParticles: this.extractParticleData(coreParticles),
-            atmosphereParticles: [
-                this.extractParticleData(innerAtmosphere),
-                this.extractParticleData(middleAtmosphere),
-                this.extractParticleData(outerAtmosphere)
-            ],
-            velocities: this.initializeConstrainedVelocities(coreParticles, [innerAtmosphere, middleAtmosphere, outerAtmosphere]),
-            lastPositions: []  // For Verlet integration stability
-        };
-
-        return particleData;
-    }
-
-    /**
-     * Creates dense planetary core with smaller, more numerous particles.
-     * Uses advanced particle distribution algorithms for realistic density gradients.
-     */
-    createPlanetCore(radius, color, particleCount)
-    {
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++)
-        {
-            // Enhanced spherical distribution with density bias toward center
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Power law distribution for realistic planetary density
-            let r = radius * Math.pow(u, 0.4);  // Stronger bias toward center
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Enhanced color variation with metallic reflectance simulation
-            let coreColor = color.clone();
-            let intensity = 0.9 + Math.random() * 0.3;
-            coreColor.multiplyScalar(intensity);
-
-            colors[i * 3] = coreColor.r;
-            colors[i * 3 + 1] = coreColor.g;
-            colors[i * 3 + 2] = coreColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        // Optimized material settings for smaller, denser particles
-        const material = new THREE.PointsMaterial({
-            size: 1.2,                    // Reduced size for density
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.95,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
-     * Creates atmosphere layers with enhanced particle physics constraints.
-     * Implements shell-based distribution with proper boundary enforcement.
-     */
-    createAtmosphereLayer(radius, color, particleCount, opacity)
-    {
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++)
-        {
-            let u = Math.random();
-            let v = Math.random();
-            let w = Math.random();
-
-            // Shell distribution with controlled thickness
-            let shellThickness = 0.25;
-            let r = radius * (1 - shellThickness + u * shellThickness);
-            let theta = 2 * Math.PI * v;
-            let phi = Math.acos(2 * w - 1);
-
-            let x = r * Math.sin(phi) * Math.cos(theta);
-            let y = r * Math.sin(phi) * Math.sin(theta);
-            let z = r * Math.cos(phi);
-
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-
-            // Atmospheric color gradients with distance-based variation
-            let atmosphereColor = color.clone();
-            let distanceFactor = r / radius;
-            atmosphereColor.multiplyScalar(0.7 + Math.random() * 0.4 * (1 - distanceFactor));
-
-            colors[i * 3] = atmosphereColor.r;
-            colors[i * 3 + 1] = atmosphereColor.g;
-            colors[i * 3 + 2] = atmosphereColor.b;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 0.8,                    // Smaller atmospheric particles
-            vertexColors: true,
-            transparent: true,
-            opacity: opacity,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true
-        });
-
-        return new THREE.Points(geometry, material);
-    }
-
-    /**
-     * Enhanced particle data extraction with physics metadata.
-     */
-    extractParticleData(pointsObject)
-    {
-        let positions = pointsObject.geometry.attributes.position.array;
-        let colors = pointsObject.geometry.attributes.color.array;
-        let particles = [];
-
-        for (let i = 0; i < positions.length; i += 3)
-        {
-            particles.push({
-                position: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                originalPosition: new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                color: new THREE.Color(colors[i], colors[i + 1], colors[i + 2]),
-                mass: 1.0,
-                isCore: pointsObject.material.size > 1.0  // Distinguish core vs atmosphere
-            });
-        }
-
-        return particles;
-    }
-
-    /**
-     * Initializes particle velocities with atmospheric constraints.
-     * Implements orbital mechanics for stable atmospheric circulation.
-     */
-    initializeConstrainedVelocities(coreParticles, atmosphereLayers)
-    {
-        let velocities = [];
-
-        // Core particles: minimal velocities for stability
-        let coreCount = coreParticles.geometry.attributes.position.count;
-        for (let i = 0; i < coreCount; i++)
-        {
-            velocities.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.05,  // Reduced initial velocity
-                (Math.random() - 0.5) * 0.05,
-                (Math.random() - 0.5) * 0.05
-            ));
-        }
-
-        // Atmosphere particles: orbital-biased velocities
-        atmosphereLayers.forEach((layer, layerIndex) =>
-        {
-            let count = layer.geometry.attributes.position.count;
-            let positions = layer.geometry.attributes.position.array;
-
-            for (let i = 0; i < count; i++)
-            {
-                let x = positions[i * 3];
-                let y = positions[i * 3 + 1];
-                let z = positions[i * 3 + 2];
-
-                // Calculate orbital velocity for stable circulation
-                let distance = Math.sqrt(x * x + y * y + z * z);
-                let orbitalSpeed = 0.1 + layerIndex * 0.05;
-
-                // Perpendicular velocity for orbital motion
-                let orbitalVelocity = new THREE.Vector3(-y, x, 0).normalize().multiplyScalar(orbitalSpeed);
-
-                // Add small random component
-                orbitalVelocity.add(new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.1,
-                    (Math.random() - 0.5) * 0.1,
-                    (Math.random() - 0.5) * 0.1
-                ));
-
-                velocities.push(orbitalVelocity);
-            }
-        });
-
-        return velocities;
-    }
-
-    /**
-     * Advanced particle physics simulation with atmospheric constraints.
-     * Implements spatial partitioning and distance-based interaction culling.
-     */
-    updateParticlePhysics(deltaTime)
-    {
-        if (this.planets.length === 0) return;
-
-        // Calculate inter-planetary distances for bridge activation
-        let planetDistances = this.calculatePlanetDistances();
-        let bridgeActive = planetDistances.some(d => d < this.bridgeActivationDistance);
-
-        if (bridgeActive)
-        {
-            // Update global bridge particles only when planets are close
-            this.updateBridgeParticles(deltaTime, planetDistances);
-        } else
-        {
-            // Focus on atmospheric containment when planets are distant
-            this.constrainAtmosphericParticles(deltaTime);
-        }
-
-        // Always update planet atmosphere circulation
-        this.planets.forEach(planet =>
-        {
-            this.updateConstrainedAtmosphere(planet, deltaTime);
-        });
-    }
-
-    /**
-     * Calculates distances between all planet pairs for bridge activation.
-     */
-    calculatePlanetDistances()
-    {
-        let distances = [];
-        for (let i = 0; i < this.planets.length; i++)
-        {
-            for (let j = i + 1; j < this.planets.length; j++)
-            {
-                let distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
-                distances.push(distance);
-            }
-        }
-        return distances;
-    }
-
-    /**
-     * Updates bridge particles with Einstein-Rosen bridge physics.
-     * Only active when planets are within interaction distance.
+     * Enhanced bridge particle physics with bidirectional flow.
+     * Creates realistic particle streams flowing between planets.
      */
     updateBridgeParticles(deltaTime, planetDistances)
     {
@@ -1764,18 +463,37 @@ class LinkedWindows3DApp
                 let totalForce = new THREE.Vector3();
                 let nearestPlanetColor = new THREE.Color(0.3, 0.6, 1.0);
                 let minDistance = Infinity;
+                let closestPlanet = null;
 
-                // Enhanced gravitational calculation with distance scaling
+                // Enhanced gravitational calculation with atmospheric attraction
                 this.planets.forEach(planet =>
                 {
                     let planetCenter = planet.group.position;
                     let direction = planetCenter.clone().sub(particlePos);
                     let distance = direction.length();
 
-                    if (distance > 0 && distance < this.bridgeActivationDistance * 2)
+                    if (distance > 0)
                     {
-                        // Scaled gravitational force based on planet mass and distance
-                        let force = (this.gravitationalConstant * planet.mass) / (distance * distance + 50);
+                        // Enhanced force calculation for better bridge formation
+                        let atmosphereDistance = distance - planet.atmosphereRadius;
+                        let force;
+
+                        if (atmosphereDistance < 0)
+                        {
+                            // Inside atmosphere - gentle circulation force
+                            force = (this.gravitationalConstant * planet.mass * 0.3) / (distance * distance + 25);
+                        }
+                        else if (atmosphereDistance < this.bridgeActivationDistance)
+                        {
+                            // Bridge formation zone - strong attraction
+                            force = (this.gravitationalConstant * planet.mass * 1.5) / (distance * distance + 50);
+                        }
+                        else
+                        {
+                            // Distant particles - weak attraction
+                            force = (this.gravitationalConstant * planet.mass * 0.5) / (distance * distance + 100);
+                        }
+
                         direction.normalize().multiplyScalar(force);
                         totalForce.add(direction);
 
@@ -1783,29 +501,91 @@ class LinkedWindows3DApp
                         {
                             minDistance = distance;
                             nearestPlanetColor = planet.color;
+                            closestPlanet = planet;
                         }
                     }
                 });
+
+                // Enhanced bidirectional flow mechanics
+                if (closestPlanet && this.planets.length >= 2)
+                {
+                    // Find the second closest planet for bridge flow
+                    let secondClosest = null;
+                    let secondMinDistance = Infinity;
+
+                    this.planets.forEach(planet =>
+                    {
+                        if (planet !== closestPlanet)
+                        {
+                            let distance = particlePos.distanceTo(planet.group.position);
+                            if (distance < secondMinDistance)
+                            {
+                                secondMinDistance = distance;
+                                secondClosest = planet;
+                            }
+                        }
+                    });
+
+                    if (secondClosest)
+                    {
+                        // Create flow direction based on particle position
+                        let bridgeVector = secondClosest.group.position.clone().sub(closestPlanet.group.position);
+                        let bridgeProgress = particlePos.clone().sub(closestPlanet.group.position).dot(bridgeVector) / bridgeVector.lengthSq();
+
+                        // Oscillating flow pattern for back-and-forth movement
+                        let flowDirection = Math.sin(this.getTime() * 0.5 + bridgeProgress * Math.PI * 4);
+                        let targetPlanet = flowDirection > 0 ? secondClosest : closestPlanet;
+
+                        let flowForce = targetPlanet.group.position.clone().sub(particlePos);
+                        let flowDistance = flowForce.length();
+                        if (flowDistance > 0)
+                        {
+                            flowForce.normalize().multiplyScalar(50 / (flowDistance + 10));
+                            totalForce.add(flowForce);
+                        }
+                    }
+                }
 
                 // Apply Einstein-Rosen bridge curvature effect
                 this.applyBridgeCurvature(particlePos, totalForce, deltaTime);
 
                 // Update velocity with enhanced damping
                 velocities[i].add(totalForce.multiplyScalar(deltaTime));
-                velocities[i].multiplyScalar(this.dampingFactor);
-                velocities[i].clampLength(0, this.maxVelocity);
+                velocities[i].multiplyScalar(this.dampingFactor * 0.98); // Slightly less damping for better flow
+                velocities[i].clampLength(0, this.maxVelocity * 1.5); // Allow higher velocity for bridge particles
 
                 particlePos.add(velocities[i].clone().multiplyScalar(deltaTime));
+
+                // Particle recycling when too far from any planet
+                let minPlanetDistance = Math.min(...this.planets.map(p => particlePos.distanceTo(p.group.position)));
+                if (minPlanetDistance > this.bridgeActivationDistance * 3)
+                {
+                    // Respawn particle near a random planet's atmosphere
+                    let randomPlanet = this.planets[Math.floor(Math.random() * this.planets.length)];
+                    let spawnRadius = randomPlanet.atmosphereRadius * 1.1;
+                    let spawnAngle = Math.random() * Math.PI * 2;
+
+                    particlePos.x = randomPlanet.group.position.x + Math.cos(spawnAngle) * spawnRadius;
+                    particlePos.y = randomPlanet.group.position.y + Math.sin(spawnAngle) * spawnRadius;
+                    particlePos.z = randomPlanet.group.position.z + (Math.random() - 0.5) * 50;
+
+                    // Reset velocity toward bridge formation
+                    velocities[i].set(
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2
+                    );
+                }
 
                 // Update position and color
                 positions[i * 3] = particlePos.x;
                 positions[i * 3 + 1] = particlePos.y;
                 positions[i * 3 + 2] = particlePos.z;
 
-                // Dynamic color blending based on proximity
-                let colorInfluence = Math.max(0, 1 - minDistance / 400);
+                // Enhanced dynamic color blending
+                let colorInfluence = Math.max(0, 1 - minDistance / (this.bridgeActivationDistance * 2));
                 let currentColor = new THREE.Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
-                currentColor.lerp(nearestPlanetColor, colorInfluence * 0.15);
+                currentColor.lerp(nearestPlanetColor, colorInfluence * 0.3);
 
                 colors[i * 3] = currentColor.r;
                 colors[i * 3 + 1] = currentColor.g;
@@ -1818,267 +598,7 @@ class LinkedWindows3DApp
     }
 
     /**
-     * Applies Einstein-Rosen bridge spacetime curvature effects.
-     * Creates tunnel-like particle flow between nearby planets.
-     */
-    applyBridgeCurvature(particlePos, force, deltaTime)
-    {
-        if (this.planets.length < 2) return;
-
-        // Find the two nearest planets for bridge formation
-        let distances = [];
-        this.planets.forEach((planet, index) =>
-        {
-            let dist = particlePos.distanceTo(planet.group.position);
-            distances.push({ index, distance: dist, planet });
-        });
-
-        distances.sort((a, b) => a.distance - b.distance);
-
-        if (distances.length >= 2 &&
-            distances[0].distance < this.bridgeActivationDistance &&
-            distances[1].distance < this.bridgeActivationDistance)
-        {
-
-            // Create tunnel effect between the two nearest planets
-            let planet1 = distances[0].planet.group.position;
-            let planet2 = distances[1].planet.group.position;
-            let bridgeVector = planet2.clone().sub(planet1);
-            let bridgeCenter = planet1.clone().add(bridgeVector.clone().multiplyScalar(0.5));
-
-            // Apply curvature toward the bridge tunnel
-            let toBridgeCenter = bridgeCenter.clone().sub(particlePos);
-            let bridgeInfluence = 1.0 / (toBridgeCenter.length() + 10);
-            force.add(toBridgeCenter.normalize().multiplyScalar(bridgeInfluence * 100));
-        }
-    }
-
-    /**
-     * Constrains atmospheric particles to remain within planetary boundaries.
-     * Implements soft boundary constraints with spring-like restoration forces.
-     */
-    constrainAtmosphericParticles(deltaTime)
-    {
-        this.planets.forEach(planet =>
-        {
-            let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-
-            atmosphereLayers.forEach((layer, layerIndex) =>
-            {
-                let positions = layer.geometry.attributes.position.array;
-                let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-
-                for (let i = 0; i < positions.length; i += 3)
-                {
-                    let x = positions[i];
-                    let y = positions[i + 1];
-                    let z = positions[i + 2];
-
-                    let distance = Math.sqrt(x * x + y * y + z * z);
-
-                    // Apply soft boundary constraint
-                    if (distance > maxRadius)
-                    {
-                        let constraintForce = (distance - maxRadius) / maxRadius;
-                        let constraintFactor = 1.0 - (constraintForce * this.atmosphereConstraintStrength * deltaTime);
-
-                        positions[i] *= constraintFactor;
-                        positions[i + 1] *= constraintFactor;
-                        positions[i + 2] *= constraintFactor;
-                    }
-                }
-
-                layer.geometry.attributes.position.needsUpdate = true;
-            });
-        });
-    }
-
-    /**
-     * Enhanced atmospheric circulation with volumetric cloud simulation.
-     * Implements Perlin noise turbulence, density clustering, and fluid dynamics
-     * for realistic cloud-like particle behavior around planetary bodies.
-     */
-    updateConstrainedAtmosphere(planet, deltaTime)
-    {
-        let atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
-
-        atmosphereLayers.forEach((layer, layerIndex) =>
-        {
-            let positions = layer.geometry.attributes.position.array;
-            let colors = layer.geometry.attributes.color.array;
-            let velocities = planet.velocities || [];
-
-            // Enhanced parameters for cloud-like behavior
-            let baseFlowSpeed = 0.1 + layerIndex * 0.05;  // Reduced base speed
-            let maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
-            let densityTarget = 0.6 + layerIndex * 0.2;  // Higher density for inner layers
-            let turbulenceStrength = 0.8 - layerIndex * 0.2;  // More turbulence in outer layers
-
-            // Cloud formation parameters
-            let cloudCohesion = 0.3;  // Particle attraction to nearby particles
-            let cloudSeparation = 0.2;  // Particle repulsion when too close
-            let noiseScale = 0.008;  // Scale for Perlin-like noise
-            let time = this.getTime();
-
-            for (let i = 0; i < positions.length; i += 3)
-            {
-                let particleIndex = i / 3;
-                let x = positions[i];
-                let y = positions[i + 1];
-                let z = positions[i + 2];
-
-                let currentPos = new THREE.Vector3(x, y, z);
-                let distance = currentPos.length();
-
-                // Initialize velocity if not exists
-                if (!velocities[particleIndex])
-                {
-                    velocities[particleIndex] = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.1,
-                        (Math.random() - 0.5) * 0.1,
-                        (Math.random() - 0.5) * 0.1
-                    );
-                }
-
-                let velocity = velocities[particleIndex];
-                let totalForce = new THREE.Vector3();
-
-                // 1. GRAVITATIONAL ATTRACTION TO PLANET CENTER
-                let gravitationalForce = currentPos.clone().normalize().multiplyScalar(-0.5 * densityTarget);
-                totalForce.add(gravitationalForce);
-
-                // 2. VOLUMETRIC NOISE-BASED TURBULENCE (Perlin-like)
-                let noiseX = this.generateTurbulence(x * noiseScale, y * noiseScale, z * noiseScale, time * 0.1);
-                let noiseY = this.generateTurbulence((x + 1000) * noiseScale, (y + 1000) * noiseScale, (z + 2000) * noiseScale, time * 0.1);
-                let noiseZ = this.generateTurbulence((x + 2000) * noiseScale, (y + 2000) * noiseScale, (z + 3000) * noiseScale, time * 0.1);
-
-                let turbulenceForce = new THREE.Vector3(noiseX, noiseY, noiseZ).multiplyScalar(turbulenceStrength);
-                totalForce.add(turbulenceForce);
-
-                // 3. PARTICLE DENSITY CLUSTERING (Flocking behavior)
-                let neighborhoodRadius = 15 + layerIndex * 5;
-                let cohesionForce = new THREE.Vector3();
-                let separationForce = new THREE.Vector3();
-                let neighborCount = 0;
-
-                // Sample nearby particles for clustering
-                let sampleStep = Math.max(1, Math.floor(positions.length / (300 * 3))); // Optimize by sampling
-                for (let j = 0; j < positions.length; j += sampleStep * 3)
-                {
-                    if (j === i) continue;
-
-                    let neighborPos = new THREE.Vector3(positions[j], positions[j + 1], positions[j + 2]);
-                    let distance = currentPos.distanceTo(neighborPos);
-
-                    if (distance < neighborhoodRadius)
-                    {
-                        neighborCount++;
-
-
-                        // Cohesion: move toward average position of neighbors
-                        cohesionForce.add(neighborPos);
-
-                        // Separation: avoid crowding
-                        if (distance < 8)
-                        {
-                            let separationVector = currentPos.clone().sub(neighborPos);
-                            separationVector.normalize().multiplyScalar(cloudSeparation / distance);
-                            separationForce.add(separationVector);
-                        }
-                    }
-                }
-
-                if (neighborCount > 0)
-                {
-                    cohesionForce.divideScalar(neighborCount);
-                    cohesionForce.sub(currentPos);
-                    cohesionForce.multiplyScalar(cloudCohesion);
-                    totalForce.add(cohesionForce);
-                    totalForce.add(separationForce);
-                }
-
-                // 4. CONVECTION CURRENTS (Vertical circulation)
-                let convectionStrength = 0.3 * Math.sin(time * 0.5 + distance * 0.01);
-                let convectionForce = new THREE.Vector3(0, 0, convectionStrength);
-                totalForce.add(convectionForce);
-
-                // 5. ATMOSPHERIC DENSITY GRADIENT
-                let densityGradient = Math.max(0, 1 - distance / maxRadius);
-                let densityForce = currentPos.clone().normalize().multiplyScalar(-densityGradient * 0.4);
-                totalForce.add(densityForce);
-
-                // 6. WIND PATTERNS (Horizontal circulation with varying speeds)
-                let windAngle = time * baseFlowSpeed + Math.sin(distance * 0.02 + time) * 0.5;
-                let windStrength = 0.2 * Math.sin(time * 0.3 + distance * 0.015) * densityGradient;
-                let windForce = new THREE.Vector3(
-                    Math.cos(windAngle) * windStrength,
-                    Math.sin(windAngle) * windStrength,
-                    0
-                );
-                totalForce.add(windForce);
-
-                // Apply forces to velocity with realistic damping
-                velocity.add(totalForce.multiplyScalar(deltaTime));
-                velocity.multiplyScalar(0.92); // Natural damping
-                velocity.clampLength(0, 1.5); // Limit maximum velocity
-
-                // Update position with enhanced integration
-                currentPos.add(velocity.clone().multiplyScalar(deltaTime * 60)); // Scale for frame rate independence
-
-                // SOFT BOUNDARY CONSTRAINTS with realistic compression
-                let finalDistance = currentPos.length();
-                if (finalDistance > maxRadius)
-                {
-                    let compressionFactor = maxRadius / finalDistance;
-                    currentPos.multiplyScalar(compressionFactor);
-
-                    // Add inward velocity when hitting boundary
-                    velocity.add(currentPos.clone().normalize().multiplyScalar(-0.3));
-                }
-
-                // Prevent particles from getting too close to planet core
-                let minRadius = planet.radius * 0.4;
-                if (finalDistance < minRadius)
-                {
-                    currentPos.normalize().multiplyScalar(minRadius);
-                    velocity.add(currentPos.clone().normalize().multiplyScalar(0.2));
-                }
-
-                // Update positions
-                positions[i] = currentPos.x;
-                positions[i + 1] = currentPos.y;
-                positions[i + 2] = currentPos.z;
-
-                // DYNAMIC COLOR BASED ON DENSITY AND MOVEMENT
-                let speedFactor = velocity.length() / 1.5;
-                let densityFactor = Math.max(0, 1 - finalDistance / maxRadius);
-
-                // Enhanced color calculation for cloud appearance
-                let baseColor = planet.color.clone();
-                let intensity = 0.4 + densityFactor * 0.6 + speedFactor * 0.3;
-
-                // Add atmospheric scattering effect
-                let scatteringBlue = Math.min(1, densityFactor * 0.3);
-                baseColor.r = Math.min(1, baseColor.r * intensity + scatteringBlue * 0.2);
-                baseColor.g = Math.min(1, baseColor.g * intensity + scatteringBlue * 0.3);
-                baseColor.b = Math.min(1, baseColor.b * intensity + scatteringBlue * 0.5);
-
-                colors[i] = baseColor.r;
-                colors[i + 1] = baseColor.g;
-                colors[i + 2] = baseColor.b;
-            }
-
-            // Store velocities back to planet data
-            if (!planet.velocities) planet.velocities = [];
-            planet.velocities = velocities;
-
-            layer.geometry.attributes.position.needsUpdate = true;
-            layer.geometry.attributes.color.needsUpdate = true;
-        });
-    }
-
-    /**
-     * Main render loop with physics simulation.
+     * Main render loop with enhanced planet positioning.
      */
     render()
     {
@@ -2098,32 +618,38 @@ class LinkedWindows3DApp
 
         let wins = this.windowManager.getWindows();
 
-        // Update planet positions and rotations
+        // Enhanced planet position synchronization
         for (let i = 0; i < this.planets.length; i++)
         {
             let planet = this.planets[i];
             let win = wins[i];
             if (!win || !win.shape) continue;
 
+            // Calculate absolute target position
             let posTarget = {
                 x: win.shape.x + (win.shape.w * 0.5),
-                y: win.shape.y + (win.shape.h * 0.5)
+                y: win.shape.y + (win.shape.h * 0.5),
+                z: 0
             };
 
-            // Smooth position interpolation
-            planet.group.position.x += (posTarget.x - planet.group.position.x) * falloff;
-            planet.group.position.y += (posTarget.y - planet.group.position.y) * falloff;
+            // Update target position for consistent referencing
+            planet.targetPosition = posTarget;
 
-            // Update planet center for physics
+            // Immediate position update for better synchronization
+            planet.group.position.x = posTarget.x;
+            planet.group.position.y = posTarget.y;
+            planet.group.position.z = posTarget.z;
+
+            // Update planet center for physics calculations
             planet.center.copy(planet.group.position);
 
             // Gentle rotation for visual appeal
-            planet.group.rotation.y += deltaTime * 0.1;
-            planet.group.rotation.x += deltaTime * 0.05;
+            planet.group.rotation.y += deltaTime * 0.08;
+            planet.group.rotation.x += deltaTime * 0.04;
         }
 
-        // Run particle physics simulation
-        this.updateParticlePhysics(Math.min(deltaTime, 0.016)); // Cap delta time for stability
+        // Run enhanced particle physics simulation
+        this.updateParticlePhysics(Math.min(deltaTime, 0.016));
 
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(() => this.render());
@@ -2285,6 +811,339 @@ class LinkedWindows3DApp
             // Bind resize handler with proper context
             window.addEventListener('resize', this.resizeHandler);
         }, 500);
+    }
+
+    /**
+     * Updates window shape when window geometry changes.
+     * @param {boolean} [resize=true] - Whether to trigger a resize update
+     */
+    updateWindowShape(resize = true)
+    {
+        if (resize)
+        {
+            this.resize();
+        }
+
+        // Update scene offset based on window manager state
+        if (this.windowManager)
+        {
+            const windows = this.windowManager.getWindows();
+            if (windows.length > 0)
+            {
+                // Calculate optimal scene offset to center the view
+                let totalX = 0, totalY = 0;
+                windows.forEach(win =>
+                {
+                    totalX += win.shape.x + win.shape.w * 0.5;
+                    totalY += win.shape.y + win.shape.h * 0.5;
+                });
+
+                this.sceneOffsetTarget.x = -totalX / windows.length + window.innerWidth * 0.5;
+                this.sceneOffsetTarget.y = -totalY / windows.length + window.innerHeight * 0.5;
+            }
+        }
+    }
+
+    /**
+     * Generates deterministic planet colors based on index and window ID.
+     * @param {number} index - Planet index
+     * @param {string} windowId - Window identifier
+     * @returns {THREE.Color} Generated planet color
+     */
+    generatePlanetColor(index, windowId)
+    {
+        // Create deterministic color based on window ID and index
+        let hash = 0;
+        const str = windowId + index.toString();
+        for (let i = 0; i < str.length; i++)
+        {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+
+        // Generate pleasant color variations
+        const hue = (Math.abs(hash) % 360) / 360;
+        const saturation = 0.7 + (Math.abs(hash >> 8) % 30) / 100; // 0.7 - 1.0
+        const lightness = 0.5 + (Math.abs(hash >> 16) % 30) / 100;  // 0.5 - 0.8
+
+        return new THREE.Color().setHSL(hue, saturation, lightness);
+    }
+
+    /**
+     * Creates the dense particle core of a planet.
+     * @param {number} radius - Core radius
+     * @param {THREE.Color} color - Core color
+     * @param {number} particleCount - Number of particles
+     * @returns {THREE.Points} Core particle system
+     */
+    createPlanetCore(radius, color, particleCount)
+    {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+
+        for (let i = 0; i < particleCount; i++)
+        {
+            // Spherical distribution with bias toward center
+            const phi = Math.acos(2 * Math.random() - 1);
+            const theta = 2 * Math.PI * Math.random();
+            const r = radius * Math.pow(Math.random(), 0.7); // Bias toward center
+
+            positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i * 3 + 2] = r * Math.cos(phi);
+
+            // Color variation
+            const colorVariation = new THREE.Color(color);
+            colorVariation.multiplyScalar(0.8 + Math.random() * 0.4);
+
+            colors[i * 3] = colorVariation.r;
+            colors[i * 3 + 1] = colorVariation.g;
+            colors[i * 3 + 2] = colorVariation.b;
+
+            sizes[i] = 1.5 + Math.random() * 2;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+        const material = new THREE.PointsMaterial({
+            size: 2,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.9,
+            sizeAttenuation: true
+        });
+
+        return new THREE.Points(geometry, material);
+    }
+
+    /**
+     * Creates an atmospheric layer with flowing particles.
+     * @param {number} radius - Layer radius
+     * @param {THREE.Color} baseColor - Base color
+     * @param {number} particleCount - Number of particles
+     * @param {number} opacity - Layer opacity
+     * @returns {THREE.Points} Atmosphere particle system
+     */
+    createAtmosphereLayer(radius, baseColor, particleCount, opacity)
+    {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+
+        for (let i = 0; i < particleCount; i++)
+        {
+            // Spherical shell distribution
+            const phi = Math.acos(2 * Math.random() - 1);
+            const theta = 2 * Math.PI * Math.random();
+            const r = radius * (0.8 + Math.random() * 0.4); // Shell thickness
+
+            positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i * 3 + 2] = r * Math.cos(phi);
+
+            // Atmospheric color with transparency gradient
+            const atmosphereColor = new THREE.Color(baseColor);
+            atmosphereColor.lerp(new THREE.Color(0.8, 0.9, 1.0), 0.3);
+            atmosphereColor.multiplyScalar(0.6 + Math.random() * 0.6);
+
+            colors[i * 3] = atmosphereColor.r;
+            colors[i * 3 + 1] = atmosphereColor.g;
+            colors[i * 3 + 2] = atmosphereColor.b;
+
+            sizes[i] = 0.8 + Math.random() * 1.2;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+        const material = new THREE.PointsMaterial({
+            size: 1.5,
+            vertexColors: true,
+            transparent: true,
+            opacity: opacity,
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true
+        });
+
+        return new THREE.Points(geometry, material);
+    }
+
+    /**
+     * Extracts particle data for physics simulation.
+     * @param {THREE.Points} particleSystem - Particle system
+     * @returns {Object} Extracted particle data
+     */
+    extractParticleData(particleSystem)
+    {
+        const positions = particleSystem.geometry.attributes.position.array;
+        const velocities = [];
+
+        for (let i = 0; i < positions.length / 3; i++)
+        {
+            velocities.push(new THREE.Vector3(
+                (Math.random() - 0.5) * 0.1,
+                (Math.random() - 0.5) * 0.1,
+                (Math.random() - 0.5) * 0.1
+            ));
+        }
+
+        return {
+            positions: positions,
+            velocities: velocities,
+            particleSystem: particleSystem
+        };
+    }
+
+    /**
+     * Initializes constrained velocities for planet particles.
+     * @param {THREE.Points} core - Core particle system
+     * @param {Array<THREE.Points>} atmosphereLayers - Atmosphere layers
+     * @returns {Array<THREE.Vector3>} Velocity arrays
+     */
+    initializeConstrainedVelocities(core, atmosphereLayers)
+    {
+        const allVelocities = [];
+
+        // Core velocities - minimal movement
+        const coreCount = core.geometry.attributes.position.count;
+        for (let i = 0; i < coreCount; i++)
+        {
+            allVelocities.push(new THREE.Vector3(
+                (Math.random() - 0.5) * 0.05,
+                (Math.random() - 0.5) * 0.05,
+                (Math.random() - 0.5) * 0.05
+            ));
+        }
+
+        // Atmosphere velocities - orbital motion
+        atmosphereLayers.forEach(layer =>
+        {
+            const layerCount = layer.geometry.attributes.position.count;
+            for (let i = 0; i < layerCount; i++)
+            {
+                allVelocities.push(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.2,
+                    (Math.random() - 0.5) * 0.2,
+                    (Math.random() - 0.5) * 0.2
+                ));
+            }
+        });
+
+        return allVelocities;
+    }
+
+    /**
+     * Applies Einstein-Rosen bridge curvature effects to particles.
+     * @param {THREE.Vector3} particlePos - Particle position
+     * @param {THREE.Vector3} force - Current force vector
+     * @param {number} deltaTime - Frame time delta
+     */
+    applyBridgeCurvature(particlePos, force, deltaTime)
+    {
+        if (this.planets.length < 2) return;
+
+        // Find nearest two planets for bridge curvature
+        const distances = this.planets.map(planet => ({
+            planet: planet,
+            distance: particlePos.distanceTo(planet.group.position)
+        })).sort((a, b) => a.distance - b.distance);
+
+        if (distances.length >= 2)
+        {
+            const planet1 = distances[0].planet;
+            const planet2 = distances[1].planet;
+
+            // Calculate bridge midpoint
+            const bridgeMidpoint = planet1.group.position.clone()
+                .add(planet2.group.position)
+                .multiplyScalar(0.5);
+
+            // Apply curvature force toward bridge path
+            const toBridge = bridgeMidpoint.clone().sub(particlePos);
+            const bridgeDistance = toBridge.length();
+
+            if (bridgeDistance > 0 && bridgeDistance < this.bridgeActivationDistance)
+            {
+                const curvatureStrength = 20 / (bridgeDistance + 10);
+                toBridge.normalize().multiplyScalar(curvatureStrength);
+                force.add(toBridge);
+            }
+        }
+    }
+
+    /**
+     * Updates particle physics simulation.
+     * @param {number} deltaTime - Frame time delta
+     */
+    updateParticlePhysics(deltaTime)
+    {
+        // Calculate planet distances for optimization
+        const planetDistances = new Map();
+        for (let i = 0; i < this.planets.length; i++)
+        {
+            for (let j = i + 1; j < this.planets.length; j++)
+            {
+                const distance = this.planets[i].group.position.distanceTo(this.planets[j].group.position);
+                planetDistances.set(`${i}-${j}`, distance);
+            }
+        }
+
+        // Update bridge particles
+        this.updateBridgeParticles(deltaTime, planetDistances);
+
+        // Update planet internal particles (simplified for performance)
+        this.planets.forEach(planet =>
+        {
+            // Gentle rotation and internal motion
+            planet.group.children.forEach(particleSystem =>
+            {
+                if (particleSystem.geometry && particleSystem.geometry.attributes.position)
+                {
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3)
+                    {
+                        // Subtle internal motion
+                        positions[i] += (Math.random() - 0.5) * 0.1 * deltaTime;
+                        positions[i + 1] += (Math.random() - 0.5) * 0.1 * deltaTime;
+                        positions[i + 2] += (Math.random() - 0.5) * 0.1 * deltaTime;
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                }
+            });
+        });
+    }
+
+    /**
+     * Handles WebGL context loss for graceful recovery.
+     */
+    handleContextLoss()
+    {
+        console.warn('LinkedWindows3DApp: WebGL context lost, attempting recovery...');
+
+        // Clear existing resources
+        this.planets = [];
+        this.globalParticles = [];
+
+        // Attempt to reinitialize after a delay
+        setTimeout(() =>
+        {
+            try
+            {
+                this.setupScene();
+                this.initializeGlobalParticles();
+                console.log('LinkedWindows3DApp: WebGL context recovered successfully');
+            } catch (error)
+            {
+                console.error('LinkedWindows3DApp: Context recovery failed:', error);
+            }
+        }, 1000);
     }
 }
 
