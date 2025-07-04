@@ -644,15 +644,18 @@ class JuliaSetRenderer
         // **CRITICAL FIX: Synchronize activeView with renderMode**
         if (this.renderMode === 'dual')
         {
-            this.activeView = 'mandelbrot';
+            this.activeView = 'mandelbrot'; // Logical starting point for exploration
         }
         else
         {
-            // In single mode, activeView should match renderMode
+            // In single mode, activeView should match renderMode for consistency
             this.activeView = this.renderMode;
         }
 
         this.updateModeDisplay();
+
+        // Debug logging for development clarity
+        console.log(`Mode cycled to: ${this.renderMode} (active: ${this.activeView})`);
     }
 
     // Determine which view area the mouse is in (for dual mode)
@@ -1113,7 +1116,7 @@ class JuliaSetRenderer
 
         }, { passive: false });
 
-        // Enhanced keyboard controls with dedicated dual mode hotkey and comprehensive reset
+        // Enhanced keyboard controls with corrected J hotkey behavior for dual mode
         document.addEventListener('keydown', (e) =>
         {
             // Handle Ctrl+R for browser reload (takes precedence)
@@ -1297,7 +1300,7 @@ class JuliaSetRenderer
                     }
                     break;
 
-                // Enhanced reset functionality with comprehensive dual-mode support
+                // Enhanced reset functionality
                 case 'r':
                 case 'R':
                     if (!e.ctrlKey)
@@ -1321,20 +1324,36 @@ class JuliaSetRenderer
                     this.cycleFractalMode();
                     break;
 
-                // Smart Julia set creation
+                // **CORRECTED: Julia mode toggle - context-aware behavior**
                 case 'j':
                 case 'J':
-                    if (this.renderMode === 'mandelbrot')
+                    if (this.renderMode === 'dual')
                     {
-                        this.toggleFractalType(true);
+                        // **In dual mode: Switch to isolated Julia exploration**
+                        // Preserve current Julia parameters from dual view
+                        this.renderMode = 'julia';
+                        this.activeView = 'julia'; // Ensure state consistency
+
+                        console.log('Switched to isolated Julia exploration mode');
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
-                        this.toggleFractalType(false);
+                        // **From Mandelbrot: Create Julia set using current coordinates**
+                        this.toggleFractalType(true); // Use current coordinates as Julia parameter
                     }
+                    else if (this.renderMode === 'julia')
+                    {
+                        // **From Julia: Return to dual mode for comparative analysis**
+                        this.renderMode = 'dual';
+                        this.activeView = 'mandelbrot'; // Set logical starting point
+
+                        console.log('Returned to dual mode for comparative exploration');
+                    }
+
+                    this.updateModeDisplay();
                     break;
 
-                // **NEW: Dedicated dual mode hotkey**
+                // **Dedicated dual mode hotkey**
                 case 'd':
                 case 'D':
                     if (this.renderMode !== 'dual')
