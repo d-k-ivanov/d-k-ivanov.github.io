@@ -478,6 +478,13 @@ class JuliaSetRenderer
         // Enhanced keyboard controls with zoom-adjusted movement
         document.addEventListener('keydown', (e) =>
         {
+            // Handle Ctrl+R for page reload (takes precedence over regular R)
+            if (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
+            {
+                // Allow default browser behavior for Ctrl+R (page reload)
+                return;
+            }
+
             // Zoom-adaptive step size for smooth navigation at any zoom level
             const baseStep = 0.1;
             const zoomAdjustedStep = baseStep / Math.sqrt(this.juliaParams.zoom);
@@ -502,7 +509,11 @@ class JuliaSetRenderer
                     break;
                 case 'r':
                 case 'R':
-                    this.resetParameters();
+                    // Only reset parameters if Ctrl is not pressed
+                    if (!e.ctrlKey)
+                    {
+                        this.resetParameters();
+                    }
                     break;
                 case 'f':
                 case 'F':
@@ -530,8 +541,8 @@ class JuliaSetRenderer
                     break;
             }
 
-            // Prevent default for handled keys
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'r', 'R', 'f', 'F', '+', '=', '-', '_'].includes(e.key))
+            // Prevent default for handled keys (but not Ctrl+R)
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'f', 'F', '+', '=', '-', '_'].includes(e.key) || (e.key === 'r' || e.key === 'R') && !e.ctrlKey)
             {
                 e.preventDefault();
             }
