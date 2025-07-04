@@ -14,7 +14,8 @@ class JuliaSetRenderer
             y: 0,
             pressed: false,
             lastX: 0,
-            lastY: 0
+            lastY: 0,
+            button: -1 // Track which button is pressed
         };
         this.juliaParams = {
             c_real: -0.7,
@@ -24,6 +25,13 @@ class JuliaSetRenderer
             offsetY: 0.0,
             maxIterations: 256,
             colorOffset: 0.0
+        };
+        // Add precision tracking for infinite zoom
+        this.zoomPrecision = {
+            logZoom: 0.0, // Natural log of zoom for higher precision
+            centerX: 0.0, // High-precision center coordinates
+            centerY: 0.0,
+            maxLogZoom: 50.0 // Theoretical limit (zoom factor ~10^21)
         };
         this.animationId = null;
         this.resizeObserver = null;
@@ -379,19 +387,28 @@ class JuliaSetRenderer
 
     setupEventListeners()
     {
-        // Enhanced mouse interaction for full-screen
+        // Enhanced mouse interaction - only left button changes Julia parameters
         this.canvas.addEventListener('mousedown', (e) =>
         {
-            this.mouseState.pressed = true;
-            this.updateMousePosition(e);
-            this.mouseState.lastX = this.mouseState.x;
-            this.mouseState.lastY = this.mouseState.y;
+            // Only respond to left mouse button (button 0)
+            if (e.button === 0)
+            {
+                this.mouseState.pressed = true;
+                this.mouseState.button = e.button;
+                this.updateMousePosition(e);
+                this.mouseState.lastX = this.mouseState.x;
+                this.mouseState.lastY = this.mouseState.y;
+            }
             e.preventDefault();
         });
 
         this.canvas.addEventListener('mouseup', (e) =>
         {
-            this.mouseState.pressed = false;
+            if (e.button === this.mouseState.button)
+            {
+                this.mouseState.pressed = false;
+                this.mouseState.button = -1;
+            }
             e.preventDefault();
         });
 
@@ -399,9 +416,9 @@ class JuliaSetRenderer
         {
             this.updateMousePosition(e);
 
-            if (this.mouseState.pressed)
+            // Only update Julia parameters with left mouse button
+            if (this.mouseState.pressed && this.mouseState.button === 0)
             {
-                // Real-time Julia parameter updates
                 const rect = this.canvas.getBoundingClientRect();
                 this.juliaParams.c_real = (this.mouseState.x / rect.width - 0.5) * 2.0;
                 this.juliaParams.c_imag = (this.mouseState.y / rect.height - 0.5) * 2.0;
@@ -409,34 +426,79 @@ class JuliaSetRenderer
             e.preventDefault();
         });
 
-        // Optimized wheel handling for smooth zooming
+        // Prevent context menu on right click
+        this.canvas.addEventListener('contextmenu', (e) =>
+        {
+            e.preventDefault();
+        });
+
+        // Enhanced wheel handling with infinite zoom precision
         this.canvas.addEventListener('wheel', (e) =>
         {
             e.preventDefault();
-            const zoomFactor = e.deltaY > 0 ? 0.85 : 1.176; // Smooth zoom steps
-            this.juliaParams.zoom *= zoomFactor;
-            this.juliaParams.zoom = Math.max(0.01, Math.min(1000.0, this.juliaParams.zoom));
+
+            // Get mouse position in complex plane for zoom center
+            const rect = this.canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) / rect.width - 0.5;
+            const mouseY = (e.clientY - rect.top) / rect.height - 0.5;
+
+            // Convert to complex coordinates before zoom
+            const aspect = this.canvas.width / this.canvas.height;
+            const preZoomX = mouseX * 4.0 * aspect / this.juliaParams.zoom + this.juliaParams.offsetX;
+            const preZoomY = mouseY * 4.0 / this.juliaParams.zoom + this.juliaParams.offsetY;
+
+            // Smooth zoom with logarithmic precision
+            const zoomStep = e.deltaY > 0 ? -0.2 : 0.2; // Smooth zoom steps in log space
+            this.zoomPrecision.logZoom += zoomStep;
+
+            // Clamp to prevent extreme values
+            this.zoomPrecision.logZoom = Math.max(-10, Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom));
+
+            // Update zoom with exponential precision
+            this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+
+            // Adjust offset to zoom towards mouse position
+            const postZoomX = mouseX * 4.0 * aspect / this.juliaParams.zoom + this.juliaParams.offsetX;
+            const postZoomY = mouseY * 4.0 / this.juliaParams.zoom + this.juliaParams.offsetY;
+
+            this.juliaParams.offsetX += preZoomX - postZoomX;
+            this.juliaParams.offsetY += preZoomY - postZoomY;
+
+            // Update high-precision center tracking
+            this.zoomPrecision.centerX = this.juliaParams.offsetX;
+            this.zoomPrecision.centerY = this.juliaParams.offsetY;
+
+            // Dynamically adjust iteration count for extreme zoom levels
+            const baseIterations = 256;
+            const zoomFactor = Math.max(1.0, this.zoomPrecision.logZoom / 10.0);
+            this.juliaParams.maxIterations = Math.min(2048, baseIterations * Math.sqrt(zoomFactor));
+
         }, { passive: false });
 
-        // Enhanced keyboard controls with smooth navigation
+        // Enhanced keyboard controls with zoom-adjusted movement
         document.addEventListener('keydown', (e) =>
         {
-            const step = 0.1;
-            const zoomAdjustedStep = step / this.juliaParams.zoom;
+            // Zoom-adaptive step size for smooth navigation at any zoom level
+            const baseStep = 0.1;
+            const zoomAdjustedStep = baseStep / Math.sqrt(this.juliaParams.zoom);
 
             switch (e.key)
             {
                 case 'ArrowLeft':
                     this.juliaParams.offsetX -= zoomAdjustedStep;
+                    this.zoomPrecision.centerX = this.juliaParams.offsetX;
                     break;
                 case 'ArrowRight':
                     this.juliaParams.offsetX += zoomAdjustedStep;
+                    this.zoomPrecision.centerX = this.juliaParams.offsetX;
                     break;
                 case 'ArrowUp':
                     this.juliaParams.offsetY -= zoomAdjustedStep;
+                    this.zoomPrecision.centerY = this.juliaParams.offsetY;
                     break;
                 case 'ArrowDown':
                     this.juliaParams.offsetY += zoomAdjustedStep;
+                    this.zoomPrecision.centerY = this.juliaParams.offsetY;
                     break;
                 case 'r':
                 case 'R':
@@ -452,10 +514,24 @@ class JuliaSetRenderer
                         document.exitFullscreen();
                     }
                     break;
+                case '+':
+                case '=':
+                    // Zoom in with keyboard
+                    this.zoomPrecision.logZoom += 0.2;
+                    this.zoomPrecision.logZoom = Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom);
+                    this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                    break;
+                case '-':
+                case '_':
+                    // Zoom out with keyboard
+                    this.zoomPrecision.logZoom -= 0.2;
+                    this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
+                    this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                    break;
             }
 
             // Prevent default for handled keys
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'r', 'R', 'f', 'F'].includes(e.key))
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'r', 'R', 'f', 'F', '+', '=', '-', '_'].includes(e.key))
             {
                 e.preventDefault();
             }
@@ -524,6 +600,14 @@ class JuliaSetRenderer
             offsetY: 0.0,
             maxIterations: 256,
             colorOffset: 0.0
+        };
+
+        // Reset precision tracking
+        this.zoomPrecision = {
+            logZoom: 0.0,
+            centerX: 0.0,
+            centerY: 0.0,
+            maxLogZoom: 50.0
         };
     }
 
