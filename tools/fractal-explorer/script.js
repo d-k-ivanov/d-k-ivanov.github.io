@@ -52,9 +52,9 @@ class JuliaSetRenderer
             maxLogZoom: 50.0
         };
 
-        // Enhanced view modes with consistent initialization
-        this.renderMode = 'julia'; // Start with Julia mode for testing
-        this.activeView = 'julia'; // **CRITICAL: Ensure initial state consistency**
+        // **ENHANCED DEFAULT INITIALIZATION**: Start in dual mode for optimal exploration
+        this.renderMode = 'dual'; // Launch directly into educational dual-view mode
+        this.activeView = 'mandelbrot'; // Begin with Mandelbrot as primary exploration surface
 
         this.animationId = null;
         this.resizeObserver = null;
