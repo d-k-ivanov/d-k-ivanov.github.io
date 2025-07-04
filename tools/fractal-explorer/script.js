@@ -52,9 +52,9 @@ class JuliaSetRenderer
             maxLogZoom: 50.0
         };
 
-        // Enhanced view modes
-        this.renderMode = 'dual'; // 'julia', 'mandelbrot', 'dual'
-        this.activeView = 'mandelbrot'; // Which view is currently being manipulated
+        // Enhanced view modes with consistent initialization
+        this.renderMode = 'julia'; // Start with Julia mode for testing
+        this.activeView = 'julia'; // **CRITICAL: Ensure initial state consistency**
 
         this.animationId = null;
         this.resizeObserver = null;
@@ -606,9 +606,12 @@ class JuliaSetRenderer
             return;
         }
 
-        // Original single-view logic
+        // Original single-view logic with enhanced state management
         this.saveCurrentParameters();
         this.renderMode = this.renderMode === 'julia' ? 'mandelbrot' : 'julia';
+
+        // **CRITICAL FIX: Ensure activeView synchronization**
+        this.activeView = this.renderMode;
 
         if (this.renderMode === 'julia' && useCurrentCoordinates)
         {
@@ -631,16 +634,22 @@ class JuliaSetRenderer
         this.updateModeDisplay();
     }
 
-    // Enhanced mode switching including dual view
+    // Enhanced mode cycling with proper state management
     cycleFractalMode()
     {
         const modes = ['mandelbrot', 'julia', 'dual'];
         const currentIndex = modes.indexOf(this.renderMode);
         this.renderMode = modes[(currentIndex + 1) % modes.length];
 
+        // **CRITICAL FIX: Synchronize activeView with renderMode**
         if (this.renderMode === 'dual')
         {
             this.activeView = 'mandelbrot';
+        }
+        else
+        {
+            // In single mode, activeView should match renderMode
+            this.activeView = this.renderMode;
         }
 
         this.updateModeDisplay();
@@ -695,42 +704,123 @@ class JuliaSetRenderer
     // Helper methods for parameter access based on active view
     getCurrentZoom()
     {
-        return this.activeView === 'julia' ? this.juliaParams.zoom : this.mandelbrotParams.zoom;
+        // **ROBUST STATE MANAGEMENT**: Handle all possible state combinations
+        if (this.renderMode === 'dual')
+        {
+            return this.activeView === 'julia' ? this.juliaParams.zoom : this.mandelbrotParams.zoom;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            return this.juliaParams.zoom;
+        }
+        else // mandelbrot mode
+        {
+            return this.mandelbrotParams.zoom;
+        }
     }
 
     getCurrentOffsetX()
     {
-        return this.activeView === 'julia' ? this.juliaParams.offsetX : this.mandelbrotParams.offsetX;
+        if (this.renderMode === 'dual')
+        {
+            return this.activeView === 'julia' ? this.juliaParams.offsetX : this.mandelbrotParams.offsetX;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            return this.juliaParams.offsetX;
+        }
+        else // mandelbrot mode
+        {
+            return this.mandelbrotParams.offsetX;
+        }
     }
 
     getCurrentOffsetY()
     {
-        return this.activeView === 'julia' ? this.juliaParams.offsetY : this.mandelbrotParams.offsetY;
+        if (this.renderMode === 'dual')
+        {
+            return this.activeView === 'julia' ? this.juliaParams.offsetY : this.mandelbrotParams.offsetY;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            return this.juliaParams.offsetY;
+        }
+        else // mandelbrot mode
+        {
+            return this.mandelbrotParams.offsetY;
+        }
     }
 
     getCurrentMaxIterations()
     {
-        return this.activeView === 'julia' ? this.juliaParams.maxIterations : this.mandelbrotParams.maxIterations;
+        if (this.renderMode === 'dual')
+        {
+            return this.activeView === 'julia' ? this.juliaParams.maxIterations : this.mandelbrotParams.maxIterations;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            return this.juliaParams.maxIterations;
+        }
+        else // mandelbrot mode
+        {
+            return this.mandelbrotParams.maxIterations;
+        }
     }
 
     getCurrentPrecision()
     {
-        return this.activeView === 'julia' ? this.zoomPrecision : this.mandelbrotPrecision;
+        if (this.renderMode === 'dual')
+        {
+            return this.activeView === 'julia' ? this.zoomPrecision : this.mandelbrotPrecision;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            return this.zoomPrecision;
+        }
+        else // mandelbrot mode
+        {
+            return this.mandelbrotPrecision;
+        }
     }
 
+    // Enhanced parameter setters with comprehensive state handling
     setCurrentZoom(zoom)
     {
-        if (this.activeView === 'julia') this.juliaParams.zoom = zoom;
-        else this.mandelbrotParams.zoom = zoom;
+        if (this.renderMode === 'dual')
+        {
+            if (this.activeView === 'julia') this.juliaParams.zoom = zoom;
+            else this.mandelbrotParams.zoom = zoom;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            this.juliaParams.zoom = zoom;
+        }
+        else // mandelbrot mode
+        {
+            this.mandelbrotParams.zoom = zoom;
+        }
     }
 
     setCurrentOffset(x, y)
     {
-        if (this.activeView === 'julia')
+        if (this.renderMode === 'dual')
+        {
+            if (this.activeView === 'julia')
+            {
+                this.juliaParams.offsetX = x;
+                this.juliaParams.offsetY = y;
+            } else
+            {
+                this.mandelbrotParams.offsetX = x;
+                this.mandelbrotParams.offsetY = y;
+            }
+        }
+        else if (this.renderMode === 'julia')
         {
             this.juliaParams.offsetX = x;
             this.juliaParams.offsetY = y;
-        } else
+        }
+        else // mandelbrot mode
         {
             this.mandelbrotParams.offsetX = x;
             this.mandelbrotParams.offsetY = y;
@@ -739,14 +829,36 @@ class JuliaSetRenderer
 
     setCurrentMaxIterations(iterations)
     {
-        if (this.activeView === 'julia') this.juliaParams.maxIterations = iterations;
-        else this.mandelbrotParams.maxIterations = iterations;
+        if (this.renderMode === 'dual')
+        {
+            if (this.activeView === 'julia') this.juliaParams.maxIterations = iterations;
+            else this.mandelbrotParams.maxIterations = iterations;
+        }
+        else if (this.renderMode === 'julia')
+        {
+            this.juliaParams.maxIterations = iterations;
+        }
+        else // mandelbrot mode
+        {
+            this.mandelbrotParams.maxIterations = iterations;
+        }
     }
 
     setCurrentPrecision(precision)
     {
-        if (this.activeView === 'julia') this.zoomPrecision = { ...precision };
-        else this.mandelbrotPrecision = { ...precision };
+        if (this.renderMode === 'dual')
+        {
+            if (this.activeView === 'julia') this.zoomPrecision = { ...precision };
+            else this.mandelbrotPrecision = { ...precision };
+        }
+        else if (this.renderMode === 'julia')
+        {
+            this.zoomPrecision = { ...precision };
+        }
+        else // mandelbrot mode
+        {
+            this.mandelbrotPrecision = { ...precision };
+        }
     }
 
     updateModeDisplay()
@@ -1017,85 +1129,171 @@ class JuliaSetRenderer
 
             switch (e.key)
             {
-                // Arrow key navigation - operates on active view
+                // Arrow key navigation with explicit mode handling
                 case 'ArrowLeft':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.juliaParams.offsetX -= zoomAdjustedStep;
                         this.zoomPrecision.centerX = this.juliaParams.offsetX;
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotParams.offsetX -= zoomAdjustedStep;
                         this.mandelbrotPrecision.centerX = this.mandelbrotParams.offsetX;
                     }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.juliaParams.offsetX -= zoomAdjustedStep;
+                            this.zoomPrecision.centerX = this.juliaParams.offsetX;
+                        }
+                        else
+                        {
+                            this.mandelbrotParams.offsetX -= zoomAdjustedStep;
+                            this.mandelbrotPrecision.centerX = this.mandelbrotParams.offsetX;
+                        }
+                    }
                     break;
                 case 'ArrowRight':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.juliaParams.offsetX += zoomAdjustedStep;
                         this.zoomPrecision.centerX = this.juliaParams.offsetX;
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotParams.offsetX += zoomAdjustedStep;
                         this.mandelbrotPrecision.centerX = this.mandelbrotParams.offsetX;
                     }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.juliaParams.offsetX += zoomAdjustedStep;
+                            this.zoomPrecision.centerX = this.juliaParams.offsetX;
+                        }
+                        else
+                        {
+                            this.mandelbrotParams.offsetX += zoomAdjustedStep;
+                            this.mandelbrotPrecision.centerX = this.mandelbrotParams.offsetX;
+                        }
+                    }
                     break;
                 case 'ArrowUp':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.juliaParams.offsetY -= zoomAdjustedStep;
                         this.zoomPrecision.centerY = this.juliaParams.offsetY;
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotParams.offsetY -= zoomAdjustedStep;
                         this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
                     }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.juliaParams.offsetY -= zoomAdjustedStep;
+                            this.zoomPrecision.centerY = this.juliaParams.offsetY;
+                        }
+                        else
+                        {
+                            this.mandelbrotParams.offsetY -= zoomAdjustedStep;
+                            this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
+                        }
+                    }
                     break;
                 case 'ArrowDown':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.juliaParams.offsetY += zoomAdjustedStep;
                         this.zoomPrecision.centerY = this.juliaParams.offsetY;
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotParams.offsetY += zoomAdjustedStep;
                         this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
                     }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.juliaParams.offsetY += zoomAdjustedStep;
+                            this.zoomPrecision.centerY = this.juliaParams.offsetY;
+                        }
+                        else
+                        {
+                            this.mandelbrotParams.offsetY += zoomAdjustedStep;
+                            this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
+                        }
+                    }
                     break;
 
-                // Keyboard zoom controls with logarithmic precision
+                // **ENHANCED ZOOM CONTROLS with explicit Julia mode handling**
                 case '+':
                 case '=':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.zoomPrecision.logZoom += 0.2;
                         this.zoomPrecision.logZoom = Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom);
                         this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                        console.log(`Julia zoom in: ${this.juliaParams.zoom.toFixed(2)}`);
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotPrecision.logZoom += 0.2;
                         this.mandelbrotPrecision.logZoom = Math.min(this.mandelbrotPrecision.maxLogZoom, this.mandelbrotPrecision.logZoom);
                         this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                        console.log(`Mandelbrot zoom in: ${this.mandelbrotParams.zoom.toFixed(2)}`);
+                    }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.zoomPrecision.logZoom += 0.2;
+                            this.zoomPrecision.logZoom = Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom);
+                            this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                        }
+                        else
+                        {
+                            this.mandelbrotPrecision.logZoom += 0.2;
+                            this.mandelbrotPrecision.logZoom = Math.min(this.mandelbrotPrecision.maxLogZoom, this.mandelbrotPrecision.logZoom);
+                            this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                        }
                     }
                     break;
                 case '-':
                 case '_':
-                    if (this.activeView === 'julia')
+                    if (this.renderMode === 'julia')
                     {
                         this.zoomPrecision.logZoom -= 0.2;
                         this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
                         this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                        console.log(`Julia zoom out: ${this.juliaParams.zoom.toFixed(2)}`);
                     }
-                    else
+                    else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotPrecision.logZoom -= 0.2;
                         this.mandelbrotPrecision.logZoom = Math.max(-10, this.mandelbrotPrecision.logZoom);
                         this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                        console.log(`Mandelbrot zoom out: ${this.mandelbrotParams.zoom.toFixed(2)}`);
+                    }
+                    else if (this.renderMode === 'dual')
+                    {
+                        if (this.activeView === 'julia')
+                        {
+                            this.zoomPrecision.logZoom -= 0.2;
+                            this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
+                            this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                        }
+                        else
+                        {
+                            this.mandelbrotPrecision.logZoom -= 0.2;
+                            this.mandelbrotPrecision.logZoom = Math.max(-10, this.mandelbrotPrecision.logZoom);
+                            this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                        }
                     }
                     break;
 
@@ -1205,92 +1403,23 @@ class JuliaSetRenderer
                 this.updateUniforms();
             }
         });
-    }
 
-    toggleFullscreen()
-    {
-        if (!document.fullscreenElement)
+        // Handle mouse leave to reset interaction state
+        this.canvas.addEventListener('mouseleave', (e) =>
         {
-            this.canvas.requestFullscreen().catch(err =>
+            if (this.mouseState.pressed)
             {
-                console.warn('Fullscreen request failed:', err);
-            });
-        } else
+                this.mouseState.pressed = false;
+                this.mouseState.button = -1;
+                this.canvas.style.cursor = 'crosshair';
+            }
+        });
+
+        // Prevent context menu on right click
+        this.canvas.addEventListener('contextmenu', (e) =>
         {
-            document.exitFullscreen();
-        }
-    }
-
-    // Enhanced uniform buffer creation for dual view
-    createBuffers()
-    {
-        // Aligned uniform buffer for optimal GPU performance
-        const uniformData = new Float32Array([
-            this.juliaParams.c_real,            // 0
-            this.juliaParams.c_imag,            // 1
-            this.juliaParams.zoom,              // 2
-            this.juliaParams.offsetX,           // 3
-            this.juliaParams.offsetY,           // 4
-            this.juliaParams.maxIterations,     // 5
-            this.juliaParams.colorOffset,       // 6
-            this.mandelbrotParams.zoom,         // 7
-            this.mandelbrotParams.offsetX,      // 8
-            this.mandelbrotParams.offsetY,      // 9
-            this.mandelbrotParams.maxIterations,// 10
-            this.mandelbrotParams.colorOffset,  // 11
-            this.canvas.width,                  // 12
-            this.canvas.height,                 // 13
-            this.renderMode === 'mandelbrot' ? 1.0 :
-                this.renderMode === 'julia' ? 0.0 : 2.0, // 14
-            0 // 15 - padding for alignment
-        ]);
-
-        // Create uniform buffer with proper alignment
-        this.uniformBuffer = this.device.createBuffer({
-            label: 'Fractal Uniform Buffer',
-            size: Math.max(uniformData.byteLength, 256), // Ensure minimum size
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            e.preventDefault();
         });
-
-        // Write initial data
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
-
-        // Create bind group
-        this.bindGroup = this.device.createBindGroup({
-            label: 'Fractal Bind Group',
-            layout: this.bindGroupLayout,
-            entries: [{
-                binding: 0,
-                resource: {
-                    buffer: this.uniformBuffer,
-                },
-            }],
-        });
-    }
-
-    updateUniforms()
-    {
-        const uniformData = new Float32Array([
-            this.juliaParams.c_real,
-            this.juliaParams.c_imag,
-            this.juliaParams.zoom,
-            this.juliaParams.offsetX,
-            this.juliaParams.offsetY,
-            this.juliaParams.maxIterations,
-            this.juliaParams.colorOffset,
-            this.mandelbrotParams.zoom,
-            this.mandelbrotParams.offsetX,
-            this.mandelbrotParams.offsetY,
-            this.mandelbrotParams.maxIterations,
-            this.mandelbrotParams.colorOffset,
-            this.canvas.width,
-            this.canvas.height,
-            this.renderMode === 'mandelbrot' ? 1.0 :
-                this.renderMode === 'julia' ? 0.0 : 2.0,
-            0
-        ]);
-
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
     }
 
     // Enhanced mouse position tracking for dual view
@@ -1300,7 +1429,7 @@ class JuliaSetRenderer
         this.mouseState.x = e.clientX - rect.left;
         this.mouseState.y = e.clientY - rect.top;
 
-        // Calculate complex coordinates based on current view
+        // Calculate complex coordinates based on current view with precision handling
         let mouseX, mouseY, aspect, zoom, offsetX, offsetY;
 
         if (this.renderMode === 'dual')
@@ -1310,6 +1439,7 @@ class JuliaSetRenderer
 
             if (viewType === 'mandelbrot')
             {
+                // Left half: normalize to [-0.5, 0.5] range for Mandelbrot coordinates
                 mouseX = (this.mouseState.x / rect.width - 0.25) * 2.0;
                 zoom = this.mandelbrotParams.zoom;
                 offsetX = this.mandelbrotParams.offsetX;
@@ -1317,6 +1447,7 @@ class JuliaSetRenderer
             }
             else
             {
+                // Right half: normalize to [-0.5, 0.5] range for Julia coordinates
                 mouseX = (this.mouseState.x / rect.width - 0.75) * 2.0;
                 zoom = this.juliaParams.zoom;
                 offsetX = this.juliaParams.offsetX;
@@ -1325,6 +1456,7 @@ class JuliaSetRenderer
         }
         else
         {
+            // Single view mode: full screen coordinate mapping
             mouseX = this.mouseState.x / rect.width - 0.5;
             aspect = this.canvas.width / this.canvas.height;
 
@@ -1344,52 +1476,79 @@ class JuliaSetRenderer
 
         mouseY = this.mouseState.y / rect.height - 0.5;
 
+        // Transform screen coordinates to complex plane with mathematical precision
         this.complexCoordinates.x = mouseX * 4.0 * aspect / zoom + offsetX;
         this.complexCoordinates.y = mouseY * 4.0 / zoom + offsetY;
 
+        // Update coordinate display in real-time for smooth UX
         this.updateCoordinateDisplay();
     }
 
-    // Enhanced coordinate display for dual view
+    // Enhanced coordinate display with mathematical precision and view context
     updateCoordinateDisplay()
     {
         if (!this.coordDisplay) return;
 
+        // Adaptive precision based on zoom level for optimal readability
         const currentZoom = this.getCurrentZoom();
         const zoomFactor = Math.max(0, Math.log10(currentZoom));
         const precision = Math.min(15, Math.max(4, Math.floor(zoomFactor) + 3));
 
+        // View context information for dual mode
         let viewInfo = '';
+        let activeViewIndicator = '';
+
         if (this.renderMode === 'dual')
         {
             const currentView = this.getViewFromMousePosition(this.mouseState.x, this.mouseState.y);
-            viewInfo = `<div style="margin-bottom: 4px; font-size: 10px; opacity: 0.8;">${currentView === 'mandelbrot' ? 'Mandelbrot' : 'Julia'} View</div>`;
+            viewInfo = `<div style="margin-bottom: 4px; font-size: 10px; opacity: 0.8; color: #64ffda;">
+                ${currentView === 'mandelbrot' ? 'Mandelbrot' : 'Julia'} View
+            </div>`;
+
+            activeViewIndicator = `<div style="margin-top: 4px; font-size: 10px; opacity: 0.7; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;">
+                Active: ${this.activeView === 'mandelbrot' ? 'Mandelbrot' : 'Julia'} (${this.activeView === 'mandelbrot' ? 'M' : 'J'})
+            </div>`;
         }
 
+        // Calculate magnitude for mathematical completeness
+        const magnitude = Math.sqrt(
+            this.complexCoordinates.x * this.complexCoordinates.x +
+            this.complexCoordinates.y * this.complexCoordinates.y
+        );
+
+        // Professional mathematical display with enhanced readability
         this.coordDisplay.innerHTML = `
-            <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">Complex Plane</div>
-            ${viewInfo}
-            <div style="font-size: 11px; line-height: 1.4;">
-                <div><strong>Re(z):</strong> ${this.complexCoordinates.x.toFixed(precision)}</div>
-                <div><strong>Im(z):</strong> ${this.complexCoordinates.y.toFixed(precision)}i</div>
-                <div><strong>|z|:</strong> ${Math.sqrt(this.complexCoordinates.x * this.complexCoordinates.x +
-            this.complexCoordinates.y * this.complexCoordinates.y).toFixed(precision)}</div>
-                ${this.renderMode === 'dual' ?
-                `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
-                        <div style="font-size: 10px; opacity: 0.8;">Julia Parameter:</div>
-                        <div><strong>c:</strong> ${this.juliaParams.c_real.toFixed(4)} + ${this.juliaParams.c_imag.toFixed(4)}i</div>
-                    </div>` : ''}
+            <div style="margin-bottom: 8px; font-weight: bold; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px;">
+                Complex Plane
             </div>
+            ${viewInfo}
+            <div style="font-size: 11px; line-height: 1.5; font-family: 'Consolas', 'Monaco', monospace;">
+                <div><strong style="color: #ff6b6b;">Re(z):</strong> <span style="color: #4ecdc4;">${this.complexCoordinates.x.toFixed(precision)}</span></div>
+                <div><strong style="color: #45b7d1;">Im(z):</strong> <span style="color: #4ecdc4;">${this.complexCoordinates.y.toFixed(precision)}i</span></div>
+                <div><strong style="color: #96ceb4;">|z|:</strong> <span style="color: #4ecdc4;">${magnitude.toFixed(precision)}</span></div>
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 10px; opacity: 0.7; margin-bottom: 2px;">Zoom: ${currentZoom.toExponential(2)}</div>
+                </div>
+            </div>
+            ${this.renderMode === 'dual' ?
+                `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px;">
+                    <div style="opacity: 0.8; margin-bottom: 2px; color: #feca57;">Julia Parameter:</div>
+                    <div style="font-family: 'Consolas', 'Monaco', monospace; color: #4ecdc4;">
+                        c = ${this.juliaParams.c_real.toFixed(4)} + ${this.juliaParams.c_imag.toFixed(4)}i
+                    </div>
+                </div>` : ''}
+            ${activeViewIndicator}
         `;
     }
 
+    // Enhanced reset functionality with comprehensive dual-mode support
     resetParameters()
     {
         if (this.renderMode === 'dual')
         {
             // **Dual mode reset: Reset both fractals to their canonical states**
 
-            // Reset Julia set parameters to classic values
+            // Reset Julia set parameters to classic aesthetic values
             this.juliaParams = {
                 c_real: -0.7,
                 c_imag: 0.27015,
@@ -1400,7 +1559,7 @@ class JuliaSetRenderer
                 colorOffset: 0.0
             };
 
-            // Reset Julia precision tracking
+            // Reset Julia precision tracking for infinite zoom capability
             this.zoomPrecision = {
                 logZoom: 0.0,
                 centerX: 0.0,
@@ -1408,7 +1567,7 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            // Reset Mandelbrot parameters to canonical view
+            // Reset Mandelbrot parameters to canonical mathematical view
             this.mandelbrotParams = {
                 zoom: 1.0,
                 offsetX: -0.5, // Center the classic Mandelbrot bulb
@@ -1425,14 +1584,14 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            // Reset active view to Mandelbrot for consistent UX
+            // Reset active view to Mandelbrot for consistent exploration workflow
             this.activeView = 'mandelbrot';
 
-            console.log('Dual view reset: Both fractals restored to canonical states');
+            console.log('Dual view reset: Both fractals restored to canonical mathematical states');
         }
         else if (this.renderMode === 'julia')
         {
-            // Single Julia view reset
+            // Single Julia view reset to aesthetically pleasing parameters
             this.juliaParams = {
                 c_real: -0.7,
                 c_imag: 0.27015,
@@ -1450,14 +1609,14 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            console.log('Julia set reset to classic parameters');
+            console.log('Julia set reset to classic parameters (-0.7 + 0.27015i)');
         }
         else // Mandelbrot mode
         {
-            // Single Mandelbrot view reset
+            // Single Mandelbrot view reset to canonical mathematical view
             this.mandelbrotParams = {
                 zoom: 1.0,
-                offsetX: -0.5,
+                offsetX: -0.5, // Optimal centering for the main cardioid
                 offsetY: 0.0,
                 maxIterations: 256,
                 colorOffset: 0.0
@@ -1470,18 +1629,82 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            console.log('Mandelbrot set reset to canonical view');
+            console.log('Mandelbrot set reset to canonical mathematical view');
         }
 
-        // Update mode display to reflect any changes
+        // Synchronize UI state with reset parameters
         this.updateModeDisplay();
+        this.updateCoordinateDisplay();
     }
 
-    // ... [Rest of your existing methods remain unchanged] ...
-    // toggleFractalType, cycleFractalMode, getViewFromMousePosition, etc.
+    // Professional fullscreen toggle with error handling
+    toggleFullscreen()
+    {
+        if (!document.fullscreenElement)
+        {
+            // Request fullscreen with comprehensive error handling
+            this.canvas.requestFullscreen().catch(err =>
+            {
+                console.warn('Fullscreen request failed:', err);
 
-    // Keep all your existing methods exactly as they are - they're well implemented
-    // Just adding the missing initialization methods above
+                // Fallback for older browsers
+                if (this.canvas.webkitRequestFullscreen)
+                {
+                    this.canvas.webkitRequestFullscreen();
+                }
+                else if (this.canvas.mozRequestFullScreen)
+                {
+                    this.canvas.mozRequestFullScreen();
+                }
+                else if (this.canvas.msRequestFullscreen)
+                {
+                    this.canvas.msRequestFullscreen();
+                }
+            });
+        }
+        else
+        {
+            // Exit fullscreen with cross-browser compatibility
+            if (document.exitFullscreen)
+            {
+                document.exitFullscreen();
+            }
+            else if (document.webkitExitFullscreen)
+            {
+                document.webkitExitFullscreen();
+            }
+            else if (document.mozCancelFullScreen)
+            {
+                document.mozCancelFullScreen();
+            }
+            else if (document.msExitFullscreen)
+            {
+                document.msExitFullscreen();
+            }
+        }
+    }
+
+    // Debugging method for development and troubleshooting
+    debugState()
+    {
+        console.group('Fractal Explorer State Debug');
+        console.log(`Render Mode: ${this.renderMode}`);
+        console.log(`Active View: ${this.activeView}`);
+        console.log(`Julia Parameters:`, {
+            c: `${this.juliaParams.c_real} + ${this.juliaParams.c_imag}i`,
+            zoom: this.juliaParams.zoom,
+            offset: `${this.juliaParams.offsetX}, ${this.juliaParams.offsetY}`,
+            iterations: this.juliaParams.maxIterations
+        });
+        console.log(`Mandelbrot Parameters:`, {
+            zoom: this.mandelbrotParams.zoom,
+            offset: `${this.mandelbrotParams.offsetX}, ${this.mandelbrotParams.offsetY}`,
+            iterations: this.mandelbrotParams.maxIterations
+        });
+        console.log(`Current Active Zoom: ${this.getCurrentZoom()}`);
+        console.log(`Complex Coordinates: ${this.complexCoordinates.x} + ${this.complexCoordinates.y}i`);
+        console.groupEnd();
+    }
 }
 
 // Initialize the full-screen application
