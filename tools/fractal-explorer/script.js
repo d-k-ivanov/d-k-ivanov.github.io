@@ -58,8 +58,8 @@ class JuliaSetRenderer
         this.modeDisplay = null;
     }
 
-    // Add a method to toggle between fractal types
-    toggleFractalType()
+    // Add a method to toggle between fractal types with intelligent coordinate handling
+    toggleFractalType(useCurrentCoordinates = false)
     {
         // Save current parameters before switching
         this.saveCurrentParameters();
@@ -67,8 +67,30 @@ class JuliaSetRenderer
         // Toggle the render mode
         this.renderMode = this.renderMode === 'julia' ? 'mandelbrot' : 'julia';
 
-        // Load parameters for the new mode
-        this.loadParametersForCurrentMode();
+        // If switching to Julia set and useCurrentCoordinates is true,
+        // use the current mouse coordinates as the new Julia parameter
+        if (this.renderMode === 'julia' && useCurrentCoordinates)
+        {
+            // Set Julia parameter c to the current complex coordinates
+            this.juliaParams.c_real = this.complexCoordinates.x;
+            this.juliaParams.c_imag = this.complexCoordinates.y;
+
+            // Reset zoom and position for the new Julia set to center it nicely
+            this.juliaParams.zoom = 1.0;
+            this.juliaPmmarams.offsetX = 0.0;
+            this.juliaParams.offsetY = 0.0;
+            this.juliaParams.maxIterations = 256;
+
+            // Reset precision tracking for new Julia set
+            this.zoomPrecision.logZoom = 0.0;
+            this.zoomPrecision.centerX = 0.0;
+            this.zoomPrecision.centerY = 0.0;
+        }
+        else
+        {
+            // Load standard parameters for the new mode
+            this.loadParametersForCurrentMode();
+        }
 
         // Update UI to reflect the current mode
         this.updateModeDisplay();
@@ -597,7 +619,7 @@ class JuliaSetRenderer
 
         }, { passive: false });
 
-        // Enhanced keyboard controls with mode switching
+        // Enhanced keyboard controls with unified fractal switching
         document.addEventListener('keydown', (e) =>
         {
             // Handle Ctrl+R for page reload (takes precedence over regular R)
@@ -663,23 +685,23 @@ class JuliaSetRenderer
                     break;
                 case 'm':
                 case 'M':
-                    // Toggle between Julia and Mandelbrot sets
-                    this.toggleFractalType();
+                    // Toggle between Julia and Mandelbrot sets (standard mode switch)
+                    this.toggleFractalType(false);
                     break;
-
                 case 'j':
                 case 'J':
-                    // If in Mandelbrot mode, capture current point as Julia seed
+                    // Smart fractal switching:
+                    // - If in Mandelbrot mode, switch to Julia using current coordinates
+                    // - If in Julia mode, switch to Mandelbrot to explore
                     if (this.renderMode === 'mandelbrot')
                     {
-                        // Save complex coordinates under cursor as new Julia set parameter
-                        this.juliaParams.c_real = this.complexCoordinates.x;
-                        this.juliaParams.c_imag = this.complexCoordinates.y;
-
-                        // Switch to Julia set mode
-                        this.renderMode = 'julia';
-                        this.loadParametersForCurrentMode();
-                        this.updateModeDisplay();
+                        // Switch to Julia set using current mouse position as parameter
+                        this.toggleFractalType(true);
+                    }
+                    else
+                    {
+                        // Switch to Mandelbrot set for exploration
+                        this.toggleFractalType(false);
                     }
                     break;
             }
@@ -940,7 +962,7 @@ async function main()
             <div style="font-size: 11px; line-height: 1.4;">
                 <div><strong>Mouse + Drag:</strong> Change parameter c (Julia only)</div>
                 <div><strong>Wheel:</strong> Zoom • <strong>Arrows:</strong> Pan</div>
-                <div><strong>M:</strong> Toggle Mode • <strong>J:</strong> Julia from point</div>
+                <div><strong>M:</strong> Toggle Mode • <strong>J:</strong> Smart Julia Switch</div>
                 <div><strong>R:</strong> Reset • <strong>F:</strong> Fullscreen • <strong>Esc:</strong> Exit</div>
             </div>
         `;
