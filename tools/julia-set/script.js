@@ -35,6 +35,11 @@ class JuliaSetRenderer
         };
         this.animationId = null;
         this.resizeObserver = null;
+        this.complexCoordinates = {
+            x: 0,
+            y: 0
+        };
+        this.coordDisplay = null;
     }
 
     async init()
@@ -473,6 +478,9 @@ class JuliaSetRenderer
             const zoomFactor = Math.max(1.0, this.zoomPrecision.logZoom / 10.0);
             this.juliaParams.maxIterations = Math.min(2048, baseIterations * Math.sqrt(zoomFactor));
 
+            // Update coordinate display after zoom
+            this.updateCoordinateDisplay();
+
         }, { passive: false });
 
         // Enhanced keyboard controls with zoom-adjusted movement
@@ -599,6 +607,37 @@ class JuliaSetRenderer
         const rect = this.canvas.getBoundingClientRect();
         this.mouseState.x = e.clientX - rect.left;
         this.mouseState.y = e.clientY - rect.top;
+
+        // Calculate complex plane coordinates
+        const mouseX = this.mouseState.x / rect.width - 0.5;
+        const mouseY = this.mouseState.y / rect.height - 0.5;
+        const aspect = this.canvas.width / this.canvas.height;
+
+        // Update complex coordinates with proper aspect ratio handling
+        this.complexCoordinates.x = mouseX * 4.0 * aspect / this.juliaParams.zoom + this.juliaParams.offsetX;
+        this.complexCoordinates.y = mouseY * 4.0 / this.juliaParams.zoom + this.juliaParams.offsetY;
+
+        // Update coordinate display if it exists
+        this.updateCoordinateDisplay();
+    }
+
+    updateCoordinateDisplay()
+    {
+        if (!this.coordDisplay) return;
+
+        // Adjust precision based on zoom level for meaningful display
+        const zoomFactor = Math.max(0, Math.log10(this.juliaParams.zoom));
+        const precision = Math.min(15, Math.max(4, Math.floor(zoomFactor) + 3));
+
+        this.coordDisplay.innerHTML = `
+            <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">Complex Plane</div>
+            <div style="font-size: 11px; line-height: 1.4;">
+                <div><strong>Re(z):</strong> ${this.complexCoordinates.x.toFixed(precision)}</div>
+                <div><strong>Im(z):</strong> ${this.complexCoordinates.y.toFixed(precision)}i</div>
+                <div><strong>|z|:</strong> ${Math.sqrt(this.complexCoordinates.x * this.complexCoordinates.x +
+            this.complexCoordinates.y * this.complexCoordinates.y).toFixed(precision)}</div>
+            </div>
+        `;
     }
 
     resetParameters()
@@ -705,7 +744,7 @@ async function main()
         const renderer = new JuliaSetRenderer();
         await renderer.init();
 
-        // Minimal, unobtrusive UI overlay
+        // Minimal, unobtrusive UI overlay for instructions
         const instructions = document.createElement('div');
         instructions.innerHTML = `
             <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">Julia Set Explorer</div>
@@ -733,24 +772,54 @@ async function main()
         `;
         document.body.appendChild(instructions);
 
-        // Auto-hide instructions after a delay
+        // Create coordinate display with matching style
+        const coordDisplay = document.createElement('div');
+        coordDisplay.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            max-width: 280px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease-out;
+        `;
+        document.body.appendChild(coordDisplay);
+
+        // Store reference to coordinate display in renderer
+        renderer.coordDisplay = coordDisplay;
+
+        // Auto-hide UI elements after a delay
         setTimeout(() =>
         {
             instructions.style.transition = 'opacity 0.5s ease-out';
             instructions.style.opacity = '0.3';
+            coordDisplay.style.opacity = '0.3';
         }, 5000);
 
-        // Show instructions on mouse activity
+        // Show UI elements on mouse activity
         let hideTimeout;
         document.addEventListener('mousemove', () =>
         {
             instructions.style.opacity = '1';
+            coordDisplay.style.opacity = '1';
             clearTimeout(hideTimeout);
             hideTimeout = setTimeout(() =>
             {
                 instructions.style.opacity = '0.3';
+                coordDisplay.style.opacity = '0.3';
             }, 3000);
         });
+
+        // Initial update of coordinate display
+        renderer.updateCoordinateDisplay();
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () =>
