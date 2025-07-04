@@ -14,3 +14,7 @@ permalink: /tools/
 - <a name="Compare Two Lists" href="/tools/linked-windows-3d-0/">Linked Windows 3D 0</a>
 - <a name="Compare Two Lists" href="/tools/linked-windows-3d-1/">Linked Windows 3D 1</a>
 - <a name="Compare Two Lists" href="/tools/linked-windows-3d-2/">Linked Windows 3D 2</a>
+
+## WebGPU Playground
+
+- <a name="Julia and Mandelbrot Sets" href="/tools/julia-set/">Julia and Mandelbrot Sets</a>
