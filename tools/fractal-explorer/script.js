@@ -1001,20 +1001,23 @@ class JuliaSetRenderer
 
         }, { passive: false });
 
-        // Enhanced keyboard controls
+        // Enhanced keyboard controls with dedicated dual mode hotkey and comprehensive reset
         document.addEventListener('keydown', (e) =>
         {
+            // Handle Ctrl+R for browser reload (takes precedence)
             if (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
             {
-                return;
+                return; // Allow browser default behavior
             }
 
+            // Zoom-adaptive navigation for smooth movement at any scale
             const baseStep = 0.1;
             const currentZoom = this.getCurrentZoom();
             const zoomAdjustedStep = baseStep / Math.sqrt(currentZoom);
 
             switch (e.key)
             {
+                // Arrow key navigation - operates on active view
                 case 'ArrowLeft':
                     if (this.activeView === 'julia')
                     {
@@ -1063,6 +1066,40 @@ class JuliaSetRenderer
                         this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
                     }
                     break;
+
+                // Keyboard zoom controls with logarithmic precision
+                case '+':
+                case '=':
+                    if (this.activeView === 'julia')
+                    {
+                        this.zoomPrecision.logZoom += 0.2;
+                        this.zoomPrecision.logZoom = Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom);
+                        this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                    }
+                    else
+                    {
+                        this.mandelbrotPrecision.logZoom += 0.2;
+                        this.mandelbrotPrecision.logZoom = Math.min(this.mandelbrotPrecision.maxLogZoom, this.mandelbrotPrecision.logZoom);
+                        this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                    }
+                    break;
+                case '-':
+                case '_':
+                    if (this.activeView === 'julia')
+                    {
+                        this.zoomPrecision.logZoom -= 0.2;
+                        this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
+                        this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
+                    }
+                    else
+                    {
+                        this.mandelbrotPrecision.logZoom -= 0.2;
+                        this.mandelbrotPrecision.logZoom = Math.max(-10, this.mandelbrotPrecision.logZoom);
+                        this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
+                    }
+                    break;
+
+                // Enhanced reset functionality with comprehensive dual-mode support
                 case 'r':
                 case 'R':
                     if (!e.ctrlKey)
@@ -1070,16 +1107,8 @@ class JuliaSetRenderer
                         this.resetParameters();
                     }
                     break;
-                case 'f':
-                case 'F':
-                    this.toggleFullscreen();
-                    break;
-                case 'Escape':
-                    if (document.fullscreenElement)
-                    {
-                        document.exitFullscreen();
-                    }
-                    break;
+
+                // View management controls
                 case 'Tab':
                     if (this.renderMode === 'dual')
                     {
@@ -1087,10 +1116,14 @@ class JuliaSetRenderer
                         this.updateModeDisplay();
                     }
                     break;
+
+                // Mode cycling: Mandelbrot → Julia → Dual
                 case 'm':
                 case 'M':
                     this.cycleFractalMode();
                     break;
+
+                // Smart Julia set creation
                 case 'j':
                 case 'J':
                     if (this.renderMode === 'mandelbrot')
@@ -1102,11 +1135,41 @@ class JuliaSetRenderer
                         this.toggleFractalType(false);
                     }
                     break;
+
+                // **NEW: Dedicated dual mode hotkey**
+                case 'd':
+                case 'D':
+                    if (this.renderMode !== 'dual')
+                    {
+                        this.renderMode = 'dual';
+                        this.activeView = 'mandelbrot';
+                        this.updateModeDisplay();
+                    }
+                    else
+                    {
+                        // If already in dual mode, cycle the active view
+                        this.activeView = this.activeView === 'mandelbrot' ? 'julia' : 'mandelbrot';
+                        this.updateModeDisplay();
+                    }
+                    break;
+
+                // Fullscreen controls
+                case 'f':
+                case 'F':
+                    this.toggleFullscreen();
+                    break;
+                case 'Escape':
+                    if (document.fullscreenElement)
+                    {
+                        document.exitFullscreen();
+                    }
+                    break;
             }
 
+            // Prevent default browser behavior for navigation keys
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab',
-                'f', 'F', '+', '=', '-', '_', 'm', 'M', 'j', 'J'].includes(e.key) ||
-                (e.key === 'r' || e.key === 'R') && !e.ctrlKey)
+                'f', 'F', '+', '=', '-', '_', 'm', 'M', 'j', 'J', 'd', 'D'].includes(e.key) ||
+                ((e.key === 'r' || e.key === 'R') && !e.ctrlKey))
             {
                 e.preventDefault();
             }
@@ -1322,8 +1385,11 @@ class JuliaSetRenderer
 
     resetParameters()
     {
-        if (this.renderMode === 'julia')
+        if (this.renderMode === 'dual')
         {
+            // **Dual mode reset: Reset both fractals to their canonical states**
+
+            // Reset Julia set parameters to classic values
             this.juliaParams = {
                 c_real: -0.7,
                 c_imag: 0.27015,
@@ -1334,25 +1400,24 @@ class JuliaSetRenderer
                 colorOffset: 0.0
             };
 
-            // Reset precision tracking
+            // Reset Julia precision tracking
             this.zoomPrecision = {
                 logZoom: 0.0,
                 centerX: 0.0,
                 centerY: 0.0,
                 maxLogZoom: 50.0
             };
-        }
-        else
-        {
+
+            // Reset Mandelbrot parameters to canonical view
             this.mandelbrotParams = {
                 zoom: 1.0,
-                offsetX: -0.5, // Center Mandelbrot set in view
+                offsetX: -0.5, // Center the classic Mandelbrot bulb
                 offsetY: 0.0,
                 maxIterations: 256,
                 colorOffset: 0.0
             };
 
-            // Reset precision tracking for Mandelbrot
+            // Reset Mandelbrot precision tracking
             this.mandelbrotPrecision = {
                 logZoom: 0.0,
                 centerX: -0.5,
@@ -1360,9 +1425,56 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            // Apply to current parameters
-            this.loadParametersForCurrentMode();
+            // Reset active view to Mandelbrot for consistent UX
+            this.activeView = 'mandelbrot';
+
+            console.log('Dual view reset: Both fractals restored to canonical states');
         }
+        else if (this.renderMode === 'julia')
+        {
+            // Single Julia view reset
+            this.juliaParams = {
+                c_real: -0.7,
+                c_imag: 0.27015,
+                zoom: 1.0,
+                offsetX: 0.0,
+                offsetY: 0.0,
+                maxIterations: 256,
+                colorOffset: 0.0
+            };
+
+            this.zoomPrecision = {
+                logZoom: 0.0,
+                centerX: 0.0,
+                centerY: 0.0,
+                maxLogZoom: 50.0
+            };
+
+            console.log('Julia set reset to classic parameters');
+        }
+        else // Mandelbrot mode
+        {
+            // Single Mandelbrot view reset
+            this.mandelbrotParams = {
+                zoom: 1.0,
+                offsetX: -0.5,
+                offsetY: 0.0,
+                maxIterations: 256,
+                colorOffset: 0.0
+            };
+
+            this.mandelbrotPrecision = {
+                logZoom: 0.0,
+                centerX: -0.5,
+                centerY: 0.0,
+                maxLogZoom: 50.0
+            };
+
+            console.log('Mandelbrot set reset to canonical view');
+        }
+
+        // Update mode display to reflect any changes
+        this.updateModeDisplay();
     }
 
     // ... [Rest of your existing methods remain unchanged] ...
@@ -1404,7 +1516,7 @@ async function main()
             return panel;
         };
 
-        // Instructions panel with dual view controls
+        // Enhanced instructions panel with dual mode hotkey and comprehensive controls
         const instructions = createUIPanel('left');
         instructions.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1413,11 +1525,12 @@ async function main()
             </div>
             <div style="font-size: 11px; line-height: 1.4;">
                 <div><strong>Dual Mode:</strong> Mandelbrot (left) + Julia (right)</div>
-                <div><strong>Left Click:</strong> Select Julia parameter (Mandelbrot) / Modify (Julia)</div>
-                <div><strong>Middle Drag:</strong> Pan • <strong>Wheel:</strong> Zoom active view</div>
-                <div><strong>Tab:</strong> Switch active view • <strong>M:</strong> Cycle modes</div>
-                <div><strong>Arrows:</strong> Pan active • <strong>J:</strong> Smart Julia Switch</div>
-                <div><strong>R:</strong> Reset • <strong>F:</strong> Fullscreen • <strong>Esc:</strong> Exit</div>
+                <div><strong>Left Click:</strong> Select Julia parameter • <strong>Middle Drag:</strong> Pan</div>
+                <div><strong>Wheel:</strong> Zoom view • <strong>Arrows/+/-:</strong> Navigate active</div>
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <div><strong>D:</strong> Dual mode • <strong>M:</strong> Cycle modes • <strong>Tab:</strong> Switch view</div>
+                    <div><strong>J:</strong> Smart Julia • <strong>R:</strong> Reset all • <strong>F:</strong> Fullscreen</div>
+                </div>
             </div>
         `;
         document.body.appendChild(instructions);
