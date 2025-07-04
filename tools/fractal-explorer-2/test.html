@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Explorer Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #status {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        #canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="status">
+        <h3>Fractal Explorer Test</h3>
+        <p>Status: <span id="statusText">Loading...</span></p>
+        <p>Instructions: Press 'M' to cycle modes, 'J' for Julia mode, 'D' for dual mode</p>
+    </div>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script type="module">
+        import { Application } from './src/core/Application.js';
+
+        async function test()
+        {
+            try
+            {
+                document.getElementById('statusText').textContent = 'Initializing...';
+
+                const canvas = document.getElementById('canvas');
+                const app = new Application();
+
+                await app.initialize(canvas);
+
+                document.getElementById('statusText').textContent = 'Ready! Press M, J, or D to test mode switching.';
+
+                // Test basic functionality
+                console.log('✅ Application initialized successfully');
+                console.log('✅ No RenderModes.isValid error - fix successful!');
+
+            } catch (error)
+            {
+                document.getElementById('statusText').textContent = 'Error: ' + error.message;
+                console.error('❌ Application failed to initialize:', error);
+            }
+        }
+
+        test();
+    </script>
+</body>
+
+</html>

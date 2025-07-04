@@ -1,0 +1,306 @@
+/**
+ * Fractal Explorer - Main Stylesheet
+ * Modern, responsive design for the WebGPU fractal visualization tool
+ */
+
+/* Global Reset and Base Styles */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+	overflow: hidden;
+	background: #000;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	position: relative;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
+/* Canvas Styles */
+#fractal-canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	cursor: crosshair;
+	z-index: 1;
+	background: #000;
+	display: block;
+}
+
+/* UI Overlay Styles */
+.ui-overlay {
+	position: fixed;
+	pointer-events: none;
+	z-index: 100;
+}
+
+.ui-component {
+	pointer-events: auto;
+	background: rgba(0, 0, 0, 0.85);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 12px;
+	padding: 16px;
+	color: #fff;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.ui-component.hidden {
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0.95);
+}
+
+/* Typography */
+.ui-header {
+	font-weight: bold;
+	color: #64ffda;
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	text-align: center;
+	font-size: 14px;
+}
+
+.ui-content {
+	line-height: 1.6;
+}
+
+/* Color Scheme */
+:root {
+	--primary-color: #64ffda;
+	--secondary-color: #feca57;
+	--accent-color: #ff6b6b;
+	--success-color: #4ecdc4;
+	--warning-color: #ffab40;
+	--error-color: #f44336;
+
+	--bg-primary: rgba(0, 0, 0, 0.85);
+	--bg-secondary: rgba(255, 255, 255, 0.1);
+	--border-color: rgba(255, 255, 255, 0.2);
+	--text-primary: #ffffff;
+	--text-secondary: rgba(255, 255, 255, 0.8);
+	--text-tertiary: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.ui-component {
+		padding: 12px;
+		font-size: 12px;
+	}
+
+	.ui-header {
+		font-size: 12px;
+	}
+}
+
+@media (max-width: 480px) {
+	.ui-component {
+		margin: 10px;
+		padding: 10px;
+		font-size: 11px;
+	}
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+	/* Already using dark theme by default */
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+	.ui-component {
+		border: 2px solid #ffffff;
+		background: rgba(0, 0, 0, 0.95);
+	}
+
+	.ui-header {
+		color: #ffffff;
+		border-bottom-color: #ffffff;
+	}
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+	.ui-component {
+		transition: none;
+	}
+
+	.spinner {
+		animation: none;
+	}
+}
+
+/* Print Styles */
+@media print {
+	body {
+		background: white;
+		color: black;
+	}
+
+	#fractal-canvas {
+		display: none;
+	}
+
+	.ui-component {
+		position: static;
+		background: white;
+		border: 1px solid black;
+		color: black;
+		box-shadow: none;
+	}
+}
+
+/* Accessibility */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Focus Styles */
+.ui-component:focus-within {
+	outline: 2px solid var(--primary-color);
+	outline-offset: 2px;
+}
+
+/* Selection Styles */
+::selection {
+	background: var(--primary-color);
+	color: #000;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--primary-color);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(100, 255, 218, 0.8);
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+/* Utility Classes */
+.fade-in {
+	animation: fadeIn 0.3s ease;
+}
+
+.slide-in {
+	animation: slideIn 0.3s ease;
+}
+
+.pulse {
+	animation: pulse 2s infinite;
+}
+
+.glass {
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.text-gradient {
+	background: linear-gradient(
+		45deg,
+		var(--primary-color),
+		var(--secondary-color)
+	);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Performance Optimizations */
+.gpu-accelerated {
+	transform: translateZ(0);
+	will-change: transform;
+}
+
+.smooth-transition {
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading States */
+.loading-shimmer {
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0.1) 25%,
+		rgba(255, 255, 255, 0.2) 50%,
+		rgba(255, 255, 255, 0.1) 75%
+	);
+	background-size: 200% 100%;
+	animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}

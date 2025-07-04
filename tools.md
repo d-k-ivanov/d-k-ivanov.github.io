@@ -17,4 +17,5 @@ permalink: /tools/
 
 ## WebGPU Playground
 
-- <a name="Fractal Explorer" href="/tools/fractal-explorer/">Fractal Explorer</a>
+- <a name="Fractal Explorer" href="/tools/fractal-explorer-1/">Fractal Explorer v1</a>
+- <a name="Fractal Explorer" href="/tools/fractal-explorer-2/">Fractal Explorer v2</a>
