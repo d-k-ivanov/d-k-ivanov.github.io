@@ -527,17 +527,24 @@ class JuliaSetRenderer
 
     setupEventListeners()
     {
-        // Enhanced mouse interaction - only left button changes Julia parameters
+        // Enhanced mouse interaction - left button changes Julia parameters, middle button pans
         this.canvas.addEventListener('mousedown', (e) =>
         {
-            // Only respond to left mouse button (button 0)
-            if (e.button === 0)
+            // Left button (0) - Julia parameter control
+            // Middle button (1) - Pan navigation
+            if (e.button === 0 || e.button === 1)
             {
                 this.mouseState.pressed = true;
                 this.mouseState.button = e.button;
                 this.updateMousePosition(e);
                 this.mouseState.lastX = this.mouseState.x;
                 this.mouseState.lastY = this.mouseState.y;
+
+                // Change cursor for visual feedback
+                if (e.button === 1)
+                {
+                    this.canvas.style.cursor = 'grabbing';
+                }
             }
             e.preventDefault();
         });
@@ -548,6 +555,9 @@ class JuliaSetRenderer
             {
                 this.mouseState.pressed = false;
                 this.mouseState.button = -1;
+
+                // Restore cursor
+                this.canvas.style.cursor = 'crosshair';
             }
             e.preventDefault();
         });
@@ -556,18 +566,58 @@ class JuliaSetRenderer
         {
             this.updateMousePosition(e);
 
-            // In Julia mode, left mouse button changes parameter c
-            // In Mandelbrot mode, it does nothing (or could set seed for Julia)
-            if (this.mouseState.pressed && this.mouseState.button === 0 && this.renderMode === 'julia')
+            if (this.mouseState.pressed)
             {
-                const rect = this.canvas.getBoundingClientRect();
-                this.juliaParams.c_real = (this.mouseState.x / rect.width - 0.5) * 2.0;
-                this.juliaParams.c_imag = (this.mouseState.y / rect.height - 0.5) * 2.0;
+                if (this.mouseState.button === 0 && this.renderMode === 'julia')
+                {
+                    // Left button: Change Julia parameter c (Julia mode only)
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.juliaParams.c_real = (this.mouseState.x / rect.width - 0.5) * 2.0;
+                    this.juliaParams.c_imag = (this.mouseState.y / rect.height - 0.5) * 2.0;
+                }
+                else if (this.mouseState.button === 1)
+                {
+                    // Middle button: Pan the view in any mode
+                    const deltaX = this.mouseState.x - this.mouseState.lastX;
+                    const deltaY = this.mouseState.y - this.mouseState.lastY;
+
+                    // Convert pixel delta to complex plane delta with proper aspect ratio
+                    const rect = this.canvas.getBoundingClientRect();
+                    const aspect = this.canvas.width / this.canvas.height;
+
+                    // Scale pan sensitivity based on current zoom level for consistent feel
+                    const panSensitivity = 4.0 / this.juliaParams.zoom;
+                    const complexDeltaX = -(deltaX / rect.width) * panSensitivity * aspect;
+                    const complexDeltaY = -(deltaY / rect.height) * panSensitivity;
+
+                    // Apply pan offset
+                    this.juliaParams.offsetX += complexDeltaX;
+                    this.juliaParams.offsetY += complexDeltaY;
+
+                    // Update high-precision center tracking
+                    this.zoomPrecision.centerX = this.juliaParams.offsetX;
+                    this.zoomPrecision.centerY = this.juliaParams.offsetY;
+
+                    // Update last position for next delta calculation
+                    this.mouseState.lastX = this.mouseState.x;
+                    this.mouseState.lastY = this.mouseState.y;
+                }
             }
             e.preventDefault();
         });
 
-        // Prevent context menu on right click
+        // Handle mouse leave to reset state
+        this.canvas.addEventListener('mouseleave', (e) =>
+        {
+            if (this.mouseState.pressed)
+            {
+                this.mouseState.pressed = false;
+                this.mouseState.button = -1;
+                this.canvas.style.cursor = 'crosshair';
+            }
+        });
+
+        // Prevent context menu on right click and provide visual feedback for middle click
         this.canvas.addEventListener('contextmenu', (e) =>
         {
             e.preventDefault();
@@ -589,7 +639,7 @@ class JuliaSetRenderer
             const preZoomY = mouseY * 4.0 / this.juliaParams.zoom + this.juliaParams.offsetY;
 
             // Smooth zoom with logarithmic precision
-            const zoomStep = e.deltaY > 0 ? -0.2 : 0.2; // Smooth zoom steps in log space
+            const zoomStep = e.deltaY > 0 ? -0.2 : 0.2;
             this.zoomPrecision.logZoom += zoomStep;
 
             // Clamp to prevent extreme values
@@ -960,8 +1010,9 @@ async function main()
                 <div id="mode-display" style="font-size: 10px; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px;">Julia Set</div>
             </div>
             <div style="font-size: 11px; line-height: 1.4;">
-                <div><strong>Mouse + Drag:</strong> Change parameter c (Julia only)</div>
-                <div><strong>Wheel:</strong> Zoom • <strong>Arrows:</strong> Pan</div>
+                <div><strong>Left Drag:</strong> Change parameter c (Julia only)</div>
+                <div><strong>Middle Drag:</strong> Pan view • <strong>Wheel:</strong> Zoom</div>
+                <div><strong>Arrows:</strong> Fine pan • <strong>+/-:</strong> Keyboard zoom</div>
                 <div><strong>M:</strong> Toggle Mode • <strong>J:</strong> Smart Julia Switch</div>
                 <div><strong>R:</strong> Reset • <strong>F:</strong> Fullscreen • <strong>Esc:</strong> Exit</div>
             </div>
