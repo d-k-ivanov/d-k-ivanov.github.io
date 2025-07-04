@@ -17,4 +17,4 @@ permalink: /tools/
 
 ## WebGPU Playground
 
-- <a name="Julia and Mandelbrot Sets" href="/tools/julia-set/">Julia and Mandelbrot Sets</a>
+- <a name="Fractal Explorer" href="/tools/fractal-explorer/">Fractal Explorer</a>

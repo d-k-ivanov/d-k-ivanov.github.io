@@ -33,6 +33,21 @@ class JuliaSetRenderer
             centerY: 0.0,
             maxLogZoom: 50.0 // Theoretical limit (zoom factor ~10^21)
         };
+        // Add Mandelbrot set support
+        this.renderMode = 'julia'; // 'julia' or 'mandelbrot'
+        this.mandelbrotParams = {
+            zoom: 1.0,
+            offsetX: -0.5, // Center Mandelbrot set in view
+            offsetY: 0.0,
+            maxIterations: 256,
+            colorOffset: 0.0
+        };
+        this.mandelbrotPrecision = {
+            logZoom: 0.0,
+            centerX: -0.5,
+            centerY: 0.0,
+            maxLogZoom: 50.0
+        };
         this.animationId = null;
         this.resizeObserver = null;
         this.complexCoordinates = {
@@ -40,6 +55,84 @@ class JuliaSetRenderer
             y: 0
         };
         this.coordDisplay = null;
+        this.modeDisplay = null;
+    }
+
+    // Add a method to toggle between fractal types
+    toggleFractalType()
+    {
+        // Save current parameters before switching
+        this.saveCurrentParameters();
+
+        // Toggle the render mode
+        this.renderMode = this.renderMode === 'julia' ? 'mandelbrot' : 'julia';
+
+        // Load parameters for the new mode
+        this.loadParametersForCurrentMode();
+
+        // Update UI to reflect the current mode
+        this.updateModeDisplay();
+    }
+
+    saveCurrentParameters()
+    {
+        if (this.renderMode === 'julia')
+        {
+            // Save Julia set parameters
+            this.juliaParams.zoom = this.juliaParams.zoom;
+            this.juliaParams.offsetX = this.juliaParams.offsetX;
+            this.juliaParams.offsetY = this.juliaParams.offsetY;
+            this.juliaParams.maxIterations = this.juliaParams.maxIterations;
+            this.zoomPrecision.logZoom = this.zoomPrecision.logZoom;
+            this.zoomPrecision.centerX = this.zoomPrecision.centerX;
+            this.zoomPrecision.centerY = this.zoomPrecision.centerY;
+        }
+        else
+        {
+            // Save Mandelbrot set parameters
+            this.mandelbrotParams.zoom = this.juliaParams.zoom;
+            this.mandelbrotParams.offsetX = this.juliaParams.offsetX;
+            this.mandelbrotParams.offsetY = this.juliaParams.offsetY;
+            this.mandelbrotParams.maxIterations = this.juliaParams.maxIterations;
+            this.mandelbrotPrecision.logZoom = this.zoomPrecision.logZoom;
+            this.mandelbrotPrecision.centerX = this.zoomPrecision.centerX;
+            this.mandelbrotPrecision.centerY = this.zoomPrecision.centerY;
+        }
+    }
+
+    loadParametersForCurrentMode()
+    {
+        if (this.renderMode === 'julia')
+        {
+            // Load Julia set parameters
+            this.juliaParams.zoom = this.juliaParams.zoom;
+            this.juliaParams.offsetX = this.juliaParams.offsetX;
+            this.juliaParams.offsetY = this.juliaParams.offsetY;
+            this.juliaParams.maxIterations = this.juliaParams.maxIterations;
+            this.zoomPrecision.logZoom = this.zoomPrecision.logZoom;
+            this.zoomPrecision.centerX = this.zoomPrecision.centerX;
+            this.zoomPrecision.centerY = this.zoomPrecision.centerY;
+        }
+        else
+        {
+            // Load Mandelbrot set parameters
+            this.juliaParams.zoom = this.mandelbrotParams.zoom;
+            this.juliaParams.offsetX = this.mandelbrotParams.offsetX;
+            this.juliaParams.offsetY = this.mandelbrotParams.offsetY;
+            this.juliaParams.maxIterations = this.mandelbrotParams.maxIterations;
+            this.zoomPrecision.logZoom = this.mandelbrotPrecision.logZoom;
+            this.zoomPrecision.centerX = this.mandelbrotPrecision.centerX;
+            this.zoomPrecision.centerY = this.mandelbrotPrecision.centerY;
+        }
+    }
+
+    updateModeDisplay()
+    {
+        if (!this.modeDisplay) return;
+
+        // Update the mode display to show the current fractal type
+        const modeName = this.renderMode === 'julia' ? 'Julia Set' : 'Mandelbrot Set';
+        this.modeDisplay.textContent = modeName;
     }
 
     async init()
@@ -163,7 +256,7 @@ class JuliaSetRenderer
 
     createBuffers()
     {
-        // Create uniform buffer for Julia set parameters with proper alignment
+        // Create uniform buffer for fractal parameters with proper alignment
         const uniformData = new Float32Array([
             this.juliaParams.c_real,        // c.x (real part)
             this.juliaParams.c_imag,        // c.y (imaginary part)
@@ -174,7 +267,8 @@ class JuliaSetRenderer
             this.juliaParams.colorOffset,   // color animation offset
             this.canvas.width,              // canvas width
             this.canvas.height,             // canvas height
-            0, 0, 0                         // padding for 16-byte alignment
+            this.renderMode === 'mandelbrot' ? 1.0 : 0.0, // render mode flag
+            0, 0                            // padding for 16-byte alignment
         ]);
 
         this.uniformBuffer = this.device.createBuffer({
@@ -222,7 +316,7 @@ class JuliaSetRenderer
             }
         `;
 
-        // High-quality fragment shader with optimized Julia set computation
+        // Enhanced fragment shader supporting both Julia and Mandelbrot sets
         const fragmentShaderCode = `
             struct Uniforms {
                 c_real: f32,
@@ -234,18 +328,21 @@ class JuliaSetRenderer
                 color_offset: f32,
                 canvas_width: f32,
                 canvas_height: f32,
+                render_mode: f32, // 0.0 for Julia set, 1.0 for Mandelbrot set
+                padding1: f32,
+                padding2: f32,
             }
 
             @group(0) @binding(0) var<uniform> uniforms: Uniforms;
 
-            fn julia_set(z: vec2<f32>, c: vec2<f32>) -> f32 {
+            fn complex_iteration(z: vec2<f32>, c: vec2<f32>) -> f32 {
                 var z_current = z;
                 var iterations = 0.0;
                 let max_iter = i32(uniforms.max_iterations);
 
                 for (var i = 0; i < max_iter; i++) {
                     let z_magnitude_sq = dot(z_current, z_current);
-                    if (z_magnitude_sq > 4.0) { // Optimized escape condition
+                    if (z_magnitude_sq > 4.0) {
                         break;
                     }
 
@@ -264,6 +361,16 @@ class JuliaSetRenderer
                 }
 
                 return iterations;
+            }
+
+            fn julia_set(z: vec2<f32>, c: vec2<f32>) -> f32 {
+                // For Julia set, use the provided z and c values directly
+                return complex_iteration(z, c);
+            }
+
+            fn mandelbrot_set(c: vec2<f32>) -> f32 {
+                // For Mandelbrot set, initial z is (0,0) and the coordinate is c
+                return complex_iteration(vec2<f32>(0.0, 0.0), c);
             }
 
             fn get_color_from_palette(t: f32) -> vec3<f32> {
@@ -303,13 +410,19 @@ class JuliaSetRenderer
             fn main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
                 // Convert UV to complex plane with proper aspect ratio handling
                 let aspect_ratio = uniforms.canvas_width / uniforms.canvas_height;
-                let z = vec2<f32>(
+                let coord = vec2<f32>(
                     (uv.x - 0.5) * 4.0 * aspect_ratio / uniforms.zoom + uniforms.offset_x,
                     (uv.y - 0.5) * 4.0 / uniforms.zoom + uniforms.offset_y
                 );
 
                 let c = vec2<f32>(uniforms.c_real, uniforms.c_imag);
-                let iterations = julia_set(z, c);
+
+                // Choose between Julia and Mandelbrot rendering based on uniform
+                let iterations = select(
+                    julia_set(coord, c),
+                    mandelbrot_set(coord),
+                    uniforms.render_mode > 0.5
+                );
 
                 // High-contrast rendering for mathematical clarity
                 if (iterations >= uniforms.max_iterations) {
@@ -317,7 +430,7 @@ class JuliaSetRenderer
                 }
 
                 // Dynamic color mapping with smooth transitions
-                let t = fract(iterations / 32.0);
+                let t = fract((iterations / 32.0) + uniforms.color_offset);
                 let rgb = get_color_from_palette(t);
 
                 // Depth-based brightness for visual hierarchy
@@ -338,15 +451,15 @@ class JuliaSetRenderer
             label: 'Julia Set Fragment Shader'
         });
 
-        // Optimized bind group layout
+        // Update uniform buffer layout to include render mode
         const bindGroupLayout = this.device.createBindGroupLayout({
-            label: 'Julia Set Bind Group Layout',
+            label: 'Fractal Bind Group Layout',
             entries: [{
                 binding: 0,
                 visibility: GPUShaderStage.FRAGMENT,
                 buffer: {
                     type: 'uniform',
-                    minBindingSize: 48 // Explicit size for validation
+                    minBindingSize: 48  // Make sure this matches the size of our expanded uniform struct
                 }
             }]
         });
@@ -421,8 +534,9 @@ class JuliaSetRenderer
         {
             this.updateMousePosition(e);
 
-            // Only update Julia parameters with left mouse button
-            if (this.mouseState.pressed && this.mouseState.button === 0)
+            // In Julia mode, left mouse button changes parameter c
+            // In Mandelbrot mode, it does nothing (or could set seed for Julia)
+            if (this.mouseState.pressed && this.mouseState.button === 0 && this.renderMode === 'julia')
             {
                 const rect = this.canvas.getBoundingClientRect();
                 this.juliaParams.c_real = (this.mouseState.x / rect.width - 0.5) * 2.0;
@@ -483,7 +597,7 @@ class JuliaSetRenderer
 
         }, { passive: false });
 
-        // Enhanced keyboard controls with zoom-adjusted movement
+        // Enhanced keyboard controls with mode switching
         document.addEventListener('keydown', (e) =>
         {
             // Handle Ctrl+R for page reload (takes precedence over regular R)
@@ -547,10 +661,33 @@ class JuliaSetRenderer
                     this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
                     this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
                     break;
+                case 'm':
+                case 'M':
+                    // Toggle between Julia and Mandelbrot sets
+                    this.toggleFractalType();
+                    break;
+
+                case 'j':
+                case 'J':
+                    // If in Mandelbrot mode, capture current point as Julia seed
+                    if (this.renderMode === 'mandelbrot')
+                    {
+                        // Save complex coordinates under cursor as new Julia set parameter
+                        this.juliaParams.c_real = this.complexCoordinates.x;
+                        this.juliaParams.c_imag = this.complexCoordinates.y;
+
+                        // Switch to Julia set mode
+                        this.renderMode = 'julia';
+                        this.loadParametersForCurrentMode();
+                        this.updateModeDisplay();
+                    }
+                    break;
             }
 
-            // Prevent default for handled keys (but not Ctrl+R)
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'f', 'F', '+', '=', '-', '_'].includes(e.key) || (e.key === 'r' || e.key === 'R') && !e.ctrlKey)
+            // Update preventDefault list
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'f', 'F', '+', '=', '-', '_', 'm', 'M', 'j', 'J'].includes(e.key) ||
+                (e.key === 'r' || e.key === 'R') && !e.ctrlKey)
             {
                 e.preventDefault();
             }
@@ -642,23 +779,47 @@ class JuliaSetRenderer
 
     resetParameters()
     {
-        this.juliaParams = {
-            c_real: -0.7,
-            c_imag: 0.27015,
-            zoom: 1.0,
-            offsetX: 0.0,
-            offsetY: 0.0,
-            maxIterations: 256,
-            colorOffset: 0.0
-        };
+        if (this.renderMode === 'julia')
+        {
+            this.juliaParams = {
+                c_real: -0.7,
+                c_imag: 0.27015,
+                zoom: 1.0,
+                offsetX: 0.0,
+                offsetY: 0.0,
+                maxIterations: 256,
+                colorOffset: 0.0
+            };
 
-        // Reset precision tracking
-        this.zoomPrecision = {
-            logZoom: 0.0,
-            centerX: 0.0,
-            centerY: 0.0,
-            maxLogZoom: 50.0
-        };
+            // Reset precision tracking
+            this.zoomPrecision = {
+                logZoom: 0.0,
+                centerX: 0.0,
+                centerY: 0.0,
+                maxLogZoom: 50.0
+            };
+        }
+        else
+        {
+            this.mandelbrotParams = {
+                zoom: 1.0,
+                offsetX: -0.5, // Center Mandelbrot set in view
+                offsetY: 0.0,
+                maxIterations: 256,
+                colorOffset: 0.0
+            };
+
+            // Reset precision tracking for Mandelbrot
+            this.mandelbrotPrecision = {
+                logZoom: 0.0,
+                centerX: -0.5,
+                centerY: 0.0,
+                maxLogZoom: 50.0
+            };
+
+            // Apply to current parameters
+            this.loadParametersForCurrentMode();
+        }
     }
 
     updateUniforms()
@@ -673,7 +834,8 @@ class JuliaSetRenderer
             this.juliaParams.colorOffset,
             this.canvas.width,
             this.canvas.height,
-            0, 0, 0 // padding
+            this.renderMode === 'mandelbrot' ? 1.0 : 0.0, // render mode flag
+            0, 0 // padding
         ]);
 
         this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
@@ -744,62 +906,57 @@ async function main()
         const renderer = new JuliaSetRenderer();
         await renderer.init();
 
-        // Minimal, unobtrusive UI overlay for instructions
-        const instructions = document.createElement('div');
+        // Create UI container for consistent styling
+        const createUIPanel = (position) =>
+        {
+            const panel = document.createElement('div');
+            panel.style.cssText = `
+                position: fixed;
+                top: 20px;
+                ${position}: 20px;
+                background: rgba(0, 0, 0, 0.75);
+                color: #fff;
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 12px;
+                max-width: 280px;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                transition: opacity 0.5s ease-out;
+            `;
+            return panel;
+        };
+
+        // Instructions panel with enhanced controls
+        const instructions = createUIPanel('left');
         instructions.innerHTML = `
-            <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">Julia Set Explorer</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="font-weight: bold; color: #fff;">Fractal Explorer</div>
+                <div id="mode-display" style="font-size: 10px; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px;">Julia Set</div>
+            </div>
             <div style="font-size: 11px; line-height: 1.4;">
-                <div><strong>Mouse + Drag:</strong> Change parameter c</div>
+                <div><strong>Mouse + Drag:</strong> Change parameter c (Julia only)</div>
                 <div><strong>Wheel:</strong> Zoom • <strong>Arrows:</strong> Pan</div>
+                <div><strong>M:</strong> Toggle Mode • <strong>J:</strong> Julia from point</div>
                 <div><strong>R:</strong> Reset • <strong>F:</strong> Fullscreen • <strong>Esc:</strong> Exit</div>
             </div>
         `;
-        instructions.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.75);
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            max-width: 280px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        `;
         document.body.appendChild(instructions);
 
-        // Create coordinate display with matching style
-        const coordDisplay = document.createElement('div');
-        coordDisplay.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.75);
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            max-width: 280px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: opacity 0.5s ease-out;
-        `;
-        document.body.appendChild(coordDisplay);
+        // Store mode display element reference
+        renderer.modeDisplay = document.getElementById('mode-display');
 
-        // Store reference to coordinate display in renderer
+        // Coordinate display
+        const coordDisplay = createUIPanel('right');
+        document.body.appendChild(coordDisplay);
         renderer.coordDisplay = coordDisplay;
 
         // Auto-hide UI elements after a delay
         setTimeout(() =>
         {
-            instructions.style.transition = 'opacity 0.5s ease-out';
             instructions.style.opacity = '0.3';
             coordDisplay.style.opacity = '0.3';
         }, 5000);
@@ -818,8 +975,9 @@ async function main()
             }, 3000);
         });
 
-        // Initial update of coordinate display
+        // Initial updates
         renderer.updateCoordinateDisplay();
+        renderer.updateModeDisplay();
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () =>
