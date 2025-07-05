@@ -3,6 +3,7 @@
  * Centralizes all default configurations
  */
 import { RenderModes, ViewTypes, QualityLevels } from './RenderModes.js';
+import { MATH_CONSTANTS } from './Constants.js';
 
 /**
  * Default Julia set parameters
@@ -11,9 +12,9 @@ export const DefaultJuliaParams = {
     c_real: -0.7,
     c_imag: 0.27015,
     zoom: 1.0,
-    offsetX: 0.0,
-    offsetY: 0.0,
-    maxIterations: 256,
+    offsetX: MATH_CONSTANTS.JULIA_CENTER_X,
+    offsetY: MATH_CONSTANTS.JULIA_CENTER_Y,
+    maxIterations: MATH_CONSTANTS.DEFAULT_MAX_ITERATIONS,
     colorOffset: 0.0
 };
 
@@ -22,9 +23,9 @@ export const DefaultJuliaParams = {
  */
 export const DefaultMandelbrotParams = {
     zoom: 1.0,
-    offsetX: -0.5,
-    offsetY: 0.0,
-    maxIterations: 256,
+    offsetX: MATH_CONSTANTS.MANDELBROT_CENTER_X,
+    offsetY: MATH_CONSTANTS.MANDELBROT_CENTER_Y,
+    maxIterations: MATH_CONSTANTS.DEFAULT_MAX_ITERATIONS,
     colorOffset: 0.0
 };
 
@@ -33,9 +34,9 @@ export const DefaultMandelbrotParams = {
  */
 export const DefaultPrecisionParams = {
     logZoom: 0.0,
-    centerX: 0.0,
-    centerY: 0.0,
-    maxLogZoom: 50.0
+    centerX: MATH_CONSTANTS.JULIA_CENTER_X,
+    centerY: MATH_CONSTANTS.JULIA_CENTER_Y,
+    maxLogZoom: MATH_CONSTANTS.MAX_ZOOM_LOG
 };
 
 /**
@@ -43,9 +44,9 @@ export const DefaultPrecisionParams = {
  */
 export const DefaultMandelbrotPrecision = {
     logZoom: 0.0,
-    centerX: -0.5,
-    centerY: 0.0,
-    maxLogZoom: 50.0
+    centerX: MATH_CONSTANTS.MANDELBROT_CENTER_X,
+    centerY: MATH_CONSTANTS.MANDELBROT_CENTER_Y,
+    maxLogZoom: MATH_CONSTANTS.MAX_ZOOM_LOG
 };
 
 /**

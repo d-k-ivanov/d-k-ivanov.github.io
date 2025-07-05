@@ -1,10 +1,20 @@
 /**
  * Main fractal fragment shader with dual-view support
  * Renders Julia and Mandelbrot sets with optimized mathematics and professional coloring
+ *
+ * This shader supports three rendering modes:
+ * - Julia set (render_mode = 0.0)
+ * - Mandelbrot set (render_mode = 1.0)
+ * - Dual view showing both sets (render_mode = 2.0)
  */
+
+// Mathematical constants
+const ESCAPE_RADIUS_SQUARED = 4.0;
+const SMOOTH_ITERATION_FACTOR = 32.0;
 
 // Uniform data structure matching the JavaScript buffer layout
 struct Uniforms {
+    // Julia set parameters
     julia_c_real: f32,
     julia_c_imag: f32,
     julia_zoom: f32,
@@ -12,14 +22,22 @@ struct Uniforms {
     julia_offset_y: f32,
     julia_max_iterations: f32,
     julia_color_offset: f32,
+
+    // Mandelbrot set parameters
     mandelbrot_zoom: f32,
     mandelbrot_offset_x: f32,
     mandelbrot_offset_y: f32,
     mandelbrot_max_iterations: f32,
     mandelbrot_color_offset: f32,
+
+    // Canvas dimensions
     canvas_width: f32,
     canvas_height: f32,
-    render_mode: f32, // 0.0=Julia, 1.0=Mandelbrot, 2.0=Dual
+
+    // Rendering mode: 0.0=Julia, 1.0=Mandelbrot, 2.0=Dual
+    render_mode: f32,
+
+    // Buffer alignment padding
     padding: f32,
 }
 
@@ -28,18 +46,22 @@ struct Uniforms {
 /**
  * Optimized complex number iteration with escape time algorithm
  * Uses efficient squared magnitude check and smooth iteration counting
+ *
+ * @param z - Initial complex value (starting point)
+ * @param c - Complex parameter (determines the specific fractal)
+ * @param max_iter - Maximum number of iterations before assuming point is in the set
+ * @returns Smooth iteration count (for continuous coloring)
  */
 fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     var z_current = z;
     var iterations = 0.0;
     let max_i = i32(max_iter);
-    let escape_radius_sq = 4.0;
 
     for (var i = 0; i < max_i; i++) {
         let z_magnitude_sq = dot(z_current, z_current);
 
         // Early escape check for performance
-        if (z_magnitude_sq > escape_radius_sq) {
+        if (z_magnitude_sq > ESCAPE_RADIUS_SQUARED) {
             break;
         }
 
@@ -100,15 +122,28 @@ fn get_color_from_palette(t: f32) -> vec3<f32> {
 
 /**
  * Apply visual indicator for Julia parameter in Mandelbrot view
- * Shows where the current Julia constant is located
+ * Shows where the current Julia constant is located in the Mandelbrot set
+ *
+ * @param coord - The current complex coordinate in the Mandelbrot set
+ * @param base_color - The original color at this point
+ * @param zoom - Current zoom level (used to scale the indicator)
+ * @returns Modified color with indicator highlighting
  */
 fn apply_julia_indicator(coord: vec2<f32>, base_color: vec3<f32>, zoom: f32) -> vec3<f32> {
+    // Get Julia set parameter
     let julia_c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
-    let dist_to_julia = length(coord - julia_c);
-    let indicator_size = 0.02 / zoom; // Scale with zoom level
 
+    // Calculate distance to the Julia parameter point
+    let dist_to_julia = length(coord - julia_c);
+
+    // Dynamic sizing based on zoom level
+    let indicator_size = 0.02 / zoom;
+
+    // Apply highlight if we're near the Julia parameter point
     if (dist_to_julia < indicator_size) {
+        // Fade strength based on distance
         let indicator_strength = 1.0 - (dist_to_julia / indicator_size);
+
         // Blend with white to create a bright indicator
         return mix(base_color, vec3<f32>(1.0, 1.0, 1.0), indicator_strength * 0.8);
     }
@@ -118,55 +153,78 @@ fn apply_julia_indicator(coord: vec2<f32>, base_color: vec3<f32>, zoom: f32) -> 
 
 /**
  * Main fragment shader entry point
- * Handles single and dual view rendering modes
+ * Handles all rendering modes (Julia, Mandelbrot, Dual)
+ *
+ * This is the entry point for the fragment shader which determines
+ * the color of each pixel based on the fractal calculations
  */
 @fragment
 fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+    // Normalize coordinates to [0,1] range
     let uv = position.xy / vec2<f32>(uniforms.canvas_width, uniforms.canvas_height);
     let render_mode = uniforms.render_mode;
 
-    // Dual view mode (render_mode = 2.0) - split-screen rendering
+    // ====================================================================
+    // DUAL VIEW MODE - Split screen with Mandelbrot (left) and Julia (right)
+    // ====================================================================
     if (render_mode > 1.5) {
+        // Adjust aspect ratio for half-screen width
         let aspect_ratio = (uniforms.canvas_width * 0.5) / uniforms.canvas_height;
 
         if (uv.x < 0.5) {
-            // Left half: Mandelbrot set
+            // ----------------------------------------
+            // LEFT HALF: MANDELBROT SET
+            // ----------------------------------------
+
+            // Map screen coordinates to complex plane
             let coord = vec2<f32>(
+                // x coordinate: map [0,0.5] to centered view based on zoom and offset
                 (uv.x * 2.0 - 0.5) * 4.0 * aspect_ratio / uniforms.mandelbrot_zoom + uniforms.mandelbrot_offset_x,
+                // y coordinate: map [0,1] to centered view based on zoom and offset
                 (uv.y - 0.5) * 4.0 / uniforms.mandelbrot_zoom + uniforms.mandelbrot_offset_y
             );
 
+            // Calculate iterations for Mandelbrot set (z₀ = 0, c = coord)
             let iterations = complex_iteration(
-                vec2<f32>(0.0, 0.0),
-                coord,
+                vec2<f32>(0.0, 0.0),  // z₀ = 0
+                coord,                // c = coordinate in complex plane
                 uniforms.mandelbrot_max_iterations
             );
 
-            // Black for points in the set (infinite iterations)
+            // Black for points in the set (reached max iterations)
             if (iterations >= uniforms.mandelbrot_max_iterations) {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
             // Generate color for escaped points
-            let t = fract((iterations / 32.0) + uniforms.mandelbrot_color_offset);
+            let t = fract((iterations / SMOOTH_ITERATION_FACTOR) + uniforms.mandelbrot_color_offset);
             var rgb = get_color_from_palette(t);
 
             // Apply brightness based on escape speed
             let brightness = 0.6 + 0.4 * (1.0 - iterations / uniforms.mandelbrot_max_iterations);
             rgb = rgb * brightness;
 
-            // Add Julia parameter indicator
+            // Add visual indicator for current Julia parameter
             rgb = apply_julia_indicator(coord, rgb, uniforms.mandelbrot_zoom);
 
             return vec4<f32>(rgb, 1.0);
         } else {
-            // Right half: Julia set
+            // ----------------------------------------
+            // RIGHT HALF: JULIA SET
+            // ----------------------------------------
+
+            // Map screen coordinates to complex plane
             let coord = vec2<f32>(
+                // x coordinate: map [0.5,1.0] to centered view based on zoom and offset
                 ((uv.x - 0.5) * 2.0 - 0.5) * 4.0 * aspect_ratio / uniforms.julia_zoom + uniforms.julia_offset_x,
+                // y coordinate: map [0,1] to centered view based on zoom and offset
                 (uv.y - 0.5) * 4.0 / uniforms.julia_zoom + uniforms.julia_offset_y
             );
 
+            // Get Julia set constant parameter
             let c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
+
+            // Calculate iterations for Julia set (z₀ = coord, c = constant)
             let iterations = complex_iteration(coord, c, uniforms.julia_max_iterations);
 
             // Black for points in the set
@@ -175,46 +233,71 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             }
 
             // Generate color for escaped points
-            let t = fract((iterations / 32.0) + uniforms.julia_color_offset);
+            let t = fract((iterations / SMOOTH_ITERATION_FACTOR) + uniforms.julia_color_offset);
             let rgb = get_color_from_palette(t);
+
+            // Apply brightness based on escape speed
             let brightness = 0.6 + 0.4 * (1.0 - iterations / uniforms.julia_max_iterations);
 
             return vec4<f32>(rgb * brightness, 1.0);
         }
     }
 
-    // Single view modes (Julia or Mandelbrot)
+    // ====================================================================
+    // SINGLE VIEW MODE - Full screen Julia or Mandelbrot
+    // ====================================================================
+
+    // Full screen aspect ratio
     let aspect_ratio = uniforms.canvas_width / uniforms.canvas_height;
 
-    // Calculate complex plane coordinates
+    // Calculate complex plane coordinates based on active mode
+    // Uses select() to choose between Julia and Mandelbrot parameters
     let coord = vec2<f32>(
+        // X coordinate mapping with proper zoom and offset
         (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
         select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
+
+        // Y coordinate mapping with proper zoom and offset
         (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
         select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
     );
 
     // Select parameters based on render mode
-    let c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
+    let julia_c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
     let max_iter = select(uniforms.julia_max_iterations, uniforms.mandelbrot_max_iterations, render_mode > 0.5);
     let color_offset = select(uniforms.julia_color_offset, uniforms.mandelbrot_color_offset, render_mode > 0.5);
+    let current_zoom = select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5);
 
-    // Calculate iterations (Julia vs Mandelbrot)
+    // Calculate iterations for either Julia or Mandelbrot based on render_mode
     let iterations = select(
-        complex_iteration(coord, c, max_iter),                    // Julia: z₀ = coord, c = constant
-        complex_iteration(vec2<f32>(0.0, 0.0), coord, max_iter), // Mandelbrot: z₀ = 0, c = coord
+        // For Julia (render_mode = 0.0): z₀ = coord, c = constant parameter
+        complex_iteration(coord, julia_c, max_iter),
+
+        // For Mandelbrot (render_mode = 1.0): z₀ = 0, c = coord
+        complex_iteration(vec2<f32>(0.0, 0.0), coord, max_iter),
+
+        // Selection based on render_mode
         render_mode > 0.5
     );
 
-    // Black for points in the set
+    // Black for points in the set (non-escaping points)
     if (iterations >= max_iter) {
         return vec4<f32>(0.0, 0.0, 0.0, 1.0);
     }
 
     // Generate color for escaped points
-    let t = fract((iterations / 32.0) + color_offset);
-    let rgb = get_color_from_palette(t);
+    let t = fract((iterations / SMOOTH_ITERATION_FACTOR) + color_offset);
+    var rgb = get_color_from_palette(t);
     let brightness = 0.6 + 0.4 * (1.0 - iterations / max_iter);
 
-    return vec4<f32>(rgb * brightness, 1.0);
+    // Apply the brightness adjustment
+    rgb = rgb * brightness;
+
+    // Apply Julia parameter indicator in Mandelbrot mode
+    if (render_mode > 0.5) { // Mandelbrot mode
+        rgb = apply_julia_indicator(coord, rgb, current_zoom);
+    }
+
+    // Return final color with full opacity
+    return vec4<f32>(rgb, 1.0);
 }

@@ -13,20 +13,32 @@ export class ShaderLoader
     {
         this.shaderCache = new Map();
         this.baseUrl = './src/shaders/';
+        this.pendingLoads = new Map(); // Track in-progress loads to avoid duplicate requests
     }
 
     /**
      * Load a shader file from the shaders directory
      * @param {string} filename - Shader filename (e.g., 'vertex.wgsl')
+     * @param {Object} [defines] - Optional preprocessor defines
      * @returns {Promise<string>} Shader source code
      */
-    async loadShader(filename)
+    async loadShader(filename, defines = null)
     {
+        // Create a cache key that includes both the filename and any defines
+        const cacheKey = defines ? `${filename}_${JSON.stringify(defines)}` : filename;
+
         // Check cache first
-        if (this.shaderCache.has(filename))
+        if (this.shaderCache.has(cacheKey))
         {
             logger.debug(`Shader ${filename} loaded from cache`);
-            return this.shaderCache.get(filename);
+            return this.shaderCache.get(cacheKey);
+        }
+
+        // Check if this shader is already being loaded
+        if (this.pendingLoads.has(cacheKey))
+        {
+            logger.debug(`Reusing pending shader load for ${filename}`);
+            return this.pendingLoads.get(cacheKey);
         }
 
         try
@@ -34,19 +46,39 @@ export class ShaderLoader
             const url = `${this.baseUrl}${filename}`;
             logger.debug(`Loading shader from ${url}`);
 
-            const response = await fetch(url);
-            if (!response.ok)
+            // Create a new pending load promise
+            const loadPromise = (async () =>
             {
-                throw new Error(`Failed to load shader: ${response.status} ${response.statusText}`);
-            }
+                const response = await fetch(url);
+                if (!response.ok)
+                {
+                    throw new Error(`Failed to load shader: ${response.status} ${response.statusText}`);
+                }
 
-            const shaderSource = await response.text();
+                const shaderSource = await response.text();
 
-            // Cache the shader
-            this.shaderCache.set(filename, shaderSource);
+                // Process the shader source with any defines
+                const processedSource = defines ?
+                    this.preprocessShader(shaderSource, defines) :
+                    shaderSource;
 
-            logger.info(`Shader ${filename} loaded successfully (${shaderSource.length} characters)`);
-            return shaderSource;
+                // Cache the shader
+                this.shaderCache.set(cacheKey, processedSource);
+
+                logger.info(`Shader ${filename} loaded successfully (${processedSource.length} characters)`);
+                return processedSource;
+            })();
+
+            // Store the pending promise
+            this.pendingLoads.set(cacheKey, loadPromise);
+
+            // Remove from pending when done (regardless of success/failure)
+            loadPromise.finally(() =>
+            {
+                this.pendingLoads.delete(cacheKey);
+            });
+
+            return loadPromise;
         } catch (error)
         {
             logger.error(`Failed to load shader ${filename}:`, error);
@@ -56,33 +88,47 @@ export class ShaderLoader
 
     /**
      * Load the vertex shader
+     * @param {Object} [defines] - Optional preprocessor defines
      * @returns {Promise<string>} Vertex shader source
      */
-    async loadVertexShader()
+    async loadVertexShader(defines = null)
     {
-        return this.loadShader('vertex.wgsl');
+        return this.loadShader('vertex.wgsl', defines);
     }
 
     /**
-     * Load the fractal fragment shader
+     * Load the standard fractal fragment shader
+     * @param {Object} [defines] - Optional preprocessor defines
      * @returns {Promise<string>} Fragment shader source
      */
-    async loadFragmentShader()
+    async loadFragmentShader(defines = null)
     {
-        return this.loadShader('fractal.wgsl');
+        return this.loadShader('fractal.wgsl', defines);
+    }
+
+    /**
+     * Load the enhanced precision fractal shader
+     * @param {Object} [defines] - Optional preprocessor defines
+     * @returns {Promise<string>} Enhanced fragment shader source
+     */
+    async loadEnhancedFragmentShader(defines = null)
+    {
+        return this.loadShader('fractal_enhanced.wgsl', defines);
     }
 
     /**
      * Load both vertex and fragment shaders
+     * @param {string} [fragmentShaderName='fractal.wgsl'] - Fragment shader filename
+     * @param {Object} [defines] - Optional preprocessor defines
      * @returns {Promise<Object>} Object with vertex and fragment shader sources
      */
-    async loadShaders()
+    async loadShaders(fragmentShaderName = 'fractal.wgsl', defines = null)
     {
         try
         {
             const [vertexSource, fragmentSource] = await Promise.all([
-                this.loadVertexShader(),
-                this.loadFragmentShader()
+                this.loadVertexShader(defines),
+                this.loadShader(fragmentShaderName, defines)
             ]);
 
             return {
@@ -104,76 +150,37 @@ export class ShaderLoader
      */
     preprocessShader(source, defines = {})
     {
-        let processed = source;
+        if (!defines || Object.keys(defines).length === 0)
+        {
+            return source;
+        }
 
-        // Simple define replacement
+        let processedSource = source;
+
+        // Replace defines in the form of ${DEFINE_NAME}
         for (const [key, value] of Object.entries(defines))
         {
-            const regex = new RegExp(`#define\\s+${key}\\s+.*`, 'g');
-            processed = processed.replace(regex, `#define ${key} ${value}`);
+            const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+            processedSource = processedSource.replace(regex, value);
         }
 
-        return processed;
-    }
-
-    /**
-     * Create a WebGPU shader module
-     * @param {GPUDevice} device - WebGPU device
-     * @param {string} source - Shader source code
-     * @param {string} label - Shader label for debugging
-     * @returns {GPUShaderModule} Created shader module
-     */
-    createShaderModule(device, source, label)
-    {
-        try
+        // Handle conditional compilation with /*#ifdef DEFINE_NAME */ sections
+        for (const [key, value] of Object.entries(defines))
         {
-            const shaderModule = device.createShaderModule({
-                label,
-                code: source,
-            });
-
-            logger.webgpu(`Created shader module: ${label}`);
-            return shaderModule;
-        } catch (error)
-        {
-            logger.error(`Failed to create shader module ${label}:`, error);
-            throw error;
+            if (value)
+            {
+                // Remove the ifdef/endif for enabled defines (keep the content)
+                const ifdefRegex = new RegExp(`\\/\\*#ifdef ${key}\\s*\\*\\/([\\s\\S]*?)\\/\\*#endif\\s*\\*\\/`, 'g');
+                processedSource = processedSource.replace(ifdefRegex, '$1');
+            } else
+            {
+                // Remove the entire ifdef/endif section for disabled defines
+                const ifdefRegex = new RegExp(`\\/\\*#ifdef ${key}\\s*\\*\\/[\\s\\S]*?\\/\\*#endif\\s*\\*\\/`, 'g');
+                processedSource = processedSource.replace(ifdefRegex, '');
+            }
         }
-    }
 
-    /**
-     * Load and create both shader modules
-     * @param {GPUDevice} device - WebGPU device
-     * @param {Object} defines - Optional preprocessor defines
-     * @returns {Promise<Object>} Object with vertex and fragment shader modules
-     */
-    async createShaderModules(device, defines = {})
-    {
-        try
-        {
-            const shaders = await this.loadShaders();
-
-            const vertexModule = this.createShaderModule(
-                device,
-                this.preprocessShader(shaders.vertex, defines),
-                'Fractal Vertex Shader'
-            );
-
-            const fragmentModule = this.createShaderModule(
-                device,
-                this.preprocessShader(shaders.fragment, defines),
-                'Fractal Fragment Shader'
-            );
-
-            return {
-                vertex: vertexModule,
-                fragment: fragmentModule
-            };
-        } catch (error)
-        {
-            logger.error('Failed to create shader modules:', error);
-            throw error;
-        }
+        return processedSource;
     }
 
     /**
@@ -183,52 +190,6 @@ export class ShaderLoader
     {
         this.shaderCache.clear();
         logger.debug('Shader cache cleared');
-    }
-
-    /**
-     * Get cache statistics
-     * @returns {Object} Cache statistics
-     */
-    getCacheStats()
-    {
-        return {
-            entries: this.shaderCache.size,
-            files: Array.from(this.shaderCache.keys())
-        };
-    }
-
-    /**
-     * Validate WGSL shader syntax (basic check)
-     * @param {string} source - Shader source code
-     * @returns {Object} Validation result
-     */
-    validateShader(source)
-    {
-        const errors = [];
-        const warnings = [];
-
-        // Basic syntax checks
-        if (!source.includes('@vertex') && !source.includes('@fragment'))
-        {
-            errors.push('No shader entry point found (@vertex or @fragment)');
-        }
-
-        // Check for common WGSL patterns
-        if (source.includes('@vertex') && !source.includes('-> @builtin(position)'))
-        {
-            warnings.push('Vertex shader should return position builtin');
-        }
-
-        if (source.includes('@fragment') && !source.includes('-> @location(0)'))
-        {
-            warnings.push('Fragment shader should return color at location 0');
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors,
-            warnings
-        };
     }
 }
 
