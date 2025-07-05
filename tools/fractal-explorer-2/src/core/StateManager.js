@@ -169,21 +169,7 @@ export class StateManager extends EventEmitter
     updateMouseState(mouseData)
     {
         Object.assign(this.mouseState, mouseData);
-
-        // Calculate complex coordinates based on current view
-        this.updateComplexCoordinates();
-
         this.emit('mouseStateChange', this.mouseState);
-        this.emit('mousePositionChange', this.complexCoordinates);
-    }
-
-    /**
-     * Calculate complex coordinates from mouse position
-     */
-    updateComplexCoordinates()
-    {
-        // This will be called by the mouse handler with proper canvas context
-        // The actual coordinate calculation depends on canvas dimensions and current view
     }
 
     /**
@@ -193,6 +179,7 @@ export class StateManager extends EventEmitter
      */
     setComplexCoordinates(x, y)
     {
+        // Update internal coordinates
         this.complexCoordinates.x = x;
         this.complexCoordinates.y = y;
 
@@ -200,8 +187,16 @@ export class StateManager extends EventEmitter
         const zoomInfo = this.getZoomInfo();
         const currentParams = this.getCurrentParams();
 
+        // Calculate magnitude for display
+        const magnitude = Math.sqrt(x * x + y * y);
+
+        // Debug logging to help diagnose coordinate issues
+        console.log('Setting coordinates:', { x, y, magnitude });
+
         this.emit('mousePositionChange', {
-            ...this.complexCoordinates,
+            real: x,
+            imag: y,
+            magnitude: magnitude,
             zoom: currentParams.zoom,
             renderMode: this.renderMode,
             activeView: this.getActiveView(),
@@ -481,7 +476,10 @@ export class StateManager extends EventEmitter
             }
         };
 
-        this.complexCoordinates = coordinateData;
+        // Update internal coordinates (simple format for internal use)
+        this.complexCoordinates = { x: complexReal, y: complexImag };
+
+        // Emit enhanced coordinate data for UI display
         this.emit('mousePositionChange', coordinateData);
     }
 

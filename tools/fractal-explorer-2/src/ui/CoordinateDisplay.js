@@ -240,6 +240,12 @@ export class CoordinateDisplay
     {
         if (!this.container || !this.isVisible) return;
 
+        // Add defensive check for coords object
+        if (!coords || typeof coords !== 'object') {
+            console.warn('Invalid coordinates data received:', coords);
+            return;
+        }
+
         const realEl = document.getElementById('coord-real');
         const imagEl = document.getElementById('coord-imag');
         const magnitudeEl = document.getElementById('coord-magnitude');
@@ -347,6 +353,12 @@ export class CoordinateDisplay
      */
     formatNumber(num, precision = 6)
     {
+        // Handle invalid numbers
+        if (num === undefined || num === null || isNaN(num))
+        {
+            return 'NaN';
+        }
+
         if (num === 0) return '0.000000';
 
         const absNum = Math.abs(num);

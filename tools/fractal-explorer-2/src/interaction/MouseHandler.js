@@ -426,49 +426,14 @@ export class MouseHandler
      */
     updateComplexCoordinates()
     {
-        const state = this.stateManager.getState();
-        const rect = this.canvas.getBoundingClientRect();
-
-        let mouseX, mouseY, aspect, zoom, offsetX, offsetY;
-
-        if (state.renderMode === 'dual')
-        {
-            const viewType = this.getViewFromMousePosition(this.mouseState.x, this.mouseState.y);
-            aspect = (this.canvas.width / 2) / this.canvas.height;
-
-            if (viewType === 'mandelbrot')
-            {
-                mouseX = (this.mouseState.x / rect.width - 0.25) * 2.0;
-                const params = state.mandelbrotParams;
-                zoom = params.zoom;
-                offsetX = params.offsetX;
-                offsetY = params.offsetY;
-            } else
-            {
-                mouseX = (this.mouseState.x / rect.width - 0.75) * 2.0;
-                const params = state.juliaParams;
-                zoom = params.zoom;
-                offsetX = params.offsetX;
-                offsetY = params.offsetY;
-            }
-        } else
-        {
-            mouseX = this.mouseState.x / rect.width - 0.5;
-            aspect = this.canvas.width / this.canvas.height;
-
-            const params = this.stateManager.getCurrentParams();
-            zoom = params.zoom;
-            offsetX = params.offsetX;
-            offsetY = params.offsetY;
-        }
-
-        mouseY = this.mouseState.y / rect.height - 0.5;
-
-        // Transform screen coordinates to complex plane
-        const complexX = mouseX * 4.0 * aspect / zoom + offsetX;
-        const complexY = mouseY * 4.0 / zoom + offsetY;
-
-        this.stateManager.setComplexCoordinates(complexX, complexY);
+        // Use the StateManager's comprehensive coordinate calculation
+        // which includes zoom info and precision handling
+        this.stateManager.updateComplexCoordinates(
+            this.mouseState.x,
+            this.mouseState.y,
+            this.canvas.width,
+            this.canvas.height
+        );
     }
 
     /**
