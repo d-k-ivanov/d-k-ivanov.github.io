@@ -1,14 +1,30 @@
 # Fractal Explorer - WebGPU Educational Application
 
-An interactive fractal visualization tool built with WebGPU to explore the mathematical beauty of Julia and Mandelbrot sets.
+An interactive fractal visualization tool built with WebGPU to explore the mathematical beauty of Julia and Mandelbrot sets with **infinite zoom capabilities**.
 
 ## Features
 
+- **🔄 Infinite Zoom**: High-precision arithmetic for extreme zoom levels (up to 10^28+)
 - **Dual-View Mode**: Side-by-side comparison of Mandelbrot and Julia sets
 - **High-Performance Rendering**: WebGPU-powered real-time computation
-- **Interactive Exploration**: Mouse and keyboard controls for navigation
+- **Interactive Exploration**: Advanced mouse and keyboard controls for navigation
 - **Educational Design**: Clear visual feedback and mathematical precision
 - **Responsive Interface**: Works across different screen sizes
+- **Smart Iteration Scaling**: Automatic iteration adjustment based on zoom level
+
+## Infinite Zoom System
+
+### 🎯 Precision Levels
+- **Standard (1x - 1e14)**: Double precision, optimized for speed
+- **High (1e14 - 1e28)**: Double-double precision (~106 bits)
+- **Ultra (1e28+)**: Maximum precision for extreme exploration
+
+### 🎮 Enhanced Controls
+- **I**: Toggle infinite zoom mode
+- **P**: Toggle dynamic iteration adjustment
+- **[  ]**: Fine zoom controls (0.1x steps)
+- **{  }**: Fast zoom controls (0.5x steps)
+- **Wheel + Cursor**: Zoom directly to any point with infinite precision
 
 ## Project Structure
 
@@ -42,6 +58,7 @@ fractal-explorer/
 │   ├── math/                  # Mathematical utilities
 │   │   ├── ComplexMath.js     # Complex number operations
 │   │   ├── FractalMath.js     # Fractal-specific mathematics
+│   │   ├── HighPrecision.js   # Infinite zoom high-precision arithmetic
 │   │   └── PrecisionUtils.js  # High-precision calculations
 │   ├── config/                # Configuration and constants
 │   │   ├── DefaultSettings.js # Default parameters and settings
@@ -65,7 +82,8 @@ fractal-explorer/
 
 ## Controls
 
-- **Mouse**: 
+### Standard Controls
+- **Mouse**:
   - Left click: Set Julia parameter (in dual mode)
   - Middle click + drag: Pan view
   - Wheel: Zoom in/out
@@ -78,6 +96,23 @@ fractal-explorer/
   - `F`: Toggle fullscreen
   - Arrow keys: Navigate
   - `+/-`: Zoom in/out
+
+### Infinite Zoom Controls
+- **I**: Toggle infinite zoom mode (default: enabled)
+- **P**: Toggle dynamic iteration adjustment
+- **[  ]**: Fine zoom controls (0.1x precision steps)
+- **{  }**: Fast zoom controls (0.5x precision steps)
+- **Mouse Wheel**: Precision zoom to cursor position
+
+## Quick Start
+
+1. Open `index.html` in a WebGPU-supported browser
+2. Use mouse wheel to zoom into interesting areas
+3. Watch precision indicators change automatically
+4. Press `I` to toggle infinite zoom features
+5. Try extreme zoom levels (1e15+) for mathematical exploration
+
+For detailed infinite zoom documentation, see [INFINITE_ZOOM_GUIDE.md](INFINITE_ZOOM_GUIDE.md)
 
 ## Browser Support
 

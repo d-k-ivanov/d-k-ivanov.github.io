@@ -50,13 +50,27 @@ export class CoordinateDisplay
                     <span class="coord-label">|z|:</span>
                     <span class="coord-value" id="coord-magnitude">0.000000</span>
                 </div>
-                <div class="coord-separator"></div>
                 <div class="coord-line">
                     <span class="coord-label">Zoom:</span>
                     <span class="coord-value" id="coord-zoom">1.00e+0</span>
                 </div>
-                <div id="view-info" class="view-info"></div>
-                <div id="julia-info" class="julia-info"></div>
+                <div class="coord-line infinite-zoom-info">
+                    <span class="coord-label">Precision:</span>
+                    <span class="coord-value" id="coord-precision">Standard</span>
+                </div>
+                <div class="coord-line infinite-zoom-info">
+                    <span class="coord-label">Depth:</span>
+                    <span class="coord-value" id="coord-zoom-depth">Level 0</span>
+                </div>
+                <div class="coord-separator"></div>
+                <div class="coord-view-info" id="coord-view">
+                    <span class="coord-label">View:</span>
+                    <span class="coord-value" id="coord-current-view">Julia</span>
+                </div>
+                <div class="coord-julia-info" id="coord-julia-display">
+                    <span class="coord-label">Julia c:</span>
+                    <span class="coord-value" id="coord-julia-param">-0.7 + 0.27i</span>
+                </div>
             </div>
         `;
 
@@ -126,6 +140,30 @@ export class CoordinateDisplay
                 margin: 8px 0;
             }
 
+            .infinite-zoom-info {
+                opacity: 0.9;
+                font-size: 11px;
+            }
+
+            .infinite-zoom-info .coord-label {
+                color: #ffa726;
+            }
+
+            .infinite-zoom-info .coord-value {
+                color: #81c784;
+            }
+
+            .precision-high {
+                color: #ff9800 !important;
+                font-weight: bold;
+            }
+
+            .precision-ultra {
+                color: #f44336 !important;
+                font-weight: bold;
+                text-shadow: 0 0 3px rgba(244, 67, 54, 0.3);
+            }
+
             .view-info {
                 margin-top: 8px;
                 padding-top: 8px;
@@ -169,12 +207,12 @@ export class CoordinateDisplay
     {
         if (!this.container || !this.isVisible) return;
 
-        const { x, y, zoom = 1, renderMode = 'julia', activeView = 'julia', juliaParams = {} } = coords;
+        const { x, y, zoom = 1, renderMode = 'julia', activeView = 'julia', juliaParams = {}, zoomInfo = {} } = coords;
 
         // Calculate magnitude
         const magnitude = Math.sqrt(x * x + y * y);
 
-        // Adaptive precision based on zoom level
+        // Enhanced precision based on zoom level and infinite zoom info
         const zoomFactor = Math.max(0, Math.log10(zoom || 1));
         const precision = Math.min(15, Math.max(4, Math.floor(zoomFactor) + 3));
 
@@ -183,17 +221,34 @@ export class CoordinateDisplay
         const imagElement = document.getElementById('coord-imag');
         const magnitudeElement = document.getElementById('coord-magnitude');
         const zoomElement = document.getElementById('coord-zoom');
+        const precisionElement = document.getElementById('coord-precision');
+        const depthElement = document.getElementById('coord-zoom-depth');
 
         if (realElement) realElement.textContent = x.toFixed(precision);
         if (imagElement) imagElement.textContent = `${y.toFixed(precision)}i`;
         if (magnitudeElement) magnitudeElement.textContent = magnitude.toFixed(precision);
         if (zoomElement) zoomElement.textContent = zoom.toExponential(2);
 
+        // Enhanced precision display for infinite zoom
+        this.updateInfiniteZoomInfo(zoomInfo, precisionElement, depthElement, zoomFactor);
+
         // Update view information for dual mode
         this.updateViewInfo(renderMode, activeView);
 
         // Update Julia parameter information
         this.updateJuliaInfo(renderMode, juliaParams);
+    }
+
+    /**
+     * Get the precision label based on the precision value
+     * @param {number} precision - The precision value
+     * @returns {string} - The label for the precision level
+     */
+    getPrecisionLabel(precision)
+    {
+        if (precision < 6) return 'Standard';
+        if (precision < 10) return 'High';
+        return 'Ultra';
     }
 
     /**
@@ -242,6 +297,74 @@ export class CoordinateDisplay
         } else
         {
             juliaInfoElement.style.display = 'none';
+        }
+    }
+
+    /**
+     * Update infinite zoom information display
+     * @param {Object} zoomInfo - Zoom information from InfiniteZoomController
+     * @param {HTMLElement} precisionElement - Precision display element
+     * @param {HTMLElement} depthElement - Depth display element  
+     * @param {number} zoomFactor - Current zoom factor
+     */
+    updateInfiniteZoomInfo(zoomInfo, precisionElement, depthElement, zoomFactor)
+    {
+        if (!precisionElement || !depthElement) return;
+
+        // Enhanced precision display based on infinite zoom controller data
+        if (zoomInfo && zoomInfo.precisionLevel !== undefined)
+        {
+            const { precisionLevel, isHighPrecision, magnification } = zoomInfo;
+
+            let precisionLabel;
+            let precisionClass = '';
+
+            if (precisionLevel === 0)
+            {
+                precisionLabel = 'Standard';
+            }
+            else if (precisionLevel === 1)
+            {
+                precisionLabel = 'High';
+                precisionClass = 'precision-high';
+            }
+            else if (precisionLevel >= 2)
+            {
+                precisionLabel = 'Ultra';
+                precisionClass = 'precision-ultra';
+            }
+
+            if (isHighPrecision)
+            {
+                precisionLabel += ' (HP)';
+            }
+
+            precisionElement.textContent = precisionLabel;
+            precisionElement.className = `coord-value ${precisionClass}`;
+
+            // Enhanced depth display
+            const depthLevel = Math.max(0, Math.floor(zoomFactor));
+            depthElement.textContent = `Level ${depthLevel}`;
+
+            if (depthLevel > 10)
+            {
+                depthElement.className = 'coord-value precision-high';
+            }
+            else if (depthLevel > 20)
+            {
+                depthElement.className = 'coord-value precision-ultra';
+            }
+            else
+            {
+                depthElement.className = 'coord-value';
+            }
+        }
+        else
+        {
+            // Fallback to basic precision calculation
+            const precision = Math.min(15, Math.max(4, Math.floor(zoomFactor) + 3));
+            precisionElement.textContent = this.getPrecisionLabel(precision);
+            depthElement.textContent = `Level ${Math.floor(zoomFactor)}`;
         }
     }
 

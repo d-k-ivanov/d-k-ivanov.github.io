@@ -167,7 +167,7 @@ export class MouseHandler
     }
 
     /**
-     * Handle pan drag (middle button)
+     * Handle pan drag (middle button) - now with infinite precision support
      * @param {MouseEvent} event - Mouse event
      */
     handlePanDrag(event)
@@ -186,6 +186,45 @@ export class MouseHandler
         {
             aspect = this.canvas.width / this.canvas.height;
         }
+
+        // Use infinite precision pan if enabled
+        if (state.infiniteZoomEnabled)
+        {
+            const normalizedDeltaX = -(deltaX / rect.width);
+            const normalizedDeltaY = -(deltaY / rect.height);
+
+            // Determine target view for panning
+            let targetView = state.activeView;
+            if (state.renderMode === 'dual')
+            {
+                targetView = this.getViewFromMousePosition(this.mouseState.x, this.mouseState.y);
+            } else if (state.renderMode === 'julia')
+            {
+                targetView = 'julia';
+            } else
+            {
+                targetView = 'mandelbrot';
+            }
+
+            this.stateManager.applyInfinitePan(normalizedDeltaX, normalizedDeltaY, aspect, targetView);
+        }
+        else
+        {
+            // Legacy pan handling
+            this.handleLegacyPan(deltaX, deltaY, aspect);
+        }
+    }
+
+    /**
+     * Legacy pan handling for compatibility
+     * @param {number} deltaX - Delta X in pixels
+     * @param {number} deltaY - Delta Y in pixels
+     * @param {number} aspect - Aspect ratio
+     */
+    handleLegacyPan(deltaX, deltaY, aspect)
+    {
+        const state = this.stateManager.getState();
+        const rect = this.canvas.getBoundingClientRect();
 
         const currentParams = this.stateManager.getCurrentParams();
         const currentZoom = currentParams.zoom;
@@ -226,7 +265,7 @@ export class MouseHandler
     }
 
     /**
-     * Handle wheel events (zooming)
+     * Handle wheel events (zooming) - now with infinite zoom support
      * @param {WheelEvent} event - Wheel event
      */
     handleWheel(event)
@@ -265,6 +304,34 @@ export class MouseHandler
         }
 
         mouseY = (event.clientY - rect.top) / rect.height - 0.5;
+
+        // Use infinite zoom if enabled
+        if (state.infiniteZoomEnabled)
+        {
+            const zoomDirection = event.deltaY > 0 ? -1 : 1;
+            const zoomSensitivity = 0.2;
+            const zoomFactor = Math.exp(zoomDirection * zoomSensitivity);
+
+            this.stateManager.applyInfiniteZoom(mouseX, mouseY, zoomFactor, aspect, targetView);
+        }
+        else
+        {
+            // Fallback to legacy zoom for compatibility
+            this.handleLegacyZoom(event, targetView, mouseX, mouseY, aspect);
+        }
+    }
+
+    /**
+     * Legacy zoom handling for compatibility
+     * @param {WheelEvent} event - Wheel event
+     * @param {string} targetView - Target view
+     * @param {number} mouseX - Normalized mouse X
+     * @param {number} mouseY - Normalized mouse Y
+     * @param {number} aspect - Aspect ratio
+     */
+    handleLegacyZoom(event, targetView, mouseX, mouseY, aspect)
+    {
+        const state = this.stateManager.getState();
 
         // Get parameters for target view
         let currentParams, precision;

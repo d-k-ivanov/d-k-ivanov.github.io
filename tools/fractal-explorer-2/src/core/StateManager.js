@@ -4,14 +4,15 @@
  */
 import { EventEmitter } from '../utils/EventEmitter.js';
 import
-    {
-        DefaultJuliaParams,
-        DefaultMandelbrotParams,
-        DefaultPrecisionParams,
-        DefaultMandelbrotPrecision,
-        DefaultAppSettings
-    } from '../config/DefaultSettings.js';
+{
+    DefaultJuliaParams,
+    DefaultMandelbrotParams,
+    DefaultPrecisionParams,
+    DefaultMandelbrotPrecision,
+    DefaultAppSettings
+} from '../config/DefaultSettings.js';
 import { RenderModes, RenderModeUtils } from '../config/RenderModes.js';
+import { InfiniteZoomController } from '../math/HighPrecision.js';
 
 export class StateManager extends EventEmitter
 {
@@ -26,6 +27,14 @@ export class StateManager extends EventEmitter
         // Initialize precision tracking
         this.zoomPrecision = { ...DefaultPrecisionParams };
         this.mandelbrotPrecision = { ...DefaultMandelbrotPrecision };
+
+        // Initialize infinite zoom controllers
+        this.juliaZoomController = new InfiniteZoomController();
+        this.mandelbrotZoomController = new InfiniteZoomController();
+
+        // Set initial centers
+        this.juliaZoomController.setCenter(0, 0);
+        this.mandelbrotZoomController.setCenter(-0.5, 0);
 
         // Application state
         this.renderMode = DefaultAppSettings.renderMode;
@@ -47,6 +56,10 @@ export class StateManager extends EventEmitter
         // Performance and quality settings
         this.qualityLevel = DefaultAppSettings.quality;
         this.performanceMode = false;
+
+        // Infinite zoom state
+        this.infiniteZoomEnabled = true;
+        this.dynamicIterations = true;
     }
 
     /**
@@ -183,7 +196,18 @@ export class StateManager extends EventEmitter
         this.complexCoordinates.x = x;
         this.complexCoordinates.y = y;
 
-        this.emit('mousePositionChange', this.complexCoordinates);
+        // Enhanced coordinate update with zoom information for infinite zoom display
+        const zoomInfo = this.getZoomInfo();
+        const currentParams = this.getCurrentParams();
+
+        this.emit('mousePositionChange', {
+            ...this.complexCoordinates,
+            zoom: currentParams.zoom,
+            renderMode: this.renderMode,
+            activeView: this.getActiveView(),
+            juliaParams: this.juliaParams,
+            zoomInfo: zoomInfo
+        });
     }
 
     /**
@@ -251,88 +275,207 @@ export class StateManager extends EventEmitter
      */
     resetParameters()
     {
+        this.juliaParams = { ...DefaultJuliaParams };
+        this.mandelbrotParams = { ...DefaultMandelbrotParams };
+        this.zoomPrecision = { ...DefaultPrecisionParams };
+        this.mandelbrotPrecision = { ...DefaultMandelbrotPrecision };
+
+        // Reset infinite zoom controllers
+        this.juliaZoomController.reset();
+        this.mandelbrotZoomController.reset();
+        this.mandelbrotZoomController.setCenter(-0.5, 0);
+
+        this.emit('stateChange', this.getState());
+    }
+
+    /**
+     * Apply infinite zoom at specific point
+     * @param {number} mouseX - Mouse X coordinate (normalized)
+     * @param {number} mouseY - Mouse Y coordinate (normalized) 
+     * @param {number} zoomFactor - Zoom multiplier
+     * @param {number} aspect - Aspect ratio
+     * @param {string} targetView - Target view ('julia' or 'mandelbrot')
+     */
+    applyInfiniteZoom(mouseX, mouseY, zoomFactor, aspect, targetView = null)
+    {
+        const view = targetView || this.getActiveView();
+
+        if (view === 'julia')
+        {
+            this.juliaZoomController.zoomAt(mouseX, mouseY, zoomFactor, aspect);
+            const shaderParams = this.juliaZoomController.getShaderParams(aspect);
+
+            // Update legacy parameters for compatibility
+            this.juliaParams.zoom = shaderParams.zoom;
+            this.juliaParams.offsetX = shaderParams.offsetX;
+            this.juliaParams.offsetY = shaderParams.offsetY;
+
+            // Update iterations based on zoom level
+            if (this.dynamicIterations)
+            {
+                this.juliaParams.maxIterations = this.juliaZoomController.getRecommendedIterations();
+            }
+        }
+        else
+        {
+            this.mandelbrotZoomController.zoomAt(mouseX, mouseY, zoomFactor, aspect);
+            const shaderParams = this.mandelbrotZoomController.getShaderParams(aspect);
+
+            // Update legacy parameters for compatibility
+            this.mandelbrotParams.zoom = shaderParams.zoom;
+            this.mandelbrotParams.offsetX = shaderParams.offsetX;
+            this.mandelbrotParams.offsetY = shaderParams.offsetY;
+
+            // Update iterations based on zoom level
+            if (this.dynamicIterations)
+            {
+                this.mandelbrotParams.maxIterations = this.mandelbrotZoomController.getRecommendedIterations();
+            }
+        }
+
+        this.emit('zoomChange', {
+            view,
+            zoomInfo: this.getZoomInfo(view)
+        });
+
+        this.emit('stateChange', this.getState());
+    }
+
+    /**
+     * Apply infinite pan
+     * @param {number} deltaX - Pan delta X
+     * @param {number} deltaY - Pan delta Y
+     * @param {number} aspect - Aspect ratio
+     * @param {string} targetView - Target view ('julia' or 'mandelbrot')
+     */
+    applyInfinitePan(deltaX, deltaY, aspect, targetView = null)
+    {
+        const view = targetView || this.getActiveView();
+
+        if (view === 'julia')
+        {
+            this.juliaZoomController.pan(deltaX, deltaY, aspect);
+            const shaderParams = this.juliaZoomController.getShaderParams(aspect);
+
+            this.juliaParams.offsetX = shaderParams.offsetX;
+            this.juliaParams.offsetY = shaderParams.offsetY;
+        }
+        else
+        {
+            this.mandelbrotZoomController.pan(deltaX, deltaY, aspect);
+            const shaderParams = this.mandelbrotZoomController.getShaderParams(aspect);
+
+            this.mandelbrotParams.offsetX = shaderParams.offsetX;
+            this.mandelbrotParams.offsetY = shaderParams.offsetY;
+        }
+
+        this.emit('stateChange', this.getState());
+    }
+
+    /**
+     * Get current zoom information
+     * @param {string} view - View to get info for ('julia' or 'mandelbrot')
+     * @returns {Object} Zoom information
+     */
+    getZoomInfo(view = null)
+    {
+        const targetView = view || this.getActiveView();
+
+        if (targetView === 'julia')
+        {
+            return this.juliaZoomController.getZoomInfo();
+        }
+        else
+        {
+            return this.mandelbrotZoomController.getZoomInfo();
+        }
+    }
+
+    /**
+     * Get the currently active view
+     * @returns {string} Active view name
+     */
+    getActiveView()
+    {
         if (this.renderMode === RenderModes.DUAL)
         {
-            // Reset both sets in dual mode
-            this.juliaParams = { ...DefaultJuliaParams };
-            this.mandelbrotParams = { ...DefaultMandelbrotParams };
-            this.zoomPrecision = { ...DefaultPrecisionParams };
-            this.mandelbrotPrecision = { ...DefaultMandelbrotPrecision };
-            this.activeView = RenderModes.MANDELBROT;
-
-            this.emit('parameterChange', { type: 'reset-dual' });
-        } else if (this.renderMode === RenderModes.JULIA)
-        {
-            this.juliaParams = { ...DefaultJuliaParams };
-            this.zoomPrecision = { ...DefaultPrecisionParams };
-
-            this.emit('parameterChange', { type: 'reset-julia' });
-        } else
-        {
-            this.mandelbrotParams = { ...DefaultMandelbrotParams };
-            this.mandelbrotPrecision = { ...DefaultMandelbrotPrecision };
-
-            this.emit('parameterChange', { type: 'reset-mandelbrot' });
+            return this.activeView === RenderModes.JULIA ? 'julia' : 'mandelbrot';
         }
-
-        this.emit('stateChange', this.getState());
+        else if (this.renderMode === RenderModes.JULIA)
+        {
+            return 'julia';
+        }
+        else
+        {
+            return 'mandelbrot';
+        }
     }
 
     /**
-     * Set performance mode
-     * @param {boolean} enabled - Whether to enable performance mode
+     * Toggle infinite zoom feature
+     * @param {boolean} enabled - Whether to enable infinite zoom
      */
-    setPerformanceMode(enabled)
+    setInfiniteZoom(enabled)
     {
-        this.performanceMode = enabled;
-
-        if (enabled)
-        {
-            // Reduce quality for better performance
-            this.qualityLevel = Math.max(1, this.qualityLevel - 1);
-        }
-
-        this.emit('performanceModeChange', enabled);
+        this.infiniteZoomEnabled = enabled;
         this.emit('stateChange', this.getState());
     }
 
     /**
-     * Get complete application state
-     * @returns {Object} Complete state object
+     * Toggle dynamic iteration adjustment
+     * @param {boolean} enabled - Whether to enable dynamic iterations
+     */
+    setDynamicIterations(enabled)
+    {
+        this.dynamicIterations = enabled;
+        this.emit('stateChange', this.getState());
+    }
+
+    /**
+     * Get shader parameters for infinite zoom
+     * @param {number} aspect - Aspect ratio
+     * @returns {Object} Shader parameters with high precision support
+     */
+    getInfiniteZoomShaderParams(aspect)
+    {
+        return {
+            julia: this.juliaZoomController.getShaderParams(aspect),
+            mandelbrot: this.mandelbrotZoomController.getShaderParams(aspect)
+        };
+    }
+
+    /**
+     * Get current application state
+     * @returns {Object} Complete application state
      */
     getState()
     {
         return {
-            renderMode: this.renderMode,
-            activeView: this.activeView,
+            // Fractal parameters
             juliaParams: { ...this.juliaParams },
             mandelbrotParams: { ...this.mandelbrotParams },
+
+            // Precision tracking
             zoomPrecision: { ...this.zoomPrecision },
             mandelbrotPrecision: { ...this.mandelbrotPrecision },
+
+            // Application state
+            renderMode: this.renderMode,
+            activeView: this.activeView,
+
+            // Mouse and interaction state
             mouseState: { ...this.mouseState },
             complexCoordinates: { ...this.complexCoordinates },
+
+            // Features
+            infiniteZoomEnabled: this.infiniteZoomEnabled,
+            dynamicIterations: this.dynamicIterations,
+
+            // Performance settings
             qualityLevel: this.qualityLevel,
             performanceMode: this.performanceMode
         };
     }
 
-    /**
-     * Load state from object
-     * @param {Object} state - State to load
-     */
-    loadState(state)
-    {
-        this.renderMode = state.renderMode || this.renderMode;
-        this.activeView = state.activeView || this.activeView;
-
-        if (state.juliaParams) this.juliaParams = { ...state.juliaParams };
-        if (state.mandelbrotParams) this.mandelbrotParams = { ...state.mandelbrotParams };
-        if (state.zoomPrecision) this.zoomPrecision = { ...state.zoomPrecision };
-        if (state.mandelbrotPrecision) this.mandelbrotPrecision = { ...state.mandelbrotPrecision };
-
-        this.qualityLevel = state.qualityLevel || this.qualityLevel;
-        this.performanceMode = state.performanceMode || false;
-
-        this.emit('stateChange', this.getState());
-    }
+    // ...existing code...
 }

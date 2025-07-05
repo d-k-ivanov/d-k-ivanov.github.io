@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Zoom Test - Fractal Explorer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #64ffda;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls h3 {
+            color: #64ffda;
+            margin-top: 0;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #64ffda;
+        }
+
+        .control-item strong {
+            color: #ffa726;
+        }
+
+        .app-link {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .app-link a {
+            display: inline-block;
+            background: linear-gradient(45deg, #64ffda, #4ecdc4);
+            color: #1e3c72;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .app-link a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(100, 255, 218, 0.3);
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .features h3 {
+            color: #64ffda;
+            margin-top: 0;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: "🔄";
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🌀 Fractal Explorer - Infinite Zoom Test</h1>
+        <p>
+            Experience unlimited precision zooming into the mathematical beauty of Julia and Mandelbrot sets.
+            This enhanced version features high-precision arithmetic for extreme zoom levels.
+        </p>
+    </div>
+
+    <div class="controls">
+        <h3>🎮 Enhanced Controls</h3>
+
+        <div class="control-group">
+            <div class="control-item">
+                <strong>Mouse Wheel:</strong> Zoom to cursor position with infinite precision
+            </div>
+            <div class="control-item">
+                <strong>Middle Click + Drag:</strong> High-precision panning
+            </div>
+            <div class="control-item">
+                <strong>I Key:</strong> Toggle infinite zoom mode
+            </div>
+            <div class="control-item">
+                <strong>P Key:</strong> Toggle dynamic iterations
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-item">
+                <strong>[ ] Keys:</strong> Fine zoom controls (0.1x steps)
+            </div>
+            <div class="control-item">
+                <strong>{ } Keys:</strong> Fast zoom controls (0.5x steps)
+            </div>
+            <div class="control-item">
+                <strong>+/- Keys:</strong> Standard zoom controls
+            </div>
+            <div class="control-item">
+                <strong>R Key:</strong> Reset to default view
+            </div>
+        </div>
+    </div>
+
+    <div class="app-link">
+        <a href="index.html">🚀 Launch Fractal Explorer</a>
+    </div>
+
+    <div class="features">
+        <h3>✨ Infinite Zoom Features</h3>
+        <ul class="feature-list">
+            <li><strong>High-Precision Arithmetic:</strong> 106-bit precision vs standard 53-bit</li>
+            <li><strong>Automatic Scaling:</strong> Seamless transitions between precision modes</li>
+            <li><strong>Dynamic Iterations:</strong> Smart adjustment based on zoom level</li>
+            <li><strong>Visual Indicators:</strong> Real-time precision and depth display</li>
+            <li><strong>Performance Optimized:</strong> Different algorithms for different zoom ranges</li>
+            <li><strong>Mathematical Accuracy:</strong> Maintains precision at extreme zoom levels</li>
+            <li><strong>Interactive Exploration:</strong> Zoom into any point with cursor targeting</li>
+            <li><strong>Dual View Support:</strong> Independent infinite zoom for both sets</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <h3>📊 Zoom Level Ranges</h3>
+        <div class="control-group">
+            <div class="control-item">
+                <strong>Standard (1x - 1e14):</strong> Double precision, optimized for speed
+            </div>
+            <div class="control-item">
+                <strong>High (1e14 - 1e28):</strong> Double-double precision, increased iterations
+            </div>
+            <div class="control-item">
+                <strong>Ultra (1e28+):</strong> Maximum precision, highest iteration counts
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive feedback
+        console.log('🌀 Fractal Explorer - Infinite Zoom Test Page Loaded');
+        console.log('📖 Check INFINITE_ZOOM_GUIDE.md for detailed documentation');
+        console.log('🎯 Click "Launch Fractal Explorer" to start exploring!');
+
+        // Show browser compatibility
+        if ('gpu' in navigator)
+        {
+            console.log('✅ WebGPU support detected');
+        } else
+        {
+            console.log('⚠️ WebGPU support not detected - may need browser flags');
+            console.log('   Chrome: chrome://flags/#enable-unsafe-webgpu');
+            console.log('   Firefox: dom.webgpu.enabled in about:config');
+        }
+    </script>
+</body>
+
+</html>

@@ -39,6 +39,21 @@ export class KeyboardHandler
         document.addEventListener('keyup', this.handleKeyUp);
 
         console.log('✅ Keyboard handler initialized');
+        this.showInfiniteZoomControls();
+    }
+
+    /**
+     * Show infinite zoom specific controls in console
+     */
+    showInfiniteZoomControls()
+    {
+        console.log('🔄 Infinite Zoom Controls:');
+        console.log('  I: Toggle infinite zoom mode');
+        console.log('  P: Toggle dynamic iterations');
+        console.log('  [ ]: Fine zoom controls');
+        console.log('  { }: Fast zoom controls');
+        console.log('  +/-: Standard zoom controls');
+        console.log('  Wheel: Zoom to cursor position');
     }
 
     /**
@@ -85,6 +100,28 @@ export class KeyboardHandler
             case '-':
             case '_':
                 this.handleZoom(-0.2);
+                break;
+
+            // Infinite zoom specific controls
+            case 'i':
+            case 'I':
+                this.handleInfiniteZoomToggle();
+                break;
+            case 'p':
+            case 'P':
+                this.handlePrecisionToggle();
+                break;
+            case '[':
+                this.handleZoom(0.1); // Fine zoom in
+                break;
+            case ']':
+                this.handleZoom(-0.1); // Fine zoom out
+                break;
+            case '{':
+                this.handleZoom(0.5); // Fast zoom in
+                break;
+            case '}':
+                this.handleZoom(-0.5); // Fast zoom out
                 break;
 
             // Mode controls
@@ -180,10 +217,37 @@ export class KeyboardHandler
     }
 
     /**
-     * Handle zoom in/out
+     * Handle zoom in/out - now with infinite zoom support
      * @param {number} zoomStep - Zoom step (positive for zoom in, negative for zoom out)
      */
     handleZoom(zoomStep)
+    {
+        const state = this.stateManager.getState();
+
+        // Use infinite zoom if enabled
+        if (state.infiniteZoomEnabled)
+        {
+            const zoomFactor = Math.exp(zoomStep);
+            const aspect = 1.0; // Default aspect, will be updated by canvas manager
+
+            // Zoom at center (0,0 in normalized coordinates)
+            this.stateManager.applyInfiniteZoom(0, 0, zoomFactor, aspect);
+
+            const zoomInfo = this.stateManager.getZoomInfo();
+            console.log(`${state.activeView || state.renderMode} infinite zoom: ${zoomInfo.magnification}`);
+        }
+        else
+        {
+            // Legacy zoom handling
+            this.handleLegacyZoom(zoomStep);
+        }
+    }
+
+    /**
+     * Legacy zoom handling for compatibility
+     * @param {number} zoomStep - Zoom step
+     */
+    handleLegacyZoom(zoomStep)
     {
         const state = this.stateManager.getState();
         const precision = this.stateManager.getCurrentPrecision();
@@ -322,6 +386,45 @@ export class KeyboardHandler
             {
                 console.warn('Exit fullscreen failed:', err);
             });
+        }
+    }
+
+    /**
+     * Handle infinite zoom toggle (I key)
+     */
+    handleInfiniteZoomToggle()
+    {
+        const state = this.stateManager.getState();
+        const newInfiniteZoomState = !state.infiniteZoomEnabled;
+
+        this.stateManager.setInfiniteZoom(newInfiniteZoomState);
+
+        console.log(`Infinite zoom ${newInfiniteZoomState ? 'enabled' : 'disabled'}`);
+        console.log(`Current precision mode: ${newInfiniteZoomState ? 'High-precision' : 'Standard'}`);
+    }
+
+    /**
+     * Handle precision toggle (P key) 
+     */
+    handlePrecisionToggle()
+    {
+        const state = this.stateManager.getState();
+        const newDynamicIterations = !state.dynamicIterations;
+
+        this.stateManager.setDynamicIterations(newDynamicIterations);
+
+        console.log(`Dynamic iterations ${newDynamicIterations ? 'enabled' : 'disabled'}`);
+
+        if (newDynamicIterations)
+        {
+            // Show current recommended iterations
+            const activeView = this.stateManager.getActiveView();
+            const zoomController = activeView === 'julia' ?
+                this.stateManager.juliaZoomController :
+                this.stateManager.mandelbrotZoomController;
+
+            const recommendedIterations = zoomController.getRecommendedIterations();
+            console.log(`Recommended iterations for current zoom: ${recommendedIterations}`);
         }
     }
 
