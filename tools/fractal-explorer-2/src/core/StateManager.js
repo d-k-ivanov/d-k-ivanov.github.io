@@ -291,7 +291,7 @@ export class StateManager extends EventEmitter
     /**
      * Apply infinite zoom at specific point
      * @param {number} mouseX - Mouse X coordinate (normalized)
-     * @param {number} mouseY - Mouse Y coordinate (normalized) 
+     * @param {number} mouseY - Mouse Y coordinate (normalized)
      * @param {number} zoomFactor - Zoom multiplier
      * @param {number} aspect - Aspect ratio
      * @param {string} targetView - Target view ('julia' or 'mandelbrot')
@@ -373,9 +373,155 @@ export class StateManager extends EventEmitter
     }
 
     /**
-     * Get current zoom information
+     * Update application settings including infinite zoom preferences
+     * @param {Object} updates - Settings updates
+     */
+    updateSettings(updates)
+    {
+        const oldSettings = {
+            infiniteZoomEnabled: this.infiniteZoomEnabled,
+            dynamicIterations: this.dynamicIterations,
+            qualityLevel: this.qualityLevel,
+            performanceMode: this.performanceMode
+        };
+
+        if (updates.infiniteZoomEnabled !== undefined)
+        {
+            this.infiniteZoomEnabled = updates.infiniteZoomEnabled;
+        }
+
+        if (updates.dynamicIterations !== undefined)
+        {
+            this.dynamicIterations = updates.dynamicIterations;
+        }
+
+        if (updates.qualityLevel !== undefined)
+        {
+            this.qualityLevel = updates.qualityLevel;
+        }
+
+        if (updates.performanceMode !== undefined)
+        {
+            this.performanceMode = updates.performanceMode;
+        }
+
+        this.emit('settingsChanged', {
+            oldSettings,
+            newSettings: {
+                infiniteZoomEnabled: this.infiniteZoomEnabled,
+                dynamicIterations: this.dynamicIterations,
+                qualityLevel: this.qualityLevel,
+                performanceMode: this.performanceMode
+            }
+        });
+    }
+
+    /**
+     * Update complex coordinates for display with enhanced precision information
+     * @param {number} mouseX - Mouse X coordinate
+     * @param {number} mouseY - Mouse Y coordinate
+     * @param {number} canvasWidth - Canvas width
+     * @param {number} canvasHeight - Canvas height
+     */
+    updateComplexCoordinates(mouseX, mouseY, canvasWidth, canvasHeight)
+    {
+        const state = this.getState();
+        let targetView = state.activeView;
+        let aspectRatio = canvasWidth / canvasHeight;
+
+        // Adjust for dual mode
+        if (state.renderMode === 'dual')
+        {
+            aspectRatio = (canvasWidth / 2) / canvasHeight;
+            if (mouseX < canvasWidth / 2)
+            {
+                targetView = 'mandelbrot';
+                mouseX = mouseX / (canvasWidth / 2);
+            } else
+            {
+                targetView = 'julia';
+                mouseX = (mouseX - canvasWidth / 2) / (canvasWidth / 2);
+            }
+        } else
+        {
+            mouseX = mouseX / canvasWidth;
+        }
+
+        mouseY = mouseY / canvasHeight;
+
+        // Get parameters for target view
+        const params = targetView === 'julia' ? state.juliaParams : state.mandelbrotParams;
+        const zoomInfo = this.getZoomInfo(targetView);
+
+        // Calculate complex coordinates
+        const normalizedX = mouseX - 0.5;
+        const normalizedY = mouseY - 0.5;
+
+        const complexReal = normalizedX * 4.0 * aspectRatio / params.zoom + params.offsetX;
+        const complexImag = normalizedY * 4.0 / params.zoom + params.offsetY;
+        const complexMagnitude = Math.sqrt(complexReal * complexReal + complexImag * complexImag);
+
+        // Determine precision based on zoom level
+        let precision = 6;
+        if (zoomInfo.zoom > 1e12) precision = 12;
+        else if (zoomInfo.zoom > 1e6) precision = 9;
+
+        // Create enhanced coordinate data
+        const coordinateData = {
+            real: complexReal,
+            imag: complexImag,
+            magnitude: complexMagnitude,
+            zoom: params.zoom,
+            precision: precision,
+            activeView: targetView,
+            zoomInfo: zoomInfo,
+            juliaC: {
+                real: state.juliaParams.c_real,
+                imag: state.juliaParams.c_imag
+            }
+        };
+
+        this.complexCoordinates = coordinateData;
+        this.emit('mousePositionChange', coordinateData);
+    }
+
+    /**
+     * Get enhanced state with infinite zoom information
+     * @returns {Object} Complete application state
+     */
+    getState()
+    {
+        return {
+            // Fractal parameters
+            juliaParams: { ...this.juliaParams },
+            mandelbrotParams: { ...this.mandelbrotParams },
+
+            // Precision tracking
+            zoomPrecision: { ...this.zoomPrecision },
+            mandelbrotPrecision: { ...this.mandelbrotPrecision },
+
+            // Infinite zoom controllers
+            juliaZoomController: this.juliaZoomController,
+            mandelbrotZoomController: this.mandelbrotZoomController,
+
+            // UI state
+            renderMode: this.renderMode,
+            activeView: this.activeView,
+            mouseState: { ...this.mouseState },
+            complexCoordinates: { ...this.complexCoordinates },
+
+            // Settings
+            qualityLevel: this.qualityLevel,
+            performanceMode: this.performanceMode,
+            infiniteZoomEnabled: this.infiniteZoomEnabled,
+            dynamicIterations: this.dynamicIterations
+        };
+    }
+
+    /**
+     * Get enhanced zoom information for both views
      * @param {string} view - View to get info for ('julia' or 'mandelbrot')
-     * @returns {Object} Zoom information
+     * @returns {Object} Enhanced zoom information
      */
     getZoomInfo(view = null)
     {
@@ -392,89 +538,39 @@ export class StateManager extends EventEmitter
     }
 
     /**
-     * Get the currently active view
-     * @returns {string} Active view name
+     * Get performance metrics for infinite zoom
+     * @returns {Object} Performance information
      */
-    getActiveView()
+    getPerformanceInfo()
     {
-        if (this.renderMode === RenderModes.DUAL)
-        {
-            return this.activeView === RenderModes.JULIA ? 'julia' : 'mandelbrot';
-        }
-        else if (this.renderMode === RenderModes.JULIA)
-        {
-            return 'julia';
-        }
-        else
-        {
-            return 'mandelbrot';
-        }
-    }
+        const juliaZoomInfo = this.getZoomInfo('julia');
+        const mandelbrotZoomInfo = this.getZoomInfo('mandelbrot');
 
-    /**
-     * Toggle infinite zoom feature
-     * @param {boolean} enabled - Whether to enable infinite zoom
-     */
-    setInfiniteZoom(enabled)
-    {
-        this.infiniteZoomEnabled = enabled;
-        this.emit('stateChange', this.getState());
-    }
-
-    /**
-     * Toggle dynamic iteration adjustment
-     * @param {boolean} enabled - Whether to enable dynamic iterations
-     */
-    setDynamicIterations(enabled)
-    {
-        this.dynamicIterations = enabled;
-        this.emit('stateChange', this.getState());
-    }
-
-    /**
-     * Get shader parameters for infinite zoom
-     * @param {number} aspect - Aspect ratio
-     * @returns {Object} Shader parameters with high precision support
-     */
-    getInfiniteZoomShaderParams(aspect)
-    {
         return {
-            julia: this.juliaZoomController.getShaderParams(aspect),
-            mandelbrot: this.mandelbrotZoomController.getShaderParams(aspect)
+            maxZoomLevel: Math.max(juliaZoomInfo.zoom, mandelbrotZoomInfo.zoom),
+            maxPrecisionLevel: Math.max(juliaZoomInfo.precisionLevel, mandelbrotZoomInfo.precisionLevel),
+            estimatedComplexity: this.getEstimatedComplexity(),
+            recommendedIterations: Math.max(
+                this.juliaZoomController.getRecommendedIterations(),
+                this.mandelbrotZoomController.getRecommendedIterations()
+            ),
+            performanceMode: this.performanceMode,
+            qualityLevel: this.qualityLevel
         };
     }
 
     /**
-     * Get current application state
-     * @returns {Object} Complete application state
+     * Get estimated computational complexity
+     * @returns {string} Complexity description
      */
-    getState()
+    getEstimatedComplexity()
     {
-        return {
-            // Fractal parameters
-            juliaParams: { ...this.juliaParams },
-            mandelbrotParams: { ...this.mandelbrotParams },
+        const perfInfo = this.getPerformanceInfo();
 
-            // Precision tracking
-            zoomPrecision: { ...this.zoomPrecision },
-            mandelbrotPrecision: { ...this.mandelbrotPrecision },
-
-            // Application state
-            renderMode: this.renderMode,
-            activeView: this.activeView,
-
-            // Mouse and interaction state
-            mouseState: { ...this.mouseState },
-            complexCoordinates: { ...this.complexCoordinates },
-
-            // Features
-            infiniteZoomEnabled: this.infiniteZoomEnabled,
-            dynamicIterations: this.dynamicIterations,
-
-            // Performance settings
-            qualityLevel: this.qualityLevel,
-            performanceMode: this.performanceMode
-        };
+        if (perfInfo.maxPrecisionLevel === 0) return 'Low';
+        if (perfInfo.maxPrecisionLevel <= 2) return 'Medium';
+        if (perfInfo.maxPrecisionLevel <= 4) return 'High';
+        return 'Extreme';
     }
 
     // ...existing code...

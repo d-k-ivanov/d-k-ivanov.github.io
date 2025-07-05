@@ -11,6 +11,8 @@ import { KeyboardHandler } from '../interaction/KeyboardHandler.js';
 import { CoordinateDisplay } from '../ui/CoordinateDisplay.js';
 import { ModeDisplay } from '../ui/ModeDisplay.js';
 import { Performance } from '../utils/Performance.js';
+import { InfiniteZoomPerformanceMonitor } from '../utils/InfiniteZoomPerformance.js';
+import { InfiniteZoomHelp } from '../ui/InfiniteZoomHelp.js';
 
 export class Application
 {
@@ -25,6 +27,8 @@ export class Application
         this.coordinateDisplay = null;
         this.modeDisplay = null;
         this.performance = new Performance();
+        this.infiniteZoomPerformance = new InfiniteZoomPerformanceMonitor();
+        this.infiniteZoomHelp = new InfiniteZoomHelp();
 
         this.isInitialized = false;
         this.animationId = null;
@@ -96,6 +100,9 @@ export class Application
         this.modeDisplay = new ModeDisplay();
         this.modeDisplay.initialize();
 
+        // Initialize infinite zoom help system
+        this.infiniteZoomHelp.initialize();
+
         // Connect UI to state changes
         this.stateManager.on('stateChange', (state) =>
         {
@@ -166,11 +173,23 @@ export class Application
             // Throttle to target FPS
             if (currentTime - lastFrameTime >= frameInterval)
             {
+                const frameStartTime = performance.now();
+
                 // Update performance metrics
                 this.performance.update();
 
                 // Render the current frame
                 this.fractalRenderer.render();
+
+                // Monitor infinite zoom performance
+                const frameEndTime = performance.now();
+                const frameTime = frameEndTime - frameStartTime;
+                const currentState = this.stateManager.getState();
+                const zoomInfo = {
+                    zoom: currentState.mandelbrotZoom || 1,
+                    precisionLevel: currentState.precisionLevel || 0
+                };
+                this.infiniteZoomPerformance.update(frameTime, zoomInfo, currentState.mandelbrotMaxIterations || 256);
 
                 lastFrameTime = currentTime;
             }

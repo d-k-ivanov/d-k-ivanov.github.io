@@ -183,37 +183,28 @@ export class KeyboardHandler
     handleNavigation(direction, step)
     {
         const state = this.stateManager.getState();
-        const currentParams = this.stateManager.getCurrentParams();
-        const precision = this.stateManager.getCurrentPrecision();
 
-        let offsetX = currentParams.offsetX;
-        let offsetY = currentParams.offsetY;
-
-        switch (direction)
+        // Use infinite precision panning if enabled
+        if (state.infiniteZoomEnabled)
         {
-            case 'left':
-                offsetX -= step;
-                break;
-            case 'right':
-                offsetX += step;
-                break;
-            case 'up':
-                offsetY -= step;
-                break;
-            case 'down':
-                offsetY += step;
-                break;
+            let deltaX = 0, deltaY = 0;
+
+            switch (direction)
+            {
+                case 'left': deltaX = -step; break;
+                case 'right': deltaX = step; break;
+                case 'up': deltaY = -step; break;
+                case 'down': deltaY = step; break;
+            }
+
+            const aspect = window.innerWidth / window.innerHeight;
+            this.stateManager.applyInfinitePan(deltaX, deltaY, aspect);
         }
-
-        // Update parameters for active view
-        this.stateManager.updateCurrentParams({
-            offsetX,
-            offsetY
-        });
-
-        // Update precision tracking
-        precision.centerX = offsetX;
-        precision.centerY = offsetY;
+        else
+        {
+            // Legacy navigation
+            this.handleLegacyNavigation(direction, step);
+        }
     }
 
     /**
@@ -223,18 +214,23 @@ export class KeyboardHandler
     handleZoom(zoomStep)
     {
         const state = this.stateManager.getState();
+        const currentParams = this.stateManager.getCurrentParams();
 
         // Use infinite zoom if enabled
         if (state.infiniteZoomEnabled)
         {
             const zoomFactor = Math.exp(zoomStep);
-            const aspect = 1.0; // Default aspect, will be updated by canvas manager
+            const aspect = window.innerWidth / window.innerHeight;
 
-            // Zoom at center (0,0 in normalized coordinates)
+            // Zoom at center of screen (0, 0 in normalized coordinates)
             this.stateManager.applyInfiniteZoom(0, 0, zoomFactor, aspect);
 
+            // Show zoom info
             const zoomInfo = this.stateManager.getZoomInfo();
-            console.log(`${state.activeView || state.renderMode} infinite zoom: ${zoomInfo.magnification}`);
+            if (Math.log10(zoomInfo.zoom) % 3 < 0.1)
+            { // Show every 1000x zoom milestone
+                console.log(`🔍 Zoom: ${zoomInfo.magnification} (${zoomInfo.qualityLevel} precision)`);
+            }
         }
         else
         {
@@ -245,25 +241,28 @@ export class KeyboardHandler
 
     /**
      * Legacy zoom handling for compatibility
-     * @param {number} zoomStep - Zoom step
+     * @param {number} zoomStep - Zoom step amount
      */
     handleLegacyZoom(zoomStep)
     {
         const state = this.stateManager.getState();
+        const currentParams = this.stateManager.getCurrentParams();
         const precision = this.stateManager.getCurrentPrecision();
 
-        // Update log zoom with limits
+        // Apply zoom
         precision.logZoom += zoomStep;
         precision.logZoom = Math.max(-10, Math.min(precision.maxLogZoom, precision.logZoom));
 
         const newZoom = Math.exp(precision.logZoom);
 
-        // Update current parameters
-        this.stateManager.updateCurrentParams({
-            zoom: newZoom
-        });
-
-        console.log(`${state.activeView || state.renderMode} zoom: ${newZoom.toFixed(2)}`);
+        // Update parameters for active view
+        if (state.activeView === 'julia' || state.renderMode === 'julia')
+        {
+            this.stateManager.updateJuliaParams({ zoom: newZoom });
+        } else
+        {
+            this.stateManager.updateMandelbrotParams({ zoom: newZoom });
+        }
     }
 
     /**
@@ -348,8 +347,23 @@ export class KeyboardHandler
      */
     handleReset()
     {
+        console.log('🔄 Resetting to initial state...');
+
+        // Reset zoom controllers
+        const state = this.stateManager.getState();
+        if (state.juliaZoomController)
+        {
+            state.juliaZoomController.reset();
+        }
+        if (state.mandelbrotZoomController)
+        {
+            state.mandelbrotZoomController.reset();
+        }
+
+        // Reset parameters
         this.stateManager.resetParameters();
-        console.log('Parameters reset to defaults');
+
+        console.log('✅ Reset complete');
     }
 
     /**
@@ -390,42 +404,54 @@ export class KeyboardHandler
     }
 
     /**
-     * Handle infinite zoom toggle (I key)
+     * Enhanced infinite zoom toggle with status feedback
      */
     handleInfiniteZoomToggle()
     {
         const state = this.stateManager.getState();
-        const newInfiniteZoomState = !state.infiniteZoomEnabled;
+        const newState = !state.infiniteZoomEnabled;
 
-        this.stateManager.setInfiniteZoom(newInfiniteZoomState);
+        this.stateManager.updateSettings({
+            infiniteZoomEnabled: newState
+        });
 
-        console.log(`Infinite zoom ${newInfiniteZoomState ? 'enabled' : 'disabled'}`);
-        console.log(`Current precision mode: ${newInfiniteZoomState ? 'High-precision' : 'Standard'}`);
+        console.log(`🔄 Infinite zoom ${newState ? 'enabled' : 'disabled'}`);
+        if (newState)
+        {
+            console.log('   High-precision arithmetic active for extreme zoom levels');
+            console.log('   Use wheel + cursor for precision zooming');
+        } else
+        {
+            console.log('   Using standard precision mode');
+        }
+
+        // Emit event for UI updates
+        this.stateManager.emit('infiniteZoomToggled', { enabled: newState });
     }
 
     /**
-     * Handle precision toggle (P key) 
+     * Enhanced precision/dynamic iterations toggle
      */
     handlePrecisionToggle()
     {
         const state = this.stateManager.getState();
-        const newDynamicIterations = !state.dynamicIterations;
+        const newState = !state.dynamicIterations;
 
-        this.stateManager.setDynamicIterations(newDynamicIterations);
+        this.stateManager.updateSettings({
+            dynamicIterations: newState
+        });
 
-        console.log(`Dynamic iterations ${newDynamicIterations ? 'enabled' : 'disabled'}`);
-
-        if (newDynamicIterations)
+        console.log(`🎯 Dynamic iterations ${newState ? 'enabled' : 'disabled'}`);
+        if (newState)
         {
-            // Show current recommended iterations
-            const activeView = this.stateManager.getActiveView();
-            const zoomController = activeView === 'julia' ?
-                this.stateManager.juliaZoomController :
-                this.stateManager.mandelbrotZoomController;
-
-            const recommendedIterations = zoomController.getRecommendedIterations();
-            console.log(`Recommended iterations for current zoom: ${recommendedIterations}`);
+            console.log('   Iteration count will automatically adjust with zoom level');
+        } else
+        {
+            console.log('   Using fixed iteration count');
         }
+
+        // Emit event for UI updates
+        this.stateManager.emit('dynamicIterationsToggled', { enabled: newState });
     }
 
     /**

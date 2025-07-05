@@ -1,7 +1,7 @@
 /**
  * Fractal Explorer - WebGPU Educational Application
  * Main entry point for the interactive fractal visualization tool
- * 
+ *
  * @fileoverview Initializes the application and handles global error management
  * @version 2.0.0
  * @author WebGPU Fractal Explorer Team
@@ -34,6 +34,8 @@ async function initializeFractalExplorer()
         console.log('🎨 Fractal Explorer initialized successfully');
         console.log('📊 WebGPU renderer active');
         console.log('🔧 Use keyboard shortcuts: M (modes), J (Julia), D (dual), R (reset)');
+        console.log('🔍 Infinite Zoom: Press I to enable, H for help');
+        console.log('🚀 Ready for extreme mathematical exploration!');
 
     } catch (error)
     {
@@ -76,11 +78,11 @@ function displayCompatibilityMessage(supportStatus)
                 <h2 style="margin: 0 0 30px 0; color: #ffab40; font-weight: 300;">
                     WebGPU Not Available
                 </h2>
-                
+
                 <p style="margin-bottom: 25px; font-size: 1.1rem; line-height: 1.6;">
                     This interactive fractal explorer requires WebGPU support for high-performance mathematics visualization.
                 </p>
-                
+
                 <div style="text-align: left; margin: 25px 0;">
                     <h3 style="color: #64ffda; margin-bottom: 15px;">🔧 Enable WebGPU:</h3>
                     <ul style="list-style: none; padding: 0;">
@@ -97,10 +99,10 @@ function displayCompatibilityMessage(supportStatus)
                         `).join('')}
                     </ul>
                 </div>
-                
+
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
                     <p style="font-size: 0.9rem; opacity: 0.8;">
-                        <strong>Note:</strong> WebGPU is cutting-edge technology still in development. 
+                        <strong>Note:</strong> WebGPU is cutting-edge technology still in development.
                         Support varies by browser and platform.
                     </p>
                 </div>
@@ -140,11 +142,11 @@ function displayErrorMessage(error)
                 <h1 style="margin: 0 0 20px 0; font-size: 2.5rem; color: #ff6b6b;">
                     ⚠️ Application Error
                 </h1>
-                
+
                 <p style="margin-bottom: 25px; font-size: 1.1rem; line-height: 1.6;">
                     The Fractal Explorer encountered an initialization error:
                 </p>
-                
+
                 <div style="
                     background: rgba(0, 0, 0, 0.3);
                     border-radius: 8px;
@@ -157,7 +159,7 @@ function displayErrorMessage(error)
                 ">
                     ${error.message}
                 </div>
-                
+
                 <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 20px;">
                     Please refresh the page to try again, or check the browser console for more details.
                 </p>

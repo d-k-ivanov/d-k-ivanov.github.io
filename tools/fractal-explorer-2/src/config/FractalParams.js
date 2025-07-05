@@ -5,13 +5,13 @@
 import { EventEmitter } from '../utils/EventEmitter.js';
 import { logger } from '../utils/Logger.js';
 import
-    {
-        DefaultJuliaParams,
-        DefaultMandelbrotParams,
-        DefaultPrecisionParams,
-        DefaultMandelbrotPrecision,
-        NavigationLimits
-    } from './DefaultSettings.js';
+{
+    DefaultJuliaParams,
+    DefaultMandelbrotParams,
+    DefaultPrecisionParams,
+    DefaultMandelbrotPrecision,
+    NavigationLimits
+} from './DefaultSettings.js';
 
 export class FractalParams extends EventEmitter
 {

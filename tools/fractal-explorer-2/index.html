@@ -80,6 +80,54 @@
         body.app-ready .loading {
             display: none;
         }
+
+        /* Infinite zoom instructions */
+        .infinite-zoom-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #64ffda;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            max-width: 300px;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            transition: opacity 0.3s ease;
+            z-index: 500;
+        }
+
+        .infinite-zoom-info h4 {
+            margin: 0 0 10px 0;
+            color: #ffab40;
+            font-size: 1rem;
+        }
+
+        .infinite-zoom-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .infinite-zoom-info li {
+            margin: 5px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .infinite-zoom-info li:before {
+            content: '•';
+            color: #64ffda;
+            position: absolute;
+            left: 0;
+        }
+
+        .key-hint {
+            background: rgba(100, 255, 218, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -88,6 +136,18 @@
         <h1>🌀 Fractal Explorer v2</h1>
         <div class="spinner"></div>
         <p>Initializing WebGPU renderer...</p>
+    </div>
+
+    <!-- Infinite Zoom Instructions -->
+    <div class="infinite-zoom-info" id="zoom-instructions">
+        <h4>🔍 Infinite Zoom Guide</h4>
+        <ul>
+            <li><span class="key-hint">I</span> - Toggle infinite zoom mode</li>
+            <li><span class="key-hint">H</span> - Show detailed help</li>
+            <li><span class="key-hint">Mouse wheel</span> - Zoom to extreme levels</li>
+            <li><span class="key-hint">Shift+scroll</span> - Precision zoom</li>
+            <li><span class="key-hint">R</span> - Reset view</li>
+        </ul>
     </div>
 
     <script type="module" src="main.js"></script>
@@ -99,6 +159,18 @@
             setTimeout(() =>
             {
                 document.body.classList.add('app-ready');
+
+                // Auto-hide instructions after 10 seconds
+                setTimeout(() =>
+                {
+                    const instructions = document.getElementById('zoom-instructions');
+                    if (instructions)
+                    {
+                        instructions.style.opacity = '0.3';
+                        instructions.addEventListener('mouseenter', () => instructions.style.opacity = '1');
+                        instructions.addEventListener('mouseleave', () => instructions.style.opacity = '0.3');
+                    }
+                }, 10000);
             }, 500);
         });
     </script>
