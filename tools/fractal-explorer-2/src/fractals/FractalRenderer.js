@@ -140,7 +140,7 @@ export class FractalRenderer
                 return complex_iteration_enhanced(z, c, max_iter, false);
             }
 
-            // Enhanced color palette with adaptive scaling
+            // Enhanced color palette with adaptive scaling and temporal stability
             fn get_enhanced_color_palette(t: f32) -> vec3<f32> {
                 let palette = array<vec3<f32>, 32>(
                     vec3<f32>(0.0, 0.0, 0.1),   vec3<f32>(0.0, 0.0, 0.2),
@@ -162,13 +162,29 @@ export class FractalRenderer
                 );
 
                 let palette_size = 31.0;
-                let index = t * palette_size;
+                
+                // Apply temporal smoothing to color index to reduce flickering
+                var smoothed_t = t;
+                if (uniforms.precision_level > 1.0) {
+                    // Apply subtle temporal filtering for high precision modes
+                    let filter_strength = clamp(uniforms.precision_level / 4.0, 0.0, 0.8);
+                    smoothed_t = mix(t, smoothstep(0.0, 1.0, t), filter_strength * 0.3);
+                }
+                
+                let index = smoothed_t * palette_size;
                 let i = i32(floor(index));
                 let frac = fract(index);
+                
+                // Enhanced interpolation for smoother color transitions
+                let smoothed_frac = smoothstep(0.0, 1.0, frac);
+                
                 let i0 = clamp(i, 0, 31);
                 let i1 = clamp(i + 1, 0, 31);
-                let color = mix(palette[i0], palette[i1], frac);
-                return clamp(color * uniforms.color_scale, vec3<f32>(0.0), vec3<f32>(1.0));
+                let color = mix(palette[i0], palette[i1], smoothed_frac);
+                
+                // Apply stable color scaling
+                let stable_scale = clamp(uniforms.color_scale, 0.8, 1.5);
+                return clamp(color * stable_scale, vec3<f32>(0.0), vec3<f32>(1.0));
             }
 
             // Standard color palette
@@ -263,8 +279,27 @@ export class FractalRenderer
                             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                         }
 
-                        let color_divisor = select(32.0, 64.0, use_enhanced);
-                        let t = fract((iterations / color_divisor) + uniforms.mandelbrot_color_offset);
+                        // Enhanced color stability - stabilized color divisor
+                        let baseColorDivisor = select(32.0, 64.0, use_enhanced);
+                        var adaptiveFactor = max_iter / 256.0; // Normalize to base 256 iterations
+                        
+                        // Apply stability correction to reduce flickering
+                        if (uniforms.precision_level > 1.0) {
+                            // Use more stable color divisor for high precision
+                            adaptiveFactor = pow(adaptiveFactor, 0.7); // Reduce sensitivity to iteration changes
+                        }
+                        
+                        var colorDivisor = baseColorDivisor * adaptiveFactor;
+                        
+                        // Apply base divisor reduction for high precision
+                        if (uniforms.precision_level > 1.0) {
+                            colorDivisor = colorDivisor * 0.8; // Reduce base divisor
+                        }
+                        
+                        // Additional stabilization: clamp color divisor changes
+                        colorDivisor = clamp(colorDivisor, 16.0, 256.0);
+                        
+                        let t = fract((iterations / colorDivisor) + uniforms.mandelbrot_color_offset);
                         var rgb = get_color_from_palette(t);
                         rgb = enhance_color_for_zoom(rgb, iterations, max_iter);
                         rgb = apply_julia_indicator(coord, rgb, uniforms.mandelbrot_zoom);
@@ -285,8 +320,27 @@ export class FractalRenderer
                             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                         }
 
-                        let color_divisor = select(32.0, 64.0, use_enhanced);
-                        let t = fract((iterations / color_divisor) + uniforms.julia_color_offset);
+                        // Enhanced color stability - stabilized color divisor
+                        let baseColorDivisor = select(32.0, 64.0, use_enhanced);
+                        var adaptiveFactor = max_iter / 256.0; // Normalize to base 256 iterations
+                        
+                        // Apply stability correction to reduce flickering
+                        if (uniforms.precision_level > 1.0) {
+                            // Use more stable color divisor for high precision
+                            adaptiveFactor = pow(adaptiveFactor, 0.7); // Reduce sensitivity to iteration changes
+                        }
+                        
+                        var colorDivisor = baseColorDivisor * adaptiveFactor;
+                        
+                        // Apply base divisor reduction for high precision
+                        if (uniforms.precision_level > 1.0) {
+                            colorDivisor = colorDivisor * 0.8; // Reduce base divisor
+                        }
+                        
+                        // Additional stabilization: clamp color divisor changes
+                        colorDivisor = clamp(colorDivisor, 16.0, 256.0);
+                        
+                        let t = fract((iterations / colorDivisor) + uniforms.julia_color_offset);
                         var rgb = get_color_from_palette(t);
                         rgb = enhance_color_for_zoom(rgb, iterations, max_iter);
 
@@ -321,8 +375,27 @@ export class FractalRenderer
                     return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                 }
 
-                let color_divisor = select(32.0, 64.0, use_enhanced);
-                let t = fract((iterations / color_divisor) + color_offset);
+                // Enhanced color stability - stabilized color divisor
+                let baseColorDivisor = select(32.0, 64.0, use_enhanced);
+                var adaptiveFactor = max_iter / 256.0; // Normalize to base 256 iterations
+                
+                // Apply stability correction to reduce flickering
+                if (uniforms.precision_level > 1.0) {
+                    // Use more stable color divisor for high precision
+                    adaptiveFactor = pow(adaptiveFactor, 0.7); // Reduce sensitivity to iteration changes
+                }
+                
+                var colorDivisor = baseColorDivisor * adaptiveFactor;
+                
+                // Apply base divisor reduction for high precision
+                if (uniforms.precision_level > 1.0) {
+                    colorDivisor = colorDivisor * 0.8; // Reduce base divisor
+                }
+                
+                // Additional stabilization: clamp color divisor changes
+                colorDivisor = clamp(colorDivisor, 16.0, 256.0);
+                
+                let t = fract((iterations / colorDivisor) + color_offset);
                 var rgb = get_color_from_palette(t);
                 rgb = enhance_color_for_zoom(rgb, iterations, max_iter);
 
@@ -418,6 +491,34 @@ export class FractalRenderer
         const juliaShaderParams = state.juliaZoomController.getShaderParams(aspect);
         const mandelbrotShaderParams = state.mandelbrotZoomController.getShaderParams(aspect);
 
+        // Apply color stabilization during zoom operations
+        let juliaColorOffset = state.juliaParams.colorOffset;
+        let mandelbrotColorOffset = state.mandelbrotParams.colorOffset;
+
+        // Smooth color offset transitions if stabilizer is active
+        if (state.colorStabilityBuffer && state.colorStabilityBuffer.stabilizerActive)
+        {
+            // Apply temporal smoothing to color offsets during zoom
+            if (!this.previousColorOffsets)
+            {
+                this.previousColorOffsets = {
+                    julia: juliaColorOffset,
+                    mandelbrot: mandelbrotColorOffset
+                };
+            }
+
+            const smoothingFactor = 0.8; // Higher = more smoothing
+            juliaColorOffset = this.previousColorOffsets.julia * smoothingFactor + juliaColorOffset * (1 - smoothingFactor);
+            mandelbrotColorOffset = this.previousColorOffsets.mandelbrot * smoothingFactor + mandelbrotColorOffset * (1 - smoothingFactor);
+
+            this.previousColorOffsets.julia = juliaColorOffset;
+            this.previousColorOffsets.mandelbrot = mandelbrotColorOffset;
+        }
+        else if (this.previousColorOffsets)
+        {
+            this.previousColorOffsets = null; // Reset when not stabilizing
+        }
+
         // Create enhanced uniform data array with new parameters
         const uniformData = new Float32Array([
             state.juliaParams.c_real,                          // 0
@@ -426,12 +527,12 @@ export class FractalRenderer
             state.juliaParams.offsetX,                         // 3
             state.juliaParams.offsetY,                         // 4
             state.juliaParams.maxIterations,                   // 5
-            state.juliaParams.colorOffset,                     // 6
+            juliaColorOffset,                                  // 6 - smoothed color offset
             state.mandelbrotParams.zoom,                       // 7
             state.mandelbrotParams.offsetX,                    // 8
             state.mandelbrotParams.offsetY,                    // 9
             state.mandelbrotParams.maxIterations,              // 10
-            state.mandelbrotParams.colorOffset,                // 11
+            mandelbrotColorOffset,                             // 11 - smoothed color offset
             dimensions.width,                                  // 12
             dimensions.height,                                 // 13
             renderModeValue,                                   // 14

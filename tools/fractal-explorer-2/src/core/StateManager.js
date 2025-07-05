@@ -60,6 +60,18 @@ export class StateManager extends EventEmitter
         // Infinite zoom state
         this.infiniteZoomEnabled = true;
         this.dynamicIterations = true;
+
+        // Color stability tracking
+        this.colorStabilityBuffer = {
+            lastIterationUpdate: 0,
+            iterationUpdateCooldown: 500, // ms before allowing iteration changes
+            stabilizerActive: false,
+            targetIterations: {
+                julia: DefaultJuliaParams.maxIterations,
+                mandelbrot: DefaultMandelbrotParams.maxIterations
+            },
+            smoothTransitionActive: false
+        };
     }
 
     /**
@@ -295,6 +307,9 @@ export class StateManager extends EventEmitter
     {
         const view = targetView || this.getActiveView();
 
+        // Enable color stabilizer during zoom operations
+        this.enableColorStabilizer();
+
         if (view === 'julia')
         {
             this.juliaZoomController.zoomAt(mouseX, mouseY, zoomFactor, aspect);
@@ -305,10 +320,11 @@ export class StateManager extends EventEmitter
             this.juliaParams.offsetX = shaderParams.offsetX;
             this.juliaParams.offsetY = shaderParams.offsetY;
 
-            // Update iterations based on zoom level
+            // Update iterations based on zoom level with color continuity
             if (this.dynamicIterations)
             {
-                this.juliaParams.maxIterations = this.juliaZoomController.getRecommendedIterations();
+                const newIterations = this.juliaZoomController.getRecommendedIterations();
+                this.updateIterationsWithStability('julia', newIterations);
             }
         }
         else
@@ -321,10 +337,11 @@ export class StateManager extends EventEmitter
             this.mandelbrotParams.offsetX = shaderParams.offsetX;
             this.mandelbrotParams.offsetY = shaderParams.offsetY;
 
-            // Update iterations based on zoom level
+            // Update iterations based on zoom level with color continuity
             if (this.dynamicIterations)
             {
-                this.mandelbrotParams.maxIterations = this.mandelbrotZoomController.getRecommendedIterations();
+                const newIterations = this.mandelbrotZoomController.getRecommendedIterations();
+                this.updateIterationsWithStability('mandelbrot', newIterations);
             }
         }
 
@@ -571,5 +588,111 @@ export class StateManager extends EventEmitter
         return 'Extreme';
     }
 
-    // ...existing code...
+    /**
+     * Enable color stabilizer during active zoom operations
+     */
+    enableColorStabilizer()
+    {
+        this.colorStabilityBuffer.stabilizerActive = true;
+        this.colorStabilityBuffer.iterationUpdateCooldown = 1000; // Increase cooldown during zoom
+
+        // Reset after a delay if no further zoom operations
+        clearTimeout(this.colorStabilityBuffer.stabilizerTimeout);
+        this.colorStabilityBuffer.stabilizerTimeout = setTimeout(() =>
+        {
+            this.disableColorStabilizer();
+        }, 2000);
+    }
+
+    /**
+     * Disable color stabilizer when zoom operations are complete
+     */
+    disableColorStabilizer()
+    {
+        this.colorStabilityBuffer.stabilizerActive = false;
+        this.colorStabilityBuffer.iterationUpdateCooldown = 500; // Normal cooldown
+        this.colorStabilityBuffer.smoothTransitionActive = false;
+    }
+
+    /**
+     * Update iterations with color stability mechanisms
+     * @param {string} fractalType - 'julia' or 'mandelbrot'
+     * @param {number} targetIterations - Target iteration count
+     */
+    updateIterationsWithStability(fractalType, targetIterations)
+    {
+        const now = Date.now();
+        const params = fractalType === 'julia' ? this.juliaParams : this.mandelbrotParams;
+        const currentIterations = params.maxIterations;
+
+        // Store target iterations for gradual transition
+        this.colorStabilityBuffer.targetIterations[fractalType] = targetIterations;
+
+        // Check if we're in cooldown period to prevent rapid changes
+        if (now - this.colorStabilityBuffer.lastIterationUpdate < this.colorStabilityBuffer.iterationUpdateCooldown)
+        {
+            return; // Skip update during cooldown
+        }
+
+        // Calculate iteration change magnitude
+        const iterationDelta = Math.abs(targetIterations - currentIterations);
+        const relativeChange = iterationDelta / currentIterations;
+
+        // Only update if change is significant but not too dramatic
+        if (relativeChange < 0.1)
+        {
+            return; // Change too small to matter
+        }
+
+        let newIterations = targetIterations;
+
+        // Apply gradual transition for large changes
+        if (relativeChange > 0.3)
+        {
+            // Large change - step gradually
+            const maxStep = currentIterations * 0.3;
+            const stepDirection = targetIterations > currentIterations ? 1 : -1;
+            newIterations = currentIterations + (stepDirection * maxStep);
+
+            // Round to stable values to reduce flickering
+            if (newIterations >= 1024)
+            {
+                newIterations = Math.round(newIterations / 128) * 128;
+            }
+            else if (newIterations >= 512)
+            {
+                newIterations = Math.round(newIterations / 64) * 64;
+            }
+            else
+            {
+                newIterations = Math.round(newIterations / 32) * 32;
+            }
+
+            this.colorStabilityBuffer.smoothTransitionActive = true;
+        }
+        else
+        {
+            // Moderate change - apply smoothing
+            newIterations = Math.round(newIterations / 32) * 32; // Round to multiples of 32
+            this.colorStabilityBuffer.smoothTransitionActive = false;
+        }
+
+        // Apply color offset continuity adjustment
+        if (Math.abs(newIterations - currentIterations) > currentIterations * 0.2)
+        {
+            const iterationRatio = newIterations / currentIterations;
+            // More sophisticated color offset adjustment
+            const offsetAdjustment = (iterationRatio - 1.0) * 0.1; // Smaller adjustment
+            params.colorOffset = (params.colorOffset + offsetAdjustment) % 1.0;
+
+            // Ensure color offset stays positive
+            if (params.colorOffset < 0) params.colorOffset += 1.0;
+        }
+
+        // Update iterations
+        params.maxIterations = newIterations;
+        this.colorStabilityBuffer.lastIterationUpdate = now;
+
+        console.log(`Updated ${fractalType} iterations: ${currentIterations} → ${newIterations} (target: ${targetIterations})`);
+    }
 }

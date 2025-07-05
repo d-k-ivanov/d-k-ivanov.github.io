@@ -535,38 +535,94 @@ export class InfiniteZoomController
     }
 
     /**
-     * Get adaptive iteration count based on zoom and precision level
-     * @returns {number} Adaptive iteration count
+     * Get adaptive iteration count with enhanced stability for color consistency
+     * @returns {number} Recommended iteration count
      */
     getAdaptiveIterations()
     {
         const baseIterations = 256;
         const currentZoom = Math.exp(this.logZoom);
 
-        // More sophisticated iteration scaling
+        // Much more conservative iteration scaling to prevent color flickering
         if (this.precisionLevel === 0)
         {
-            // Standard zoom levels
-            const zoomFactor = Math.log10(Math.max(1, currentZoom)) * 40;
-            return Math.min(1024, Math.max(baseIterations, baseIterations + zoomFactor));
+            // Standard zoom levels - very gentle scaling with stability zones
+            const zoomFactor = Math.log10(Math.max(1, currentZoom)) * 15; // Reduced from 20
+            const targetIterations = baseIterations + zoomFactor;
+            // Round to multiples of 64 for better stability
+            return Math.min(1024, Math.max(baseIterations, Math.round(targetIterations / 64) * 64));
         }
         else if (this.precisionLevel <= 2)
         {
-            // High precision levels
-            const zoomFactor = Math.log10(currentZoom) * 60;
-            return Math.min(2048, Math.max(512, baseIterations + zoomFactor));
+            // High precision levels - stability zones with plateau regions
+            const zoomLog = Math.log10(currentZoom);
+            let zoomFactor;
+
+            // Create plateau regions to reduce iteration changes
+            if (zoomLog < 6)
+            {
+                zoomFactor = zoomLog * 20; // Reduced from 30
+            } else if (zoomLog < 12)
+            {
+                zoomFactor = 120 + (zoomLog - 6) * 15; // Plateau region
+            } else
+            {
+                zoomFactor = 210 + (zoomLog - 12) * 10; // Gentle increase
+            }
+
+            const targetIterations = baseIterations + zoomFactor;
+            // Round to multiples of 128 for ultra stability
+            return Math.min(2048, Math.max(512, Math.round(targetIterations / 128) * 128));
         }
         else if (this.precisionLevel <= 4)
         {
-            // Ultra precision levels
-            const zoomFactor = Math.log10(currentZoom) * 80;
-            return Math.min(4096, Math.max(1024, baseIterations + zoomFactor));
+            // Ultra precision levels - highly controlled scaling with long plateaus
+            const zoomLog = Math.log10(currentZoom);
+            let zoomFactor;
+
+            // Extended plateau regions
+            if (zoomLog < 8)
+            {
+                zoomFactor = zoomLog * 25; // Reduced from 40
+            } else if (zoomLog < 16)
+            {
+                zoomFactor = 200 + (zoomLog - 8) * 15; // Long plateau
+            } else if (zoomLog < 24)
+            {
+                zoomFactor = 320 + (zoomLog - 16) * 10; // Another plateau
+            } else
+            {
+                zoomFactor = 400 + (zoomLog - 24) * 5; // Very gentle increase
+            }
+
+            const targetIterations = baseIterations + zoomFactor;
+            // Round to multiples of 256 for maximum stability
+            return Math.min(4096, Math.max(1024, Math.round(targetIterations / 256) * 256));
         }
         else
         {
-            // Extreme precision levels
-            const zoomFactor = Math.log10(currentZoom) * 100;
-            return Math.min(8192, Math.max(2048, baseIterations + zoomFactor));
+            // Extreme precision levels - minimal increases with very long plateaus
+            const zoomLog = Math.log10(currentZoom);
+            let zoomFactor;
+
+            // Very long plateaus to maintain color stability
+            if (zoomLog < 10)
+            {
+                zoomFactor = zoomLog * 30; // Reduced from 50
+            } else if (zoomLog < 20)
+            {
+                zoomFactor = 300 + (zoomLog - 10) * 15; // Very long plateau
+            } else if (zoomLog < 30)
+            {
+                zoomFactor = 450 + (zoomLog - 20) * 10; // Another long plateau
+            } else
+            {
+                zoomFactor = 550 + (zoomLog - 30) * 5; // Minimal increase
+            }
+
+            const targetIterations = baseIterations + zoomFactor;
+            // Round to multiples of 512 for ultimate stability
+            return Math.min(8192, Math.max(2048, Math.round(targetIterations / 512) * 512));
         }
     }
 
