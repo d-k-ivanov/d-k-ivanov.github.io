@@ -199,7 +199,7 @@ export class MouseHandler
 
         // Calculate aspect ratio for proper scaling
         let aspectRatio = rect.width / rect.height;
-        
+
         // Adjust aspect ratio for dual mode
         if (state.renderMode === 'dual')
         {
@@ -218,34 +218,43 @@ export class MouseHandler
         const complexDeltaX = -deltaX * pixelToComplexScaleX;
         const complexDeltaY = -deltaY * pixelToComplexScaleY;
 
-        // Update offset for the current fractal type
-        const newOffsetX = currentParams.offsetX + complexDeltaX;
-        const newOffsetY = currentParams.offsetY + complexDeltaY;
-
-        // Determine which parameters to update based on render mode and active view
-        if (state.renderMode === 'julia' || 
+        // Determine target view for pan operation
+        let targetView = state.activeView;
+        if (state.renderMode === 'julia' ||
             (state.renderMode === 'dual' && state.activeView === 'julia'))
         {
-            this.stateManager.updateJuliaParams({
-                offsetX: newOffsetX,
-                offsetY: newOffsetY
-            });
-        } 
-        else if (state.renderMode === 'mandelbrot' || 
-                 (state.renderMode === 'dual' && state.activeView === 'mandelbrot'))
-        {
-            this.stateManager.updateMandelbrotParams({
-                offsetX: newOffsetX,
-                offsetY: newOffsetY
-            });
+            targetView = 'julia';
         }
         else
         {
-            // For other fractal types, update mandelbrot params as base
-            this.stateManager.updateMandelbrotParams({
-                offsetX: newOffsetX,
-                offsetY: newOffsetY
-            });
+            targetView = 'mandelbrot';
+        }
+
+        // Use infinite pan if enabled to keep zoom precision in sync
+        if (state.infiniteZoomEnabled)
+        {
+            this.stateManager.applyInfinitePan(complexDeltaX, complexDeltaY, aspectRatio, targetView);
+        }
+        else
+        {
+            // Fallback to legacy direct parameter updates
+            const newOffsetX = currentParams.offsetX + complexDeltaX;
+            const newOffsetY = currentParams.offsetY + complexDeltaY;
+
+            if (targetView === 'julia')
+            {
+                this.stateManager.updateJuliaParams({
+                    offsetX: newOffsetX,
+                    offsetY: newOffsetY
+                });
+            }
+            else
+            {
+                this.stateManager.updateMandelbrotParams({
+                    offsetX: newOffsetX,
+                    offsetY: newOffsetY
+                });
+            }
         }
 
         // Update the last mouse position
