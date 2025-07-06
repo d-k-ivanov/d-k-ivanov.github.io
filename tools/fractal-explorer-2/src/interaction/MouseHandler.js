@@ -193,9 +193,7 @@ export class MouseHandler
     {
         const state = this.stateManager.getState();
         const rect = this.canvas.getBoundingClientRect();
-
         const currentParams = this.stateManager.getCurrentParams();
-        const currentZoom = currentParams.zoom;
 
         // Calculate aspect ratio for proper scaling
         let aspectRatio = rect.width / rect.height;
@@ -205,18 +203,6 @@ export class MouseHandler
         {
             aspectRatio = (rect.width / 2) / rect.height;
         }
-
-        // Calculate movement scale based on zoom level and viewport
-        // The scale should be: how much of the complex plane 1 pixel represents
-        const baseScale = 4.0; // Standard fractal viewport is [-2, 2] range
-        const pixelToComplexScaleX = (baseScale * aspectRatio) / (currentZoom * rect.width);
-        const pixelToComplexScaleY = baseScale / (currentZoom * rect.height);
-
-        // Invert mouse movement to make panning intuitive:
-        // Mouse drag right should move viewport right (fractal left)
-        // Mouse drag down should move viewport down (fractal up)
-        const complexDeltaX = -deltaX * pixelToComplexScaleX;
-        const complexDeltaY = -deltaY * pixelToComplexScaleY;
 
         // Determine target view for pan operation
         let targetView = state.activeView;
@@ -233,11 +219,28 @@ export class MouseHandler
         // Use infinite pan if enabled to keep zoom precision in sync
         if (state.infiniteZoomEnabled)
         {
-            this.stateManager.applyInfinitePan(complexDeltaX, complexDeltaY, aspectRatio, targetView);
+            // For infinite zoom, pass normalized pixel deltas directly
+            // The InfiniteZoomController will handle the complex plane scaling
+            const normalizedDeltaX = -deltaX / rect.width;  // Normalize to screen width
+            const normalizedDeltaY = -deltaY / rect.height; // Normalize to screen height
+
+            this.stateManager.applyInfinitePan(normalizedDeltaX, normalizedDeltaY, aspectRatio, targetView);
         }
         else
         {
-            // Fallback to legacy direct parameter updates
+            // For legacy mode, calculate complex plane deltas manually
+            const currentZoom = currentParams.zoom;
+            const baseScale = 4.0; // Standard fractal viewport is [-2, 2] range
+            const pixelToComplexScaleX = (baseScale * aspectRatio) / (currentZoom * rect.width);
+            const pixelToComplexScaleY = baseScale / (currentZoom * rect.height);
+
+            // Invert mouse movement to make panning intuitive:
+            // Mouse drag right should move viewport right (fractal left)
+            // Mouse drag down should move viewport down (fractal up)
+            const complexDeltaX = -deltaX * pixelToComplexScaleX;
+            const complexDeltaY = -deltaY * pixelToComplexScaleY;
+
+            // Apply direct parameter updates
             const newOffsetX = currentParams.offsetX + complexDeltaX;
             const newOffsetY = currentParams.offsetY + complexDeltaY;
 

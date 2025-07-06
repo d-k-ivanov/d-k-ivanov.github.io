@@ -416,12 +416,18 @@ export class InfiniteZoomController
     {
         const currentZoom = Math.exp(this.logZoom);
 
+        // Adaptive pan scaling to maintain consistent pan speed at all zoom levels
+        // Instead of linear scaling with zoom, use a logarithmic relationship
+        const basePanSpeed = 0.002; // Base pan sensitivity
+        const zoomAdaptiveFactor = Math.min(1.0, Math.log10(currentZoom + 1) / 15.0); // Gradual scaling
+        const adaptiveScale = basePanSpeed * (1.0 + zoomAdaptiveFactor);
+
         // Use different precision strategies based on zoom level
         if (currentZoom < this.maxStandardZoom)
         {
-            // Standard precision for performance
-            const scaleX = 4.0 * aspect / currentZoom;
-            const scaleY = 4.0 / currentZoom;
+            // Standard precision for performance with adaptive scaling
+            const scaleX = adaptiveScale * aspect;
+            const scaleY = adaptiveScale;
 
             const deltaRealStd = deltaX * scaleX;
             const deltaImagStd = deltaY * scaleY;
@@ -431,9 +437,9 @@ export class InfiniteZoomController
         }
         else
         {
-            // High precision for extreme zooms
-            const scaleX = HighPrecisionNumber.fromNumber(4.0 * aspect / currentZoom);
-            const scaleY = HighPrecisionNumber.fromNumber(4.0 / currentZoom);
+            // High precision for extreme zooms with adaptive scaling
+            const scaleX = HighPrecisionNumber.fromNumber(adaptiveScale * aspect);
+            const scaleY = HighPrecisionNumber.fromNumber(adaptiveScale);
 
             const deltaRealHP = HighPrecisionNumber.fromNumber(deltaX).multiply(scaleX);
             const deltaImagHP = HighPrecisionNumber.fromNumber(deltaY).multiply(scaleY);
