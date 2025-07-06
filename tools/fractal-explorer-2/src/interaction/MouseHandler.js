@@ -192,6 +192,7 @@ export class MouseHandler
         // Use infinite precision pan if enabled
         if (state.infiniteZoomEnabled)
         {
+            // Normalize the deltas to be consistent with viewport size
             const normalizedDeltaX = -(deltaX / rect.width);
             const normalizedDeltaY = -(deltaY / rect.height);
 
@@ -209,6 +210,10 @@ export class MouseHandler
             }
 
             this.stateManager.applyInfinitePan(normalizedDeltaX, normalizedDeltaY, aspect, targetView);
+
+            // Update the last mouse position for the next pan calculation
+            this.mouseState.lastX = this.mouseState.x;
+            this.mouseState.lastY = this.mouseState.y;
         }
         else
         {
@@ -230,9 +235,18 @@ export class MouseHandler
 
         const currentParams = this.stateManager.getCurrentParams();
         const currentZoom = currentParams.zoom;
-        const panSensitivity = 4.0 / currentZoom;
-        const complexDeltaX = -(deltaX / rect.width) * panSensitivity * aspect;
-        const complexDeltaY = -(deltaY / rect.height) * panSensitivity;
+
+        // Calculate the viewport size in complex plane coordinates
+        // The viewport spans from -2 to +2 in the Y direction (total of 4 units)
+        // and proportionally in the X direction based on aspect ratio
+        const viewportWidth = 4.0 * aspect / currentZoom;
+        const viewportHeight = 4.0 / currentZoom;
+
+        // Convert pixel movement to complex plane movement
+        // Positive deltaX means mouse moved right -> complex plane should move left (negative direction)
+        // Positive deltaY means mouse moved down -> complex plane should move up (negative direction due to flipped Y)
+        const complexDeltaX = -(deltaX / rect.width) * viewportWidth;
+        const complexDeltaY = (deltaY / rect.height) * viewportHeight;
 
         // Update offset for the active view
         const newOffsetX = currentParams.offsetX + complexDeltaX;
@@ -262,6 +276,7 @@ export class MouseHandler
             precision.centerY = newOffsetY;
         }
 
+        // Update the last mouse position for the next pan calculation
         this.mouseState.lastX = this.mouseState.x;
         this.mouseState.lastY = this.mouseState.y;
     }
