@@ -219,12 +219,13 @@ export class MouseHandler
         // Use infinite pan if enabled to keep zoom precision in sync
         if (state.infiniteZoomEnabled)
         {
-            // For infinite zoom, pass normalized pixel deltas directly
-            // The InfiniteZoomController will handle the complex plane scaling
-            const normalizedDeltaX = -deltaX / rect.width;  // Normalize to screen width
-            const normalizedDeltaY = -deltaY / rect.height; // Normalize to screen height
+            // For infinite zoom, we need to scale the deltas appropriately
+            // The InfiniteZoomController expects reasonable scale factors, not tiny normalized values
+            const panSensitivity = 100.0; // Adjust pan sensitivity for better responsiveness
+            const scaledDeltaX = -deltaX / panSensitivity;
+            const scaledDeltaY = -deltaY / panSensitivity;
 
-            this.stateManager.applyInfinitePan(normalizedDeltaX, normalizedDeltaY, aspectRatio, targetView);
+            this.stateManager.applyInfinitePan(scaledDeltaX, scaledDeltaY, aspectRatio, targetView);
         }
         else
         {

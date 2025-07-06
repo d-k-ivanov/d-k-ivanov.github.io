@@ -271,11 +271,8 @@ fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
         let brightness_base = 0.2 + 0.8 * (1.0 - convergence_speed);
         let brightness_variation = sin(iterations * 0.6 + distance_factor * 20.0) * 0.3 + 0.7;
         let distance_brightness = smoothstep(0.0, 0.01, distance_factor) * 0.5 + 0.5;
-        var brightness = brightness_base * brightness_variation * distance_brightness;
-
-        // Add fine detail shading
         let detail_factor = fract(distance_factor * 50.0 + iterations * 0.1);
-        brightness = brightness * (0.8 + 0.2 * detail_factor);
+        let brightness = brightness_base * brightness_variation * distance_brightness * (0.8 + 0.2 * detail_factor);
 
         // Create metallic-like highlights based on convergence
         let highlight = pow(max(0.0, 1.0 - convergence_speed), 2.0) * 0.3;
