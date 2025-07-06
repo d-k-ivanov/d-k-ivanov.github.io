@@ -63,7 +63,7 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     let fractal_type = floor(uniforms.render_mode);
 
     // Standard Mandelbrot/Julia iteration if fractal_type < 3
-    if (fractal_type < 3.0) {
+    if fractal_type < 3.0 {
         var z_current = z;
         var iterations = 0.0;
         let max_i = i32(max_iter);
@@ -72,7 +72,7 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
             let z_magnitude_sq = dot(z_current, z_current);
 
             // Early escape check for performance
-            if (z_magnitude_sq > ESCAPE_RADIUS_SQUARED) {
+            if z_magnitude_sq > ESCAPE_RADIUS_SQUARED {
                 break;
             }
 
@@ -87,29 +87,24 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 
         // Smooth iteration count for continuous coloring
         // Reduces banding artifacts in color gradients
-        if (iterations < max_iter) {
+        if iterations < max_iter {
             let z_magnitude = length(z_current);
-            if (z_magnitude > 1.0) {
+            if z_magnitude > 1.0 {
                 return iterations + 1.0 - log2(log2(z_magnitude));
             }
         }
 
         return iterations;
-    }
-    // Alternative fractal types
-    else if (fractal_type == 3.0) {
+    } else if fractal_type == 3.0 {
         // Burning Ship fractal
         return burning_ship_iteration(z, c, max_iter);
-    }
-    else if (fractal_type == 4.0) {
+    } else if fractal_type == 4.0 {
         // Tricorn fractal
         return tricorn_iteration(z, c, max_iter);
-    }
-    else if (fractal_type == 5.0) {
+    } else if fractal_type == 5.0 {
         // Phoenix fractal
         return phoenix_iteration(z, c, max_iter);
-    }
-    else if (fractal_type == 6.0) {
+    } else if fractal_type == 6.0 {
         // Newton fractal
         let newton_result = newton_iteration(z, c, max_iter);
         // Return just the iteration count for now (we'll handle root coloring later)
@@ -124,7 +119,7 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 
     for (var i = 0; i < max_i; i++) {
         let z_magnitude_sq = dot(z_current, z_current);
-        if (z_magnitude_sq > ESCAPE_RADIUS_SQUARED) {
+        if z_magnitude_sq > ESCAPE_RADIUS_SQUARED {
             break;
         }
 
@@ -137,9 +132,9 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     }
 
     // Smooth coloring for continuous gradient
-    if (iterations < max_iter) {
+    if iterations < max_iter {
         let z_magnitude = length(z_current);
-        if (z_magnitude > 1.0) {
+        if z_magnitude > 1.0 {
             return iterations + 1.0 - log2(log2(z_magnitude));
         }
     }
@@ -201,7 +196,7 @@ fn apply_julia_indicator(coord: vec2<f32>, base_color: vec3<f32>, zoom: f32) -> 
     let indicator_size = 0.02 / zoom;
 
     // Apply highlight if we're near the Julia parameter point
-    if (dist_to_julia < indicator_size) {
+    if dist_to_julia < indicator_size {
         // Fade strength based on distance
         let indicator_strength = 1.0 - (dist_to_julia / indicator_size);
 
@@ -243,7 +238,7 @@ fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
 
     // Get the base color based on which root was found
     let root_index = i32(root);
-    if (root_index >= 0 && root_index < 3) {
+    if root_index >= 0 && root_index < 3 {
         // Calculate convergence speed factor
         let convergence_speed = iterations / max_iter;
 
@@ -281,8 +276,7 @@ fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
         let highlight_color = vec3<f32>(1.0, 1.0, 0.9); // Warm white highlight
 
         // Root boundary enhancement
-        let boundary_effect = smoothstep(0.0, 0.005, distance_factor) *
-                             smoothstep(0.02, 0.01, distance_factor);
+        let boundary_effect = smoothstep(0.0, 0.005, distance_factor) * smoothstep(0.02, 0.01, distance_factor);
         let boundary_color = vec3<f32>(1.0, 1.0, 1.0); // White boundaries
 
         // Final color composition with enhanced layering
@@ -320,11 +314,11 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     // ====================================================================
     // DUAL VIEW MODE - Split screen with Mandelbrot (left) and Julia (right)
     // ====================================================================
-    if (render_mode > 1.5 && render_mode < 2.5) {
+    if render_mode > 1.5 && render_mode < 2.5 {
         // Adjust aspect ratio for half-screen width
         let aspect_ratio = (uniforms.canvas_width * 0.5) / uniforms.canvas_height;
 
-        if (uv.x < 0.5) {
+        if uv.x < 0.5 {
             // ----------------------------------------
             // LEFT HALF: MANDELBROT SET
             // ----------------------------------------
@@ -345,7 +339,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             );
 
             // Black for points in the set (reached max iterations)
-            if (iterations >= uniforms.mandelbrot_max_iterations) {
+            if iterations >= uniforms.mandelbrot_max_iterations {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -381,7 +375,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             let iterations = complex_iteration(coord, c, uniforms.julia_max_iterations);
 
             // Black for points in the set
-            if (iterations >= uniforms.julia_max_iterations) {
+            if iterations >= uniforms.julia_max_iterations {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -407,12 +401,10 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     // Uses select() to choose between Julia and Mandelbrot parameters
     let coord = vec2<f32>(
         // X coordinate mapping with proper zoom and offset
-        (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
-        select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
+        (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
 
         // Y coordinate mapping with proper zoom and offset
-        (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
-        select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
+        (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
     );
 
     // Select parameters based on render mode
@@ -424,9 +416,9 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     // Calculate iterations based on the fractal type
     var iterations: f32;
 
-    if (render_mode >= 3.0) {
+    if render_mode >= 3.0 {
         // For special fractal types (Burning Ship, Tricorn, Phoenix, Newton)
-        if (render_mode >= 3.0 && render_mode <= 6.0) {
+        if render_mode >= 3.0 && render_mode <= 6.0 {
             // For these fractals, use Mandelbrot-style iteration (z₀ = 0, c = coord)
             iterations = complex_iteration(vec2<f32>(0.0, 0.0), coord, max_iter);
         } else {
@@ -448,12 +440,12 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     }
 
     // Special handling for Newton fractal
-    if (render_mode == 6.0) {
+    if render_mode == 6.0 {
         return newton_color(coord, julia_c, max_iter);
     }
 
     // Black for points in the set (non-escaping points)
-    if (iterations >= max_iter) {
+    if iterations >= max_iter {
         return vec4<f32>(0.0, 0.0, 0.0, 1.0);
     }
 
@@ -466,7 +458,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     rgb = rgb * brightness;
 
     // Apply Julia parameter indicator in standard Mandelbrot mode
-    if (render_mode == 1.0) { // Standard Mandelbrot mode
+    if render_mode == 1.0 { // Standard Mandelbrot mode
         rgb = apply_julia_indicator(coord, rgb, current_zoom);
     }
 

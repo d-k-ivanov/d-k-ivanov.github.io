@@ -50,12 +50,12 @@ fn complex_iteration_enhanced(z: vec2<f32>, c: vec2<f32>, max_iter: f32, use_per
         let z_magnitude_sq = dot(z_current, z_current);
 
         // Enhanced early escape check
-        if (z_magnitude_sq > enhanced_escape_radius_sq) {
+        if z_magnitude_sq > enhanced_escape_radius_sq {
             break;
         }
 
         // High-precision complex multiplication with error compensation
-        if (use_perturbation && uniforms.precision_level > 1.0) {
+        if use_perturbation && uniforms.precision_level > 1.0 {
             // Use compensated arithmetic for better precision
             let a = z_current.x;
             let b = z_current.y;
@@ -77,11 +77,11 @@ fn complex_iteration_enhanced(z: vec2<f32>, c: vec2<f32>, max_iter: f32, use_per
     }
 
     // Enhanced smooth iteration count with adaptive precision
-    if (iterations < max_iter) {
+    if iterations < max_iter {
         let z_magnitude = length(z_current);
-        if (z_magnitude > 1.0) {
+        if z_magnitude > 1.0 {
             // More sophisticated smoothing for high zoom levels
-            if (uniforms.precision_level > 2.0) {
+            if uniforms.precision_level > 2.0 {
                 let log_zn = log2(log2(z_magnitude));
                 let fractional = log_zn - floor(log_zn);
                 return iterations + 1.0 - fractional;
@@ -108,36 +108,36 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 fn get_enhanced_color_palette(t: f32) -> vec3<f32> {
     let palette = array<vec3<f32>, 32>(
         // Deep blues - for very slow escape
-        vec3<f32>(0.0, 0.0, 0.1),   vec3<f32>(0.0, 0.0, 0.2),
-        vec3<f32>(0.0, 0.0, 0.35),  vec3<f32>(0.0, 0.1, 0.5),
-        vec3<f32>(0.0, 0.2, 0.65),  vec3<f32>(0.0, 0.35, 0.8),
+        vec3<f32>(0.0, 0.0, 0.1), vec3<f32>(0.0, 0.0, 0.2),
+        vec3<f32>(0.0, 0.0, 0.35), vec3<f32>(0.0, 0.1, 0.5),
+        vec3<f32>(0.0, 0.2, 0.65), vec3<f32>(0.0, 0.35, 0.8),
 
         // Blues to cyans
-        vec3<f32>(0.0, 0.5, 0.9),   vec3<f32>(0.1, 0.6, 0.95),
-        vec3<f32>(0.2, 0.7, 0.9),   vec3<f32>(0.35, 0.8, 0.85),
+        vec3<f32>(0.0, 0.5, 0.9), vec3<f32>(0.1, 0.6, 0.95),
+        vec3<f32>(0.2, 0.7, 0.9), vec3<f32>(0.35, 0.8, 0.85),
 
         // Cyan to green-blues
-        vec3<f32>(0.5, 0.85, 0.8),  vec3<f32>(0.65, 0.9, 0.7),
+        vec3<f32>(0.5, 0.85, 0.8), vec3<f32>(0.65, 0.9, 0.7),
         vec3<f32>(0.75, 0.95, 0.6), vec3<f32>(0.85, 0.95, 0.5),
 
         // Green-yellows
-        vec3<f32>(0.9, 0.95, 0.4),  vec3<f32>(0.95, 0.9, 0.3),
-        vec3<f32>(1.0, 0.85, 0.2),  vec3<f32>(1.0, 0.8, 0.1),
+        vec3<f32>(0.9, 0.95, 0.4), vec3<f32>(0.95, 0.9, 0.3),
+        vec3<f32>(1.0, 0.85, 0.2), vec3<f32>(1.0, 0.8, 0.1),
 
         // Oranges
-        vec3<f32>(1.0, 0.7, 0.05),  vec3<f32>(1.0, 0.65, 0.0),
-        vec3<f32>(1.0, 0.6, 0.0),   vec3<f32>(1.0, 0.5, 0.05),
+        vec3<f32>(1.0, 0.7, 0.05), vec3<f32>(1.0, 0.65, 0.0),
+        vec3<f32>(1.0, 0.6, 0.0), vec3<f32>(1.0, 0.5, 0.05),
 
         // Reds
-        vec3<f32>(0.95, 0.4, 0.1),  vec3<f32>(0.9, 0.3, 0.15),
-        vec3<f32>(0.85, 0.2, 0.2),  vec3<f32>(0.8, 0.15, 0.25),
+        vec3<f32>(0.95, 0.4, 0.1), vec3<f32>(0.9, 0.3, 0.15),
+        vec3<f32>(0.85, 0.2, 0.2), vec3<f32>(0.8, 0.15, 0.25),
 
         // Dark reds to purples
-        vec3<f32>(0.7, 0.1, 0.3),   vec3<f32>(0.6, 0.05, 0.35),
-        vec3<f32>(0.5, 0.0, 0.4),   vec3<f32>(0.4, 0.0, 0.35),
+        vec3<f32>(0.7, 0.1, 0.3), vec3<f32>(0.6, 0.05, 0.35),
+        vec3<f32>(0.5, 0.0, 0.4), vec3<f32>(0.4, 0.0, 0.35),
 
         // Deep purples - for fast escape
-        vec3<f32>(0.3, 0.0, 0.3),   vec3<f32>(0.2, 0.0, 0.25)
+        vec3<f32>(0.3, 0.0, 0.3), vec3<f32>(0.2, 0.0, 0.25)
     );
 
     // Enhanced interpolation with adaptive resolution
@@ -160,20 +160,20 @@ fn get_enhanced_color_palette(t: f32) -> vec3<f32> {
  * Standard color palette for compatibility
  */
 fn get_color_from_palette(t: f32) -> vec3<f32> {
-    if (uniforms.precision_level > 1.0) {
+    if uniforms.precision_level > 1.0 {
         return get_enhanced_color_palette(t);
     }
 
     // Original 16-color palette for standard zoom levels
     let palette = array<vec3<f32>, 16>(
-        vec3<f32>(0.0, 0.0, 0.1),   vec3<f32>(0.0, 0.0, 0.3),
-        vec3<f32>(0.0, 0.1, 0.5),   vec3<f32>(0.0, 0.3, 0.7),
-        vec3<f32>(0.0, 0.5, 0.9),   vec3<f32>(0.1, 0.6, 0.8),
-        vec3<f32>(0.3, 0.7, 0.7),   vec3<f32>(0.5, 0.8, 0.6),
-        vec3<f32>(0.7, 0.9, 0.4),   vec3<f32>(0.9, 0.9, 0.2),
-        vec3<f32>(1.0, 0.8, 0.1),   vec3<f32>(1.0, 0.6, 0.0),
-        vec3<f32>(1.0, 0.4, 0.1),   vec3<f32>(0.9, 0.2, 0.2),
-        vec3<f32>(0.7, 0.1, 0.3),   vec3<f32>(0.5, 0.0, 0.4)
+        vec3<f32>(0.0, 0.0, 0.1), vec3<f32>(0.0, 0.0, 0.3),
+        vec3<f32>(0.0, 0.1, 0.5), vec3<f32>(0.0, 0.3, 0.7),
+        vec3<f32>(0.0, 0.5, 0.9), vec3<f32>(0.1, 0.6, 0.8),
+        vec3<f32>(0.3, 0.7, 0.7), vec3<f32>(0.5, 0.8, 0.6),
+        vec3<f32>(0.7, 0.9, 0.4), vec3<f32>(0.9, 0.9, 0.2),
+        vec3<f32>(1.0, 0.8, 0.1), vec3<f32>(1.0, 0.6, 0.0),
+        vec3<f32>(1.0, 0.4, 0.1), vec3<f32>(0.9, 0.2, 0.2),
+        vec3<f32>(0.7, 0.1, 0.3), vec3<f32>(0.5, 0.0, 0.4)
     );
 
     let index = t * 15.0;
@@ -198,7 +198,7 @@ fn apply_julia_indicator(coord: vec2<f32>, base_color: vec3<f32>, zoom: f32) -> 
     let precision_factor = 1.0 + uniforms.precision_level * 0.5;
     let indicator_size = zoom_adjusted_size * precision_factor;
 
-    if (dist_to_julia < indicator_size) {
+    if dist_to_julia < indicator_size {
         let indicator_strength = 1.0 - (dist_to_julia / indicator_size);
         // Enhanced indicator with better visibility at high zoom
         let indicator_color = vec3<f32>(1.0, 0.9, 0.7); // Warm white
@@ -216,7 +216,7 @@ fn enhance_color_for_zoom(color: vec3<f32>, iterations: f32, max_iter: f32) -> v
     var enhanced_color = color;
 
     // Apply different enhancements based on precision level
-    if (uniforms.precision_level > 2.0) {
+    if uniforms.precision_level > 2.0 {
         // Ultra-high precision: enhanced contrast and detail
         let iteration_factor = iterations / max_iter;
         let contrast_boost = 1.0 + (1.0 - iteration_factor) * 0.3;
@@ -226,7 +226,7 @@ fn enhance_color_for_zoom(color: vec3<f32>, iterations: f32, max_iter: f32) -> v
         let shift_factor = sin(iterations * 0.1) * 0.05;
         enhanced_color.r += shift_factor;
         enhanced_color.g += shift_factor * 0.5;
-    } else if (uniforms.precision_level > 1.0) {
+    } else if uniforms.precision_level > 1.0 {
         // High precision: moderate enhancement
         let brightness_factor = 0.8 + 0.4 * (1.0 - iterations / max_iter);
         enhanced_color = enhanced_color * brightness_factor;
@@ -252,10 +252,10 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     let use_perturbation = uniforms.precision_level > 2.0;
 
     // Dual view mode with enhanced precision support
-    if (render_mode > 1.5 && render_mode < 2.5) {
+    if render_mode > 1.5 && render_mode < 2.5 {
         let aspect_ratio = (uniforms.canvas_width * 0.5) / uniforms.canvas_height;
 
-        if (uv.x < 0.5) {
+        if uv.x < 0.5 {
             // Left half: Enhanced Mandelbrot set
             let coord = vec2<f32>(
                 (uv.x * 2.0 - 0.5) * 4.0 * aspect_ratio / uniforms.mandelbrot_zoom + uniforms.mandelbrot_offset_x,
@@ -270,7 +270,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
                 use_perturbation
             );
 
-            if (iterations >= max_iter) {
+            if iterations >= max_iter {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -297,7 +297,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             let max_iter = select(uniforms.julia_max_iterations, uniforms.adaptive_iterations, use_enhanced);
             let iterations = complex_iteration_enhanced(coord, c, max_iter, use_perturbation);
 
-            if (iterations >= max_iter) {
+            if iterations >= max_iter {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -315,10 +315,8 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     let aspect_ratio = uniforms.canvas_width / uniforms.canvas_height;
 
     let coord = vec2<f32>(
-        (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
-        select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
-        (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) +
-        select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
+        (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
+        (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
     );
 
     let c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
@@ -336,7 +334,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
         render_mode > 0.5
     );
 
-    if (iterations >= max_iter) {
+    if iterations >= max_iter {
         return vec4<f32>(0.0, 0.0, 0.0, 1.0);
     }
 

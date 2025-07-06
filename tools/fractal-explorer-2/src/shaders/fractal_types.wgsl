@@ -24,7 +24,7 @@ fn burning_ship_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     for (var i = 0; i < max_i; i++) {
         // Check escape condition
         let z_magnitude_sq = dot(z_current, z_current);
-        if (z_magnitude_sq > 4.0) {
+        if z_magnitude_sq > 4.0 {
             break;
         }
 
@@ -41,9 +41,9 @@ fn burning_ship_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     }
 
     // Smooth coloring
-    if (iterations < max_iter) {
+    if iterations < max_iter {
         let z_magnitude = length(z_current);
-        if (z_magnitude > 1.0) {
+        if z_magnitude > 1.0 {
             return iterations + 1.0 - log2(log2(z_magnitude));
         }
     }
@@ -68,7 +68,7 @@ fn tricorn_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     for (var i = 0; i < max_i; i++) {
         // Check escape condition
         let z_magnitude_sq = dot(z_current, z_current);
-        if (z_magnitude_sq > 4.0) {
+        if z_magnitude_sq > 4.0 {
             break;
         }
 
@@ -85,9 +85,9 @@ fn tricorn_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     }
 
     // Smooth coloring
-    if (iterations < max_iter) {
+    if iterations < max_iter {
         let z_magnitude = length(z_current);
-        if (z_magnitude > 1.0) {
+        if z_magnitude > 1.0 {
             return iterations + 1.0 - log2(log2(z_magnitude));
         }
     }
@@ -116,7 +116,7 @@ fn phoenix_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 
     for (var i = 0; i < max_i; i++) {
         // Check escape condition
-        if (dot(z_current, z_current) > 4.0) {
+        if dot(z_current, z_current) > 4.0 {
             break;
         }
 
@@ -132,9 +132,9 @@ fn phoenix_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
     }
 
     // Smooth coloring
-    if (iterations < max_iter) {
+    if iterations < max_iter {
         let z_magnitude = length(z_current);
-        if (z_magnitude > 1.0) {
+        if z_magnitude > 1.0 {
             return iterations + 1.0 - log2(log2(z_magnitude));
         }
     }
@@ -192,7 +192,7 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
 
         // Calculate reciprocal of df_z with better numerical stability
         let df_z_sq = df_z.x * df_z.x + df_z.y * df_z.y;
-        if (df_z_sq < 1e-10) {
+        if df_z_sq < 1e-10 {
             break; // Avoid division by very small numbers
         }
 
@@ -215,26 +215,26 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
         final_distance = min_distance;
 
         // Enhanced convergence detection with variation
-        if (dist1 < modified_tolerance) {
+        if dist1 < modified_tolerance {
             root_index = 0.0;
             final_distance = dist1;
             break;
-        } else if (dist2 < modified_tolerance) {
+        } else if dist2 < modified_tolerance {
             root_index = 1.0;
             final_distance = dist2;
             break;
-        } else if (dist3 < modified_tolerance) {
+        } else if dist3 < modified_tolerance {
             root_index = 2.0;
             final_distance = dist3;
             break;
         }
 
         // Check for convergence stalling
-        if (abs(min_distance - previous_distance) < modified_tolerance * 0.01) {
+        if abs(min_distance - previous_distance) < modified_tolerance * 0.01 {
             // Assign to closest root even if not fully converged
-            if (dist1 <= dist2 && dist1 <= dist3) {
+            if dist1 <= dist2 && dist1 <= dist3 {
                 root_index = 0.0;
-            } else if (dist2 <= dist3) {
+            } else if dist2 <= dist3 {
                 root_index = 1.0;
             } else {
                 root_index = 2.0;
@@ -247,15 +247,15 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
     }
 
     // If no convergence, assign to nearest root
-    if (root_index < 0.0) {
+    if root_index < 0.0 {
         let dist1 = length(z_current - root1);
         let dist2 = length(z_current - root2);
         let dist3 = length(z_current - root3);
 
-        if (dist1 <= dist2 && dist1 <= dist3) {
+        if dist1 <= dist2 && dist1 <= dist3 {
             root_index = 0.0;
             final_distance = dist1;
-        } else if (dist2 <= dist3) {
+        } else if dist2 <= dist3 {
             root_index = 1.0;
             final_distance = dist2;
         } else {
