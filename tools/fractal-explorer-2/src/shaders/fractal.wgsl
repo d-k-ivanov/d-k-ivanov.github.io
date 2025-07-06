@@ -213,38 +213,97 @@ fn apply_julia_indicator(coord: vec2<f32>, base_color: vec3<f32>, zoom: f32) -> 
 }
 
 /**
- * Special coloring function for Newton fractal
- * Uses both iteration count and root information
+ * Enhanced coloring function for Newton fractal
+ * Uses iteration count, root information, and distance for rich visualization
  */
 fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
     let result = newton_iteration(z, c, max_iter);
     let iterations = result.x;
     let root = result.y; // Which root was found
+    let distance_to_root = result.z; // Distance to nearest root
 
-    // Define colors for each root
-    let root_colors = array<vec3<f32>, 3>(
-        vec3<f32>(0.8, 0.1, 0.1),  // Red
-        vec3<f32>(0.1, 0.8, 0.1),  // Green
-        vec3<f32>(0.1, 0.1, 0.8)   // Blue
+    // Enhanced color palette for each root with multiple hues
+    let root_colors_primary = array<vec3<f32>, 3>(
+        vec3<f32>(1.0, 0.2, 0.1),  // Bright red-orange
+        vec3<f32>(0.1, 0.9, 0.3),  // Bright green
+        vec3<f32>(0.2, 0.3, 1.0)   // Bright blue
+    );
+
+    let root_colors_secondary = array<vec3<f32>, 3>(
+        vec3<f32>(1.0, 0.6, 0.0),  // Orange
+        vec3<f32>(0.0, 0.7, 0.9),  // Cyan
+        vec3<f32>(0.8, 0.1, 0.9)   // Purple
+    );
+
+    let root_colors_tertiary = array<vec3<f32>, 3>(
+        vec3<f32>(0.9, 0.9, 0.2),  // Yellow
+        vec3<f32>(0.9, 0.2, 0.6),  // Magenta
+        vec3<f32>(0.2, 0.8, 0.8)   // Turquoise
     );
 
     // Get the base color based on which root was found
     let root_index = i32(root);
     if (root_index >= 0 && root_index < 3) {
-        let base_color = root_colors[root_index];
+        // Calculate convergence speed factor
+        let convergence_speed = iterations / max_iter;
 
-        // Calculate brightness based on iteration count
-        let normalized_iter = iterations / max_iter;
-        let brightness = 0.5 + 0.5 * (1.0 - normalized_iter);
+        // Use distance information for finer detail
+        let distance_factor = clamp(distance_to_root * 1000.0, 0.0, 1.0);
 
-        // Smoothly blend between dark and bright versions of the root color
-        let final_color = base_color * brightness;
+        // Create multiple color layers based on iteration bands
+        let iter_bands = fract(iterations * 0.25 + distance_factor * 2.0); // Enhanced banding
+        let smooth_iter = iterations + 1.0 - log2(log2(max(distance_to_root * 100.0, 1.0)));
+        let color_phase = fract(smooth_iter * 0.08 + distance_factor); // Phase for color cycling
 
-        return vec4<f32>(final_color, 1.0);
+        // Primary color based on root
+        let primary_color = root_colors_primary[root_index];
+        let secondary_color = root_colors_secondary[root_index];
+        let tertiary_color = root_colors_tertiary[root_index];
+
+        // Enhanced blending with distance-based modulation
+        let blend_factor1 = sin(iterations * 0.4 + distance_factor * 10.0) * 0.5 + 0.5;
+        let blend_factor2 = cos(iterations * 0.25 + distance_factor * 15.0) * 0.5 + 0.5;
+
+        var base_color = mix(primary_color, secondary_color, blend_factor1);
+        base_color = mix(base_color, tertiary_color, blend_factor2 * 0.4);
+
+        // Distance-based brightness with fine detail
+        let brightness_base = 0.2 + 0.8 * (1.0 - convergence_speed);
+        let brightness_variation = sin(iterations * 0.6 + distance_factor * 20.0) * 0.3 + 0.7;
+        let distance_brightness = smoothstep(0.0, 0.01, distance_factor) * 0.5 + 0.5;
+        var brightness = brightness_base * brightness_variation * distance_brightness;
+
+        // Add fine detail shading
+        let detail_factor = fract(distance_factor * 50.0 + iterations * 0.1);
+        brightness = brightness * (0.8 + 0.2 * detail_factor);
+
+        // Create metallic-like highlights based on convergence
+        let highlight = pow(max(0.0, 1.0 - convergence_speed), 2.0) * 0.3;
+        let highlight_strength = smoothstep(0.0, 0.002, distance_factor);
+        let highlight_color = vec3<f32>(1.0, 1.0, 0.9); // Warm white highlight
+
+        // Root boundary enhancement
+        let boundary_effect = smoothstep(0.0, 0.005, distance_factor) *
+                             smoothstep(0.02, 0.01, distance_factor);
+        let boundary_color = vec3<f32>(1.0, 1.0, 1.0); // White boundaries
+
+        // Final color composition with enhanced layering
+        var final_color = base_color * brightness;
+        final_color = mix(final_color, highlight_color, highlight * highlight_strength);
+        final_color = mix(final_color, boundary_color, boundary_effect * 0.3);
+
+        // Add chromatic enhancement
+        let saturation_boost = 1.3 + distance_factor * 0.5;
+        let luminance = dot(final_color, vec3<f32>(0.299, 0.587, 0.114));
+        let saturated_color = mix(vec3<f32>(luminance), final_color, saturation_boost);
+
+        return vec4<f32>(saturated_color, 1.0);
     }
 
-    // If no root was found (shouldn't happen with Newton)
-    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+    // Enhanced background for non-converged points
+    let background_pattern = sin(length(z) * 12.0 + atan2(z.y, z.x) * 3.0) * 0.5 + 0.5;
+    let background_color = vec3<f32>(0.05, 0.02, 0.15) * background_pattern * 0.5;
+    return vec4<f32>(background_color, 1.0);
 }
 
 /**

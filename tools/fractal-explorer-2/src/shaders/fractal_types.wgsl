@@ -4,8 +4,8 @@
  */
 
 // Common mathematical constants
-const NEWTON_EPSILON = 1e-6;
-const NEWTON_MAX_ITER = 10;
+const NEWTON_EPSILON = 1e-8;
+const NEWTON_MAX_ITER = 20;
 
 /**
  * Burning Ship fractal iteration function
@@ -143,13 +143,14 @@ fn phoenix_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 }
 
 /**
- * Newton fractal iteration function
+ * Enhanced Newton fractal iteration function
  * Based on Newton's method for finding roots of complex polynomials
+ * Returns detailed information for advanced coloring
  *
  * @param z - Initial complex value
  * @param c - Complex parameter (used for variations)
  * @param max_iter - Maximum iterations
- * @returns Iteration count and root information for coloring
+ * @returns vec3(iteration_count, root_index, final_distance)
  */
 fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
     var z_current = z;
@@ -161,11 +162,17 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
     let root2 = vec2<f32>(-0.5, 0.866025); // -0.5 + 0.866i
     let root3 = vec2<f32>(-0.5, -0.866025); // -0.5 - 0.866i
 
-    // Parameters for Newton's method
-    let tolerance = NEWTON_EPSILON; // Convergence threshold
+    // Enhanced parameters for Newton's method with variation support
+    let tolerance = NEWTON_EPSILON * 0.1; // Tighter tolerance for better precision
     var root_index = -1.0;
+    var final_distance = 1.0;
+    var previous_distance = 10.0;
 
-    // Main iteration loop with early escape
+    // Add slight variation using the c parameter for interesting effects
+    let variation_factor = length(c) * 0.1;
+    let modified_tolerance = tolerance * (1.0 + variation_factor);
+
+    // Main iteration loop with enhanced convergence detection
     for (var i = 0; i < NEWTON_MAX_ITER && i < max_i; i++) {
         // f(z) = z^3 - 1
         let z_squared = vec2<f32>(
@@ -183,8 +190,12 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
         // f'(z) = 3z^2
         let df_z = vec2<f32>(3.0 * z_squared.x, 3.0 * z_squared.y);
 
-        // Calculate reciprocal of df_z
+        // Calculate reciprocal of df_z with better numerical stability
         let df_z_sq = df_z.x * df_z.x + df_z.y * df_z.y;
+        if (df_z_sq < 1e-10) {
+            break; // Avoid division by very small numbers
+        }
+
         let df_z_recip = vec2<f32>(df_z.x, -df_z.y) / df_z_sq;
 
         // z = z - f(z)/f'(z)
@@ -195,25 +206,64 @@ fn newton_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec3<f32> {
 
         z_current = vec2<f32>(z_current.x - term.x, z_current.y - term.y);
 
-        // Check convergence to any root
+        // Check convergence to any root with distance tracking
         let dist1 = length(z_current - root1);
         let dist2 = length(z_current - root2);
         let dist3 = length(z_current - root3);
 
-        if (dist1 < tolerance) {
+        let min_distance = min(min(dist1, dist2), dist3);
+        final_distance = min_distance;
+
+        // Enhanced convergence detection with variation
+        if (dist1 < modified_tolerance) {
             root_index = 0.0;
+            final_distance = dist1;
             break;
-        } else if (dist2 < tolerance) {
+        } else if (dist2 < modified_tolerance) {
             root_index = 1.0;
+            final_distance = dist2;
             break;
-        } else if (dist3 < tolerance) {
+        } else if (dist3 < modified_tolerance) {
             root_index = 2.0;
+            final_distance = dist3;
             break;
         }
 
+        // Check for convergence stalling
+        if (abs(min_distance - previous_distance) < modified_tolerance * 0.01) {
+            // Assign to closest root even if not fully converged
+            if (dist1 <= dist2 && dist1 <= dist3) {
+                root_index = 0.0;
+            } else if (dist2 <= dist3) {
+                root_index = 1.0;
+            } else {
+                root_index = 2.0;
+            }
+            break;
+        }
+
+        previous_distance = min_distance;
         iterations += 1.0;
     }
 
-    // Return both iteration count and root information
-    return vec3<f32>(iterations, root_index, 0.0);
+    // If no convergence, assign to nearest root
+    if (root_index < 0.0) {
+        let dist1 = length(z_current - root1);
+        let dist2 = length(z_current - root2);
+        let dist3 = length(z_current - root3);
+
+        if (dist1 <= dist2 && dist1 <= dist3) {
+            root_index = 0.0;
+            final_distance = dist1;
+        } else if (dist2 <= dist3) {
+            root_index = 1.0;
+            final_distance = dist2;
+        } else {
+            root_index = 2.0;
+            final_distance = dist3;
+        }
+    }
+
+    // Return iteration count, root index, and final distance for advanced coloring
+    return vec3<f32>(iterations, root_index, final_distance);
 }
