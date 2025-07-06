@@ -267,15 +267,16 @@ fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
         var base_color = mix(primary_color, secondary_color, blend_factor1);
         base_color = mix(base_color, tertiary_color, blend_factor2 * 0.4);
 
-        // Distance-based brightness with fine detail
-        let brightness_base = 0.2 + 0.8 * (1.0 - convergence_speed);
-        let brightness_variation = sin(iterations * 0.6 + distance_factor * 20.0) * 0.3 + 0.7;
-        let distance_brightness = smoothstep(0.0, 0.01, distance_factor) * 0.5 + 0.5;
+        // Distance-based brightness with improved brightness for consistency
+        // Use similar brightness range as other fractals (0.6 to 1.0)
+        let brightness_base = 0.6 + 0.4 * (1.0 - convergence_speed); // Match other fractals
+        let brightness_variation = sin(iterations * 0.6 + distance_factor * 20.0) * 0.2 + 0.9; // Higher base, less variation
+        let distance_brightness = smoothstep(0.0, 0.01, distance_factor) * 0.3 + 0.7; // Less dimming
         let detail_factor = fract(distance_factor * 50.0 + iterations * 0.1);
-        let brightness = brightness_base * brightness_variation * distance_brightness * (0.8 + 0.2 * detail_factor);
+        let brightness = brightness_base * brightness_variation * distance_brightness * (0.9 + 0.1 * detail_factor); // Higher multipliers
 
-        // Create metallic-like highlights based on convergence
-        let highlight = pow(max(0.0, 1.0 - convergence_speed), 2.0) * 0.3;
+        // Create metallic-like highlights based on convergence - enhanced brightness
+        let highlight = pow(max(0.0, 1.0 - convergence_speed), 1.5) * 0.5; // Increased strength and adjusted power
         let highlight_strength = smoothstep(0.0, 0.002, distance_factor);
         let highlight_color = vec3<f32>(1.0, 1.0, 0.9); // Warm white highlight
 
@@ -297,9 +298,9 @@ fn newton_color(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> vec4<f32> {
         return vec4<f32>(saturated_color, 1.0);
     }
 
-    // Enhanced background for non-converged points
+    // Enhanced background for non-converged points with better brightness
     let background_pattern = sin(length(z) * 12.0 + atan2(z.y, z.x) * 3.0) * 0.5 + 0.5;
-    let background_color = vec3<f32>(0.05, 0.02, 0.15) * background_pattern * 0.5;
+    let background_color = vec3<f32>(0.1, 0.05, 0.2) * background_pattern * 0.8; // Brighter background
     return vec4<f32>(background_color, 1.0);
 }
 
