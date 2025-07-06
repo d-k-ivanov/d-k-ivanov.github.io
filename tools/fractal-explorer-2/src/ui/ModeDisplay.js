@@ -44,19 +44,19 @@ export class ModeDisplay
                         <span class="key">M</span> Mode
                     </div>
                     <div class="control-hint">
-                        <span class="key">J</span> Julia
-                    </div>
-                    <div class="control-hint">
                         <span class="key">D</span> Dual
                     </div>
                     <div class="control-hint">
-                        <span class="key">1-6</span> Fractals
+                        <span class="key">0-6</span> Fractals
                     </div>
                     <div class="control-hint">
                         <span class="key">R</span> Reset
                     </div>
                     <div class="control-hint">
                         <span class="key">F</span> Fullscreen
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">H</span> Help
                     </div>
                 </div>
             </div>
@@ -323,8 +323,8 @@ export class ModeDisplay
         const statusElement = document.createElement('div');
         statusElement.className = 'status-message';
         statusElement.style.cssText = `
-            position: absolute;
-            top: -40px;
+            position: fixed;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(100, 255, 218, 0.9);
@@ -336,6 +336,7 @@ export class ModeDisplay
             white-space: nowrap;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             animation: statusFadeIn 0.3s ease;
+            z-index: 200;
         `;
         statusElement.textContent = message;
 
@@ -357,7 +358,7 @@ export class ModeDisplay
             document.head.appendChild(style);
         }
 
-        this.container.appendChild(statusElement);
+        document.body.appendChild(statusElement);
 
         // Remove after duration
         setTimeout(() =>

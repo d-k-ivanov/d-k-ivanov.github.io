@@ -169,7 +169,7 @@ export class MouseHandler
     }
 
     /**
-     * Handle pan drag (middle button) - now with infinite precision support
+     * Handle pan drag (middle button) - simplified and more intuitive
      * @param {MouseEvent} event - Mouse event
      */
     handlePanDrag(event)
@@ -180,55 +180,16 @@ export class MouseHandler
         const state = this.stateManager.getState();
         const rect = this.canvas.getBoundingClientRect();
 
-        let aspect;
-        if (state.renderMode === 'dual')
-        {
-            aspect = (this.canvas.width / 2) / this.canvas.height;
-        } else
-        {
-            aspect = this.canvas.width / this.canvas.height;
-        }
-
-        // Use infinite precision pan if enabled
-        if (state.infiniteZoomEnabled)
-        {
-            // Normalize the deltas to be consistent with viewport size
-            const normalizedDeltaX = -(deltaX / rect.width);
-            const normalizedDeltaY = -(deltaY / rect.height);
-
-            // Determine target view for panning
-            let targetView = state.activeView;
-            if (state.renderMode === 'dual')
-            {
-                targetView = this.getViewFromMousePosition(this.mouseState.x, this.mouseState.y);
-            } else if (state.renderMode === 'julia')
-            {
-                targetView = 'julia';
-            } else
-            {
-                targetView = 'mandelbrot';
-            }
-
-            this.stateManager.applyInfinitePan(normalizedDeltaX, normalizedDeltaY, aspect, targetView);
-
-            // Update the last mouse position for the next pan calculation
-            this.mouseState.lastX = this.mouseState.x;
-            this.mouseState.lastY = this.mouseState.y;
-        }
-        else
-        {
-            // Legacy pan handling
-            this.handleLegacyPan(deltaX, deltaY, aspect);
-        }
+        // Use simple, direct pan handling
+        this.handleDirectPan(deltaX, deltaY);
     }
 
     /**
-     * Legacy pan handling for compatibility
+     * Direct pan handling - simple and intuitive
      * @param {number} deltaX - Delta X in pixels
      * @param {number} deltaY - Delta Y in pixels
-     * @param {number} aspect - Aspect ratio
      */
-    handleLegacyPan(deltaX, deltaY, aspect)
+    handleDirectPan(deltaX, deltaY)
     {
         const state = this.stateManager.getState();
         const rect = this.canvas.getBoundingClientRect();
@@ -236,47 +197,47 @@ export class MouseHandler
         const currentParams = this.stateManager.getCurrentParams();
         const currentZoom = currentParams.zoom;
 
-        // Calculate the viewport size in complex plane coordinates
-        // The viewport spans from -2 to +2 in the Y direction (total of 4 units)
-        // and proportionally in the X direction based on aspect ratio
-        const viewportWidth = 4.0 * aspect / currentZoom;
-        const viewportHeight = 4.0 / currentZoom;
+        // Calculate movement scale based on zoom level
+        // Higher zoom = smaller movement per pixel
+        const movementScale = 2.0 / (currentZoom * Math.min(rect.width, rect.height));
 
-        // Convert pixel movement to complex plane movement
-        // Positive deltaX means mouse moved right -> complex plane should move left (negative direction)
-        // Positive deltaY means mouse moved down -> complex plane should move up (negative direction due to flipped Y)
-        const complexDeltaX = -(deltaX / rect.width) * viewportWidth;
-        const complexDeltaY = (deltaY / rect.height) * viewportHeight;
+        // Mouse movement should directly correspond to fractal movement
+        // Mouse moves right -> fractal moves right (positive X direction)
+        // Mouse moves down -> fractal moves down (positive Y direction)
+        const complexDeltaX = deltaX * movementScale;
+        const complexDeltaY = deltaY * movementScale;
 
-        // Update offset for the active view
+        // Update offset for the current fractal type
         const newOffsetX = currentParams.offsetX + complexDeltaX;
         const newOffsetY = currentParams.offsetY + complexDeltaY;
 
-        if (state.activeView === 'julia' || state.renderMode === 'julia')
+        // Determine which parameters to update based on render mode and active view
+        if (state.renderMode === 'julia' || 
+            (state.renderMode === 'dual' && state.activeView === 'julia'))
         {
             this.stateManager.updateJuliaParams({
                 offsetX: newOffsetX,
                 offsetY: newOffsetY
             });
-
-            // Update precision tracking
-            const precision = state.zoomPrecision;
-            precision.centerX = newOffsetX;
-            precision.centerY = newOffsetY;
-        } else
+        } 
+        else if (state.renderMode === 'mandelbrot' || 
+                 (state.renderMode === 'dual' && state.activeView === 'mandelbrot'))
         {
             this.stateManager.updateMandelbrotParams({
                 offsetX: newOffsetX,
                 offsetY: newOffsetY
             });
-
-            // Update precision tracking
-            const precision = state.mandelbrotPrecision;
-            precision.centerX = newOffsetX;
-            precision.centerY = newOffsetY;
+        }
+        else
+        {
+            // For other fractal types, update mandelbrot params as base
+            this.stateManager.updateMandelbrotParams({
+                offsetX: newOffsetX,
+                offsetY: newOffsetY
+            });
         }
 
-        // Update the last mouse position for the next pan calculation
+        // Update the last mouse position
         this.mouseState.lastX = this.mouseState.x;
         this.mouseState.lastY = this.mouseState.y;
     }
