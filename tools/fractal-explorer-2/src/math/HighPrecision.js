@@ -506,15 +506,43 @@ export class InfiniteZoomController
     {
         const currentZoom = Math.exp(this.logZoom);
 
-        if (currentZoom < this.maxStandardZoom)
+        // Always provide reference coordinates for precision level 1 and above
+        if (this.precisionLevel >= 1 || currentZoom >= 1e6)
         {
-            // Standard precision is sufficient
+            // High precision with reference point support
+            const relativeCoords = this.getRelativeCoordinates();
+
+            return {
+                zoom: currentZoom,
+                offsetX: this.centerReal.toNumber(),
+                offsetY: this.centerImag.toNumber(),
+                needsHighPrecision: true,
+                precisionLevel: this.precisionLevel,
+                // Reference point parameters for precision preservation
+                referenceReal: relativeCoords.refReal,
+                referenceImag: relativeCoords.refImag,
+                perturbationScale: relativeCoords.scale,
+                // Enhanced parameters
+                adaptiveIterations: this.getAdaptiveIterations(),
+                colorScale: this.getColorScale(),
+                detailLevel: this.getDetailLevel()
+            };
+        }
+        else if (currentZoom < this.maxStandardZoom)
+        {
+            // Standard precision is sufficient, but still provide reference coordinates for consistency
+            const relativeCoords = this.getRelativeCoordinates();
+
             return {
                 zoom: currentZoom,
                 offsetX: this.centerReal.toNumber(),
                 offsetY: this.centerImag.toNumber(),
                 needsHighPrecision: false,
                 precisionLevel: this.precisionLevel,
+                // Provide reference coordinates even for standard precision
+                referenceReal: relativeCoords.refReal,
+                referenceImag: relativeCoords.refImag,
+                perturbationScale: relativeCoords.scale,
                 // Enhanced parameters for quality
                 adaptiveIterations: this.getAdaptiveIterations(),
                 colorScale: this.getColorScale(),
@@ -522,7 +550,7 @@ export class InfiniteZoomController
             };
         } else
         {
-            // High precision with perturbation support
+            // Ultra high precision with perturbation support
             const relativeCoords = this.getRelativeCoordinates();
 
             return {
@@ -568,86 +596,103 @@ export class InfiniteZoomController
         const baseIterations = 256;
         const currentZoom = Math.exp(this.logZoom);
 
-        // Much more conservative iteration scaling to prevent color flickering
+        // Much more aggressive iteration scaling for visible improvements
         if (this.precisionLevel === 0)
         {
-            // Standard zoom levels - very gentle scaling with stability zones
-            const zoomFactor = Math.log10(Math.max(1, currentZoom)) * 15; // Reduced from 20
+            // Standard zoom levels - gentle scaling
+            const zoomFactor = Math.log10(Math.max(1, currentZoom)) * 25;
             const targetIterations = baseIterations + zoomFactor;
             // Round to multiples of 64 for better stability
             return Math.min(1024, Math.max(baseIterations, Math.round(targetIterations / 64) * 64));
         }
-        else if (this.precisionLevel <= 2)
+        else if (this.precisionLevel === 1)
         {
-            // High precision levels - stability zones with plateau regions
+            // Level 1 (10^6+): DRAMATICALLY INCREASED scaling to show significant improvement
             const zoomLog = Math.log10(currentZoom);
             let zoomFactor;
 
-            // Create plateau regions to reduce iteration changes
-            if (zoomLog < 6)
+            if (zoomLog < 7)
             {
-                zoomFactor = zoomLog * 20; // Reduced from 30
-            } else if (zoomLog < 12)
+                zoomFactor = 500 + zoomLog * 120; // Much higher starting point and steeper scaling
+            } else if (zoomLog < 10)
             {
-                zoomFactor = 120 + (zoomLog - 6) * 15; // Plateau region
+                zoomFactor = 1340 + (zoomLog - 7) * 200; // Extreme increase to avoid pixelation
             } else
             {
-                zoomFactor = 210 + (zoomLog - 12) * 10; // Gentle increase
+                zoomFactor = 1940 + (zoomLog - 10) * 150; // Continue strong scaling
             }
 
             const targetIterations = baseIterations + zoomFactor;
-            // Round to multiples of 128 for ultra stability
-            return Math.min(2048, Math.max(512, Math.round(targetIterations / 128) * 128));
+            // Much more aggressive iteration counts for level 1
+            return Math.min(2560, Math.max(1024, Math.round(targetIterations / 128) * 128));
         }
-        else if (this.precisionLevel <= 4)
+        else if (this.precisionLevel === 2)
         {
-            // Ultra precision levels - highly controlled scaling with long plateaus
+            // Level 2 (10^12+): Even higher iterations
             const zoomLog = Math.log10(currentZoom);
             let zoomFactor;
 
-            // Extended plateau regions
-            if (zoomLog < 8)
+            if (zoomLog < 14)
             {
-                zoomFactor = zoomLog * 25; // Reduced from 40
-            } else if (zoomLog < 16)
-            {
-                zoomFactor = 200 + (zoomLog - 8) * 15; // Long plateau
-            } else if (zoomLog < 24)
-            {
-                zoomFactor = 320 + (zoomLog - 16) * 10; // Another plateau
+                zoomFactor = 800 + zoomLog * 60;
             } else
             {
-                zoomFactor = 400 + (zoomLog - 24) * 5; // Very gentle increase
+                zoomFactor = 1640 + (zoomLog - 14) * 40;
             }
 
             const targetIterations = baseIterations + zoomFactor;
-            // Round to multiples of 256 for maximum stability
-            return Math.min(4096, Math.max(1024, Math.round(targetIterations / 256) * 256));
+            return Math.min(2560, Math.max(1280, Math.round(targetIterations / 128) * 128));
+        }
+        else if (this.precisionLevel === 3)
+        {
+            // Level 3 (10^24+): Ultra high precision
+            const zoomLog = Math.log10(currentZoom);
+            let zoomFactor;
+
+            if (zoomLog < 26)
+            {
+                zoomFactor = 1500 + zoomLog * 70;
+            } else
+            {
+                zoomFactor = 3320 + (zoomLog - 26) * 50;
+            }
+
+            const targetIterations = baseIterations + zoomFactor;
+            return Math.min(4096, Math.max(2048, Math.round(targetIterations / 256) * 256));
+        }
+        else if (this.precisionLevel === 4)
+        {
+            // Level 4 (10^36+): Extreme precision
+            const zoomLog = Math.log10(currentZoom);
+            let zoomFactor;
+
+            if (zoomLog < 38)
+            {
+                zoomFactor = 2500 + zoomLog * 80;
+            } else
+            {
+                zoomFactor = 5540 + (zoomLog - 38) * 60;
+            }
+
+            const targetIterations = baseIterations + zoomFactor;
+            return Math.min(6144, Math.max(3072, Math.round(targetIterations / 256) * 256));
         }
         else
         {
-            // Extreme precision levels - minimal increases with very long plateaus
+            // Level 5 (10^48+): Maximum precision
             const zoomLog = Math.log10(currentZoom);
             let zoomFactor;
 
-            // Very long plateaus to maintain color stability
-            if (zoomLog < 10)
+            if (zoomLog < 50)
             {
-                zoomFactor = zoomLog * 30; // Reduced from 50
-            } else if (zoomLog < 20)
-            {
-                zoomFactor = 300 + (zoomLog - 10) * 15; // Very long plateau
-            } else if (zoomLog < 30)
-            {
-                zoomFactor = 450 + (zoomLog - 20) * 10; // Another long plateau
+                zoomFactor = 4000 + zoomLog * 100;
             } else
             {
-                zoomFactor = 550 + (zoomLog - 30) * 5; // Minimal increase
+                zoomFactor = 9000 + (zoomLog - 50) * 80;
             }
 
             const targetIterations = baseIterations + zoomFactor;
-            // Round to multiples of 512 for ultimate stability
-            return Math.min(8192, Math.max(2048, Math.round(targetIterations / 512) * 512));
+            return Math.min(8192, Math.max(4096, Math.round(targetIterations / 512) * 512));
         }
     }
 
@@ -663,6 +708,12 @@ export class InfiniteZoomController
         if (currentZoom < 1e6)
         {
             return 1.0;
+        }
+        else if (currentZoom < 1e10) 
+        {
+            // Enhanced color scaling at Level 1 precision for better detail visibility
+            const zoomFactor = Math.log10(currentZoom) - 6;
+            return 1.0 + zoomFactor * 0.35; // More aggressive scaling
         }
         else if (currentZoom < 1e12)
         {

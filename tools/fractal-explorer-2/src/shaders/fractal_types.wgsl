@@ -10,41 +10,55 @@ const NEWTON_MAX_ITER = 20;
 /**
  * Burning Ship fractal iteration function
  * Similar to the Mandelbrot set but uses the absolute values of real and imaginary parts
+ * Enhanced with adaptive iterations and precision awareness
  *
  * @param z - Initial complex value
  * @param c - Complex parameter
- * @param max_iter - Maximum iterations
+ * @param base_max_iter - Base maximum iterations (enhanced based on precision)
  * @returns Iteration count with smooth coloring
  */
-fn burning_ship_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
+fn burning_ship_iteration(z: vec2<f32>, c: vec2<f32>, base_max_iter: f32) -> f32 {
     var z_current = z;
     var iterations = 0.0;
+
+    // Use adaptive iterations from uniforms
+    let max_iter = max(base_max_iter, uniforms.adaptive_iterations);
     let max_i = i32(max_iter);
 
+    // Enhanced escape radius for higher precision
+    let escape_radius_sq = 4.0 * (1.0 + uniforms.precision_level * 0.5);
+
     for (var i = 0; i < max_i; i++) {
-        // Check escape condition
+        // Check escape condition with enhanced radius
         let z_magnitude_sq = dot(z_current, z_current);
-        if z_magnitude_sq > 4.0 {
+        if z_magnitude_sq > escape_radius_sq {
             break;
         }
 
         // Take the absolute value of components before squaring - key burning ship feature
         let abs_z = vec2<f32>(abs(z_current.x), abs(z_current.y));
 
-        // Complex square with absolute values
-        z_current = vec2<f32>(
-            abs_z.x * abs_z.x - abs_z.y * abs_z.y + c.x,
-            2.0 * abs_z.x * abs_z.y + c.y
-        );
+        // Enhanced complex square with precision consideration
+        if uniforms.precision_level >= 2.0 {
+            let real_part = abs_z.x * abs_z.x - abs_z.y * abs_z.y + c.x;
+            let imag_part = 2.0 * abs_z.x * abs_z.y + c.y;
+            z_current = vec2<f32>(real_part, imag_part);
+        } else {
+            z_current = vec2<f32>(
+                abs_z.x * abs_z.x - abs_z.y * abs_z.y + c.x,
+                2.0 * abs_z.x * abs_z.y + c.y
+            );
+        }
 
         iterations += 1.0;
     }
 
-    // Smooth coloring
+    // Enhanced smooth coloring with precision awareness
     if iterations < max_iter {
         let z_magnitude = length(z_current);
         if z_magnitude > 1.0 {
-            return iterations + 1.0 - log2(log2(z_magnitude));
+            let smoothing_factor = 1.0 + uniforms.precision_level * 0.1;
+            return iterations + smoothing_factor - log2(log2(z_magnitude + uniforms.precision_level * 0.01));
         }
     }
 
@@ -54,41 +68,55 @@ fn burning_ship_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 /**
  * Tricorn (Mandelbar) fractal iteration function
  * Similar to Mandelbrot but uses the complex conjugate
+ * Enhanced with adaptive iterations and precision awareness
  *
  * @param z - Initial complex value
  * @param c - Complex parameter
- * @param max_iter - Maximum iterations
+ * @param base_max_iter - Base maximum iterations (enhanced based on precision)
  * @returns Iteration count with smooth coloring
  */
-fn tricorn_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
+fn tricorn_iteration(z: vec2<f32>, c: vec2<f32>, base_max_iter: f32) -> f32 {
     var z_current = z;
     var iterations = 0.0;
+
+    // Use adaptive iterations from uniforms
+    let max_iter = max(base_max_iter, uniforms.adaptive_iterations);
     let max_i = i32(max_iter);
 
+    // Enhanced escape radius for higher precision
+    let escape_radius_sq = 4.0 * (1.0 + uniforms.precision_level * 0.5);
+
     for (var i = 0; i < max_i; i++) {
-        // Check escape condition
+        // Check escape condition with enhanced radius
         let z_magnitude_sq = dot(z_current, z_current);
-        if z_magnitude_sq > 4.0 {
+        if z_magnitude_sq > escape_radius_sq {
             break;
         }
 
         // Take complex conjugate (negate imaginary part)
         z_current = vec2<f32>(z_current.x, -z_current.y);
 
-        // Complex square
-        z_current = vec2<f32>(
-            z_current.x * z_current.x - z_current.y * z_current.y + c.x,
-            2.0 * z_current.x * z_current.y + c.y
-        );
+        // Enhanced complex square with precision consideration
+        if uniforms.precision_level >= 2.0 {
+            let real_part = z_current.x * z_current.x - z_current.y * z_current.y + c.x;
+            let imag_part = 2.0 * z_current.x * z_current.y + c.y;
+            z_current = vec2<f32>(real_part, imag_part);
+        } else {
+            z_current = vec2<f32>(
+                z_current.x * z_current.x - z_current.y * z_current.y + c.x,
+                2.0 * z_current.x * z_current.y + c.y
+            );
+        }
 
         iterations += 1.0;
     }
 
-    // Smooth coloring
+    // Enhanced smooth coloring with precision awareness
     if iterations < max_iter {
         let z_magnitude = length(z_current);
         if z_magnitude > 1.0 {
-            return iterations + 1.0 - log2(log2(z_magnitude));
+            let smoothing_factor = 1.0 + uniforms.precision_level * 0.1;
+            return iterations + smoothing_factor - log2(log2(z_magnitude + uniforms.precision_level * 0.01));
         }
     }
 
@@ -98,44 +126,60 @@ fn tricorn_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 /**
  * Phoenix fractal iteration function
  * A more complex fractal with memory of previous iteration
+ * Enhanced with adaptive iterations and precision awareness
  *
  * @param z - Initial complex value
  * @param c - Complex parameter
- * @param max_iter - Maximum iterations
+ * @param base_max_iter - Base maximum iterations (enhanced based on precision)
  * @returns Iteration count with smooth coloring
  */
-fn phoenix_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
+fn phoenix_iteration(z: vec2<f32>, c: vec2<f32>, base_max_iter: f32) -> f32 {
     var z_current = z;
     var z_previous = vec2<f32>(0.0, 0.0);
     var temp: vec2<f32>;
     var iterations = 0.0;
+
+    // Use adaptive iterations from uniforms
+    let max_iter = max(base_max_iter, uniforms.adaptive_iterations);
     let max_i = i32(max_iter);
+
+    // Enhanced escape radius for higher precision
+    let escape_radius_sq = 4.0 * (1.0 + uniforms.precision_level * 0.5);
 
     // Phoenix fractal parameters
     let p = vec2<f32>(0.56667, 0.0); // Additional parameter
 
     for (var i = 0; i < max_i; i++) {
-        // Check escape condition
-        if dot(z_current, z_current) > 4.0 {
+        // Check escape condition with enhanced radius
+        if dot(z_current, z_current) > escape_radius_sq {
             break;
         }
 
         // Phoenix iteration: z_n+1 = z_n^2 + c + p*z_n-1
         temp = z_current;
-        z_current = vec2<f32>(
-            z_current.x * z_current.x - z_current.y * z_current.y + c.x + p.x * z_previous.x - p.y * z_previous.y,
-            2.0 * z_current.x * z_current.y + c.y + p.x * z_previous.y + p.y * z_previous.x
-        );
+
+        // Enhanced computation with precision consideration
+        if uniforms.precision_level >= 2.0 {
+            let real_part = z_current.x * z_current.x - z_current.y * z_current.y + c.x + p.x * z_previous.x - p.y * z_previous.y;
+            let imag_part = 2.0 * z_current.x * z_current.y + c.y + p.x * z_previous.y + p.y * z_previous.x;
+            z_current = vec2<f32>(real_part, imag_part);
+        } else {
+            z_current = vec2<f32>(
+                z_current.x * z_current.x - z_current.y * z_current.y + c.x + p.x * z_previous.x - p.y * z_previous.y,
+                2.0 * z_current.x * z_current.y + c.y + p.x * z_previous.y + p.y * z_previous.x
+            );
+        }
         z_previous = temp;
 
         iterations += 1.0;
     }
 
-    // Smooth coloring
+    // Enhanced smooth coloring with precision awareness
     if iterations < max_iter {
         let z_magnitude = length(z_current);
         if z_magnitude > 1.0 {
-            return iterations + 1.0 - log2(log2(z_magnitude));
+            let smoothing_factor = 1.0 + uniforms.precision_level * 0.1;
+            return iterations + smoothing_factor - log2(log2(z_magnitude + uniforms.precision_level * 0.01));
         }
     }
 

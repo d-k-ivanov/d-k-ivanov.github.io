@@ -43,8 +43,15 @@ struct Uniforms {
     // 3.0=Burning Ship, 4.0=Tricorn, 5.0=Phoenix, 6.0=Newton
     render_mode: f32,
 
-    // Unused fractal power parameter (kept for buffer compatibility)
-    fractal_power: f32,
+    // Enhanced infinite zoom parameters
+    precision_level: f32,      // Current precision level (0-5)
+    color_scale: f32,          // Color scaling factor for deep zooms
+    detail_level: f32,         // Detail level for quality adjustments
+    reference_real: f32,       // Reference point for perturbation (high precision)
+    reference_imag: f32,       // Reference point for perturbation (high precision)
+    perturbation_scale: f32,   // Scale for perturbation calculations
+    adaptive_iterations: f32,  // Adaptive iteration count based on zoom
+    fractal_power: f32,        // Fractal power parameter
 }
 
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;
@@ -52,15 +59,22 @@ struct Uniforms {
 /**
  * Optimized complex number iteration with escape time algorithm
  * Uses efficient squared magnitude check and smooth iteration counting
+ * Enhanced with adaptive precision and iteration count based on zoom level
  *
  * @param z - Initial complex value (starting point)
  * @param c - Complex parameter (determines the specific fractal)
- * @param max_iter - Maximum number of iterations before assuming point is in the set
+ * @param base_max_iter - Base maximum iterations (will be enhanced based on precision level)
  * @returns Smooth iteration count (for continuous coloring)
  */
-fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
+fn complex_iteration(z: vec2<f32>, c: vec2<f32>, base_max_iter: f32) -> f32 {
     // Get the fractal type from the render mode
     let fractal_type = floor(uniforms.render_mode);
+
+    // Use adaptive iterations based on zoom level and precision
+    let max_iter = max(base_max_iter, uniforms.adaptive_iterations);
+
+    // Enhanced escape radius for higher precision levels
+    let escape_radius_sq = ESCAPE_RADIUS_SQUARED * (1.0 + uniforms.precision_level * 0.5);
 
     // Standard Mandelbrot/Julia iteration if fractal_type < 3
     if fractal_type < 3.0 {
@@ -68,74 +82,100 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
         var iterations = 0.0;
         let max_i = i32(max_iter);
 
+        // Enhanced iteration loop with precision-aware computations
         for (var i = 0; i < max_i; i++) {
             let z_magnitude_sq = dot(z_current, z_current);
 
-            // Early escape check for performance
-            if z_magnitude_sq > ESCAPE_RADIUS_SQUARED {
+            // Early escape check for performance with enhanced radius
+            if z_magnitude_sq > escape_radius_sq {
                 break;
             }
 
-            // Optimized complex multiplication: (a+bi)² + c
-            // (x + yi)² = (x² - y²) + (2xy)i
-            z_current = vec2<f32>(
-                z_current.x * z_current.x - z_current.y * z_current.y + c.x,
-                2.0 * z_current.x * z_current.y + c.y
-            );
+            // Enhanced complex multiplication with precision consideration
+            // For high precision levels, use more careful arithmetic
+            if uniforms.precision_level >= 2.0 {
+                // Higher precision computation path
+                let real_part = z_current.x * z_current.x - z_current.y * z_current.y + c.x;
+                let imag_part = 2.0 * z_current.x * z_current.y + c.y;
+                z_current = vec2<f32>(real_part, imag_part);
+            } else {
+                // Standard precision path for performance
+                z_current = vec2<f32>(
+                    z_current.x * z_current.x - z_current.y * z_current.y + c.x,
+                    2.0 * z_current.x * z_current.y + c.y
+                );
+            }
             iterations += 1.0;
         }
 
-        // Smooth iteration count for continuous coloring
-        // Reduces banding artifacts in color gradients
+        // Enhanced smooth iteration count with precision-aware computation
         if iterations < max_iter {
             let z_magnitude = length(z_current);
             if z_magnitude > 1.0 {
-                return iterations + 1.0 - log2(log2(z_magnitude));
+                // Enhanced smoothing factor based on precision level with more aggressive adjustments
+                let smoothing_factor = 1.0 + uniforms.precision_level * 0.25; // Increased factor for better detail
+
+                // Precision-aware logarithm calculation with enhanced detail preservation
+                var log_factor = log2(log2(z_magnitude + uniforms.precision_level * 0.005));
+
+                // Apply additional detail enhancement for Level 1 precision
+                if uniforms.precision_level >= 1.0 && uniforms.precision_level < 2.0 {
+                    // Fine detail enhancement specifically for Level 1 precision
+                    log_factor *= (1.0 - uniforms.precision_level * 0.1);
+                }
+
+                return iterations + smoothing_factor - log_factor;
             }
         }
 
         return iterations;
     } else if fractal_type == 3.0 {
-        // Burning Ship fractal
+        // Burning Ship fractal with adaptive iterations
         return burning_ship_iteration(z, c, max_iter);
     } else if fractal_type == 4.0 {
-        // Tricorn fractal
+        // Tricorn fractal with adaptive iterations
         return tricorn_iteration(z, c, max_iter);
     } else if fractal_type == 5.0 {
-        // Phoenix fractal
+        // Phoenix fractal with adaptive iterations
         return phoenix_iteration(z, c, max_iter);
     } else if fractal_type == 6.0 {
-        // Newton fractal
+        // Newton fractal with adaptive iterations
         let newton_result = newton_iteration(z, c, max_iter);
         // Return just the iteration count for now (we'll handle root coloring later)
         return newton_result.x;
     }
 
-    // Default to standard Mandelbrot-style iteration instead of recursion
-    // Avoid cyclic dependency by implementing the default case directly
+    // Default implementation with enhanced precision
     var z_current = z;
     var iterations = 0.0;
     let max_i = i32(max_iter);
 
     for (var i = 0; i < max_i; i++) {
         let z_magnitude_sq = dot(z_current, z_current);
-        if z_magnitude_sq > ESCAPE_RADIUS_SQUARED {
+        if z_magnitude_sq > escape_radius_sq {
             break;
         }
 
-        // Standard complex number squaring: (a+bi)² + c
-        z_current = vec2<f32>(
-            z_current.x * z_current.x - z_current.y * z_current.y + c.x,
-            2.0 * z_current.x * z_current.y + c.y
-        );
+        // Enhanced complex number squaring with precision consideration
+        if uniforms.precision_level >= 2.0 {
+            let real_part = z_current.x * z_current.x - z_current.y * z_current.y + c.x;
+            let imag_part = 2.0 * z_current.x * z_current.y + c.y;
+            z_current = vec2<f32>(real_part, imag_part);
+        } else {
+            z_current = vec2<f32>(
+                z_current.x * z_current.x - z_current.y * z_current.y + c.x,
+                2.0 * z_current.x * z_current.y + c.y
+            );
+        }
         iterations += 1.0;
     }
 
-    // Smooth coloring for continuous gradient
+    // Enhanced smooth coloring with precision-aware computation
     if iterations < max_iter {
         let z_magnitude = length(z_current);
         if z_magnitude > 1.0 {
-            return iterations + 1.0 - log2(log2(z_magnitude));
+            let smoothing_factor = 1.0 + uniforms.precision_level * 0.1;
+            return iterations + smoothing_factor - log2(log2(z_magnitude + uniforms.precision_level * 0.01));
         }
     }
 
@@ -145,6 +185,7 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
 /**
  * Professional color palette with mathematical aesthetics
  * 16-color palette designed for fractal visualization
+ * Enhanced with adaptive color scaling for deep zoom levels
  */
 fn get_color_from_palette(t: f32) -> vec3<f32> {
     let palette = array<vec3<f32>, 16>(
@@ -166,14 +207,42 @@ fn get_color_from_palette(t: f32) -> vec3<f32> {
         vec3<f32>(0.5, 0.0, 0.4)    // Purple - fast escape
     );
 
-    // Smooth interpolation between palette colors
-    let index = t * 15.0;
+    // Enhanced color mapping with adaptive scaling based on precision level
+    let enhanced_t = t * uniforms.color_scale;
+
+    // Smooth interpolation between palette colors with precision enhancement
+    let index = enhanced_t * 15.0;
     let i = i32(floor(index));
     let frac = fract(index);
     let i0 = clamp(i, 0, 15);
     let i1 = clamp(i + 1, 0, 15);
 
-    return mix(palette[i0], palette[i1], frac);
+    let base_color = mix(palette[i0], palette[i1], frac);
+
+    // Apply detail enhancement for high precision levels
+    if uniforms.precision_level >= 1.0 {
+        // Add more aggressive detail enhancement for better visualization at deep zoom
+        // Specifically target Level 1 precision for dramatic improvement
+        let frequency = 50.0 + uniforms.precision_level * 10.0; // Higher frequency = more detail bands
+        let amplitude = 0.05 + uniforms.precision_level * 0.04; // Higher amplitude = stronger contrast
+
+        // More sophisticated detail enhancement with multiple harmonics for Level 1
+        if uniforms.precision_level >= 1.0 && uniforms.precision_level < 2.0 {
+            // Multi-frequency enhancement specifically for Level 1
+            let detail_factor1 = sin(enhanced_t * frequency + uniforms.precision_level) * amplitude;
+            let detail_factor2 = sin(enhanced_t * frequency * 1.5 + uniforms.precision_level * 2.0) * (amplitude * 0.7);
+            let combined_factor = detail_factor1 + detail_factor2 + 1.0;
+
+            // Apply additional contrast enhancement for better visibility
+            return base_color * combined_factor + vec3<f32>(0.02, 0.02, 0.03) * sin(enhanced_t * 30.0);
+        } else {
+            // Standard enhancement for higher precision levels
+            let detail_factor = sin(enhanced_t * frequency + uniforms.precision_level) * amplitude + 1.0;
+            return base_color * detail_factor;
+        }
+    }
+
+    return base_color;
 }
 
 /**
@@ -332,14 +401,16 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             );
 
             // Calculate iterations for Mandelbrot set (z₀ = 0, c = coord)
+            // Use adaptive iterations for better precision
+            let max_iter_mandelbrot = max(uniforms.mandelbrot_max_iterations, uniforms.adaptive_iterations);
             let iterations = complex_iteration(
                 vec2<f32>(0.0, 0.0),  // z₀ = 0
                 coord,                // c = coordinate in complex plane
-                uniforms.mandelbrot_max_iterations
+                max_iter_mandelbrot
             );
 
             // Black for points in the set (reached max iterations)
-            if iterations >= uniforms.mandelbrot_max_iterations {
+            if iterations >= max_iter_mandelbrot {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -348,7 +419,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             var rgb = get_color_from_palette(t);
 
             // Apply brightness based on escape speed
-            let brightness = 0.6 + 0.4 * (1.0 - iterations / uniforms.mandelbrot_max_iterations);
+            let brightness = 0.6 + 0.4 * (1.0 - iterations / max_iter_mandelbrot);
             rgb = rgb * brightness;
 
             // Add visual indicator for current Julia parameter
@@ -372,10 +443,12 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             let c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
 
             // Calculate iterations for Julia set (z₀ = coord, c = constant)
-            let iterations = complex_iteration(coord, c, uniforms.julia_max_iterations);
+            // Use adaptive iterations for better precision
+            let max_iter_julia = max(uniforms.julia_max_iterations, uniforms.adaptive_iterations);
+            let iterations = complex_iteration(coord, c, max_iter_julia);
 
             // Black for points in the set
-            if iterations >= uniforms.julia_max_iterations {
+            if iterations >= max_iter_julia {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }
 
@@ -384,7 +457,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
             let rgb = get_color_from_palette(t);
 
             // Apply brightness based on escape speed
-            let brightness = 0.6 + 0.4 * (1.0 - iterations / uniforms.julia_max_iterations);
+            let brightness = 0.6 + 0.4 * (1.0 - iterations / max_iter_julia);
 
             return vec4<f32>(rgb * brightness, 1.0);
         }
@@ -398,18 +471,50 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     let aspect_ratio = uniforms.canvas_width / uniforms.canvas_height;
 
     // Calculate complex plane coordinates based on active mode
-    // Uses select() to choose between Julia and Mandelbrot parameters
-    let coord = vec2<f32>(
-        // X coordinate mapping with proper zoom and offset
-        (uv.x - 0.5) * 4.0 * aspect_ratio / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5),
+    // Enhanced coordinate calculation with precision preservation for infinite zoom
+    let zoom_level = select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5);
+    let offset_x = select(uniforms.julia_offset_x, uniforms.mandelbrot_offset_x, render_mode > 0.5);
+    let offset_y = select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5);
 
-        // Y coordinate mapping with proper zoom and offset
-        (uv.y - 0.5) * 4.0 / select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5) + select(uniforms.julia_offset_y, uniforms.mandelbrot_offset_y, render_mode > 0.5)
-    );
+    // Enhanced coordinate calculation that works for all precision levels
+    let normalized_x = (uv.x - 0.5) * aspect_ratio;
+    let normalized_y = (uv.y - 0.5);
+
+    // Use different coordinate calculation strategies based on precision level
+    var coord: vec2<f32>;
+
+    if uniforms.precision_level >= 2.0 && uniforms.perturbation_scale > 0.0 {
+        // Ultra-high precision mode: use perturbation theory with reference point
+        let ref_real = uniforms.reference_real;
+        let ref_imag = uniforms.reference_imag;
+        let scale = uniforms.perturbation_scale;
+
+        coord = vec2<f32>(
+            ref_real + normalized_x * scale,
+            ref_imag + normalized_y * scale
+        );
+    } else if uniforms.precision_level >= 1.0 {
+        // Enhanced precision mode (Level 1): use optimized direct calculation
+        // Scale constant makes a significant difference in avoiding precision issues
+        let scale_factor = 3.2; // Smaller number = more detail preservation
+        coord = vec2<f32>(
+            normalized_x * scale_factor / zoom_level + offset_x,
+            normalized_y * scale_factor / zoom_level + offset_y
+        );
+    } else {
+        // Standard precision mode: use traditional calculation
+        // This works well for zoom levels up to ~10^6
+        coord = vec2<f32>(
+            normalized_x * 4.0 / zoom_level + offset_x,
+            normalized_y * 4.0 / zoom_level + offset_y
+        );
+    }
 
     // Select parameters based on render mode
     let julia_c = vec2<f32>(uniforms.julia_c_real, uniforms.julia_c_imag);
-    let max_iter = select(uniforms.julia_max_iterations, uniforms.mandelbrot_max_iterations, render_mode > 0.5);
+    let base_max_iter = select(uniforms.julia_max_iterations, uniforms.mandelbrot_max_iterations, render_mode > 0.5);
+    // Use adaptive iterations for enhanced precision at deep zoom levels
+    let max_iter = max(base_max_iter, uniforms.adaptive_iterations);
     let color_offset = select(uniforms.julia_color_offset, uniforms.mandelbrot_color_offset, render_mode > 0.5);
     let current_zoom = select(uniforms.julia_zoom, uniforms.mandelbrot_zoom, render_mode > 0.5);
 

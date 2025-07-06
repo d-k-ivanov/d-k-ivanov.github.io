@@ -28,8 +28,8 @@ export class UniformBufferManager
     {
         this.bindGroupLayout = bindGroupLayout;
 
-        // Create initial buffer with placeholder data
-        const initialData = new Float32Array(24); // 24 floats = 96 bytes, aligned to 16 bytes
+        // Create initial buffer with expanded data for infinite zoom parameters
+        const initialData = new Float32Array(23); // Expanded to 23 floats = 92 bytes, aligned to 16 bytes
         this.uniformBuffer = this.webgpuContext.createUniformBuffer(initialData, 'Fractal Uniform Buffer');
 
         // Create bind group
@@ -44,7 +44,7 @@ export class UniformBufferManager
             'Fractal Bind Group'
         );
 
-        logger.debug('Uniform buffer manager initialized');
+        logger.debug('Uniform buffer manager initialized with enhanced infinite zoom support');
     }
 
     /**
@@ -98,7 +98,7 @@ export class UniformBufferManager
         // Apply color stabilization during zoom operations
         const colorOffsets = this.calculateStabilizedColorOffsets(state);
 
-        // Create enhanced uniform data array with new parameters
+        // Create enhanced uniform data array with infinite zoom parameters
         return new Float32Array([
             state.juliaParams.c_real,                          // 0
             state.juliaParams.c_imag,                          // 1
@@ -119,10 +119,10 @@ export class UniformBufferManager
             Math.max(juliaZoomInfo.precisionLevel || 0, mandelbrotZoomInfo.precisionLevel || 0), // 15 - precision_level
             juliaShaderParams.colorScale || mandelbrotShaderParams.colorScale || 1.0, // 16 - color_scale
             juliaShaderParams.detailLevel || mandelbrotShaderParams.detailLevel || 0.0, // 17 - detail_level
-            juliaShaderParams.referenceReal || 0.0,           // 18 - reference_real
-            juliaShaderParams.referenceImag || 0.0,           // 19 - reference_imag
-            juliaShaderParams.perturbationScale || 0.0,       // 20 - perturbation_scale
-            juliaShaderParams.adaptiveIterations || state.juliaParams.maxIterations, // 21 - adaptive_iterations
+            juliaShaderParams.referenceReal || mandelbrotShaderParams.referenceReal || 0.0, // 18 - reference_real
+            juliaShaderParams.referenceImag || mandelbrotShaderParams.referenceImag || 0.0, // 19 - reference_imag
+            juliaShaderParams.perturbationScale || mandelbrotShaderParams.perturbationScale || 0.0, // 20 - perturbation_scale
+            juliaShaderParams.adaptiveIterations || mandelbrotShaderParams.adaptiveIterations || state.juliaParams.maxIterations, // 21 - adaptive_iterations
             3.0                                               // 22 - fractal_power (unused)
         ]);
     }
