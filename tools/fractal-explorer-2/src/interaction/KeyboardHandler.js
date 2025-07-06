@@ -137,59 +137,26 @@ export class KeyboardHandler
             case 'D':
                 this.handleDualToggle();
                 break;
+            case '0':
+                this.handleModeSwitch(RenderModes.DUAL);
+                break;
             case '1':
                 this.handleModeSwitch(RenderModes.MANDELBROT);
                 break;
             case '2':
-                this.handleModeSwitch(RenderModes.BURNING_SHIP);
+                this.handleModeSwitch(RenderModes.JULIA);
                 break;
             case '3':
-                this.handleModeSwitch(RenderModes.TRICORN);
+                this.handleModeSwitch(RenderModes.BURNING_SHIP);
                 break;
             case '4':
-                this.handleModeSwitch(RenderModes.PHOENIX);
+                this.handleModeSwitch(RenderModes.TRICORN);
                 break;
             case '5':
-                this.handleModeSwitch(RenderModes.NEWTON);
+                this.handleModeSwitch(RenderModes.PHOENIX);
                 break;
             case '6':
-                this.handleModeSwitch(RenderModes.MULTIBROT);
-                break;
-            case 'b':
-            case 'B':
-                this.handleModeSwitch(RenderModes.BURNING_SHIP_JULIA);
-                break;
-
-            // Multibrot power controls
-            case '<':
-                if (this.stateManager.getState().renderMode === RenderModes.MULTIBROT)
-                {
-                    const currentPower = this.stateManager.getMultibrotPower();
-                    this.stateManager.setMultibrotPower(currentPower - 0.1);
-                    const powerMsg = `Multibrot Power: ${this.stateManager.getMultibrotPower().toFixed(1)}`;
-                    if (this.modeDisplay)
-                    {
-                        this.modeDisplay.showStatusMessage(powerMsg);
-                    } else
-                    {
-                        console.log(powerMsg);
-                    }
-                }
-                break;
-            case '>':
-                if (this.stateManager.getState().renderMode === RenderModes.MULTIBROT)
-                {
-                    const currentPower = this.stateManager.getMultibrotPower();
-                    this.stateManager.setMultibrotPower(currentPower + 0.1);
-                    const powerMsg = `Multibrot Power: ${this.stateManager.getMultibrotPower().toFixed(1)}`;
-                    if (this.modeDisplay)
-                    {
-                        this.modeDisplay.showStatusMessage(powerMsg);
-                    } else
-                    {
-                        console.log(powerMsg);
-                    }
-                }
+                this.handleModeSwitch(RenderModes.NEWTON);
                 break;
 
             // Utility controls
@@ -318,23 +285,16 @@ export class KeyboardHandler
                 this.stateManager.updateMandelbrotParams({ zoom: newZoom });
             }
         }
-        else if (state.renderMode === RenderModes.JULIA || state.renderMode === RenderModes.BURNING_SHIP_JULIA)
+        else if (state.renderMode === RenderModes.JULIA)
         {
             // Update Julia-based fractals
             this.stateManager.updateJuliaParams({ zoom: newZoom });
         }
         else
         {
-            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
+            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
             // They all use the Mandelbrot parameters for display
             this.stateManager.updateMandelbrotParams({ zoom: newZoom });
-
-            // Special handling for Multibrot if needed
-            if (state.renderMode === RenderModes.MULTIBROT &&
-                typeof this.stateManager.updateMultibrotParams === 'function')
-            {
-                this.stateManager.updateMultibrotParams({ zoom: newZoom });
-            }
         }
     }
 
@@ -379,7 +339,7 @@ export class KeyboardHandler
                 });
             }
         }
-        else if (state.renderMode === RenderModes.JULIA || state.renderMode === RenderModes.BURNING_SHIP_JULIA)
+        else if (state.renderMode === RenderModes.JULIA)
         {
             // Update Julia-based fractals
             this.stateManager.updateJuliaParams({
@@ -389,22 +349,12 @@ export class KeyboardHandler
         }
         else
         {
-            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
+            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
             // They all use the Mandelbrot parameters for navigation
             this.stateManager.updateMandelbrotParams({
                 offsetX: currentParams.offsetX + scaledDeltaX,
                 offsetY: currentParams.offsetY + scaledDeltaY
             });
-
-            // Special handling for Multibrot if needed
-            if (state.renderMode === RenderModes.MULTIBROT &&
-                typeof this.stateManager.updateMultibrotParams === 'function')
-            {
-                this.stateManager.updateMultibrotParams({
-                    offsetX: currentParams.offsetX + scaledDeltaX,
-                    offsetY: currentParams.offsetY + scaledDeltaY
-                });
-            }
         }
     }
 
@@ -452,7 +402,7 @@ export class KeyboardHandler
                 // Reset zoom to default for a better initial view of the new fractal
                 const newParams = { zoom: 1.0 };
 
-                if (mode === RenderModes.JULIA || mode === RenderModes.BURNING_SHIP_JULIA)
+                if (mode === RenderModes.JULIA)
                 {
                     // Reset Julia-based parameters
                     this.stateManager.updateJuliaParams(newParams);
@@ -460,13 +410,6 @@ export class KeyboardHandler
                 {
                     // For all other fractal types (all Mandelbrot-derived fractals)
                     this.stateManager.updateMandelbrotParams(newParams);
-
-                    // Special handling for Multibrot if needed
-                    if (mode === RenderModes.MULTIBROT &&
-                        typeof this.stateManager.updateMultibrotParams === 'function')
-                    {
-                        this.stateManager.updateMultibrotParams(newParams);
-                    }
                 }
 
                 // Make sure we reset the precision parameters as well
@@ -674,13 +617,11 @@ export class KeyboardHandler
             { keys: ['D'], description: 'Toggle dual mode (Mandelbrot + Julia only)' },
             { keys: ['Tab'], description: 'Switch active view in dual mode' },
             { keys: ['1'], description: 'Switch to Mandelbrot set' },
-            { keys: ['2'], description: 'Switch to Burning Ship fractal' },
-            { keys: ['3'], description: 'Switch to Tricorn fractal' },
-            { keys: ['4'], description: 'Switch to Phoenix fractal' },
-            { keys: ['5'], description: 'Switch to Newton fractal' },
-            { keys: ['6'], description: 'Switch to Multibrot set' },
-            { keys: ['B'], description: 'Switch to Burning Ship Julia' },
-            { keys: ['<', '>'], description: 'Adjust Multibrot power' },
+            { keys: ['2'], description: 'Switch to Julia fractal' },
+            { keys: ['3'], description: 'Switch to Burning Ship fractal' },
+            { keys: ['4'], description: 'Switch to Tricorn fractal' },
+            { keys: ['5'], description: 'Switch to Phoenix fractal' },
+            { keys: ['6'], description: 'Switch to Newton fractal' },
             { keys: ['I'], description: 'Toggle infinite zoom mode' },
             { keys: ['P'], description: 'Toggle dynamic iterations' },
             { keys: ['R'], description: 'Reset parameters' },

@@ -354,15 +354,15 @@ export class MouseHandler
                 currentParams = state.mandelbrotParams;
                 precision = state.mandelbrotPrecision;
             }
-        } else if (renderMode === RenderModes.JULIA || renderMode === RenderModes.BURNING_SHIP_JULIA)
+        } else if (renderMode === RenderModes.JULIA)
         {
-            // For all Julia-based fractals
+            // For Julia-based fractals
             currentParams = state.juliaParams;
             precision = state.zoomPrecision;
             isJuliaType = true;
         } else
         {
-            // For all Mandelbrot-based fractals (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
+            // For all Mandelbrot-based fractals (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
             currentParams = state.mandelbrotParams;
             precision = state.mandelbrotPrecision;
         }
@@ -405,13 +405,6 @@ export class MouseHandler
             this.stateManager.updateMandelbrotParams(updates);
             state.mandelbrotPrecision.centerX = updates.offsetX;
             state.mandelbrotPrecision.centerY = updates.offsetY;
-
-            // Special case for Multibrot set
-            if (renderMode === RenderModes.MULTIBROT &&
-                typeof this.stateManager.updateMultibrotParams === 'function')
-            {
-                this.stateManager.updateMultibrotParams(updates);
-            }
         }
     }
 

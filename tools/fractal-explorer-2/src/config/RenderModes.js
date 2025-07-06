@@ -9,9 +9,7 @@ export const RenderModes = {
     BURNING_SHIP: 'burning_ship',
     TRICORN: 'tricorn',
     PHOENIX: 'phoenix',
-    NEWTON: 'newton',
-    BURNING_SHIP_JULIA: 'burning_ship_julia',
-    MULTIBROT: 'multibrot'
+    NEWTON: 'newton'
 };
 
 /**
@@ -24,9 +22,7 @@ export const ShaderModes = {
     [RenderModes.BURNING_SHIP]: 3.0,
     [RenderModes.TRICORN]: 4.0,
     [RenderModes.PHOENIX]: 5.0,
-    [RenderModes.NEWTON]: 6.0,
-    [RenderModes.BURNING_SHIP_JULIA]: 7.0,
-    [RenderModes.MULTIBROT]: 8.0
+    [RenderModes.NEWTON]: 6.0
 };
 
 /**
@@ -71,11 +67,9 @@ export const RenderModeUtils = {
             RenderModes.MANDELBROT,
             RenderModes.JULIA,
             RenderModes.BURNING_SHIP,
-            RenderModes.BURNING_SHIP_JULIA,
             RenderModes.TRICORN,
             RenderModes.PHOENIX,
             RenderModes.NEWTON,
-            RenderModes.MULTIBROT,
             RenderModes.DUAL
         ];
 
@@ -98,11 +92,9 @@ export const RenderModeUtils = {
             case RenderModes.MANDELBROT: return 'Mandelbrot Set';
             case RenderModes.JULIA: return 'Julia Set';
             case RenderModes.BURNING_SHIP: return 'Burning Ship';
-            case RenderModes.BURNING_SHIP_JULIA: return 'Burning Ship Julia';
             case RenderModes.TRICORN: return 'Tricorn (Mandelbar)';
             case RenderModes.PHOENIX: return 'Phoenix';
             case RenderModes.NEWTON: return 'Newton';
-            case RenderModes.MULTIBROT: return 'Multibrot';
             case RenderModes.DUAL: return 'Dual View';
             default: return 'Unknown Mode';
         }
@@ -124,15 +116,13 @@ export const RenderModeUtils = {
  */
 export const KeyboardShortcuts = {
     TOGGLE_MODE: ['m', 'M'],
-    JULIA_MODE: ['j', 'J'],
     MANDELBROT_MODE: ['1'],
-    BURNING_SHIP_MODE: ['2'],
-    BURNING_SHIP_JULIA_MODE: ['b', 'B'],
-    TRICORN_MODE: ['3'],
-    PHOENIX_MODE: ['4'],
-    NEWTON_MODE: ['5'],
-    MULTIBROT_MODE: ['6'],
-    DUAL_MODE: ['d', 'D'],
+    JULIA_MODE: ['2'],
+    BURNING_SHIP_MODE: ['3'],
+    TRICORN_MODE: ['4'],
+    PHOENIX_MODE: ['5'],
+    NEWTON_MODE: ['6'],
+    DUAL_MODE: ['0', 'd', 'D'],
     SWITCH_VIEW: ['Tab'],
     FULLSCREEN: ['f', 'F'],
     RESET: ['r', 'R'],

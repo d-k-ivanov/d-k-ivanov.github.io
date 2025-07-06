@@ -247,10 +247,6 @@ export class ModeDisplay
                 modeText = 'Burning Ship';
                 modeClass = 'mode-other';
                 break;
-            case 'burning_ship_julia':
-                modeText = 'Burning Ship Julia';
-                modeClass = 'mode-other';
-                break;
             case 'tricorn':
                 modeText = 'Tricorn';
                 modeClass = 'mode-other';
@@ -261,10 +257,6 @@ export class ModeDisplay
                 break;
             case 'newton':
                 modeText = 'Newton';
-                modeClass = 'mode-other';
-                break;
-            case 'multibrot':
-                modeText = 'Multibrot';
                 modeClass = 'mode-other';
                 break;
             default:

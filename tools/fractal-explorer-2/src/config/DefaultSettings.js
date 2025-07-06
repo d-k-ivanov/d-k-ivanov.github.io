@@ -1,5 +1,8 @@
 /**
- * Default settings and initial parameters for the fractal explorer
+ * Default settings and };
+
+/**
+ * Default precision tracking parametersrs for the fractal explorer
  * Centralizes all default configurations
  */
 import { RenderModes, ViewTypes, QualityLevels } from './RenderModes.js';
@@ -25,18 +28,6 @@ export const DefaultMandelbrotParams = {
     zoom: 1.0,
     offsetX: MATH_CONSTANTS.MANDELBROT_CENTER_X,
     offsetY: MATH_CONSTANTS.MANDELBROT_CENTER_Y,
-    maxIterations: MATH_CONSTANTS.DEFAULT_MAX_ITERATIONS,
-    colorOffset: 0.0
-};
-
-/**
- * Default Multibrot parameters
- */
-export const DefaultMultibrotParams = {
-    power: 3.0, // Default to cubic (z^3 + c)
-    zoom: 1.0,
-    offsetX: 0.0,
-    offsetY: 0.0,
     maxIterations: MATH_CONSTANTS.DEFAULT_MAX_ITERATIONS,
     colorOffset: 0.0
 };

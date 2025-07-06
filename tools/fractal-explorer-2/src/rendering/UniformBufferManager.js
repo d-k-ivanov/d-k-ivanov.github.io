@@ -123,7 +123,7 @@ export class UniformBufferManager
             juliaShaderParams.referenceImag || 0.0,           // 19 - reference_imag
             juliaShaderParams.perturbationScale || 0.0,       // 20 - perturbation_scale
             juliaShaderParams.adaptiveIterations || state.juliaParams.maxIterations, // 21 - adaptive_iterations
-            state.multibrotPower || 3.0                       // 22 - fractal_power for Multibrot
+            3.0                                               // 22 - fractal_power (unused)
         ]);
     }
 
@@ -150,10 +150,6 @@ export class UniformBufferManager
                 return 5.0;
             case 'newton':
                 return 6.0;
-            case 'burning_ship_julia':
-                return 7.0;
-            case 'multibrot':
-                return 8.0;
             default:
                 logger.warn(`Unknown render mode: ${renderMode}, defaulting to julia`);
                 return 0.0;
