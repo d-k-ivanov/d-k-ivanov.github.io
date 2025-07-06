@@ -263,7 +263,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     // ====================================================================
     // DUAL VIEW MODE - Split screen with Mandelbrot (left) and Julia (right)
     // ====================================================================
-    if (render_mode > 1.5) {
+    if (render_mode > 1.5 && render_mode < 2.5) {
         // Adjust aspect ratio for half-screen width
         let aspect_ratio = (uniforms.canvas_width * 0.5) / uniforms.canvas_height;
 

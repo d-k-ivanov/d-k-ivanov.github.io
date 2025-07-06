@@ -197,15 +197,26 @@ export class MouseHandler
         const currentParams = this.stateManager.getCurrentParams();
         const currentZoom = currentParams.zoom;
 
-        // Calculate movement scale based on zoom level
-        // Higher zoom = smaller movement per pixel
-        const movementScale = 2.0 / (currentZoom * Math.min(rect.width, rect.height));
+        // Calculate aspect ratio for proper scaling
+        let aspectRatio = rect.width / rect.height;
+        
+        // Adjust aspect ratio for dual mode
+        if (state.renderMode === 'dual')
+        {
+            aspectRatio = (rect.width / 2) / rect.height;
+        }
 
-        // Mouse movement should directly correspond to fractal movement
-        // Mouse moves right -> fractal moves right (positive X direction)
-        // Mouse moves down -> fractal moves down (positive Y direction)
-        const complexDeltaX = deltaX * movementScale;
-        const complexDeltaY = deltaY * movementScale;
+        // Calculate movement scale based on zoom level and viewport
+        // The scale should be: how much of the complex plane 1 pixel represents
+        const baseScale = 4.0; // Standard fractal viewport is [-2, 2] range
+        const pixelToComplexScaleX = (baseScale * aspectRatio) / (currentZoom * rect.width);
+        const pixelToComplexScaleY = baseScale / (currentZoom * rect.height);
+
+        // Invert mouse movement to make panning intuitive:
+        // Mouse drag right should move viewport right (fractal left)
+        // Mouse drag down should move viewport down (fractal up)
+        const complexDeltaX = -deltaX * pixelToComplexScaleX;
+        const complexDeltaY = -deltaY * pixelToComplexScaleY;
 
         // Update offset for the current fractal type
         const newOffsetX = currentParams.offsetX + complexDeltaX;

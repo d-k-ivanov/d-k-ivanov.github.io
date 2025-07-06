@@ -252,7 +252,7 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     let use_perturbation = uniforms.precision_level > 2.0;
 
     // Dual view mode with enhanced precision support
-    if (render_mode > 1.5) {
+    if (render_mode > 1.5 && render_mode < 2.5) {
         let aspect_ratio = (uniforms.canvas_width * 0.5) / uniforms.canvas_height;
 
         if (uv.x < 0.5) {
