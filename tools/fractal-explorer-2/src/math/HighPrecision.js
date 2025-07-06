@@ -416,11 +416,14 @@ export class InfiniteZoomController
     {
         const currentZoom = Math.exp(this.logZoom);
 
-        // Adaptive pan scaling to maintain consistent pan speed at all zoom levels
-        // Instead of linear scaling with zoom, use a logarithmic relationship
-        const basePanSpeed = 0.002; // Base pan sensitivity
-        const zoomAdaptiveFactor = Math.min(1.0, Math.log10(currentZoom + 1) / 15.0); // Gradual scaling
-        const adaptiveScale = basePanSpeed * (1.0 + zoomAdaptiveFactor);
+        // Improved adaptive pan scaling for better responsiveness at all zoom levels
+        // Start with a reasonable base speed and scale appropriately with zoom
+        const basePanSpeed = 0.5; // Increased base pan sensitivity for better low-zoom responsiveness
+
+        // Scale down gradually as zoom increases to maintain precision at high zoom
+        // Use inverse relationship: as zoom increases, pan speed decreases proportionally
+        const zoomScale = Math.max(0.001, 1.0 / Math.sqrt(currentZoom)); // Inverse square root for smooth scaling
+        const adaptiveScale = basePanSpeed * zoomScale;
 
         // Use different precision strategies based on zoom level
         if (currentZoom < this.maxStandardZoom)
