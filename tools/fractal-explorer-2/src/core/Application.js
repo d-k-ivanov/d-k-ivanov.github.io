@@ -12,7 +12,7 @@ import { CoordinateDisplay } from '../ui/CoordinateDisplay.js';
 import { ModeDisplay } from '../ui/ModeDisplay.js';
 import { Performance } from '../utils/Performance.js';
 import { InfiniteZoomPerformanceMonitor } from '../utils/InfiniteZoomPerformance.js';
-import { InfiniteZoomHelp } from '../ui/InfiniteZoomHelp.js';
+import { FractalExplorerHelp } from '../ui/FractalExplorerHelp.js';
 
 export class Application
 {
@@ -28,7 +28,7 @@ export class Application
         this.modeDisplay = null;
         this.performance = new Performance();
         this.infiniteZoomPerformance = new InfiniteZoomPerformanceMonitor();
-        this.infiniteZoomHelp = new InfiniteZoomHelp();
+        this.fractalExplorerHelp = new FractalExplorerHelp();
 
         this.isInitialized = false;
         this.animationId = null;
@@ -101,7 +101,7 @@ export class Application
         this.modeDisplay.initialize();
 
         // Initialize infinite zoom help system
-        this.infiniteZoomHelp.initialize();
+        this.fractalExplorerHelp.initialize();
 
         // Connect UI to state changes
         this.stateManager.on('stateChange', (state) =>
