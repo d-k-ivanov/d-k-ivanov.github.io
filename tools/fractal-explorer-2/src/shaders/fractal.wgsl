@@ -41,10 +41,9 @@ struct Uniforms {
     // Rendering mode:
     // 0.0=Julia, 1.0=Mandelbrot, 2.0=Dual
     // 3.0=Burning Ship, 4.0=Tricorn, 5.0=Phoenix, 6.0=Newton
-    // 7.0=Burning Ship Julia, 8.0=Multibrot
     render_mode: f32,
 
-    // Fractal power (for Multibrot set)
+    // Unused fractal power parameter (kept for buffer compatibility)
     fractal_power: f32,
 }
 
@@ -115,50 +114,6 @@ fn complex_iteration(z: vec2<f32>, c: vec2<f32>, max_iter: f32) -> f32 {
         let newton_result = newton_iteration(z, c, max_iter);
         // Return just the iteration count for now (we'll handle root coloring later)
         return newton_result.x;
-    }
-    else if (fractal_type == 7.0) {
-        // Burning Ship Julia - Same as burning ship but with Julia set parameters
-        return burning_ship_iteration(z, c, max_iter);
-    }
-    else if (fractal_type == 8.0) {
-        // Multibrot set - Like Mandelbrot but with variable power
-        var z_current = z;
-        var iterations = 0.0;
-        let max_i = i32(max_iter);
-        let power = max(2.0, uniforms.fractal_power); // Default to 2 if not provided
-
-        for (var i = 0; i < max_i; i++) {
-            let z_magnitude_sq = dot(z_current, z_current);
-
-            // Early escape check for performance
-            if (z_magnitude_sq > ESCAPE_RADIUS_SQUARED) {
-                break;
-            }
-
-            // z^power using complex number polar form
-            let r = sqrt(z_magnitude_sq);
-            let theta = atan2(z_current.y, z_current.x);
-
-            let r_pow = pow(r, power);
-            let new_theta = theta * power;
-
-            z_current = vec2<f32>(
-                r_pow * cos(new_theta) + c.x,
-                r_pow * sin(new_theta) + c.y
-            );
-
-            iterations += 1.0;
-        }
-
-        // Smooth iteration count for continuous coloring
-        if (iterations < max_iter) {
-            let z_magnitude = length(z_current);
-            if (z_magnitude > 1.0) {
-                return iterations + 1.0 - log2(log2(z_magnitude)) / log2(power);
-            }
-        }
-
-        return iterations;
     }
 
     // Default to standard Mandelbrot-style iteration instead of recursion
@@ -413,15 +368,9 @@ fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     var iterations: f32;
 
     if (render_mode >= 3.0) {
-        // For special fractal types
-        if (render_mode == 7.0) { // Burning Ship Julia
-            // Julia version of Burning Ship (z₀ = coord, c = parameter)
-            iterations = complex_iteration(coord, julia_c, max_iter);
-        } else if (render_mode >= 3.0 && render_mode <= 6.0) { // Burning Ship, Tricorn, Phoenix, Newton (Mandelbrot variants)
+        // For special fractal types (Burning Ship, Tricorn, Phoenix, Newton)
+        if (render_mode >= 3.0 && render_mode <= 6.0) {
             // For these fractals, use Mandelbrot-style iteration (z₀ = 0, c = coord)
-            iterations = complex_iteration(vec2<f32>(0.0, 0.0), coord, max_iter);
-        } else if (render_mode == 8.0) { // Multibrot
-            // For Multibrot set (z₀ = 0, c = coord)
             iterations = complex_iteration(vec2<f32>(0.0, 0.0), coord, max_iter);
         } else {
             // Default to standard Mandelbrot
