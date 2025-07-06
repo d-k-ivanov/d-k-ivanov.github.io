@@ -427,7 +427,7 @@ export class InfiniteZoomController
         {
             // At very low zoom, maintain full speed
             zoomScale = 1.0;
-        } else if (currentZoom <= 100.0)
+        } else if (currentZoom <= 6.0)
         {
             // Gentle reduction for moderate zoom levels
             zoomScale = 1.0 / Math.sqrt(currentZoom);
@@ -435,7 +435,7 @@ export class InfiniteZoomController
         {
             // More aggressive reduction for high zoom levels
             // Use logarithmic scaling to prevent overly fast movement
-            const logZoom = Math.log10(currentZoom);
+            const logZoom = Math.log10(currentZoom / 2);
             zoomScale = Math.max(0.0001, 1.0 / (currentZoom * Math.pow(logZoom, 2)));
         }
 
