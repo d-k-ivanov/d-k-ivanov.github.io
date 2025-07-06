@@ -6,9 +6,10 @@ import { RenderModes, KeyboardShortcuts, NavigationKeys } from '../config/Render
 
 export class KeyboardHandler
 {
-    constructor(stateManager)
+    constructor(stateManager, modeDisplay = null)
     {
         this.stateManager = stateManager;
+        this.modeDisplay = modeDisplay;
 
         // Bind methods to preserve context
         this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -132,13 +133,63 @@ export class KeyboardHandler
             case 'M':
                 this.handleModeToggle();
                 break;
-            case 'j':
-            case 'J':
-                this.handleJuliaToggle();
-                break;
             case 'd':
             case 'D':
                 this.handleDualToggle();
+                break;
+            case '1':
+                this.handleModeSwitch(RenderModes.MANDELBROT);
+                break;
+            case '2':
+                this.handleModeSwitch(RenderModes.BURNING_SHIP);
+                break;
+            case '3':
+                this.handleModeSwitch(RenderModes.TRICORN);
+                break;
+            case '4':
+                this.handleModeSwitch(RenderModes.PHOENIX);
+                break;
+            case '5':
+                this.handleModeSwitch(RenderModes.NEWTON);
+                break;
+            case '6':
+                this.handleModeSwitch(RenderModes.MULTIBROT);
+                break;
+            case 'b':
+            case 'B':
+                this.handleModeSwitch(RenderModes.BURNING_SHIP_JULIA);
+                break;
+
+            // Multibrot power controls
+            case '<':
+                if (this.stateManager.getState().renderMode === RenderModes.MULTIBROT)
+                {
+                    const currentPower = this.stateManager.getMultibrotPower();
+                    this.stateManager.setMultibrotPower(currentPower - 0.1);
+                    const powerMsg = `Multibrot Power: ${this.stateManager.getMultibrotPower().toFixed(1)}`;
+                    if (this.modeDisplay)
+                    {
+                        this.modeDisplay.showStatusMessage(powerMsg);
+                    } else
+                    {
+                        console.log(powerMsg);
+                    }
+                }
+                break;
+            case '>':
+                if (this.stateManager.getState().renderMode === RenderModes.MULTIBROT)
+                {
+                    const currentPower = this.stateManager.getMultibrotPower();
+                    this.stateManager.setMultibrotPower(currentPower + 0.1);
+                    const powerMsg = `Multibrot Power: ${this.stateManager.getMultibrotPower().toFixed(1)}`;
+                    if (this.modeDisplay)
+                    {
+                        this.modeDisplay.showStatusMessage(powerMsg);
+                    } else
+                    {
+                        console.log(powerMsg);
+                    }
+                }
                 break;
 
             // Utility controls
@@ -255,13 +306,105 @@ export class KeyboardHandler
 
         const newZoom = Math.exp(precision.logZoom);
 
-        // Update parameters for active view
-        if (state.activeView === 'julia' || state.renderMode === 'julia')
+        // Update parameters for active view based on current mode
+        if (state.renderMode === RenderModes.DUAL)
         {
+            // In dual mode, update based on active view
+            if (state.activeView === RenderModes.JULIA)
+            {
+                this.stateManager.updateJuliaParams({ zoom: newZoom });
+            } else
+            {
+                this.stateManager.updateMandelbrotParams({ zoom: newZoom });
+            }
+        }
+        else if (state.renderMode === RenderModes.JULIA || state.renderMode === RenderModes.BURNING_SHIP_JULIA)
+        {
+            // Update Julia-based fractals
             this.stateManager.updateJuliaParams({ zoom: newZoom });
-        } else
+        }
+        else
         {
+            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
+            // They all use the Mandelbrot parameters for display
             this.stateManager.updateMandelbrotParams({ zoom: newZoom });
+
+            // Special handling for Multibrot if needed
+            if (state.renderMode === RenderModes.MULTIBROT &&
+                typeof this.stateManager.updateMultibrotParams === 'function')
+            {
+                this.stateManager.updateMultibrotParams({ zoom: newZoom });
+            }
+        }
+    }
+
+    /**
+     * Legacy navigation handling for compatibility with all fractal types
+     * @param {string} direction - Navigation direction
+     * @param {number} step - Movement step size
+     */
+    handleLegacyNavigation(direction, step)
+    {
+        const state = this.stateManager.getState();
+        let deltaX = 0, deltaY = 0;
+
+        switch (direction)
+        {
+            case 'left': deltaX = -step; break;
+            case 'right': deltaX = step; break;
+            case 'up': deltaY = -step; break;
+            case 'down': deltaY = step; break;
+        }
+
+        const currentParams = this.stateManager.getCurrentParams();
+        const currentZoom = currentParams.zoom;
+        const scaledDeltaX = deltaX / currentZoom;
+        const scaledDeltaY = deltaY / currentZoom;
+
+        // Update parameters for active view based on current mode
+        if (state.renderMode === RenderModes.DUAL)
+        {
+            // In dual mode, update based on active view
+            if (state.activeView === RenderModes.JULIA)
+            {
+                this.stateManager.updateJuliaParams({
+                    offsetX: currentParams.offsetX + scaledDeltaX,
+                    offsetY: currentParams.offsetY + scaledDeltaY
+                });
+            } else
+            {
+                this.stateManager.updateMandelbrotParams({
+                    offsetX: currentParams.offsetX + scaledDeltaX,
+                    offsetY: currentParams.offsetY + scaledDeltaY
+                });
+            }
+        }
+        else if (state.renderMode === RenderModes.JULIA || state.renderMode === RenderModes.BURNING_SHIP_JULIA)
+        {
+            // Update Julia-based fractals
+            this.stateManager.updateJuliaParams({
+                offsetX: currentParams.offsetX + scaledDeltaX,
+                offsetY: currentParams.offsetY + scaledDeltaY
+            });
+        }
+        else
+        {
+            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
+            // They all use the Mandelbrot parameters for navigation
+            this.stateManager.updateMandelbrotParams({
+                offsetX: currentParams.offsetX + scaledDeltaX,
+                offsetY: currentParams.offsetY + scaledDeltaY
+            });
+
+            // Special handling for Multibrot if needed
+            if (state.renderMode === RenderModes.MULTIBROT &&
+                typeof this.stateManager.updateMultibrotParams === 'function')
+            {
+                this.stateManager.updateMultibrotParams({
+                    offsetX: currentParams.offsetX + scaledDeltaX,
+                    offsetY: currentParams.offsetY + scaledDeltaY
+                });
+            }
         }
     }
 
@@ -291,54 +434,95 @@ export class KeyboardHandler
     }
 
     /**
-     * Handle Julia mode toggle (J key) - toggles between Julia and Mandelbrot modes
+     * Handle specific mode switching (number keys)
+     * @param {string} mode - Render mode to switch to
      */
-    handleJuliaToggle()
+    handleModeSwitch(mode)
     {
-        const state = this.stateManager.getState();
+        // If the mode is valid, switch to it
+        if (Object.values(RenderModes).includes(mode))
+        {
+            // Reset some parameters when switching between different fractal types
+            const currentMode = this.stateManager.getState().renderMode;
 
-        if (state.renderMode === RenderModes.DUAL)
+            // Reset zoom level if switching between different fractal types
+            // (except for dual mode which should preserve both views)
+            if (currentMode !== mode && mode !== RenderModes.DUAL && currentMode !== RenderModes.DUAL)
+            {
+                // Reset zoom to default for a better initial view of the new fractal
+                const newParams = { zoom: 1.0 };
+
+                if (mode === RenderModes.JULIA || mode === RenderModes.BURNING_SHIP_JULIA)
+                {
+                    // Reset Julia-based parameters
+                    this.stateManager.updateJuliaParams(newParams);
+                } else
+                {
+                    // For all other fractal types (all Mandelbrot-derived fractals)
+                    this.stateManager.updateMandelbrotParams(newParams);
+
+                    // Special handling for Multibrot if needed
+                    if (mode === RenderModes.MULTIBROT &&
+                        typeof this.stateManager.updateMultibrotParams === 'function')
+                    {
+                        this.stateManager.updateMultibrotParams(newParams);
+                    }
+                }
+
+                // Make sure we reset the precision parameters as well
+                const precision = this.stateManager.getCurrentPrecision();
+                if (precision)
+                {
+                    precision.logZoom = 0; // Reset log zoom to default (zoom = 1.0)
+                }
+            }
+
+            // Set the render mode
+            this.stateManager.setRenderMode(mode);
+
+            const displayName = mode.charAt(0).toUpperCase() + mode.slice(1).replace(/_/g, ' ');
+
+            // Show status message if mode display is available
+            if (this.modeDisplay)
+            {
+                this.modeDisplay.showStatusMessage(`Switched to ${displayName} mode`);
+            }
+
+            console.log(`Switched to ${displayName} mode`);
+        } else
         {
-            // In dual mode: Switch to isolated Julia exploration
-            this.stateManager.setRenderMode(RenderModes.JULIA);
-            console.log('Switched to isolated Julia exploration mode');
-        } else if (state.renderMode === RenderModes.MANDELBROT)
-        {
-            // From Mandelbrot: Create Julia set using current coordinates
-            const complexCoords = state.complexCoordinates;
-            this.stateManager.updateJuliaParams({
-                c_real: complexCoords.x,
-                c_imag: complexCoords.y,
-                zoom: 1.0,
-                offsetX: 0.0,
-                offsetY: 0.0,
-                maxIterations: 256
-            });
-            this.stateManager.setRenderMode(RenderModes.JULIA);
-            console.log('Created Julia set from current coordinates');
-        } else if (state.renderMode === RenderModes.JULIA)
-        {
-            // From Julia: Return to Mandelbrot mode
-            this.stateManager.setRenderMode(RenderModes.MANDELBROT);
-            console.log('Switched back to Mandelbrot mode');
+            console.warn(`Unknown render mode: ${mode}`);
         }
     }
 
     /**
-     * Handle dual mode toggle (D key)
+     * Handle dual mode toggle (D key) - only for Mandelbrot + Julia
      */
     handleDualToggle()
     {
         const state = this.stateManager.getState();
 
-        if (state.renderMode !== RenderModes.DUAL)
+        // Only allow dual mode for Mandelbrot and Julia sets
+        if (state.renderMode === RenderModes.DUAL)
         {
+            // If already in dual mode, switch to Mandelbrot mode
+            this.stateManager.setRenderMode(RenderModes.MANDELBROT);
+            console.log('Switched from dual mode to Mandelbrot mode');
+        }
+        else if (state.renderMode === RenderModes.MANDELBROT || state.renderMode === RenderModes.JULIA)
+        {
+            // Only allow dual mode from Mandelbrot or Julia modes
             this.stateManager.setRenderMode(RenderModes.DUAL);
-            console.log('Switched to dual view mode');
-        } else
+            console.log('Switched to dual mode (Mandelbrot + Julia)');
+        }
+        else
         {
-            // If already in dual mode, cycle the active view
-            this.handleTabSwitch();
+            // For other fractal types, dual mode is not available
+            console.log('Dual mode only available for Mandelbrot and Julia sets');
+            if (this.modeDisplay)
+            {
+                this.modeDisplay.showStatusMessage('Dual mode only available for Mandelbrot and Julia sets');
+            }
         }
     }
 
@@ -464,8 +648,9 @@ export class KeyboardHandler
     {
         const handledKeys = [
             'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-            'Tab', '+', '=', '-', '_', 'm', 'M', 'j', 'J', 'd', 'D',
-            'f', 'F', 'Escape'
+            'Tab', '+', '=', '-', '_', 'm', 'M', 'd', 'D',
+            'f', 'F', 'Escape', '1', '2', '3', '4', '5', '6', 'b', 'B',
+            '<', '>', 'i', 'I', 'p', 'P', '[', ']', '{', '}'
         ];
 
         // Allow Ctrl+R for browser reload
@@ -485,14 +670,25 @@ export class KeyboardHandler
     getKeyboardShortcuts()
     {
         return [
-            { keys: ['M'], description: 'Cycle render modes (Mandelbrot → Julia → Dual)' },
-            { keys: ['J'], description: 'Toggle between Julia and Mandelbrot modes' },
-            { keys: ['D'], description: 'Toggle dual view mode' },
+            { keys: ['M'], description: 'Cycle through all fractal types' },
+            { keys: ['D'], description: 'Toggle dual mode (Mandelbrot + Julia only)' },
             { keys: ['Tab'], description: 'Switch active view in dual mode' },
+            { keys: ['1'], description: 'Switch to Mandelbrot set' },
+            { keys: ['2'], description: 'Switch to Burning Ship fractal' },
+            { keys: ['3'], description: 'Switch to Tricorn fractal' },
+            { keys: ['4'], description: 'Switch to Phoenix fractal' },
+            { keys: ['5'], description: 'Switch to Newton fractal' },
+            { keys: ['6'], description: 'Switch to Multibrot set' },
+            { keys: ['B'], description: 'Switch to Burning Ship Julia' },
+            { keys: ['<', '>'], description: 'Adjust Multibrot power' },
+            { keys: ['I'], description: 'Toggle infinite zoom mode' },
+            { keys: ['P'], description: 'Toggle dynamic iterations' },
             { keys: ['R'], description: 'Reset parameters' },
             { keys: ['F'], description: 'Toggle fullscreen' },
             { keys: ['↑↓←→'], description: 'Navigate fractal' },
             { keys: ['+', '-'], description: 'Zoom in/out' },
+            { keys: ['[', ']'], description: 'Fine zoom controls' },
+            { keys: ['{', '}'], description: 'Fast zoom controls' },
             { keys: ['Mouse'], description: 'Left: Set Julia param, Middle: Pan, Wheel: Zoom' },
             { keys: ['Esc'], description: 'Exit fullscreen' }
         ];

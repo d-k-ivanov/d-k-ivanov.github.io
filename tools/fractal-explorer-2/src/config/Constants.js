@@ -1,7 +1,7 @@
 /**
  * Unified Application Constants
  * Centralizes all constants used throughout the application
- * 
+ *
  * This module provides a single source of truth for application-wide constants,
  * ensuring consistency and making configuration changes easier to manage.
  */

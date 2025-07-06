@@ -50,6 +50,9 @@ export class ModeDisplay
                         <span class="key">D</span> Dual
                     </div>
                     <div class="control-hint">
+                        <span class="key">1-6</span> Fractals
+                    </div>
+                    <div class="control-hint">
                         <span class="key">R</span> Reset
                     </div>
                     <div class="control-hint">
@@ -160,6 +163,12 @@ export class ModeDisplay
                 background: rgba(254, 202, 87, 0.1) !important;
                 border-color: rgba(254, 202, 87, 0.3) !important;
             }
+            
+            .mode-other {
+                color: #a29bfe !important;
+                background: rgba(162, 155, 254, 0.1) !important;
+                border-color: rgba(162, 155, 254, 0.3) !important;
+            }
 
             #mode-display.hidden {
                 opacity: 0;
@@ -215,7 +224,7 @@ export class ModeDisplay
         if (!currentModeElement) return;
 
         // Clear existing mode classes
-        currentModeElement.classList.remove('mode-julia', 'mode-mandelbrot', 'mode-dual');
+        currentModeElement.classList.remove('mode-julia', 'mode-mandelbrot', 'mode-dual', 'mode-other');
 
         let modeText = '';
         let modeClass = '';
@@ -233,6 +242,30 @@ export class ModeDisplay
             case 'dual':
                 modeText = 'Dual View';
                 modeClass = 'mode-dual';
+                break;
+            case 'burning_ship':
+                modeText = 'Burning Ship';
+                modeClass = 'mode-other';
+                break;
+            case 'burning_ship_julia':
+                modeText = 'Burning Ship Julia';
+                modeClass = 'mode-other';
+                break;
+            case 'tricorn':
+                modeText = 'Tricorn';
+                modeClass = 'mode-other';
+                break;
+            case 'phoenix':
+                modeText = 'Phoenix';
+                modeClass = 'mode-other';
+                break;
+            case 'newton':
+                modeText = 'Newton';
+                modeClass = 'mode-other';
+                break;
+            case 'multibrot':
+                modeText = 'Multibrot';
+                modeClass = 'mode-other';
                 break;
             default:
                 modeText = 'Unknown Mode';

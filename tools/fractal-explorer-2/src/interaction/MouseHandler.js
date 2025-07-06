@@ -2,6 +2,8 @@
  * Mouse Interaction Handler
  * Manages all mouse-based interactions with the fractal display
  */
+import { RenderModes } from '../config/RenderModes.js';
+
 export class MouseHandler
 {
     constructor(canvas, stateManager)
@@ -332,15 +334,35 @@ export class MouseHandler
     handleLegacyZoom(event, targetView, mouseX, mouseY, aspect)
     {
         const state = this.stateManager.getState();
+        const renderMode = state.renderMode;
 
-        // Get parameters for target view
+        // Determine which parameters to use based on both target view and render mode
         let currentParams, precision;
-        if (targetView === 'julia')
+        let isJuliaType = false;
+
+        // Get parameters for correct view based on render mode and target view
+        if (renderMode === RenderModes.DUAL)
         {
+            // In dual mode, use the target view to determine parameters
+            if (targetView === 'julia')
+            {
+                currentParams = state.juliaParams;
+                precision = state.zoomPrecision;
+                isJuliaType = true;
+            } else
+            {
+                currentParams = state.mandelbrotParams;
+                precision = state.mandelbrotPrecision;
+            }
+        } else if (renderMode === RenderModes.JULIA || renderMode === RenderModes.BURNING_SHIP_JULIA)
+        {
+            // For all Julia-based fractals
             currentParams = state.juliaParams;
             precision = state.zoomPrecision;
+            isJuliaType = true;
         } else
         {
+            // For all Mandelbrot-based fractals (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton, Multibrot)
             currentParams = state.mandelbrotParams;
             precision = state.mandelbrotPrecision;
         }
@@ -371,16 +393,25 @@ export class MouseHandler
         const newIterations = Math.min(2048, baseIterations * Math.sqrt(zoomFactor));
         updates.maxIterations = newIterations;
 
-        if (targetView === 'julia')
+        // Update parameters based on the fractal type
+        if (isJuliaType || (renderMode === RenderModes.DUAL && targetView === 'julia'))
         {
             this.stateManager.updateJuliaParams(updates);
             precision.centerX = updates.offsetX;
             precision.centerY = updates.offsetY;
         } else
         {
+            // For all Mandelbrot-based fractals
             this.stateManager.updateMandelbrotParams(updates);
             state.mandelbrotPrecision.centerX = updates.offsetX;
             state.mandelbrotPrecision.centerY = updates.offsetY;
+
+            // Special case for Multibrot set
+            if (renderMode === RenderModes.MULTIBROT &&
+                typeof this.stateManager.updateMultibrotParams === 'function')
+            {
+                this.stateManager.updateMultibrotParams(updates);
+            }
         }
     }
 

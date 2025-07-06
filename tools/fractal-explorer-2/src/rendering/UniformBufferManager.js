@@ -123,13 +123,13 @@ export class UniformBufferManager
             juliaShaderParams.referenceImag || 0.0,           // 19 - reference_imag
             juliaShaderParams.perturbationScale || 0.0,       // 20 - perturbation_scale
             juliaShaderParams.adaptiveIterations || state.juliaParams.maxIterations, // 21 - adaptive_iterations
-            0.0                                                // 22 - padding
+            state.multibrotPower || 3.0                       // 22 - fractal_power for Multibrot
         ]);
     }
 
     /**
      * Convert render mode string to shader numeric value
-     * @param {string} renderMode - Render mode ('julia', 'mandelbrot', 'dual')
+     * @param {string} renderMode - Render mode ('julia', 'mandelbrot', 'dual', etc.)
      * @returns {number} Shader render mode value
      */
     getRenderModeValue(renderMode)
@@ -142,6 +142,18 @@ export class UniformBufferManager
                 return 1.0;
             case 'dual':
                 return 2.0;
+            case 'burning_ship':
+                return 3.0;
+            case 'tricorn':
+                return 4.0;
+            case 'phoenix':
+                return 5.0;
+            case 'newton':
+                return 6.0;
+            case 'burning_ship_julia':
+                return 7.0;
+            case 'multibrot':
+                return 8.0;
             default:
                 logger.warn(`Unknown render mode: ${renderMode}, defaulting to julia`);
                 return 0.0;

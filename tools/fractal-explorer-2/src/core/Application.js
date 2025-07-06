@@ -129,7 +129,7 @@ export class Application
         this.mouseHandler.initialize();
 
         // Keyboard interaction
-        this.keyboardHandler = new KeyboardHandler(this.stateManager);
+        this.keyboardHandler = new KeyboardHandler(this.stateManager, this.modeDisplay);
         this.keyboardHandler.initialize();
 
         // Connect interaction events to rendering

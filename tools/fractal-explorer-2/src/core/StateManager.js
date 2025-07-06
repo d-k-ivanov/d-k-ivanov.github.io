@@ -7,6 +7,7 @@ import
 {
     DefaultJuliaParams,
     DefaultMandelbrotParams,
+    DefaultMultibrotParams,
     DefaultPrecisionParams,
     DefaultMandelbrotPrecision,
     DefaultAppSettings
@@ -23,6 +24,7 @@ export class StateManager extends EventEmitter
         // Initialize fractal parameters from defaults
         this.juliaParams = { ...DefaultJuliaParams };
         this.mandelbrotParams = { ...DefaultMandelbrotParams };
+        this.multibrotParams = { ...DefaultMultibrotParams };
 
         // Initialize precision tracking
         this.zoomPrecision = { ...DefaultPrecisionParams };
@@ -107,7 +109,7 @@ export class StateManager extends EventEmitter
     }
 
     /**
-     * Set render mode (mandelbrot, julia, dual)
+     * Set render mode (mandelbrot, julia, dual, and other fractal types)
      * @param {string} mode - New render mode
      */
     setRenderMode(mode)
@@ -125,9 +127,21 @@ export class StateManager extends EventEmitter
         if (mode === RenderModes.DUAL)
         {
             this.activeView = RenderModes.MANDELBROT; // Start with Mandelbrot in dual mode
-        } else
+        }
+        else if (mode === RenderModes.JULIA || mode === RenderModes.BURNING_SHIP_JULIA)
         {
-            this.activeView = mode; // Single view matches render mode
+            this.activeView = RenderModes.JULIA; // Julia-based fractals
+        }
+        else if (mode === RenderModes.BURNING_SHIP || mode === RenderModes.TRICORN ||
+            mode === RenderModes.PHOENIX || mode === RenderModes.NEWTON ||
+            mode === RenderModes.MULTIBROT)
+        {
+            // Set the active view to MANDELBROT for all Mandelbrot-derived fractals
+            this.activeView = RenderModes.MANDELBROT;
+        }
+        else
+        {
+            this.activeView = mode; // Single view matches render mode (default case)
         }
 
         this.emit('modeChange', {
@@ -163,15 +177,28 @@ export class StateManager extends EventEmitter
     }
 
     /**
-     * Cycle through render modes
+     * Cycle through all render modes
      */
     cycleFractalMode()
     {
-        const modes = [RenderModes.MANDELBROT, RenderModes.JULIA, RenderModes.DUAL];
+        const modes = [
+            RenderModes.MANDELBROT,
+            RenderModes.JULIA,
+            RenderModes.BURNING_SHIP,
+            RenderModes.TRICORN,
+            RenderModes.PHOENIX,
+            RenderModes.NEWTON,
+            RenderModes.MULTIBROT,
+            RenderModes.BURNING_SHIP_JULIA,
+            RenderModes.DUAL
+        ];
         const currentIndex = modes.indexOf(this.renderMode);
-        const nextMode = modes[(currentIndex + 1) % modes.length];
+        const nextIndex = (currentIndex + 1) % modes.length;
+        const nextMode = modes[nextIndex];
 
         this.setRenderMode(nextMode);
+
+        console.log(`Cycled to ${RenderModeUtils.getModeName(nextMode)} mode`);
     }
 
     /**
@@ -223,13 +250,24 @@ export class StateManager extends EventEmitter
      */
     getCurrentParams()
     {
+        // For dual mode, use the active view to determine parameters
         if (this.renderMode === RenderModes.DUAL)
         {
             return this.activeView === RenderModes.JULIA ? this.juliaParams : this.mandelbrotParams;
-        } else if (this.renderMode === RenderModes.JULIA)
+        }
+
+        // Julia-based fractal modes use Julia parameters
+        else if (this.renderMode === RenderModes.JULIA || this.renderMode === RenderModes.BURNING_SHIP_JULIA)
         {
             return this.juliaParams;
-        } else
+        }
+        // Multibrot set uses its own parameters
+        else if (this.renderMode === RenderModes.MULTIBROT)
+        {
+            return this.multibrotParams;
+        }
+        // All other modes (including new fractal types) use Mandelbrot parameters for navigation
+        else
         {
             return this.mandelbrotParams;
         }
@@ -241,13 +279,19 @@ export class StateManager extends EventEmitter
      */
     getCurrentPrecision()
     {
+        // For dual mode, use the active view to determine precision
         if (this.renderMode === RenderModes.DUAL)
         {
             return this.activeView === RenderModes.JULIA ? this.zoomPrecision : this.mandelbrotPrecision;
-        } else if (this.renderMode === RenderModes.JULIA)
+        }
+
+        // Julia-based fractal modes use Julia precision
+        else if (this.renderMode === RenderModes.JULIA || this.renderMode === RenderModes.BURNING_SHIP_JULIA)
         {
             return this.zoomPrecision;
-        } else
+        }
+        // All other modes (including new fractal types) use Mandelbrot precision for zoom tracking
+        else
         {
             return this.mandelbrotPrecision;
         }
@@ -510,6 +554,7 @@ export class StateManager extends EventEmitter
             // Fractal parameters
             juliaParams: { ...this.juliaParams },
             mandelbrotParams: { ...this.mandelbrotParams },
+            multibrotParams: { ...this.multibrotParams },
 
             // Precision tracking
             zoomPrecision: { ...this.zoomPrecision },
@@ -694,5 +739,32 @@ export class StateManager extends EventEmitter
         this.colorStabilityBuffer.lastIterationUpdate = now;
 
         console.log(`Updated ${fractalType} iterations: ${currentIterations} → ${newIterations} (target: ${targetIterations})`);
+    }
+
+    /**
+     * Set the power parameter for Multibrot set
+     * @param {number} power - The exponent power for the Multibrot set
+     */
+    setMultibrotPower(power)
+    {
+        // Keep power within reasonable bounds (2.0 to 10.0)
+        const newPower = Math.max(2.0, Math.min(10.0, power));
+
+        if (this.multibrotParams.power !== newPower)
+        {
+            this.multibrotParams.power = newPower;
+
+            this.emit('multibrotPowerChanged', newPower);
+            this.emit('stateChange', this.getState());
+        }
+    }
+
+    /**
+     * Get current Multibrot power parameter
+     * @returns {number} Current Multibrot power
+     */
+    getMultibrotPower()
+    {
+        return this.multibrotParams.power;
     }
 }

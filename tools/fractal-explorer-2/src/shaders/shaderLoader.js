@@ -14,6 +14,7 @@ export class ShaderLoader
         this.shaderCache = new Map();
         this.baseUrl = './src/shaders/';
         this.pendingLoads = new Map(); // Track in-progress loads to avoid duplicate requests
+        this.includedFiles = new Set(); // Track files that have been included to prevent circular includes
     }
 
     /**
@@ -55,7 +56,11 @@ export class ShaderLoader
                     throw new Error(`Failed to load shader: ${response.status} ${response.statusText}`);
                 }
 
-                const shaderSource = await response.text();
+                let shaderSource = await response.text();
+
+                // Process #include directives
+                this.includedFiles.clear(); // Reset included files tracking
+                shaderSource = await this.processIncludes(shaderSource, filename);
 
                 // Process the shader source with any defines
                 const processedSource = defines ?
@@ -84,6 +89,113 @@ export class ShaderLoader
             logger.error(`Failed to load shader ${filename}:`, error);
             throw error;
         }
+    }
+
+    /**
+     * Process and inline #include directives in shader code
+     * @param {string} source - Shader source code
+     * @param {string} currentFile - Current file being processed (to prevent circular includes)
+     * @returns {Promise<string>} Processed shader source with includes inlined
+     */
+    async processIncludes(source, currentFile)
+    {
+        // Regular expression to match #include directives
+        const includeRegex = /^\s*#include\s+"([^"]+)"\s*$/gm;
+
+        // Track this file as being processed to detect circular includes
+        this.includedFiles.add(currentFile);
+
+        let result = source;
+        let match;
+        let matches = [];
+
+        // Find all includes first
+        while ((match = includeRegex.exec(source)) !== null)
+        {
+            const includePath = match[1];
+            matches.push({
+                fullMatch: match[0],
+                includePath
+            });
+        }
+
+        // Process includes one by one
+        for (const { fullMatch, includePath } of matches)
+        {
+            // Check for circular includes
+            if (this.includedFiles.has(includePath))
+            {
+                logger.warn(`Circular include detected: ${includePath} in ${currentFile}`);
+                // Replace with a comment instead of the actual include
+                result = result.replace(fullMatch, `// Circular include skipped: ${includePath}`);
+                continue;
+            }
+
+            try
+            {
+                // Load the included file
+                const includeUrl = `${this.baseUrl}${includePath}`;
+                logger.debug(`Loading included shader: ${includeUrl} from ${currentFile}`);
+
+                const response = await fetch(includeUrl);
+                if (!response.ok)
+                {
+                    throw new Error(`Failed to load included shader: ${response.status} ${response.statusText}`);
+                }
+
+                let includedSource = await response.text();
+
+                // Process nested includes recursively
+                includedSource = await this.processIncludes(includedSource, includePath);
+
+                // Replace the include directive with the included content
+                // Add comments to indicate the included file for easier debugging
+                const replacement = `
+// BEGIN INCLUDED FILE: ${includePath}
+${includedSource}
+// END INCLUDED FILE: ${includePath}
+`;
+                result = result.replace(fullMatch, replacement);
+
+            } catch (error)
+            {
+                logger.error(`Failed to process include ${includePath}:`, error);
+                // Replace with error comment
+                result = result.replace(
+                    fullMatch,
+                    `// ERROR: Failed to include "${includePath}": ${error.message}`
+                );
+            }
+        }
+
+        // Remove this file from the tracking set after processing is complete
+        this.includedFiles.delete(currentFile);
+
+        return result;
+    }
+
+    /**
+     * Apply preprocessor definitions to shader code
+     * @param {string} source - Shader source code
+     * @param {Object} defines - Object with key-value pairs of definitions
+     * @returns {string} Processed shader with defines applied
+     */
+    preprocessShader(source, defines)
+    {
+        let result = source;
+
+        // Add define declarations at the top of the shader
+        if (defines)
+        {
+            let defineText = "// Auto-generated defines\n";
+            for (const [key, value] of Object.entries(defines))
+            {
+                defineText += `const ${key} = ${value};\n`;
+            }
+            result = defineText + result;
+        }
+
+        return result;
     }
 
     /**
@@ -140,47 +252,6 @@ export class ShaderLoader
             logger.error('Failed to load shaders:', error);
             throw error;
         }
-    }
-
-    /**
-     * Preprocess shader source with simple templating
-     * @param {string} source - Shader source code
-     * @param {Object} defines - Preprocessor defines
-     * @returns {string} Processed shader source
-     */
-    preprocessShader(source, defines = {})
-    {
-        if (!defines || Object.keys(defines).length === 0)
-        {
-            return source;
-        }
-
-        let processedSource = source;
-
-        // Replace defines in the form of ${DEFINE_NAME}
-        for (const [key, value] of Object.entries(defines))
-        {
-            const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
-            processedSource = processedSource.replace(regex, value);
-        }
-
-        // Handle conditional compilation with /*#ifdef DEFINE_NAME */ sections
-        for (const [key, value] of Object.entries(defines))
-        {
-            if (value)
-            {
-                // Remove the ifdef/endif for enabled defines (keep the content)
-                const ifdefRegex = new RegExp(`\\/\\*#ifdef ${key}\\s*\\*\\/([\\s\\S]*?)\\/\\*#endif\\s*\\*\\/`, 'g');
-                processedSource = processedSource.replace(ifdefRegex, '$1');
-            } else
-            {
-                // Remove the entire ifdef/endif section for disabled defines
-                const ifdefRegex = new RegExp(`\\/\\*#ifdef ${key}\\s*\\*\\/[\\s\\S]*?\\/\\*#endif\\s*\\*\\/`, 'g');
-                processedSource = processedSource.replace(ifdefRegex, '');
-            }
-        }
-
-        return processedSource;
     }
 
     /**

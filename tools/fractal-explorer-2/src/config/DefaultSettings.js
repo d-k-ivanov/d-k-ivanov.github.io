@@ -30,6 +30,18 @@ export const DefaultMandelbrotParams = {
 };
 
 /**
+ * Default Multibrot parameters
+ */
+export const DefaultMultibrotParams = {
+    power: 3.0, // Default to cubic (z^3 + c)
+    zoom: 1.0,
+    offsetX: 0.0,
+    offsetY: 0.0,
+    maxIterations: MATH_CONSTANTS.DEFAULT_MAX_ITERATIONS,
+    colorOffset: 0.0
+};
+
+/**
  * Default precision tracking parameters
  */
 export const DefaultPrecisionParams = {
