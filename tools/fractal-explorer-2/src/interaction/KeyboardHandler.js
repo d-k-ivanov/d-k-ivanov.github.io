@@ -40,16 +40,15 @@ export class KeyboardHandler
         document.addEventListener('keyup', this.handleKeyUp);
 
         console.log('✅ Keyboard handler initialized');
-        this.showInfiniteZoomControls();
+        this.showControls();
     }
 
     /**
-     * Show infinite zoom specific controls in console
+     * Show controls in console
      */
-    showInfiniteZoomControls()
+    showControls()
     {
-        console.log('🔄 Infinite Zoom Controls:');
-        console.log('  I: Toggle infinite zoom mode');
+        console.log('🔄 Fractal Explorer Controls:');
         console.log('  P: Toggle dynamic iterations');
         console.log('  [ ]: Fine zoom controls');
         console.log('  { }: Fast zoom controls');
@@ -104,10 +103,6 @@ export class KeyboardHandler
                 break;
 
             // Infinite zoom specific controls
-            case 'i':
-            case 'I':
-                this.handleInfiniteZoomToggle();
-                break;
             case 'p':
             case 'P':
                 this.handlePrecisionToggle();
@@ -194,118 +189,12 @@ export class KeyboardHandler
     }
 
     /**
-     * Handle navigation with arrow keys
+     * Handle navigation with arrow keys - always uses infinite precision
      * @param {string} direction - Navigation direction
      * @param {number} step - Movement step size
      */
     handleNavigation(direction, step)
     {
-        const state = this.stateManager.getState();
-
-        // Use infinite precision panning if enabled
-        if (state.infiniteZoomEnabled)
-        {
-            let deltaX = 0, deltaY = 0;
-
-            switch (direction)
-            {
-                case 'left': deltaX = -step; break;
-                case 'right': deltaX = step; break;
-                case 'up': deltaY = -step; break;
-                case 'down': deltaY = step; break;
-            }
-
-            const aspect = window.innerWidth / window.innerHeight;
-            this.stateManager.applyInfinitePan(deltaX, deltaY, aspect);
-        }
-        else
-        {
-            // Legacy navigation
-            this.handleLegacyNavigation(direction, step);
-        }
-    }
-
-    /**
-     * Handle zoom in/out - now with infinite zoom support
-     * @param {number} zoomStep - Zoom step (positive for zoom in, negative for zoom out)
-     */
-    handleZoom(zoomStep)
-    {
-        const state = this.stateManager.getState();
-        const currentParams = this.stateManager.getCurrentParams();
-
-        // Use infinite zoom if enabled
-        if (state.infiniteZoomEnabled)
-        {
-            const zoomFactor = Math.exp(zoomStep);
-            const aspect = window.innerWidth / window.innerHeight;
-
-            // Zoom at center of screen (0, 0 in normalized coordinates)
-            this.stateManager.applyInfiniteZoom(0, 0, zoomFactor, aspect);
-
-            // Show zoom info
-            const zoomInfo = this.stateManager.getZoomInfo();
-            if (Math.log10(zoomInfo.zoom) % 3 < 0.1)
-            { // Show every 1000x zoom milestone
-                console.log(`🔍 Zoom: ${zoomInfo.magnification} (${zoomInfo.qualityLevel} precision)`);
-            }
-        }
-        else
-        {
-            // Legacy zoom handling
-            this.handleLegacyZoom(zoomStep);
-        }
-    }
-
-    /**
-     * Legacy zoom handling for compatibility
-     * @param {number} zoomStep - Zoom step amount
-     */
-    handleLegacyZoom(zoomStep)
-    {
-        const state = this.stateManager.getState();
-        const currentParams = this.stateManager.getCurrentParams();
-        const precision = this.stateManager.getCurrentPrecision();
-
-        // Apply zoom
-        precision.logZoom += zoomStep;
-        precision.logZoom = Math.max(-10, Math.min(precision.maxLogZoom, precision.logZoom));
-
-        const newZoom = Math.exp(precision.logZoom);
-
-        // Update parameters for active view based on current mode
-        if (state.renderMode === RenderModes.DUAL)
-        {
-            // In dual mode, update based on active view
-            if (state.activeView === RenderModes.JULIA)
-            {
-                this.stateManager.updateJuliaParams({ zoom: newZoom });
-            } else
-            {
-                this.stateManager.updateMandelbrotParams({ zoom: newZoom });
-            }
-        }
-        else if (state.renderMode === RenderModes.JULIA)
-        {
-            // Update Julia-based fractals
-            this.stateManager.updateJuliaParams({ zoom: newZoom });
-        }
-        else
-        {
-            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
-            // They all use the Mandelbrot parameters for display
-            this.stateManager.updateMandelbrotParams({ zoom: newZoom });
-        }
-    }
-
-    /**
-     * Legacy navigation handling for compatibility with all fractal types
-     * @param {string} direction - Navigation direction
-     * @param {number} step - Movement step size
-     */
-    handleLegacyNavigation(direction, step)
-    {
-        const state = this.stateManager.getState();
         let deltaX = 0, deltaY = 0;
 
         switch (direction)
@@ -316,45 +205,27 @@ export class KeyboardHandler
             case 'down': deltaY = step; break;
         }
 
-        const currentParams = this.stateManager.getCurrentParams();
-        const currentZoom = currentParams.zoom;
-        const scaledDeltaX = deltaX / currentZoom;
-        const scaledDeltaY = deltaY / currentZoom;
+        const aspect = window.innerWidth / window.innerHeight;
+        this.stateManager.applyInfinitePan(deltaX, deltaY, aspect);
+    }
 
-        // Update parameters for active view based on current mode
-        if (state.renderMode === RenderModes.DUAL)
-        {
-            // In dual mode, update based on active view
-            if (state.activeView === RenderModes.JULIA)
-            {
-                this.stateManager.updateJuliaParams({
-                    offsetX: currentParams.offsetX + scaledDeltaX,
-                    offsetY: currentParams.offsetY + scaledDeltaY
-                });
-            } else
-            {
-                this.stateManager.updateMandelbrotParams({
-                    offsetX: currentParams.offsetX + scaledDeltaX,
-                    offsetY: currentParams.offsetY + scaledDeltaY
-                });
-            }
-        }
-        else if (state.renderMode === RenderModes.JULIA)
-        {
-            // Update Julia-based fractals
-            this.stateManager.updateJuliaParams({
-                offsetX: currentParams.offsetX + scaledDeltaX,
-                offsetY: currentParams.offsetY + scaledDeltaY
-            });
-        }
-        else
-        {
-            // For all other fractal types (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
-            // They all use the Mandelbrot parameters for navigation
-            this.stateManager.updateMandelbrotParams({
-                offsetX: currentParams.offsetX + scaledDeltaX,
-                offsetY: currentParams.offsetY + scaledDeltaY
-            });
+    /**
+     * Handle zoom in/out - always uses infinite zoom
+     * @param {number} zoomStep - Zoom step (positive for zoom in, negative for zoom out)
+     */
+    handleZoom(zoomStep)
+    {
+        const zoomFactor = Math.exp(zoomStep);
+        const aspect = window.innerWidth / window.innerHeight;
+
+        // Zoom at center of screen (0, 0 in normalized coordinates)
+        this.stateManager.applyInfiniteZoom(0, 0, zoomFactor, aspect);
+
+        // Show zoom info
+        const zoomInfo = this.stateManager.getZoomInfo();
+        if (Math.log10(zoomInfo.zoom) % 3 < 0.1)
+        { // Show every 1000x zoom milestone
+            console.log(`🔍 Zoom: ${zoomInfo.magnification} (${zoomInfo.qualityLevel} precision)`);
         }
     }
 
@@ -531,32 +402,6 @@ export class KeyboardHandler
     }
 
     /**
-     * Enhanced infinite zoom toggle with status feedback
-     */
-    handleInfiniteZoomToggle()
-    {
-        const state = this.stateManager.getState();
-        const newState = !state.infiniteZoomEnabled;
-
-        this.stateManager.updateSettings({
-            infiniteZoomEnabled: newState
-        });
-
-        console.log(`🔄 Infinite zoom ${newState ? 'enabled' : 'disabled'}`);
-        if (newState)
-        {
-            console.log('   High-precision arithmetic active for extreme zoom levels');
-            console.log('   Use wheel + cursor for precision zooming');
-        } else
-        {
-            console.log('   Using standard precision mode');
-        }
-
-        // Emit event for UI updates
-        this.stateManager.emit('infiniteZoomToggled', { enabled: newState });
-    }
-
-    /**
      * Enhanced precision/dynamic iterations toggle
      */
     handlePrecisionToggle()
@@ -593,7 +438,7 @@ export class KeyboardHandler
             'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
             'Tab', '+', '=', '-', '_', 'm', 'M', 'd', 'D',
             'f', 'F', 'Escape', '1', '2', '3', '4', '5', '6', 'b', 'B',
-            '<', '>', 'i', 'I', 'p', 'P', '[', ']', '{', '}'
+            '<', '>', 'p', 'P', '[', ']', '{', '}'
         ];
 
         // Allow Ctrl+R for browser reload
@@ -622,7 +467,6 @@ export class KeyboardHandler
             { keys: ['4'], description: 'Switch to Tricorn fractal' },
             { keys: ['5'], description: 'Switch to Phoenix fractal' },
             { keys: ['6'], description: 'Switch to Newton fractal' },
-            { keys: ['I'], description: 'Toggle infinite zoom mode' },
             { keys: ['P'], description: 'Toggle dynamic iterations' },
             { keys: ['R'], description: 'Reset parameters' },
             { keys: ['F'], description: 'Toggle fullscreen' },

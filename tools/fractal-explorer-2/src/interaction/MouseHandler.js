@@ -216,50 +216,14 @@ export class MouseHandler
             targetView = 'mandelbrot';
         }
 
-        // Use infinite pan if enabled to keep zoom precision in sync
-        if (state.infiniteZoomEnabled)
-        {
-            // For infinite zoom, we need to scale the deltas appropriately
-            // The InfiniteZoomController expects reasonable scale factors, not tiny normalized values
-            const panSensitivity = 100.0; // Adjust pan sensitivity for better responsiveness
-            const scaledDeltaX = -deltaX / panSensitivity;
-            const scaledDeltaY = -deltaY / panSensitivity;
+        // Always use infinite pan for zoom precision
+        // For infinite zoom, we need to scale the deltas appropriately
+        // The InfiniteZoomController expects reasonable scale factors, not tiny normalized values
+        const panSensitivity = 100.0; // Adjust pan sensitivity for better responsiveness
+        const scaledDeltaX = -deltaX / panSensitivity;
+        const scaledDeltaY = -deltaY / panSensitivity;
 
-            this.stateManager.applyInfinitePan(scaledDeltaX, scaledDeltaY, aspectRatio, targetView);
-        }
-        else
-        {
-            // For legacy mode, calculate complex plane deltas manually
-            const currentZoom = currentParams.zoom;
-            const baseScale = 4.0; // Standard fractal viewport is [-2, 2] range
-            const pixelToComplexScaleX = (baseScale * aspectRatio) / (currentZoom * rect.width);
-            const pixelToComplexScaleY = baseScale / (currentZoom * rect.height);
-
-            // Invert mouse movement to make panning intuitive:
-            // Mouse drag right should move viewport right (fractal left)
-            // Mouse drag down should move viewport down (fractal up)
-            const complexDeltaX = -deltaX * pixelToComplexScaleX;
-            const complexDeltaY = -deltaY * pixelToComplexScaleY;
-
-            // Apply direct parameter updates
-            const newOffsetX = currentParams.offsetX + complexDeltaX;
-            const newOffsetY = currentParams.offsetY + complexDeltaY;
-
-            if (targetView === 'julia')
-            {
-                this.stateManager.updateJuliaParams({
-                    offsetX: newOffsetX,
-                    offsetY: newOffsetY
-                });
-            }
-            else
-            {
-                this.stateManager.updateMandelbrotParams({
-                    offsetX: newOffsetX,
-                    offsetY: newOffsetY
-                });
-            }
-        }
+        this.stateManager.applyInfinitePan(scaledDeltaX, scaledDeltaY, aspectRatio, targetView);
 
         // Update the last mouse position
         this.mouseState.lastX = this.mouseState.x;
@@ -307,105 +271,12 @@ export class MouseHandler
 
         mouseY = (event.clientY - rect.top) / rect.height - 0.5;
 
-        // Use infinite zoom if enabled
-        if (state.infiniteZoomEnabled)
-        {
-            const zoomDirection = event.deltaY > 0 ? -1 : 1;
-            const zoomSensitivity = 0.2;
-            const zoomFactor = Math.exp(zoomDirection * zoomSensitivity);
+        // Always use infinite zoom
+        const zoomDirection = event.deltaY > 0 ? -1 : 1;
+        const zoomSensitivity = 0.2;
+        const zoomFactor = Math.exp(zoomDirection * zoomSensitivity);
 
-            this.stateManager.applyInfiniteZoom(mouseX, mouseY, zoomFactor, aspect, targetView);
-        }
-        else
-        {
-            // Fallback to legacy zoom for compatibility
-            this.handleLegacyZoom(event, targetView, mouseX, mouseY, aspect);
-        }
-    }
-
-    /**
-     * Legacy zoom handling for compatibility
-     * @param {WheelEvent} event - Wheel event
-     * @param {string} targetView - Target view
-     * @param {number} mouseX - Normalized mouse X
-     * @param {number} mouseY - Normalized mouse Y
-     * @param {number} aspect - Aspect ratio
-     */
-    handleLegacyZoom(event, targetView, mouseX, mouseY, aspect)
-    {
-        const state = this.stateManager.getState();
-        const renderMode = state.renderMode;
-
-        // Determine which parameters to use based on both target view and render mode
-        let currentParams, precision;
-        let isJuliaType = false;
-
-        // Get parameters for correct view based on render mode and target view
-        if (renderMode === RenderModes.DUAL)
-        {
-            // In dual mode, use the target view to determine parameters
-            if (targetView === 'julia')
-            {
-                currentParams = state.juliaParams;
-                precision = state.zoomPrecision;
-                isJuliaType = true;
-            } else
-            {
-                currentParams = state.mandelbrotParams;
-                precision = state.mandelbrotPrecision;
-            }
-        } else if (renderMode === RenderModes.JULIA)
-        {
-            // For Julia-based fractals
-            currentParams = state.juliaParams;
-            precision = state.zoomPrecision;
-            isJuliaType = true;
-        } else
-        {
-            // For all Mandelbrot-based fractals (Mandelbrot, Burning Ship, Tricorn, Phoenix, Newton)
-            currentParams = state.mandelbrotParams;
-            precision = state.mandelbrotPrecision;
-        }
-
-        // Calculate zoom coordinates
-        const preZoomX = mouseX * 4.0 * aspect / currentParams.zoom + currentParams.offsetX;
-        const preZoomY = mouseY * 4.0 / currentParams.zoom + currentParams.offsetY;
-
-        // Apply zoom
-        const zoomStep = event.deltaY > 0 ? -0.2 : 0.2;
-        precision.logZoom += zoomStep;
-        precision.logZoom = Math.max(-10, Math.min(precision.maxLogZoom, precision.logZoom));
-
-        const newZoom = Math.exp(precision.logZoom);
-        const postZoomX = mouseX * 4.0 * aspect / newZoom + currentParams.offsetX;
-        const postZoomY = mouseY * 4.0 / newZoom + currentParams.offsetY;
-
-        // Update parameters for target view
-        const updates = {
-            zoom: newZoom,
-            offsetX: currentParams.offsetX + (preZoomX - postZoomX),
-            offsetY: currentParams.offsetY + (preZoomY - postZoomY)
-        };
-
-        // Dynamic iteration adjustment based on zoom
-        const baseIterations = 256;
-        const zoomFactor = Math.max(1.0, precision.logZoom / 10.0);
-        const newIterations = Math.min(2048, baseIterations * Math.sqrt(zoomFactor));
-        updates.maxIterations = newIterations;
-
-        // Update parameters based on the fractal type
-        if (isJuliaType || (renderMode === RenderModes.DUAL && targetView === 'julia'))
-        {
-            this.stateManager.updateJuliaParams(updates);
-            precision.centerX = updates.offsetX;
-            precision.centerY = updates.offsetY;
-        } else
-        {
-            // For all Mandelbrot-based fractals
-            this.stateManager.updateMandelbrotParams(updates);
-            state.mandelbrotPrecision.centerX = updates.offsetX;
-            state.mandelbrotPrecision.centerY = updates.offsetY;
-        }
+        this.stateManager.applyInfiniteZoom(mouseX, mouseY, zoomFactor, aspect, targetView);
     }
 
     /**

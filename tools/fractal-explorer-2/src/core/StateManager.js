@@ -57,8 +57,7 @@ export class StateManager extends EventEmitter
         this.qualityLevel = DefaultAppSettings.quality;
         this.performanceMode = false;
 
-        // Infinite zoom state
-        this.infiniteZoomEnabled = true;
+        // Infinite zoom is always enabled - no standard precision mode
         this.dynamicIterations = true;
 
         // Color stability tracking
@@ -419,22 +418,16 @@ export class StateManager extends EventEmitter
     }
 
     /**
-     * Update application settings including infinite zoom preferences
+     * Update application settings
      * @param {Object} updates - Settings updates
      */
     updateSettings(updates)
     {
         const oldSettings = {
-            infiniteZoomEnabled: this.infiniteZoomEnabled,
             dynamicIterations: this.dynamicIterations,
             qualityLevel: this.qualityLevel,
             performanceMode: this.performanceMode
         };
-
-        if (updates.infiniteZoomEnabled !== undefined)
-        {
-            this.infiniteZoomEnabled = updates.infiniteZoomEnabled;
-        }
 
         if (updates.dynamicIterations !== undefined)
         {
@@ -454,7 +447,6 @@ export class StateManager extends EventEmitter
         this.emit('settingsChanged', {
             oldSettings,
             newSettings: {
-                infiniteZoomEnabled: this.infiniteZoomEnabled,
                 dynamicIterations: this.dynamicIterations,
                 qualityLevel: this.qualityLevel,
                 performanceMode: this.performanceMode
@@ -562,7 +554,6 @@ export class StateManager extends EventEmitter
             // Settings
             qualityLevel: this.qualityLevel,
             performanceMode: this.performanceMode,
-            infiniteZoomEnabled: this.infiniteZoomEnabled,
             dynamicIterations: this.dynamicIterations
         };
     }
