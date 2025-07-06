@@ -64,26 +64,6 @@ export class FractalRenderer
         let fragmentShaderName = 'fractal.wgsl';
         let shaderDefines = null;
 
-        if (precisionLevel > 2.0)
-        {
-            // Ultra-high precision needed
-            fragmentShaderName = 'fractal_enhanced.wgsl';
-            shaderDefines = {
-                ENABLE_ULTRA_PRECISION: true,
-                PRECISION_LEVEL: precisionLevel.toFixed(1)
-            };
-            logger.info('Using ultra precision shader for deep zoom');
-        } else if (precisionLevel > 0)
-        {
-            // Enhanced precision
-            fragmentShaderName = 'fractal_enhanced.wgsl';
-            shaderDefines = {
-                ENABLE_ULTRA_PRECISION: false,
-                PRECISION_LEVEL: precisionLevel.toFixed(1)
-            };
-            logger.info('Using enhanced precision shader');
-        }
-
         // Load shaders using the enhanced shader loader
         try
         {

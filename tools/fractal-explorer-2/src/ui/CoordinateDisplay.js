@@ -54,11 +54,11 @@ export class CoordinateDisplay
                     <span class="coord-label">Zoom:</span>
                     <span class="coord-value" id="coord-zoom">1.00e+0</span>
                 </div>
-                <div class="coord-line infinite-zoom-info">
+                <div class="coord-line">
                     <span class="coord-label">Precision:</span>
                     <span class="coord-value" id="coord-precision">Standard</span>
                 </div>
-                <div class="coord-line infinite-zoom-info">
+                <div class="coord-line">
                     <span class="coord-label">Depth:</span>
                     <span class="coord-value" id="coord-zoom-depth">Level 0</span>
                 </div>

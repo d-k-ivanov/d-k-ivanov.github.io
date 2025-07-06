@@ -217,17 +217,6 @@ ${includedSource}
     {
         return this.loadShader('fractal.wgsl', defines);
     }
-
-    /**
-     * Load the enhanced precision fractal shader
-     * @param {Object} [defines] - Optional preprocessor defines
-     * @returns {Promise<string>} Enhanced fragment shader source
-     */
-    async loadEnhancedFragmentShader(defines = null)
-    {
-        return this.loadShader('fractal_enhanced.wgsl', defines);
-    }
-
     /**
      * Load both vertex and fragment shaders
      * @param {string} [fragmentShaderName='fractal.wgsl'] - Fragment shader filename
