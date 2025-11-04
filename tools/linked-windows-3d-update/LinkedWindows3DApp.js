@@ -9,49 +9,37 @@ class LinkedWindows3DApp
 {
     constructor()
     {
-        // Core Three.js components
         this.camera = null;
         this.scene = null;
         this.renderer = null;
         this.world = null;
 
-        // Application state
         this.planets = [];
         this.windowManager = null;
         this.initialized = false;
 
-        // Scene positioning
         this.sceneOffset = { x: 0, y: 0 };
         this.sceneOffsetTarget = { x: 0, y: 0 };
 
-        // Performance settings
         this.pixR = Math.min(window.devicePixelRatio || 1, 2);
         this.lastFrameTime = 0;
         this.atmosphereConstraintStrength = 5.0;
 
-        // Time reference for animations
         this.today = new Date();
         this.today.setHours(0, 0, 0, 0);
 
-        // Bind event handlers once
         this.boundResizeHandler = this.resize.bind(this);
         this.boundContextLossHandler = this.handleContextLoss.bind(this);
     }
 
-    /**
-     * Returns time in seconds since start of day.
-     */
     getTime()
     {
         return (Date.now() - this.today) / 1000.0;
     }
 
-    /**
-     * Creates optimized starfield background.
-     */
     createStarfield()
     {
-        const starCount = 6000; // Reduced from 8000
+        const starCount = 6000;
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
 
@@ -97,9 +85,6 @@ class LinkedWindows3DApp
         this.scene.add(new THREE.Points(geometry, material));
     }
 
-    /**
-     * Updates window shape and position for multi-window sync.
-     */
     updateWindowShape(easing = true)
     {
         this.sceneOffsetTarget = {
@@ -124,9 +109,6 @@ class LinkedWindows3DApp
         }
     }
 
-    /**
-     * Optimized resize with validation.
-     */
     resize()
     {
         const width = window.innerWidth;
@@ -134,7 +116,6 @@ class LinkedWindows3DApp
 
         if (width <= 0 || height <= 0) return;
 
-        // Update camera
         if (this.camera)
         {
             this.camera.left = 0;
@@ -144,7 +125,6 @@ class LinkedWindows3DApp
             this.camera.updateProjectionMatrix();
         }
 
-        // Update renderer
         if (this.renderer)
         {
             const newPixR = Math.min(window.devicePixelRatio || 1, 2);
@@ -157,9 +137,6 @@ class LinkedWindows3DApp
         }
     }
 
-    /**
-     * WebGL context loss recovery.
-     */
     handleContextLoss()
     {
         console.warn('WebGL context lost, recovering...');
@@ -168,26 +145,19 @@ class LinkedWindows3DApp
         setTimeout(() => this.init(), 1000);
     }
 
-    /**
-     * Setup Three.js scene.
-     */
     setupScene()
     {
-        // Camera setup
         this.camera = new THREE.OrthographicCamera(
             0, window.innerWidth, window.innerHeight, 0, -10000, 10000
         );
         this.camera.position.z = 2.5;
 
-        // Scene setup
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000a1a);
         this.scene.add(this.camera);
 
-        // Enhanced starfield
         this.createStarfield();
 
-        // Renderer setup
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
@@ -198,24 +168,17 @@ class LinkedWindows3DApp
         this.renderer.setPixelRatio(this.pixR);
         this.renderer.sortObjects = false;
 
-        // Event handlers
         this.renderer.domElement.addEventListener('webglcontextlost', this.boundContextLossHandler, false);
 
-        // World container
         this.world = new THREE.Object3D();
         this.scene.add(this.world);
 
-        // Add to DOM
         this.renderer.domElement.setAttribute("id", "scene");
         document.body.appendChild(this.renderer.domElement);
 
-        // Lighting setup
         this.setupLighting();
     }
 
-    /**
-     * Optimized lighting setup.
-     */
     setupLighting()
     {
         const ambientLight = new THREE.AmbientLight(0x1a1a2e, 0.3);
@@ -230,9 +193,6 @@ class LinkedWindows3DApp
         this.scene.add(rimLight);
     }
 
-    /**
-     * Initialize application.
-     */
     init()
     {
         if (this.initialized) return;
@@ -249,16 +209,12 @@ class LinkedWindows3DApp
         }, 500);
     }
 
-    /**
-     * Optimized noise generation.
-     */
     generateTurbulence(x, y, z, time)
     {
         let noise = 0;
         let amplitude = 1;
         let frequency = 1;
 
-        // Reduced octaves from 4 to 3 for performance
         for (let i = 0; i < 3; i++)
         {
             noise += amplitude * this.simplexNoise(
@@ -273,9 +229,6 @@ class LinkedWindows3DApp
         return noise;
     }
 
-    /**
-     * Simplified noise function.
-     */
     simplexNoise(x, y, z)
     {
         const xi = Math.floor(x);
@@ -320,9 +273,6 @@ class LinkedWindows3DApp
         return 2 * (n - Math.floor(n)) - 1;
     }
 
-    /**
-     * Setup window manager.
-     */
     setupWindowManager()
     {
         this.windowManager = new WindowManager();
@@ -337,14 +287,10 @@ class LinkedWindows3DApp
         this.updatePlanets();
     }
 
-    /**
-     * Update planets to match windows.
-     */
     updatePlanets()
     {
         const wins = this.windowManager.getWindows();
 
-        // Clean up existing planets
         this.planets.forEach(planet =>
         {
             this.world.remove(planet.group);
@@ -352,7 +298,6 @@ class LinkedWindows3DApp
         });
         this.planets = [];
 
-        // Create new planets
         wins.forEach((win, i) =>
         {
             const planetColor = this.generatePlanetColor(i, win.id);
@@ -367,9 +312,6 @@ class LinkedWindows3DApp
         });
     }
 
-    /**
-     * Generate unique planet colors.
-     */
     generatePlanetColor(index, windowId)
     {
         const liquidColors = [
@@ -391,20 +333,15 @@ class LinkedWindows3DApp
         );
     }
 
-    /**
-     * Create optimized particle planet.
-     */
     createParticlePlanet(radius, color, planetIndex)
     {
         const scaledRadius = radius * 1.4;
         const planetGroup = new THREE.Group();
         planetGroup.name = `Planet_${planetIndex}`;
 
-        // Reduced particle counts for better performance
         const coreParticles = this.createPlanetCore(scaledRadius * 0.15, color, 800);
         planetGroup.add(coreParticles);
 
-        // Multi-layered atmosphere with fewer particles
         const innerAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.6, color, 2000, 0.7);
         const middleAtmosphere = this.createAtmosphereLayer(scaledRadius * 0.85, color, 1500, 0.5);
         const outerAtmosphere = this.createAtmosphereLayer(scaledRadius * 1.0, color, 800, 0.3);
@@ -421,9 +358,6 @@ class LinkedWindows3DApp
         };
     }
 
-    /**
-     * Create optimized planet core.
-     */
     createPlanetCore(radius, color, particleCount)
     {
         const positions = new Float32Array(particleCount * 3);
@@ -468,9 +402,6 @@ class LinkedWindows3DApp
         return new THREE.Points(geometry, material);
     }
 
-    /**
-     * Create optimized atmosphere layer.
-     */
     createAtmosphereLayer(radius, color, particleCount, opacity)
     {
         const positions = new Float32Array(particleCount * 3);
@@ -516,9 +447,6 @@ class LinkedWindows3DApp
         return new THREE.Points(geometry, material);
     }
 
-    /**
-     * Initialize particle velocities.
-     */
     initializeVelocities(coreParticles, atmosphereLayers)
     {
         const velocities = [];
@@ -563,9 +491,6 @@ class LinkedWindows3DApp
         return velocities;
     }
 
-    /**
-     * Optimized atmospheric physics simulation.
-     */
     updateAtmosphere(planet, deltaTime)
     {
         const atmosphereLayers = [planet.group.children[1], planet.group.children[2], planet.group.children[3]];
@@ -580,7 +505,6 @@ class LinkedWindows3DApp
             const maxRadius = planet.atmosphereRadius * (0.7 + layerIndex * 0.15);
             const noiseScale = 0.008;
 
-            // Optimized loop with reduced calculations
             for (let i = 0; i < positions.length; i += 3)
             {
                 const x = positions[i];
@@ -588,7 +512,6 @@ class LinkedWindows3DApp
                 const z = positions[i + 2];
 
                 const currentPos = new THREE.Vector3(x, y, z);
-                const distance = currentPos.length();
 
                 // Simplified force calculation
                 const totalForce = new THREE.Vector3();
@@ -658,9 +581,6 @@ class LinkedWindows3DApp
         });
     }
 
-    /**
-     * Main render loop.
-     */
     render()
     {
         const currentTime = this.getTime();
@@ -669,7 +589,6 @@ class LinkedWindows3DApp
 
         this.windowManager.update();
 
-        // Update scene offset
         this.sceneOffset.x += (this.sceneOffsetTarget.x - this.sceneOffset.x) * 0.05;
         this.sceneOffset.y += (this.sceneOffsetTarget.y - this.sceneOffset.y) * 0.05;
 
@@ -677,7 +596,6 @@ class LinkedWindows3DApp
 
         const wins = this.windowManager.getWindows();
 
-        // Update planets
         this.planets.forEach((planet, i) =>
         {
             const win = wins[i];
@@ -701,9 +619,6 @@ class LinkedWindows3DApp
         requestAnimationFrame(() => this.render());
     }
 
-    /**
-     * Dispose planet resources.
-     */
     disposePlanetResources(planet)
     {
         planet.group.traverse(child =>
@@ -713,9 +628,6 @@ class LinkedWindows3DApp
         });
     }
 
-    /**
-     * Clean up all resources.
-     */
     dispose()
     {
         window.removeEventListener('resize', this.boundResizeHandler);
@@ -753,7 +665,6 @@ class LinkedWindows3DApp
     }
 }
 
-// Initialize application
 const app = new LinkedWindows3DApp();
 
 window.onload = () =>
