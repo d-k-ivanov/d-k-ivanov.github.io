@@ -104,9 +104,6 @@ class JuliaSetRenderer
             this.createBuffers();
             this.setupEventListeners();
             this.startRenderLoop();
-
-            console.log('Julia Set renderer initialized successfully');
-
         } catch (error)
         {
             console.error('WebGPU initialization failed:', error);
@@ -616,8 +613,6 @@ class JuliaSetRenderer
         }
 
         this.updateModeDisplay();
-
-        console.log(`Mode cycled to: ${this.renderMode} (active: ${this.activeView})`);
     }
 
     getViewFromMousePosition(mouseX, mouseY)
@@ -1169,14 +1164,12 @@ class JuliaSetRenderer
                         this.zoomPrecision.logZoom += 0.2;
                         this.zoomPrecision.logZoom = Math.min(this.zoomPrecision.maxLogZoom, this.zoomPrecision.logZoom);
                         this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
-                        console.log(`Julia zoom in: ${this.juliaParams.zoom.toFixed(2)}`);
                     }
                     else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotPrecision.logZoom += 0.2;
                         this.mandelbrotPrecision.logZoom = Math.min(this.mandelbrotPrecision.maxLogZoom, this.mandelbrotPrecision.logZoom);
                         this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
-                        console.log(`Mandelbrot zoom in: ${this.mandelbrotParams.zoom.toFixed(2)}`);
                     }
                     else if (this.renderMode === 'dual')
                     {
@@ -1201,14 +1194,12 @@ class JuliaSetRenderer
                         this.zoomPrecision.logZoom -= 0.2;
                         this.zoomPrecision.logZoom = Math.max(-10, this.zoomPrecision.logZoom);
                         this.juliaParams.zoom = Math.exp(this.zoomPrecision.logZoom);
-                        console.log(`Julia zoom out: ${this.juliaParams.zoom.toFixed(2)}`);
                     }
                     else if (this.renderMode === 'mandelbrot')
                     {
                         this.mandelbrotPrecision.logZoom -= 0.2;
                         this.mandelbrotPrecision.logZoom = Math.max(-10, this.mandelbrotPrecision.logZoom);
                         this.mandelbrotParams.zoom = Math.exp(this.mandelbrotPrecision.logZoom);
-                        console.log(`Mandelbrot zoom out: ${this.mandelbrotParams.zoom.toFixed(2)}`);
                     }
                     else if (this.renderMode === 'dual')
                     {
@@ -1254,8 +1245,6 @@ class JuliaSetRenderer
                     {
                         this.renderMode = 'julia';
                         this.activeView = 'julia';
-
-                        console.log('Switched to isolated Julia exploration mode');
                     }
                     else if (this.renderMode === 'mandelbrot')
                     {
@@ -1265,8 +1254,6 @@ class JuliaSetRenderer
                     {
                         this.renderMode = 'dual';
                         this.activeView = 'mandelbrot';
-
-                        console.log('Returned to dual mode for comparative exploration');
                     }
 
                     this.updateModeDisplay();
