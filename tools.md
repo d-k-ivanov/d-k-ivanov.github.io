@@ -13,8 +13,8 @@ permalink: /tools/
 
 ### 3D Playground
 
-- <a name="Compare Two Lists" href="/tools/linked-windows-3d-base/">Linked Windows 3D Base</a>
-- <a name="Compare Two Lists" href="/tools/linked-windows-3d-update/">Linked Windows 3D Updated</a>
+- <a name="Compare Two Lists" href="/tools/linked-windows-3d-base/" target="_blank">Linked Windows 3D Base</a>
+- <a name="Compare Two Lists" href="/tools/linked-windows-3d-update/" target="_blank">Linked Windows 3D Updated</a>
 
 ### WebGPU Playground
 
