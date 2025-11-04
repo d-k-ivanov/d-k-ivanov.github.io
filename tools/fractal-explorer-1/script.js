@@ -52,7 +52,6 @@ class JuliaSetRenderer
             maxLogZoom: 50.0
         };
 
-        // **ENHANCED DEFAULT INITIALIZATION**: Start in dual mode for optimal exploration
         this.renderMode = 'dual'; // Launch directly into educational dual-view mode
         this.activeView = 'mandelbrot'; // Begin with Mandelbrot as primary exploration surface
 
@@ -63,12 +62,10 @@ class JuliaSetRenderer
         this.modeDisplay = null;
     }
 
-    // Essential WebGPU initialization method
     async init()
     {
         try
         {
-            // Check WebGPU support with comprehensive fallback detection
             if (!navigator.gpu)
             {
                 throw new Error('WebGPU not supported. Please use Chrome 113+, Firefox Nightly, or Safari Technology Preview.');
@@ -85,7 +82,6 @@ class JuliaSetRenderer
                 throw new Error('No WebGPU adapter found. Please ensure your GPU drivers are up to date.');
             }
 
-            // Request device with required features for high-precision computation
             this.device = await adapter.requestDevice({
                 requiredFeatures: [],
                 requiredLimits: {
@@ -94,18 +90,15 @@ class JuliaSetRenderer
                 }
             });
 
-            // Enhanced error handling for device loss
             this.device.lost.then((info) =>
             {
                 console.error('WebGPU device lost:', info.message);
                 if (info.reason !== 'destroyed')
                 {
-                    // Attempt to reinitialize on unexpected device loss
                     setTimeout(() => this.init(), 1000);
                 }
             });
 
-            // Setup full-screen canvas with proper WebGPU context
             this.setupFullScreenCanvas();
             this.createRenderPipeline();
             this.createBuffers();
@@ -121,7 +114,6 @@ class JuliaSetRenderer
         }
     }
 
-    // Optimized full-screen canvas setup with proper scaling
     setupFullScreenCanvas()
     {
         if (!this.canvas)
@@ -141,8 +133,7 @@ class JuliaSetRenderer
             document.body.appendChild(this.canvas);
         }
 
-        // High-DPI support with performance considerations
-        const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
+        const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
         const displayWidth = Math.floor(window.innerWidth);
         const displayHeight = Math.floor(window.innerHeight);
 
@@ -151,7 +142,6 @@ class JuliaSetRenderer
         this.canvas.style.width = `${displayWidth}px`;
         this.canvas.style.height = `${displayHeight}px`;
 
-        // Initialize WebGPU context with optimal configuration
         if (!this.context)
         {
             this.context = this.canvas.getContext('webgpu');
@@ -161,7 +151,6 @@ class JuliaSetRenderer
             }
         }
 
-        // Configure context with appropriate color space and format
         const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
         this.context.configure({
             device: this.device,
@@ -170,7 +159,6 @@ class JuliaSetRenderer
             colorSpace: 'srgb'
         });
 
-        // Setup resize observer for responsive behavior
         if (!this.resizeObserver)
         {
             this.resizeObserver = new ResizeObserver(() =>
@@ -185,10 +173,8 @@ class JuliaSetRenderer
         }
     }
 
-    // Comprehensive render pipeline creation
     createRenderPipeline()
     {
-        // Vertex shader for full-screen quad rendering
         const vertexShaderCode = `
             @vertex
             fn main(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f32> {
@@ -201,7 +187,6 @@ class JuliaSetRenderer
             }
         `;
 
-        // Enhanced fragment shader with mathematical precision optimizations
         const fragmentShaderCode = `
             struct Uniforms {
                 julia_c_real: f32,
@@ -364,7 +349,6 @@ class JuliaSetRenderer
             }
         `;
 
-        // Create shader modules with comprehensive error handling
         const vertexShader = this.device.createShaderModule({
             label: 'Fractal Vertex Shader',
             code: vertexShaderCode,
@@ -375,7 +359,6 @@ class JuliaSetRenderer
             code: fragmentShaderCode,
         });
 
-        // Create bind group layout for uniform buffer
         const bindGroupLayout = this.device.createBindGroupLayout({
             label: 'Fractal Bind Group Layout',
             entries: [{
@@ -383,18 +366,16 @@ class JuliaSetRenderer
                 visibility: GPUShaderStage.FRAGMENT,
                 buffer: {
                     type: 'uniform',
-                    minBindingSize: 64 // Minimum required size for our uniform structure
+                    minBindingSize: 64
                 }
             }]
         });
 
-        // Create pipeline layout
         const pipelineLayout = this.device.createPipelineLayout({
             label: 'Fractal Pipeline Layout',
             bindGroupLayouts: [bindGroupLayout]
         });
 
-        // Create optimized render pipeline
         this.renderPipeline = this.device.createRenderPipeline({
             label: 'Fractal Render Pipeline',
             layout: pipelineLayout,
@@ -427,14 +408,12 @@ class JuliaSetRenderer
             },
         });
 
-        // Store bind group layout for buffer creation
         this.bindGroupLayout = bindGroupLayout;
     }
 
-    // Enhanced uniform buffer creation for dual view
     createBuffers()
     {
-        // Aligned uniform buffer for optimal GPU performance
+        // Aligned uniform buffer
         const uniformData = new Float32Array([
             this.juliaParams.c_real,            // 0
             this.juliaParams.c_imag,            // 1
@@ -450,22 +429,18 @@ class JuliaSetRenderer
             this.mandelbrotParams.colorOffset,  // 11
             this.canvas.width,                  // 12
             this.canvas.height,                 // 13
-            this.renderMode === 'mandelbrot' ? 1.0 :
-                this.renderMode === 'julia' ? 0.0 : 2.0, // 14
-            0 // 15 - padding for alignment
+            this.renderMode === 'mandelbrot' ? 1.0 : this.renderMode === 'julia' ? 0.0 : 2.0, // 14
+            0                                   // 15 - padding for alignment
         ]);
 
-        // Create uniform buffer with proper alignment
         this.uniformBuffer = this.device.createBuffer({
             label: 'Fractal Uniform Buffer',
             size: Math.max(uniformData.byteLength, 256), // Ensure minimum size
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
-        // Write initial data
         this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
 
-        // Create bind group
         this.bindGroup = this.device.createBindGroup({
             label: 'Fractal Bind Group',
             layout: this.bindGroupLayout,
@@ -478,7 +453,6 @@ class JuliaSetRenderer
         });
     }
 
-    // Optimized uniform buffer updates
     updateUniforms()
     {
         const uniformData = new Float32Array([
@@ -504,12 +478,11 @@ class JuliaSetRenderer
         this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
     }
 
-    // High-performance render method
     render()
     {
         if (!this.device || !this.renderPipeline || !this.bindGroup)
         {
-            return; // Skip rendering if not properly initialized
+            return;
         }
 
         this.updateUniforms();
@@ -533,13 +506,12 @@ class JuliaSetRenderer
         const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setBindGroup(0, this.bindGroup);
-        passEncoder.draw(6, 1, 0, 0); // Draw full-screen triangle pair
+        passEncoder.draw(6, 1, 0, 0);
         passEncoder.end();
 
         this.device.queue.submit([commandEncoder.finish()]);
     }
 
-    // Performance-optimized render loop with frame rate management
     startRenderLoop()
     {
         let lastFrameTime = 0;
@@ -548,7 +520,6 @@ class JuliaSetRenderer
 
         const animate = (currentTime) =>
         {
-            // Frame rate limiting for consistent performance
             if (currentTime - lastFrameTime >= frameInterval)
             {
                 this.render();
@@ -561,7 +532,6 @@ class JuliaSetRenderer
         this.animationId = requestAnimationFrame(animate);
     }
 
-    // Resource cleanup with comprehensive disposal
     destroy()
     {
         if (this.animationId)
@@ -595,22 +565,18 @@ class JuliaSetRenderer
         }
     }
 
-    // Enhanced view management
     toggleFractalType(useCurrentCoordinates = false)
     {
         if (this.renderMode === 'dual')
         {
-            // In dual mode, switch the active view
             this.activeView = this.activeView === 'mandelbrot' ? 'julia' : 'mandelbrot';
             this.updateModeDisplay();
             return;
         }
 
-        // Original single-view logic with enhanced state management
         this.saveCurrentParameters();
         this.renderMode = this.renderMode === 'julia' ? 'mandelbrot' : 'julia';
 
-        // **CRITICAL FIX: Ensure activeView synchronization**
         this.activeView = this.renderMode;
 
         if (this.renderMode === 'julia' && useCurrentCoordinates)
@@ -634,31 +600,26 @@ class JuliaSetRenderer
         this.updateModeDisplay();
     }
 
-    // Enhanced mode cycling with proper state management
     cycleFractalMode()
     {
         const modes = ['mandelbrot', 'julia', 'dual'];
         const currentIndex = modes.indexOf(this.renderMode);
         this.renderMode = modes[(currentIndex + 1) % modes.length];
 
-        // **CRITICAL FIX: Synchronize activeView with renderMode**
         if (this.renderMode === 'dual')
         {
-            this.activeView = 'mandelbrot'; // Logical starting point for exploration
+            this.activeView = 'mandelbrot';
         }
         else
         {
-            // In single mode, activeView should match renderMode for consistency
             this.activeView = this.renderMode;
         }
 
         this.updateModeDisplay();
 
-        // Debug logging for development clarity
         console.log(`Mode cycled to: ${this.renderMode} (active: ${this.activeView})`);
     }
 
-    // Determine which view area the mouse is in (for dual mode)
     getViewFromMousePosition(mouseX, mouseY)
     {
         if (this.renderMode !== 'dual') return this.renderMode;
@@ -666,20 +627,13 @@ class JuliaSetRenderer
         const rect = this.canvas.getBoundingClientRect();
         const relativeX = mouseX / rect.width;
 
-        // Left half is Mandelbrot, right half is Julia
         return relativeX < 0.5 ? 'mandelbrot' : 'julia';
     }
 
-    // Enhanced parameter management
     saveCurrentParameters()
     {
-        if (this.renderMode === 'julia' || this.activeView === 'julia')
+        if (this.renderMode !== 'julia' || this.activeView !== 'julia')
         {
-            // Julia parameters are already in juliaParams
-        }
-        else
-        {
-            // Save Mandelbrot parameters
             this.mandelbrotParams.zoom = this.getCurrentZoom();
             this.mandelbrotParams.offsetX = this.getCurrentOffsetX();
             this.mandelbrotParams.offsetY = this.getCurrentOffsetY();
@@ -690,13 +644,8 @@ class JuliaSetRenderer
 
     loadParametersForCurrentMode()
     {
-        if (this.renderMode === 'julia' || this.activeView === 'julia')
+        if (this.renderMode !== 'julia' || this.activeView !== 'julia')
         {
-            // Julia parameters are already loaded
-        }
-        else
-        {
-            // Load Mandelbrot parameters
             this.setCurrentZoom(this.mandelbrotParams.zoom);
             this.setCurrentOffset(this.mandelbrotParams.offsetX, this.mandelbrotParams.offsetY);
             this.setCurrentMaxIterations(this.mandelbrotParams.maxIterations);
@@ -704,10 +653,8 @@ class JuliaSetRenderer
         }
     }
 
-    // Helper methods for parameter access based on active view
     getCurrentZoom()
     {
-        // **ROBUST STATE MANAGEMENT**: Handle all possible state combinations
         if (this.renderMode === 'dual')
         {
             return this.activeView === 'julia' ? this.juliaParams.zoom : this.mandelbrotParams.zoom;
@@ -786,7 +733,6 @@ class JuliaSetRenderer
         }
     }
 
-    // Enhanced parameter setters with comprehensive state handling
     setCurrentZoom(zoom)
     {
         if (this.renderMode === 'dual')
@@ -885,7 +831,6 @@ class JuliaSetRenderer
         this.modeDisplay.textContent = modeName;
     }
 
-    // Enhanced mouse handling for dual view
     setupEventListeners()
     {
         this.canvas.addEventListener('mousedown', (e) =>
@@ -932,23 +877,19 @@ class JuliaSetRenderer
             {
                 if (this.mouseState.button === 0)
                 {
-                    // Left button behavior depends on mode and active view
                     if (this.renderMode === 'julia' ||
                         (this.renderMode === 'dual' && this.activeView === 'julia'))
                     {
-                        // Change Julia parameter c in Julia view
                         const rect = this.canvas.getBoundingClientRect();
                         let normalizedX, normalizedY;
 
                         if (this.renderMode === 'dual')
                         {
-                            // Right half of screen for Julia in dual mode
                             normalizedX = (this.mouseState.x / rect.width - 0.5) * 2.0;
                             normalizedY = this.mouseState.y / rect.height - 0.5;
                         }
                         else
                         {
-                            // Full screen for Julia in single mode
                             normalizedX = this.mouseState.x / rect.width - 0.5;
                             normalizedY = this.mouseState.y / rect.height - 0.5;
                         }
@@ -958,11 +899,9 @@ class JuliaSetRenderer
                     }
                     else if (this.renderMode === 'dual' && this.activeView === 'mandelbrot')
                     {
-                        // In dual mode, clicking Mandelbrot view updates Julia parameter
                         const rect = this.canvas.getBoundingClientRect();
                         const aspect = (this.canvas.width / 2) / this.canvas.height; // Half width for dual view
 
-                        // Convert mouse position to Mandelbrot coordinates
                         const mouseX = (this.mouseState.x / rect.width - 0.25) * 2.0; // Adjust for left half
                         const mouseY = this.mouseState.y / rect.height - 0.5;
 
@@ -972,7 +911,6 @@ class JuliaSetRenderer
                 }
                 else if (this.mouseState.button === 1)
                 {
-                    // Middle button: Pan the active view
                     const deltaX = this.mouseState.x - this.mouseState.lastX;
                     const deltaY = this.mouseState.y - this.mouseState.lastY;
 
@@ -1015,12 +953,10 @@ class JuliaSetRenderer
             e.preventDefault();
         });
 
-        // Enhanced wheel handling for dual view
         this.canvas.addEventListener('wheel', (e) =>
         {
             e.preventDefault();
 
-            // Determine which view to zoom based on mouse position
             let targetView = this.activeView;
             if (this.renderMode === 'dual')
             {
@@ -1051,7 +987,6 @@ class JuliaSetRenderer
 
             mouseY = (e.clientY - rect.top) / rect.height - 0.5;
 
-            // Get parameters for target view
             let currentZoom, offsetX, offsetY, precision;
             if (targetView === 'julia')
             {
@@ -1068,7 +1003,6 @@ class JuliaSetRenderer
                 precision = this.mandelbrotPrecision;
             }
 
-            // Calculate zoom
             const preZoomX = mouseX * 4.0 * aspect / currentZoom + offsetX;
             const preZoomY = mouseY * 4.0 / currentZoom + offsetY;
 
@@ -1080,7 +1014,6 @@ class JuliaSetRenderer
             const postZoomX = mouseX * 4.0 * aspect / newZoom + offsetX;
             const postZoomY = mouseY * 4.0 / newZoom + offsetY;
 
-            // Apply changes to target view
             if (targetView === 'julia')
             {
                 this.juliaParams.zoom = newZoom;
@@ -1098,7 +1031,6 @@ class JuliaSetRenderer
                 this.mandelbrotPrecision.centerY = this.mandelbrotParams.offsetY;
             }
 
-            // Dynamic iteration adjustment
             const baseIterations = 256;
             const zoomFactor = Math.max(1.0, precision.logZoom / 10.0);
             const newIterations = Math.min(2048, baseIterations * Math.sqrt(zoomFactor));
@@ -1116,23 +1048,19 @@ class JuliaSetRenderer
 
         }, { passive: false });
 
-        // Enhanced keyboard controls with corrected J hotkey behavior for dual mode
         document.addEventListener('keydown', (e) =>
         {
-            // Handle Ctrl+R for browser reload (takes precedence)
             if (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
             {
-                return; // Allow browser default behavior
+                return;
             }
 
-            // Zoom-adaptive navigation for smooth movement at any scale
             const baseStep = 0.1;
             const currentZoom = this.getCurrentZoom();
             const zoomAdjustedStep = baseStep / Math.sqrt(currentZoom);
 
             switch (e.key)
             {
-                // Arrow key navigation with explicit mode handling
                 case 'ArrowLeft':
                     if (this.renderMode === 'julia')
                     {
@@ -1234,7 +1162,6 @@ class JuliaSetRenderer
                     }
                     break;
 
-                // **ENHANCED ZOOM CONTROLS with explicit Julia mode handling**
                 case '+':
                 case '=':
                     if (this.renderMode === 'julia')
@@ -1300,7 +1227,6 @@ class JuliaSetRenderer
                     }
                     break;
 
-                // Enhanced reset functionality
                 case 'r':
                 case 'R':
                     if (!e.ctrlKey)
@@ -1309,7 +1235,6 @@ class JuliaSetRenderer
                     }
                     break;
 
-                // View management controls
                 case 'Tab':
                     if (this.renderMode === 'dual')
                     {
@@ -1318,34 +1243,28 @@ class JuliaSetRenderer
                     }
                     break;
 
-                // Mode cycling: Mandelbrot → Julia → Dual
                 case 'm':
                 case 'M':
                     this.cycleFractalMode();
                     break;
 
-                // **CORRECTED: Julia mode toggle - context-aware behavior**
                 case 'j':
                 case 'J':
                     if (this.renderMode === 'dual')
                     {
-                        // **In dual mode: Switch to isolated Julia exploration**
-                        // Preserve current Julia parameters from dual view
                         this.renderMode = 'julia';
-                        this.activeView = 'julia'; // Ensure state consistency
+                        this.activeView = 'julia';
 
                         console.log('Switched to isolated Julia exploration mode');
                     }
                     else if (this.renderMode === 'mandelbrot')
                     {
-                        // **From Mandelbrot: Create Julia set using current coordinates**
-                        this.toggleFractalType(true); // Use current coordinates as Julia parameter
+                        this.toggleFractalType(true);
                     }
                     else if (this.renderMode === 'julia')
                     {
-                        // **From Julia: Return to dual mode for comparative analysis**
                         this.renderMode = 'dual';
-                        this.activeView = 'mandelbrot'; // Set logical starting point
+                        this.activeView = 'mandelbrot';
 
                         console.log('Returned to dual mode for comparative exploration');
                     }
@@ -1353,7 +1272,6 @@ class JuliaSetRenderer
                     this.updateModeDisplay();
                     break;
 
-                // **Dedicated dual mode hotkey**
                 case 'd':
                 case 'D':
                     if (this.renderMode !== 'dual')
@@ -1364,13 +1282,11 @@ class JuliaSetRenderer
                     }
                     else
                     {
-                        // If already in dual mode, cycle the active view
                         this.activeView = this.activeView === 'mandelbrot' ? 'julia' : 'mandelbrot';
                         this.updateModeDisplay();
                     }
                     break;
 
-                // Fullscreen controls
                 case 'f':
                 case 'F':
                     this.toggleFullscreen();
@@ -1382,17 +1298,13 @@ class JuliaSetRenderer
                     }
                     break;
             }
-
-            // Prevent default browser behavior for navigation keys
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab',
-                'f', 'F', '+', '=', '-', '_', 'm', 'M', 'j', 'J', 'd', 'D'].includes(e.key) ||
-                ((e.key === 'r' || e.key === 'R') && !e.ctrlKey))
+            const all_active_keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'f', 'F', '+', '=', '-', '_', 'm', 'M', 'j', 'J', 'd', 'D'];
+            if (all_active_keys.includes(e.key) || ((e.key === 'r' || e.key === 'R') && !e.ctrlKey))
             {
                 e.preventDefault();
             }
         });
 
-        // Handle visibility changes for performance
         document.addEventListener('visibilitychange', () =>
         {
             if (document.hidden)
@@ -1441,7 +1353,6 @@ class JuliaSetRenderer
         });
     }
 
-    // Enhanced mouse position tracking for dual view
     updateMousePosition(e)
     {
         const rect = this.canvas.getBoundingClientRect();
@@ -1503,17 +1414,14 @@ class JuliaSetRenderer
         this.updateCoordinateDisplay();
     }
 
-    // Enhanced coordinate display with mathematical precision and view context
     updateCoordinateDisplay()
     {
         if (!this.coordDisplay) return;
 
-        // Adaptive precision based on zoom level for optimal readability
         const currentZoom = this.getCurrentZoom();
         const zoomFactor = Math.max(0, Math.log10(currentZoom));
         const precision = Math.min(15, Math.max(4, Math.floor(zoomFactor) + 3));
 
-        // View context information for dual mode
         let viewInfo = '';
         let activeViewIndicator = '';
 
@@ -1529,7 +1437,6 @@ class JuliaSetRenderer
             </div>`;
         }
 
-        // Calculate magnitude for mathematical completeness
         const magnitude = Math.sqrt(
             this.complexCoordinates.x * this.complexCoordinates.x +
             this.complexCoordinates.y * this.complexCoordinates.y
@@ -1560,14 +1467,11 @@ class JuliaSetRenderer
         `;
     }
 
-    // Enhanced reset functionality with comprehensive dual-mode support
     resetParameters()
     {
         if (this.renderMode === 'dual')
         {
-            // **Dual mode reset: Reset both fractals to their canonical states**
-
-            // Reset Julia set parameters to classic aesthetic values
+            // Reset Julia set parameters
             this.juliaParams = {
                 c_real: -0.7,
                 c_imag: 0.27015,
@@ -1578,7 +1482,7 @@ class JuliaSetRenderer
                 colorOffset: 0.0
             };
 
-            // Reset Julia precision tracking for infinite zoom capability
+            // Reset Julia precision tracking
             this.zoomPrecision = {
                 logZoom: 0.0,
                 centerX: 0.0,
@@ -1586,7 +1490,7 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            // Reset Mandelbrot parameters to canonical mathematical view
+            // Reset Mandelbrot parameters
             this.mandelbrotParams = {
                 zoom: 1.0,
                 offsetX: -0.5, // Center the classic Mandelbrot bulb
@@ -1603,14 +1507,10 @@ class JuliaSetRenderer
                 maxLogZoom: 50.0
             };
 
-            // Reset active view to Mandelbrot for consistent exploration workflow
             this.activeView = 'mandelbrot';
-
-            console.log('Dual view reset: Both fractals restored to canonical mathematical states');
         }
         else if (this.renderMode === 'julia')
         {
-            // Single Julia view reset to aesthetically pleasing parameters
             this.juliaParams = {
                 c_real: -0.7,
                 c_imag: 0.27015,
@@ -1627,15 +1527,12 @@ class JuliaSetRenderer
                 centerY: 0.0,
                 maxLogZoom: 50.0
             };
-
-            console.log('Julia set reset to classic parameters (-0.7 + 0.27015i)');
         }
         else // Mandelbrot mode
         {
-            // Single Mandelbrot view reset to canonical mathematical view
             this.mandelbrotParams = {
                 zoom: 1.0,
-                offsetX: -0.5, // Optimal centering for the main cardioid
+                offsetX: -0.5,
                 offsetY: 0.0,
                 maxIterations: 256,
                 colorOffset: 0.0
@@ -1647,26 +1544,20 @@ class JuliaSetRenderer
                 centerY: 0.0,
                 maxLogZoom: 50.0
             };
-
-            console.log('Mandelbrot set reset to canonical mathematical view');
         }
 
-        // Synchronize UI state with reset parameters
         this.updateModeDisplay();
         this.updateCoordinateDisplay();
     }
 
-    // Professional fullscreen toggle with error handling
     toggleFullscreen()
     {
         if (!document.fullscreenElement)
         {
-            // Request fullscreen with comprehensive error handling
             this.canvas.requestFullscreen().catch(err =>
             {
                 console.warn('Fullscreen request failed:', err);
 
-                // Fallback for older browsers
                 if (this.canvas.webkitRequestFullscreen)
                 {
                     this.canvas.webkitRequestFullscreen();
@@ -1683,7 +1574,6 @@ class JuliaSetRenderer
         }
         else
         {
-            // Exit fullscreen with cross-browser compatibility
             if (document.exitFullscreen)
             {
                 document.exitFullscreen();
@@ -1703,7 +1593,6 @@ class JuliaSetRenderer
         }
     }
 
-    // Debugging method for development and troubleshooting
     debugState()
     {
         console.group('Fractal Explorer State Debug');
@@ -1726,7 +1615,6 @@ class JuliaSetRenderer
     }
 }
 
-// Initialize the full-screen application
 async function main()
 {
     try
@@ -1734,7 +1622,7 @@ async function main()
         const renderer = new JuliaSetRenderer();
         await renderer.init();
 
-        // Create UI container for consistent styling
+        // Create UI container
         const createUIPanel = (position) =>
         {
             const panel = document.createElement('div');
@@ -1758,7 +1646,6 @@ async function main()
             return panel;
         };
 
-        // Enhanced instructions panel with dual mode hotkey and comprehensive controls
         const instructions = createUIPanel('left');
         instructions.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1820,7 +1707,6 @@ async function main()
     {
         console.error('Failed to initialize Julia Set renderer:', error);
 
-        // Comprehensive fallback for unsupported browsers
         const fallbackMessage = document.createElement('div');
         fallbackMessage.innerHTML = `
             <h1 style="margin-top: 0; color: #fff;">WebGPU Not Available</h1>
@@ -1854,7 +1740,6 @@ async function main()
     }
 }
 
-// Optimized initialization
 if (document.readyState === 'loading')
 {
     document.addEventListener('DOMContentLoaded', main);
