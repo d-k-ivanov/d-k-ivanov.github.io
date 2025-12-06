@@ -1,11 +1,208 @@
+/* =========================================
+ * Base site fonts (from Google Fonts)
+ * ========================================= */
+
 @import url("https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,500;1,600&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");
 
-body {
+/* Core Noto families */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif&display=swap");
+
+/* Some major script families via Google Fonts (optional but handy) */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Lao&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap");
+
+/* Music */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Music&display=swap");
+
+/* Some “special” Noto script fonts that *are* on Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Adlam&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Anatolian+Hieroglyphs&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Balinese&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Bamum&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Brahmi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Caucasian+Albanian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Cuneiform&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Deseret&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Elbasan&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Elymaic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Gothic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Grantha&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Hatran&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Inscriptional+Pahlavi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Inscriptional+Parthian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Khojki&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Limbu&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Linear+A&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Linear+B&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mahajani&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mandaic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Medefaidrin&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Meroitic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Modi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Nabataean&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Newa&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+Hungarian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+Italic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+North+Arabian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+Persian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+South+Arabian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Old+Turkic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Osmanya&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Palmyrene&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Pau+Cin+Hau&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Phoenician&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Psalter+Pahlavi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sharada&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Shavian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Siddham&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SignWriting&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sogdian&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Soyombo&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sundanese&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Syriac&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tagalog&display=swap");  /* Baybayin */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tirhuta&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ugaritic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Wancho&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Warang+Citi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Zanabazar+Square&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+Tangut&display=swap");
+
+/* =========================================
+ * Self-hosted fonts (@font-face)
+ * ========================================= */
+
+/* Example: if some of the above Noto families are NOT actually on Google Fonts
+   in your environment, you can instead self-host them. Here are explicit
+   @font-face blocks for every special script you listed.
+   If Google Fonts already serves them, these @font-face blocks just act
+   as overrides pointing to local copies (which is fine). */
+
+/* Tengwar (non-Noto, custom font) */
+@font-face {
+  font-family: "Tengwar Custom";
+  src: url("/fonts/TengwarCustom-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+
+/* =========================================
+ * Font stacks (CSS variables)
+ * ========================================= */
+
+:root {
+  /* Normal site text */
+  --font-body: "Crimson Pro", "Noto Serif", "Noto Sans",
+               -apple-system, BlinkMacSystemFont,
+               "Segoe UI", system-ui, sans-serif;
+
+  /* Mono / code */
+  --font-mono: "Ubuntu Mono", "Noto Sans Mono",
+               ui-monospace, SFMono-Regular,
+               Menlo, Monaco, Consolas,
+               "Liberation Mono", "Courier New", monospace;
+
+  /* Heavy multi-script stack for Unicode test page */
+  --font-multiscript:
+      "Crimson Pro",
+      "Noto Serif",
+      "Noto Sans",
+      "Noto Music",
+      "Noto Sans Adlam",
+      "Noto Sans Anatolian Hieroglyphs",
+      "Noto Sans Balinese",
+      "Noto Sans Bamum",
+      "Noto Sans Brahmi",
+      "Noto Sans Caucasian Albanian",
+      "Noto Sans Cuneiform",
+      "Noto Sans Deseret",
+      "Noto Sans Egyptian Hieroglyphs",
+      "Noto Sans Elbasan",
+      "Noto Sans Elymaic",
+      "Noto Sans Gothic",
+      "Noto Sans Grantha",
+      "Noto Sans Hatran",
+      "Noto Sans Inscriptional Pahlavi",
+      "Noto Sans Inscriptional Parthian",
+      "Noto Sans Khojki",
+      "Noto Sans Limbu",
+      "Noto Sans Linear A",
+      "Noto Sans Linear B",
+      "Noto Sans Mahajani",
+      "Noto Sans Mandaic",
+      "Noto Sans Medefaidrin",
+      "Noto Sans Meroitic",
+      "Noto Sans Modi",
+      "Noto Sans Nabataean",
+      "Noto Sans Newa",
+      "Noto Sans Old Hungarian",
+      "Noto Sans Old Italic",
+      "Noto Sans Old North Arabian",
+      "Noto Sans Old Persian",
+      "Noto Sans Old Sogdian",
+      "Noto Sans Old South Arabian",
+      "Noto Sans Old Turkic",
+      "Noto Sans Osmanya",
+      "Noto Sans Palmyrene",
+      "Noto Sans Pau Cin Hau",
+      "Noto Sans Phoenician",
+      "Noto Sans Psalter Pahlavi",
+      "Noto Sans Sharada",
+      "Noto Sans Shavian",
+      "Noto Sans Siddham",
+      "Noto Sans SignWriting",
+      "Noto Sans Sogdian",
+      "Noto Sans Soyombo",
+      "Noto Sans Sundanese",
+      "Noto Sans Syriac",
+      "Noto Sans Tagalog",
+      "Noto Sans Tirhuta",
+      "Noto Sans Ugaritic",
+      "Noto Sans Wancho",
+      "Noto Sans Warang Citi",
+      "Noto Sans Zanabazar Square",
+      "Noto Serif Tangut",
+      "Tengwar Custom",
+      -apple-system, BlinkMacSystemFont,
+      "Segoe UI", system-ui, sans-serif;
+}
+
+/* ===========================
+ *  Base styles
+ * =========================== */
+
+/* body {
     background-color: #fff;
     padding: 0px;
     font: 16.0px/1.5 Crimson Pro, serif;
     color: #595959;
     font-weight: 400;
     margin: 0;
+} */
+
+body {
+  background-color: #fff;
+  padding: 0;
+  margin: 0;
+  color: #595959;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Apply this class only to your big Unicode sample content */
+.multi-script-sample {
+  font-family: var(--font-multiscript);
 }

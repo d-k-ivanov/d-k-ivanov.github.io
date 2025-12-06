@@ -38,11 +38,6 @@ favicon_dark: /assets/img/favicon.png
 # You may use the option to disable the automatic dark theme
 auto_dark_mode: true
 
-# Font
-# You can use this option to choose between Serif or Sans Serif fonts.
-font: "Serif" # or "Sans Serif"
-# font: "Sans Seri/f"
-
 # Google Analytics ID
 google_analytics: G-D6JPE9NE28
 
