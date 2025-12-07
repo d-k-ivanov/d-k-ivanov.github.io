@@ -574,14 +574,6 @@ Lorem မြန်မာ ipsum အကြောင်းအရာသည် စာ
 ꕘꕮ ꕞꘂꕮ ꕤꘂꘋ ꕮꘂ ꕮꕩ.
 </p>
 
-<h2>Khojki (Indo-European → Indo-Aryan → Khojki Script)</h2>
-
-<p>
-𑈥𑈶𑈵𑈦 𑈩𑈰𑈵𑈩 𑈮𑈵𑈦 𑈩𑈴𑈰 𑈯𑈰𑈩 𑈦𑈶𑈩. 𑈰𑈶𑈩 𑈩𑈰𑈦 𑈴𑈶𑈩 𑈯𑈮𑈲 𑈮𑈵𑈩.
-<br>
-𑈯𑈶𑈩 𑈤𑈲𑈩 𑈴𑈰𑈲 𑈥𑈬𑈩.
-</p>
-
 <h2>Mahajani (Indo-Aryan → Mahajani Script)</h2>
 
 <p>
@@ -633,9 +625,9 @@ Lorem မြန်မာ ipsum အကြောင်းအရာသည် စာ
 <h2>Caucasian Albanian (Northeast Caucasian → Caucasian Albanian)</h2>
 
 <p>
-𐕛𐕡𐕟 𐕟𐕠𐕜 𐕒𐕠𐕤 𐕚𐕡𐕛 𐕤𐕠𐕙 𐕡𐕒𐕙. 𐕠𐕟𐕛 𐕚𐕠𐕤 𐕡𐕙𐕟 𐕡𐕠𐕢.
+𐕛𐕡𐕟 𐕟𐕠𐕜 𐕒𐕠 𐕚𐕡𐕛 𐕠𐕙 𐕡𐕒𐕙. 𐕠𐕟𐕛 𐕚𐕠 𐕡𐕙𐕟 𐕡𐕠𐕢.
 <br>
-𐕜𐕠𐕒 𐕢𐕛𐕠 𐕡𐕙𐕝 𐕤𐕜𐕛.
+𐕜𐕠𐕒 𐕢𐕛𐕠 𐕡𐕙𐕝 𐕜𐕛.
 </p>
 
 <h2>Adlam (Niger–Congo → Fula → Adlam Script)</h2>
@@ -697,9 +689,13 @@ Lorem မြန်မာ ipsum အကြောင်းအရာသည် စာ
 <h2>Zanabazar Square (Mongolic → Zanabazar Square Script)</h2>
 
 <p>
-𑨀𑨊𑨈 𑨍𑨆𑨎𑨀 𑨈𑨊𑨏𑨀 𑨍𑨎𑨈 𑨄𑨍𑨎𑨂. 𑨎𑨀𑨆 𑨊𑨁𑨈 𑨏𑨊𑨎𑨀 𑨁𑨎𑨏.
+𑨀𑨝𑨁𑨫𑨆𑨜𑨢𑨴 𑨀𑨝𑨂𑨙𑩇𑨞𑨊𑨛𑨢𑨴 𑨀𑨝𑨂𑨣𑩇𑨤𑨄𑨛𑨢𑨴 𑨀𑨮𑨊𑨮𑩇𑨭𑨙𑨢𑨴 𑩂
 <br>
-𑨆𑨊𑨀 𑨇𑨈𑨎 𑨊𑨎𑨈.
+𑨀𑨝𑨄𑨋𑨊𑨫𑩇𑨚𑨢𑨴 𑨀𑨝𑨊𑨝𑨊𑨫𑩇𑨚𑨢𑨴 𑨀𑨝𑨊𑨍𑨢𑨢𑨴 𑨀𑨝𑨁𑨫𑩇𑨍𑨢𑨢𑨴 𑩃
+<br>
+𑨪𑨹 𑨞𑩇𑨫𑨙𑨁𑨊𑨙𑩇𑨪𑨰𑨢𑨂𑨙𑩇𑨞𑨊𑨛𑨸 𑨞𑩇𑨫𑨞𑨓𑩇𑨣𑨆𑨞𑨮𑨢𑨸 𑨮𑨁𑨭𑨢𑨴 𑩂
+<br>
+𑨛𑨄𑨮𑨪𑨊𑨢𑨊𑨰 𑨰𑨸𑨠𑨂𑨛𑩇𑨜𑨰𑩇𑨙𑨸 𑨭𑨝𑩇𑨛𑨄 𑨭𑨛𑨙𑨊𑨸 𑨭𑨫𑨢𑨴 𑩃
 </p>
 
 <h2>Old North Arabian (Semitic → Ancient North Arabian)</h2>
