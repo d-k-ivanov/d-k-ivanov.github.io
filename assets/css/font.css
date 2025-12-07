@@ -73,7 +73,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Soyombo&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sundanese&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Syriac&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tagalog&display=swap");  /* Baybayin */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tagalog&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Tirhuta&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ugaritic&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Wancho&display=swap");
@@ -85,18 +85,42 @@
  * Self-hosted fonts (@font-face)
  * ========================================= */
 
-/* Example: if some of the above Noto families are NOT actually on Google Fonts
-   in your environment, you can instead self-host them. Here are explicit
-   @font-face blocks for every special script you listed.
-   If Google Fonts already serves them, these @font-face blocks just act
-   as overrides pointing to local copies (which is fine). */
-
 /* Tengwar (non-Noto, custom font) */
-@font-face {
-  font-family: "Tengwar Custom";
-  src: url("/fonts/TengwarCustom-Regular.woff2") format("woff2");
+/* @font-face {
   font-display: swap;
+  font-family: "Tengwar";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/assets/fonts/tengtelcb.woff2") format("woff2");
+} */
+
+@font-face {
+    font-family: 'TengwarAnnatarGlaemunicode';
+    src: url('/assets/fonts/tengwar-annatar-glaemunicode.eot');
+    src: url('/assets/fonts/tengwar-annatar-glaemunicode.eot?#iefix') format('embedded-opentype'),
+         url('/assets/fonts/tengwar-annatar-glaemunicode.woff') format('woff'),
+         url('/assets/fonts/tengwar-annatar-glaemunicode.ttf') format('truetype'),
+         url('/assets/fonts/tengwar-annatar-glaemunicode.svg#tengwar_annatar_glaemunicodRg') format('svg');
+    font-weight: normal;
+    font-style: normal;
 }
+
+/* @font-face {
+    font-family: Tengwar Annatar;
+    src: url('/assets/fonts/tengwar-annatar.eot');
+    src: url('/assets/fonts/tengwar-annatar.eot#iefix'),
+         url('/assets/fonts/tengwar-annatar.woff') format('woff'),
+         url('/assets/fonts/tengwar-annatar.ttf') format('truetype'),
+         url('/assets/fonts/tengwar-annatar.svg#TengwarAnnatarItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.tengwar.annatar.rendered {
+    font-family: Tengwar Annatar;
+    font-size: 30px;
+    line-height: 240%;
+} */
 
 /* =========================================
  * Font stacks (CSS variables)
@@ -174,7 +198,7 @@
       "Noto Sans Warang Citi",
       "Noto Sans Zanabazar Square",
       "Noto Serif Tangut",
-      "Tengwar Custom",
+      "TengwarAnnatarGlaemunicode",
       -apple-system, BlinkMacSystemFont,
       "Segoe UI", system-ui, sans-serif;
 }
