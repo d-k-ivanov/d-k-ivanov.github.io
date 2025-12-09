@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: " en-US" }}">
+
+{% include head.html %}
+
+<body style="margin: 0; padding: 0; height: 100vh; overflow: hidden;">
+    {% include navigation.html %}
+    <div style="position: absolute; top: 46px; left: 0; right: 0; bottom: 0;">
+        <header>
+        </header>
+        {{ content }}
+        <footer>
+        </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+    {% include analytics.html %}
+</body>
+
+</html>
