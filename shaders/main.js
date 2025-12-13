@@ -16,6 +16,12 @@ class ShaderRenderer
         this.program = null;
         this.animationId = null;
         this.uniforms = {};
+
+        // Mouse state: (x, y, click x, click y)
+        // xy = current position if mouse down, else last position
+        // zw = click position (positive if pressed, negative if released)
+        this.mouse = { x: 0, y: 0, clickX: 0, clickY: 0, isDown: false };
+        this.setupMouseEvents();
     }
 
     compileShader(source, type)
@@ -70,7 +76,8 @@ class ShaderRenderer
         // Update uniform locations
         this.uniforms = {
             iResolution: gl.getUniformLocation(newProgram, "iResolution"),
-            iTime: gl.getUniformLocation(newProgram, "iTime")
+            iTime: gl.getUniformLocation(newProgram, "iTime"),
+            iMouse: gl.getUniformLocation(newProgram, "iMouse")
         };
 
         // Start render loop if not already running
@@ -105,12 +112,66 @@ class ShaderRenderer
             {
                 gl.uniform1f(this.uniforms.iTime, time * 0.001);
             }
+            if (this.uniforms.iMouse)
+            {
+                const m = this.mouse;
+                // Shadertoy convention: xy = current pos, zw = click pos (negative z if not pressed)
+                const zSign = m.isDown ? 1 : -1;
+                gl.uniform4f(this.uniforms.iMouse, m.x, m.y, m.clickX * zSign, m.clickY);
+            }
 
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             this.animationId = requestAnimationFrame(render);
         };
 
         this.animationId = requestAnimationFrame(render);
+    }
+
+    setupMouseEvents()
+    {
+        const canvas = this.canvas;
+
+        const getMousePos = (e) =>
+        {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                // Flip Y to match Shadertoy (origin at bottom-left)
+                y: canvas.height - (e.clientY - rect.top) * scaleY
+            };
+        };
+
+        canvas.addEventListener("mousedown", (e) =>
+        {
+            const pos = getMousePos(e);
+            this.mouse.x = pos.x;
+            this.mouse.y = pos.y;
+            this.mouse.clickX = pos.x;
+            this.mouse.clickY = pos.y;
+            this.mouse.isDown = true;
+        });
+
+        canvas.addEventListener("mousemove", (e) =>
+        {
+            if (this.mouse.isDown)
+            {
+                const pos = getMousePos(e);
+                this.mouse.x = pos.x;
+                this.mouse.y = pos.y;
+            }
+        });
+
+        canvas.addEventListener("mouseup", () =>
+        {
+            this.mouse.isDown = false;
+        });
+
+        canvas.addEventListener("mouseleave", () =>
+        {
+            this.mouse.isDown = false;
+        });
     }
 
     stopRenderLoop()

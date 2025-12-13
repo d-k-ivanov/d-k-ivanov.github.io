@@ -439,17 +439,22 @@ vec4 textureGrad(sampler2D s, vec2 c, vec2 dx, vec2 dy)
     return texture2DGradEXT(s, c, dx, dy);
 }
 
-// Shadertoy uniforms
-uniform vec3 iResolution;
-uniform float iTime;
-uniform float iChannelTime[4];
-uniform vec4 iMouse;
-uniform vec4 iDate;
-uniform float iSampleRate;
-uniform vec3 iChannelResolution[4];
-uniform int iFrame;
-uniform float iTimeDelta;
-uniform float iFrameRate;
+
+// Uniforms
+uniform vec3 iResolution;               // viewport resolution (in pixels)
+
+uniform float iTime;                    // shader playback time (in seconds)
+uniform float iTimeDelta;               // render time (in seconds)
+
+uniform int iFrame;                     // shader playback frame
+uniform float iFrameRate;               // shader frame rate
+
+uniform float iChannelTime[4];          // channel playback time (in seconds)
+uniform vec3 iChannelResolution[4];     // channel resolution (in pixels)
+
+uniform vec4 iMouse;                    // mouse pixel coords. xy: current (if MLB down), zw: click
+uniform vec4 iDate;                     // (year, month, day, time in seconds)
+uniform float iSampleRate;              // sound sample rate (i.e., 44100)
 
 // Channel samplers
 // uniform samplerXX iChannel0..3;       // input channel. XX = 2D/Cube
