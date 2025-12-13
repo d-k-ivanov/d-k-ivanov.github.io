@@ -5,11 +5,12 @@ import { GLSLHighlighter } from "./glsl-highlighter.js";
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
     { folder: "basics", name: "hello_world" },
-    { folder: "bµg", name: "moonlight_shadertoy" },
-    { folder: "bµg", name: "moonlight" },
-    { folder: "curena", name: "p6mm" },
-    { folder: "curena", name: "alhambra" },
-    { folder: "iq", name: "primitives" }
+    { folder: "misc", name: "bµg_moonlight_shadertoy" },
+    { folder: "misc", name: "bµg_moonlight" },
+    { folder: "misc", name: "curena_alhambra" },
+    { folder: "misc", name: "curena_p6mm" },
+    { folder: "misc", name: "iq_primitives" },
+    { folder: "sdf", name: "sphere" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
