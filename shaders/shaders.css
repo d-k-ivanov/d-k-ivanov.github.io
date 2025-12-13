@@ -488,12 +488,24 @@
 @media (max-width: 768px) {
     .shaders-main-container {
         flex-direction: column;
+        overflow: hidden;
     }
 
     .shaders-canvas-panel {
-        flex: none;
+        flex: 0 0 auto;
         height: 40vh;
-        min-height: 250px;
+        min-height: 200px;
+        max-height: 50vh;
+        overflow: hidden;
+    }
+
+    .shaders-canvas-toolbar {
+        flex-shrink: 0;
+    }
+
+    .shaders-canvas-wrapper {
+        min-height: 0;
+        flex: 1;
     }
 
     #resize-main {
@@ -501,8 +513,9 @@
     }
 
     .shaders-control-panel {
-        flex: none;
-        height: 60vh;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
         border-left: none;
         border-top: 1px solid var(--sh-border);
     }
