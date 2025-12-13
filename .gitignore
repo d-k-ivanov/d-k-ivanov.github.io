@@ -14,3 +14,8 @@ Gemfile.lock
 *.DS_Store
 .Trashes
 *.swp
+
+# Tempfiles
+tmp/
+*.tmp
+*.temp

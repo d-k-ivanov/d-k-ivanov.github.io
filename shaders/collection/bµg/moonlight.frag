@@ -1,17 +1,18 @@
 #version 300 es
+
 // Moonlight [460] by bµg
 // License: CC BY-NC-SA 4.0
 
 #if GL_FRAGMENT_PRECISION_HIGH
-precision highp float;
-precision highp int;
+    precision highp float;
+    precision highp int;
 #else
-precision mediump float;
-precision mediump int;
+    precision mediump float;
+    precision mediump int;
 #endif
 
 uniform float iTime;
-uniform vec2 iResolution;
+uniform vec3 iResolution;
 
 out vec4 fragColor;
 
@@ -66,13 +67,14 @@ void main()
 }
 */
 
+// Annotated and reformatted code:
 void main()
 {
     vec3 color;                // o: accumulated color output
     vec3 rayPos;               // p: current position along the ray
 
     // u: ray direction (normalized screen coords)
-    vec3 rayDir = vec3((gl_FragCoord.xy + gl_FragCoord.xy - iResolution) / iResolution.y, 1);
+    vec3 rayDir = vec3((gl_FragCoord.xy + gl_FragCoord.xy - iResolution.xy) / iResolution.y, 1);
 
     vec3 warmTint;             // Q: color tint (uninitialized, then incremented to ~(1,1,1))
     warmTint++;
