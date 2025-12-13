@@ -4,6 +4,92 @@ title : Shaders
 permalink: /shaders/
 ---
 <style>
+/* Theme Variables - Dark */
+.theme-dark {
+    --sh-bg-primary: #1a1a1a;
+    --sh-bg-secondary: #1e1e1e;
+    --sh-bg-tertiary: #252526;
+    --sh-bg-toolbar: #2a2a2a;
+    --sh-bg-input: #333;
+    --sh-bg-hover: #2a2d2e;
+    --sh-bg-tab: #2d2d2d;
+    --sh-bg-tab-hover: #323232;
+    --sh-bg-active: #094771;
+    --sh-bg-selection: #264f78;
+    --sh-border: #333;
+    --sh-border-light: #444;
+    --sh-text-primary: #dadbdf;
+    --sh-text-secondary: #cccccc;
+    --sh-text-muted: #969696;
+    --sh-text-disabled: #6e6e6e;
+    --sh-text-header: #bbbbbb;
+    --sh-accent: #39c;
+    --sh-accent-bg: #007acc;
+    --sh-error-bg: #c72e2e;
+    --sh-icon-shader: #e8ab53;
+    --sh-icon-vert: #6a9955;
+    --sh-icon-frag: #ce9178;
+    --sh-modified-dot: #c5c5c5;
+    --sh-canvas-bg: #000;
+}
+
+/* Theme Variables - Light */
+.theme-light {
+    --sh-bg-primary: #f3f3f3;
+    --sh-bg-secondary: #ffffff;
+    --sh-bg-tertiary: #f0f0f0;
+    --sh-bg-toolbar: #e8e8e8;
+    --sh-bg-input: #ffffff;
+    --sh-bg-hover: #e4e6e8;
+    --sh-bg-tab: #ececec;
+    --sh-bg-tab-hover: #e0e0e0;
+    --sh-bg-active: #cce5ff;
+    --sh-bg-selection: #add6ff;
+    --sh-border: #d4d4d4;
+    --sh-border-light: #c8c8c8;
+    --sh-text-primary: #333333;
+    --sh-text-secondary: #444444;
+    --sh-text-muted: #666666;
+    --sh-text-disabled: #999999;
+    --sh-text-header: #555555;
+    --sh-accent: #0066cc;
+    --sh-accent-bg: #0078d4;
+    --sh-error-bg: #d32f2f;
+    --sh-icon-shader: #bf8803;
+    --sh-icon-vert: #4e8a3e;
+    --sh-icon-frag: #a45a28;
+    --sh-modified-dot: #666666;
+    --sh-canvas-bg: #1a1a1a;
+}
+
+/* Theme Toggle Button */
+.shaders-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--sh-border-light);
+    border-radius: 4px;
+    background: var(--sh-bg-input);
+    color: var(--sh-text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.shaders-theme-toggle:hover {
+    border-color: var(--sh-accent);
+    background: var(--sh-bg-hover);
+}
+
+.shaders-theme-toggle:focus {
+    outline: none;
+    border-color: var(--sh-accent);
+    box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
+}
+
 .shaders-main-container {
     position: absolute;
     top: 46px;
@@ -21,7 +107,7 @@ permalink: /shaders/
     min-width: 0;
     display: flex;
     flex-direction: column;
-    background: #1a1a1a;
+    background: var(--sh-bg-primary);
     position: relative;
 }
 
@@ -30,12 +116,12 @@ permalink: /shaders/
     align-items: center;
     gap: 12px;
     padding: 8px 12px;
-    background: #2a2a2a;
-    border-bottom: 1px solid #444;
+    background: var(--sh-bg-toolbar);
+    border-bottom: 1px solid var(--sh-border-light);
 }
 
 .shaders-canvas-toolbar label {
-    color: #dadbdf;
+    color: var(--sh-text-primary);
     font-size: 14px;
     font-weight: 500;
 }
@@ -43,20 +129,20 @@ permalink: /shaders/
 .shaders-canvas-toolbar select {
     padding: 6px 10px;
     font-size: 14px;
-    border: 1px solid #444;
+    border: 1px solid var(--sh-border-light);
     border-radius: 4px;
-    background: #333;
-    color: #dadbdf;
+    background: var(--sh-bg-input);
+    color: var(--sh-text-primary);
     cursor: pointer;
 }
 
 .shaders-canvas-toolbar select:hover {
-    border-color: #39c;
+    border-color: var(--sh-accent);
 }
 
 .shaders-canvas-toolbar select:focus {
     outline: none;
-    border-color: #39c;
+    border-color: var(--sh-accent);
     box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
 }
 
@@ -71,7 +157,7 @@ permalink: /shaders/
 
 .shaders-canvas-panel canvas {
     display: block;
-    background: #000;
+    background: var(--sh-canvas-bg);
     max-width: 100%;
     max-height: 100%;
 }
@@ -82,8 +168,8 @@ permalink: /shaders/
     min-width: 0;
     display: flex;
     flex-direction: row;
-    background: #1e1e1e;
-    border-left: 1px solid #333;
+    background: var(--sh-bg-secondary);
+    border-left: 1px solid var(--sh-border);
     overflow: hidden;
 }
 
@@ -91,22 +177,31 @@ permalink: /shaders/
 .shaders-file-tree {
     width: 200px;
     min-width: 150px;
-    background: #252526;
-    border-right: 1px solid #333;
+    background: var(--sh-bg-tertiary);
+    border-right: 1px solid var(--sh-border);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
 .shaders-file-tree-header {
-    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #bbbbbb;
-    background: #252526;
-    border-bottom: 1px solid #333;
+    color: var(--sh-text-header);
+    background: var(--sh-bg-tertiary);
+    border-bottom: 1px solid var(--sh-border);
+}
+
+.shaders-file-tree-header .shaders-theme-toggle {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
 }
 
 .shaders-file-tree-content {
@@ -124,12 +219,12 @@ permalink: /shaders/
     align-items: center;
     padding: 4px 8px 4px 12px;
     cursor: pointer;
-    color: #cccccc;
+    color: var(--sh-text-secondary);
     font-size: 13px;
 }
 
 .shaders-tree-folder-header:hover {
-    background: #2a2d2e;
+    background: var(--sh-bg-hover);
 }
 
 .shaders-tree-folder-icon {
@@ -157,22 +252,22 @@ permalink: /shaders/
     align-items: center;
     padding: 4px 8px 4px 32px;
     cursor: pointer;
-    color: #cccccc;
+    color: var(--sh-text-secondary);
     font-size: 13px;
 }
 
 .shaders-tree-item:hover {
-    background: #2a2d2e;
+    background: var(--sh-bg-hover);
 }
 
 .shaders-tree-item.active {
-    background: #094771;
+    background: var(--sh-bg-active);
 }
 
 .shaders-tree-item-icon {
     margin-right: 6px;
     font-size: 12px;
-    color: #e8ab53;
+    color: var(--sh-icon-shader);
 }
 
 /* Editor Area */
@@ -181,14 +276,14 @@ permalink: /shaders/
     min-width: 0;
     display: flex;
     flex-direction: column;
-    background: #1e1e1e;
+    background: var(--sh-bg-secondary);
 }
 
 /* Tab Bar */
 .shaders-tab-bar {
     display: flex;
-    background: #252526;
-    border-bottom: 1px solid #333;
+    background: var(--sh-bg-tertiary);
+    border-bottom: 1px solid var(--sh-border);
     min-height: 35px;
     overflow-x: auto;
 }
@@ -198,22 +293,22 @@ permalink: /shaders/
     align-items: center;
     padding: 8px 16px;
     font-size: 13px;
-    color: #969696;
-    background: #2d2d2d;
-    border-right: 1px solid #252526;
+    color: var(--sh-text-muted);
+    background: var(--sh-bg-tab);
+    border-right: 1px solid var(--sh-bg-tertiary);
     cursor: pointer;
     white-space: nowrap;
     min-width: 0;
 }
 
 .shaders-tab:hover {
-    background: #323232;
+    background: var(--sh-bg-tab-hover);
 }
 
 .shaders-tab.active {
-    background: #1e1e1e;
-    color: #ffffff;
-    border-bottom: 1px solid #1e1e1e;
+    background: var(--sh-bg-secondary);
+    color: var(--sh-text-primary);
+    border-bottom: 1px solid var(--sh-bg-secondary);
     margin-bottom: -1px;
 }
 
@@ -223,11 +318,11 @@ permalink: /shaders/
 }
 
 .shaders-tab-icon.vert {
-    color: #6a9955;
+    color: var(--sh-icon-vert);
 }
 
 .shaders-tab-icon.frag {
-    color: #ce9178;
+    color: var(--sh-icon-frag);
 }
 
 .shaders-tab-label {
@@ -240,7 +335,7 @@ permalink: /shaders/
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #c5c5c5;
+    background: var(--sh-modified-dot);
     display: none;
 }
 
@@ -274,8 +369,8 @@ permalink: /shaders/
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 13px;
     line-height: 1.5;
-    color: #d4d4d4;
-    background: #1e1e1e;
+    color: var(--sh-text-primary);
+    background: var(--sh-bg-secondary);
     border: none;
     resize: none;
     outline: none;
@@ -285,7 +380,7 @@ permalink: /shaders/
 }
 
 .shaders-editor-pane textarea::selection {
-    background: #264f78;
+    background: var(--sh-bg-selection);
 }
 
 /* Status Bar */
@@ -295,12 +390,12 @@ permalink: /shaders/
     justify-content: space-between;
     padding: 4px 12px;
     font-size: 12px;
-    color: #cccccc;
-    background: #007acc;
+    color: #ffffff;
+    background: var(--sh-accent-bg);
 }
 
 .shaders-status-bar.error {
-    background: #c72e2e;
+    background: var(--sh-error-bg);
 }
 
 .shaders-status-left {
@@ -321,8 +416,71 @@ permalink: /shaders/
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6e6e6e;
+    color: var(--sh-text-disabled);
     font-size: 14px;
+}
+
+/* Resize Handles */
+.shaders-resize-handle {
+    background: transparent;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.shaders-resize-handle::after {
+    content: '';
+    position: absolute;
+    background: var(--sh-accent-bg);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.shaders-resize-handle:hover::after,
+.shaders-resize-handle.dragging::after {
+    opacity: 1;
+}
+
+.shaders-resize-handle-h {
+    width: 5px;
+    cursor: col-resize;
+    margin: 0 -2px;
+}
+
+.shaders-resize-handle-h::after {
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 1px;
+}
+
+.shaders-resize-handle-v {
+    height: 5px;
+    cursor: row-resize;
+    margin: -2px 0;
+}
+
+.shaders-resize-handle-v::after {
+    left: 0;
+    right: 0;
+    top: 2px;
+    height: 1px;
+}
+
+/* Prevent text selection during resize */
+.shaders-resizing {
+    user-select: none;
+    cursor: col-resize;
+}
+
+.shaders-resizing-v {
+    user-select: none;
+    cursor: row-resize;
+}
+
+.shaders-resizing iframe,
+.shaders-resizing-v iframe {
+    pointer-events: none;
 }
 
 /* Responsive layout */
@@ -344,11 +502,15 @@ permalink: /shaders/
         min-height: 250px;
     }
 
+    #resize-main {
+        display: none;
+    }
+
     .shaders-control-panel {
         flex: none;
         height: 60vh;
         border-left: none;
-        border-top: 1px solid #333;
+        border-top: 1px solid var(--sh-border);
     }
 
     .shaders-file-tree {
@@ -359,7 +521,7 @@ permalink: /shaders/
 </style>
 
 <div class="shaders-main-container">
-    <div class="shaders-canvas-panel">
+    <div class="shaders-canvas-panel theme-dark" id="canvas-panel">
         <div class="shaders-canvas-toolbar">
             <label for="resolution-select">Resolution:</label>
             <select id="resolution-select">
@@ -389,18 +551,24 @@ permalink: /shaders/
                 <option value="3840x2400">3840×2400 (WQUXGA)</option>
                 <option value="4096x4096">4096×4096</option>
             </select>
+            <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
         <div class="shaders-canvas-wrapper">
             <canvas id="canvas"></canvas>
         </div>
     </div>
-    <div class="shaders-control-panel">
-        <div class="shaders-file-tree">
-            <div class="shaders-file-tree-header">Shaders</div>
+    <div class="shaders-resize-handle shaders-resize-handle-h" id="resize-main"></div>
+    <div class="shaders-control-panel theme-light" id="control-panel">
+        <div class="shaders-file-tree" id="file-tree-panel">
+            <div class="shaders-file-tree-header">
+                <span>Shaders</span>
+                <button class="shaders-theme-toggle" id="control-theme-toggle" title="Toggle theme">☾</button>
+            </div>
             <div class="shaders-file-tree-content" id="file-tree">
                 <!-- File tree items will be populated by JS -->
             </div>
         </div>
+        <div class="shaders-resize-handle shaders-resize-handle-h" id="resize-tree"></div>
         <div class="shaders-editor-area">
             <div class="shaders-tab-bar" id="tab-bar">
                 <!-- Tabs will be populated by JS -->

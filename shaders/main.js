@@ -1,6 +1,8 @@
 "use strict";
 
 import { ShaderEditor } from "./shader-editor.js";
+import { PanelResizer } from "./panel-resizer.js";
+import { ThemeManager } from "./theme-manager.js";
 
 class ShaderRenderer
 {
@@ -206,6 +208,8 @@ initResolutionSelector(canvas);
 
 const renderer = new ShaderRenderer(canvas);
 const editor = new ShaderEditor(renderer);
+const resizer = new PanelResizer();
+const themeManager = new ThemeManager();
 
 // Load first shader by default
 editor.loadShader({ folder: "curena", name: "p6mm" });
