@@ -5,12 +5,16 @@ import { GLSLHighlighter } from "./glsl-highlighter.js";
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
     { folder: "basics", name: "hello_world" },
+
+    // Miscellaneous Examples from other authors
     { folder: "misc", name: "bµg_moonlight_shadertoy" },
     { folder: "misc", name: "bµg_moonlight" },
     { folder: "misc", name: "curena_alhambra" },
     { folder: "misc", name: "curena_p6mm" },
     { folder: "misc", name: "iq_primitives" },
-    { folder: "sdf", name: "sphere" }
+
+    // Signed Distance Field (SDF) Examples
+    { folder: "sdf", name: "2d_distances" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
