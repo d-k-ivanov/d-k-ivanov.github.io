@@ -223,16 +223,6 @@ export class ShaderEditor
         // Show/hide editor panes
         this.elements.editorVert.classList.toggle("active", tabName === "vert");
         this.elements.editorFrag.classList.toggle("active", tabName === "frag");
-
-        // Focus the textarea
-        if (tabName === "vert")
-        {
-            this.elements.vertSource.focus();
-        }
-        else
-        {
-            this.elements.fragSource.focus();
-        }
     }
 
     setupEditorEvents()
