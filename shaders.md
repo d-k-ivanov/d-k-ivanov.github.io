@@ -36,6 +36,7 @@ permalink: /shaders/
                 <option value="3840x2400">3840×2400 (WQUXGA)</option>
                 <option value="4096x4096">4096×4096</option>
             </select>
+            <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
         <div class="shaders-canvas-wrapper">

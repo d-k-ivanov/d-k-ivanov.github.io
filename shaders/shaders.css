@@ -57,7 +57,7 @@
 }
 
 /* Theme Toggle Button */
-.shaders-theme-toggle {
+.shaders-theme-toggle, .shaders-toolbar-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,12 +73,12 @@
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.shaders-theme-toggle:hover {
+.shaders-theme-toggle:hover, .shaders-toolbar-btn:hover {
     border-color: var(--sh-accent);
     background: var(--sh-bg-hover);
 }
 
-.shaders-theme-toggle:focus {
+.shaders-theme-toggle:focus, .shaders-toolbar-btn:focus {
     outline: none;
     border-color: var(--sh-accent);
     box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
