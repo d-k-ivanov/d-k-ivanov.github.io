@@ -40,6 +40,17 @@ export class ShaderEditor
 
     init()
     {
+        // Block browser extensions from interfering with shader code
+        this.elements.vertSource.setAttribute("data-gramm", "false");
+        this.elements.vertSource.setAttribute("data-lt-active", "false");
+        this.elements.vertSource.spellcheck = false;
+        this.elements.vertSource.autocomplete = "off";
+
+        this.elements.fragSource.setAttribute("data-gramm", "false");
+        this.elements.fragSource.setAttribute("data-lt-active", "false");
+        this.elements.fragSource.spellcheck = false;
+        this.elements.fragSource.autocomplete = "off";
+
         this.buildFileTree();
         this.setupEditorEvents();
     }

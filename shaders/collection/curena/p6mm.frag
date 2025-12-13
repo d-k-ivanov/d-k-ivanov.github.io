@@ -1,15 +1,14 @@
 #version 300 es
 
 #ifdef GL_ES
-    precision highp float;
-    precision highp int;
+precision highp float;
+precision highp int;
 #endif
 
 // Uniforms
 uniform vec3 iResolution;
 uniform float iTime;
 uniform vec4 iMouse;
-
 
 // Forward declarations
 void mainImage(out vec4 c, in vec2 f);
@@ -45,7 +44,11 @@ sqr3 = 1.7320508075688772935274463415058723669428f, // square root of 3.0
 sqr2_inv = 1.0f / sqr2, sqr3_inv = 1.0f / sqr3, l = 0.35f,       // length of triangle in NDC (mind --> 1.0)
 l_inv = 1.0f / l, line_w = 0.02f;  // 0.015
 
-const vec2 u = 1.0f * vec2(1.0f, 0.0f), v = 0.5f * vec2(1.0f, sqr3), u_dual = 1.0f * vec2(1.0f, -sqr3_inv), v_dual = 2.0f * vec2(0.0f, sqr3_inv), tri_cen = vec2(0.5f, 0.5f * sqr3_inv); // triangle center
+const vec2 u = 1.0f * vec2(1.0f, 0.0f);
+const vec2 v = 0.5f * vec2(1.0f, sqr3);
+const vec2 u_dual = 1.0f * vec2(1.0f, -sqr3_inv);
+const vec2 v_dual = 2.0f * vec2(0.0f, sqr3_inv);
+const vec2 tri_cen = vec2(0.5f, 0.5f * sqr3_inv); // triangle center
 
 vec2 center; //= 0.5*iResolution.xy ;        // viewport center in DC
 
