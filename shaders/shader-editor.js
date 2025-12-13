@@ -8,7 +8,8 @@ const SHADER_COLLECTION = [
     { folder: "bµg", name: "moonlight_shadertoy" },
     { folder: "bµg", name: "moonlight" },
     { folder: "curena", name: "p6mm" },
-    { folder: "curena", name: "alhambra" }
+    { folder: "curena", name: "alhambra" },
+    { folder: "iq", name: "primitives" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";

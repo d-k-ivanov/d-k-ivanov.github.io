@@ -14,6 +14,7 @@ export class ShaderRenderer
         this.program = null;
         this.animationId = null;
         this.uniforms = {};
+        this.frameCount = 0;
 
         // Mouse state: (x, y, click x, click y)
         // xy = current position if mouse down, else last position
@@ -75,8 +76,12 @@ export class ShaderRenderer
         this.uniforms = {
             iResolution: gl.getUniformLocation(newProgram, "iResolution"),
             iTime: gl.getUniformLocation(newProgram, "iTime"),
-            iMouse: gl.getUniformLocation(newProgram, "iMouse")
+            iMouse: gl.getUniformLocation(newProgram, "iMouse"),
+            iFrame: gl.getUniformLocation(newProgram, "iFrame")
         };
+
+        // Reset frame counter when shaders change
+        this.frameCount = 0;
 
         // Start render loop if not already running
         if (!this.animationId)
@@ -117,8 +122,13 @@ export class ShaderRenderer
                 const zSign = m.isDown ? 1 : -1;
                 gl.uniform4f(this.uniforms.iMouse, m.x, m.y, m.clickX * zSign, m.clickY);
             }
+            if (this.uniforms.iFrame)
+            {
+                gl.uniform1i(this.uniforms.iFrame, this.frameCount);
+            }
 
             gl.drawArrays(gl.TRIANGLES, 0, 3);
+            this.frameCount++;
             this.animationId = requestAnimationFrame(render);
         };
 
