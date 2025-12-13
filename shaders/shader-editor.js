@@ -126,7 +126,7 @@ export class ShaderEditor
             // Update UI
             this.updateFileTreeSelection(shader);
             this.updateTabs(shader);
-            this.showTab("vert");
+            this.showTab("frag");
 
             // Compile and render
             await this.recompileShader();
