@@ -64,10 +64,16 @@ permalink: /shaders/
                     Select a shader from the file tree
                 </div>
                 <div class="shaders-editor-pane" id="editor-vert">
-                    <textarea id="vert-source" spellcheck="false" placeholder="Vertex shader source..."></textarea>
+                    <div class="shaders-editor-wrapper">
+                        <pre class="shaders-editor-highlight" id="vert-highlight"></pre>
+                        <textarea id="vert-source" spellcheck="false" placeholder="Vertex shader source..."></textarea>
+                    </div>
                 </div>
                 <div class="shaders-editor-pane" id="editor-frag">
-                    <textarea id="frag-source" spellcheck="false" placeholder="Fragment shader source..."></textarea>
+                    <div class="shaders-editor-wrapper">
+                        <pre class="shaders-editor-highlight" id="frag-highlight"></pre>
+                        <textarea id="frag-source" spellcheck="false" placeholder="Fragment shader source..."></textarea>
+                    </div>
                 </div>
             </div>
             <div class="shaders-status-bar" id="status-bar">

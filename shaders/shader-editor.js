@@ -1,5 +1,7 @@
 "use strict";
 
+import { GLSLHighlighter } from "./glsl-highlighter.js";
+
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
     { folder: "basics", name: "hello_world" },
@@ -16,6 +18,7 @@ export class ShaderEditor
     constructor(renderer)
     {
         this.renderer = renderer;
+        this.highlighter = new GLSLHighlighter();
         this.currentShader = null;
         this.originalVertSource = "";
         this.originalFragSource = "";
@@ -32,6 +35,8 @@ export class ShaderEditor
             editorFrag: document.getElementById("editor-frag"),
             vertSource: document.getElementById("vert-source"),
             fragSource: document.getElementById("frag-source"),
+            vertHighlight: document.getElementById("vert-highlight"),
+            fragHighlight: document.getElementById("frag-highlight"),
             statusBar: document.getElementById("status-bar"),
             statusMessage: document.getElementById("status-message"),
             statusShader: document.getElementById("status-shader")
@@ -55,6 +60,33 @@ export class ShaderEditor
 
         this.buildFileTree();
         this.setupEditorEvents();
+        this.setupScrollSync();
+    }
+
+    setupScrollSync()
+    {
+        // Sync scroll between textarea and highlight overlay
+        this.elements.vertSource.addEventListener("scroll", () =>
+        {
+            this.elements.vertHighlight.scrollTop = this.elements.vertSource.scrollTop;
+            this.elements.vertHighlight.scrollLeft = this.elements.vertSource.scrollLeft;
+        });
+
+        this.elements.fragSource.addEventListener("scroll", () =>
+        {
+            this.elements.fragHighlight.scrollTop = this.elements.fragSource.scrollTop;
+            this.elements.fragHighlight.scrollLeft = this.elements.fragSource.scrollLeft;
+        });
+    }
+
+    updateHighlight(type)
+    {
+        const textarea = type === "vert" ? this.elements.vertSource : this.elements.fragSource;
+        const highlight = type === "vert" ? this.elements.vertHighlight : this.elements.fragHighlight;
+        const code = textarea.value;
+
+        // Add extra newline to ensure highlight matches textarea height
+        highlight.innerHTML = this.highlighter.highlight(code) + "\n";
     }
 
     buildFileTree()
@@ -135,6 +167,10 @@ export class ShaderEditor
             // Update editors
             this.elements.vertSource.value = vertSrc;
             this.elements.fragSource.value = fragSrc;
+
+            // Update syntax highlighting
+            this.updateHighlight("vert");
+            this.updateHighlight("frag");
 
             // Update UI
             this.updateFileTreeSelection(shader);
@@ -232,6 +268,7 @@ export class ShaderEditor
         // Vertex shader editing
         this.elements.vertSource.addEventListener("input", () =>
         {
+            this.updateHighlight("vert");
             this.markTabModified("vert", this.elements.vertSource.value !== this.originalVertSource);
             this.scheduleRecompile();
         });
@@ -239,6 +276,7 @@ export class ShaderEditor
         // Fragment shader editing
         this.elements.fragSource.addEventListener("input", () =>
         {
+            this.updateHighlight("frag");
             this.markTabModified("frag", this.elements.fragSource.value !== this.originalFragSource);
             this.scheduleRecompile();
         });

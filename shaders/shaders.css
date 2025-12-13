@@ -25,6 +25,16 @@
     --sh-icon-frag: #ce9178;
     --sh-modified-dot: #c5c5c5;
     --sh-canvas-bg: #000;
+    /* GLSL Syntax Highlighting */
+    --glsl-comment: #6a9955;
+    --glsl-preprocessor: #c586c0;
+    --glsl-keyword: #569cd6;
+    --glsl-type: #4ec9b0;
+    --glsl-qualifier: #c586c0;
+    --glsl-number: #b5cea8;
+    --glsl-string: #ce9178;
+    --glsl-function: #dcdcaa;
+    --glsl-builtin-var: #9cdcfe;
 }
 
 /* Theme Variables - Light */
@@ -54,6 +64,16 @@
     --sh-icon-frag: #a45a28;
     --sh-modified-dot: #666666;
     --sh-canvas-bg: #1a1a1a;
+    /* GLSL Syntax Highlighting */
+    --glsl-comment: #008000;
+    --glsl-preprocessor: #af00db;
+    --glsl-keyword: #0000ff;
+    --glsl-type: #267f99;
+    --glsl-qualifier: #af00db;
+    --glsl-number: #098658;
+    --glsl-string: #a31515;
+    --glsl-function: #795e26;
+    --glsl-builtin-var: #001080;
 }
 
 /* Theme Toggle Button */
@@ -350,32 +370,77 @@
     display: none;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
 .shaders-editor-pane.active {
     display: flex;
 }
 
-.shaders-editor-pane textarea {
+/* Syntax highlighting container */
+.shaders-editor-wrapper {
     flex: 1;
-    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.shaders-editor-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     padding: 12px;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 13px;
     line-height: 1.5;
     color: var(--sh-text-primary);
     background: var(--sh-bg-secondary);
+    white-space: pre;
+    overflow: auto;
+    tab-size: 4;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.shaders-editor-pane textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: transparent;
+    caret-color: var(--sh-text-primary);
+    background: transparent;
     border: none;
     resize: none;
     outline: none;
     tab-size: 4;
     white-space: pre;
     overflow: auto;
+    z-index: 2;
 }
 
 .shaders-editor-pane textarea::selection {
     background: var(--sh-bg-selection);
 }
+
+/* GLSL Syntax Highlighting Classes */
+.glsl-comment { color: var(--glsl-comment); font-style: italic; }
+.glsl-preprocessor { color: var(--glsl-preprocessor); }
+.glsl-keyword { color: var(--glsl-keyword); }
+.glsl-type { color: var(--glsl-type); }
+.glsl-qualifier { color: var(--glsl-qualifier); }
+.glsl-number { color: var(--glsl-number); }
+.glsl-string { color: var(--glsl-string); }
+.glsl-function { color: var(--glsl-function); }
+.glsl-builtin-var { color: var(--glsl-builtin-var); }
 
 /* Status Bar */
 .shaders-status-bar {
