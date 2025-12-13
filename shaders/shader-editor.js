@@ -5,7 +5,8 @@ const SHADER_COLLECTION = [
     { folder: "basics", name: "hello_world" },
     { folder: "bµg", name: "moonlight_shadertoy" },
     { folder: "bµg", name: "moonlight" },
-    { folder: "curena", name: "p6mm" }
+    { folder: "curena", name: "p6mm" },
+    { folder: "curena", name: "alhambra" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
