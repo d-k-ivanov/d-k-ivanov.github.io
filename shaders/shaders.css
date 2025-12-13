@@ -429,6 +429,7 @@
 
 .shaders-editor-pane textarea::selection {
     background: var(--sh-bg-selection);
+    color: var(--sh-text-primary);
 }
 
 /* GLSL Syntax Highlighting Classes */
