@@ -1,6 +1,6 @@
 "use strict";
 
-class ShaderRenderer
+export class ShaderRenderer
 {
     constructor(canvas)
     {
@@ -181,5 +181,3 @@ class ShaderRenderer
         }
     }
 }
-
-export { ShaderRenderer };
