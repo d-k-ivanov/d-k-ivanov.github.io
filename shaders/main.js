@@ -30,5 +30,5 @@ const editor = new ShaderEditor(renderer);
 const resizer = new PanelResizer();
 const themeManager = new ThemeManager();
 
-// Load first shader by default
-editor.loadShader({ folder: "curena", name: "p6mm" });
+// Load Hello World shader by default
+editor.loadShader({ folder: "basics", name: "hello_world" });

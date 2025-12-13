@@ -2,8 +2,9 @@
 
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
-    { folder: "bµg", name: "moonlight" },
+    { folder: "basics", name: "hello_world" },
     { folder: "bµg", name: "moonlight_shadertoy" },
+    { folder: "bµg", name: "moonlight" },
     { folder: "curena", name: "p6mm" }
 ];
 
@@ -75,7 +76,7 @@ export class ShaderEditor
         for (const [folderName, shaders] of folders)
         {
             const folderEl = document.createElement("div");
-            folderEl.className = "shaders-tree-folder";
+            folderEl.className = "shaders-tree-folder collapsed";
             folderEl.innerHTML = `
                 <div class="shaders-tree-folder-header">
                     <span class="shaders-tree-folder-icon">▼</span>
