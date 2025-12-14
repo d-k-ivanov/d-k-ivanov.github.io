@@ -414,18 +414,15 @@ export class ShaderEditor
                 const lineCount = lines.length;
                 textarea.selectionStart = start;
                 textarea.selectionEnd = end + (4 * lineCount);
-
-                // Trigger input event for recompile
-                textarea.dispatchEvent(new Event("input"));
             } else
             {
                 // No selection, insert 4 spaces at cursor
                 textarea.value = value.substring(0, start) + "    " + value.substring(end);
                 textarea.selectionStart = textarea.selectionEnd = start + 4;
-
-                // Trigger input event for recompile
-                textarea.dispatchEvent(new Event("input"));
             }
+
+            // Trigger input event for recompile
+            textarea.dispatchEvent(new Event("input"));
         }
     }
 
