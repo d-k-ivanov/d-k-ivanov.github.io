@@ -28,9 +28,9 @@
     /* GLSL Syntax Highlighting */
     --glsl-comment: #6a9955;
     --glsl-preprocessor: #c586c0;
-    --glsl-keyword: #569cd6;
-    --glsl-type: #4ec9b0;
-    --glsl-qualifier: #c586c0;
+    --glsl-keyword: #c586c0;
+    --glsl-type: #569cd6;
+    --glsl-qualifier: #4ec9b0;
     --glsl-number: #b5cea8;
     --glsl-string: #ce9178;
     --glsl-function: #dcdcaa;
@@ -67,9 +67,9 @@
     /* GLSL Syntax Highlighting */
     --glsl-comment: #008000;
     --glsl-preprocessor: #af00db;
-    --glsl-keyword: #0000ff;
-    --glsl-type: #267f99;
-    --glsl-qualifier: #af00db;
+    --glsl-keyword: #af00db;
+    --glsl-type: #0000ff;
+    --glsl-qualifier: #267f99;
     --glsl-number: #098658;
     --glsl-string: #a31515;
     --glsl-function: #795e26;

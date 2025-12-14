@@ -6,10 +6,10 @@ precision highp int;
 #endif
 
 // Uniforms
-uniform vec3 iResolution;               // viewport resolution (in pixels)
-uniform float iTime;                    // shader playback time (in seconds)
-uniform vec4 iMouse;                    // mouse pixel coords. xy: current (if MLB down), zw: click
-uniform int iFrame;                     // shader playback frame
+uniform vec3 iResolution;   // viewport resolution (in pixels)
+uniform float iTime;        // shader playback time (in seconds)
+uniform vec4 iMouse;        // mouse pixel coords. xy: current (if MLB down), zw: click
+uniform int iFrame;         // shader playback frame
 
 // Forward declarations
 void mainImage(out vec4 c, in vec2 f);
@@ -137,14 +137,13 @@ float sdHexPrism(vec3 p, vec2 h)
 
 float sdOctogonPrism(in vec3 p, in float r, float h)
 {
-    const vec3 k = vec3(-0.9238795325f,   // sqrt(2+sqrt(2))/2
-    0.3826834323f,   // sqrt(2-sqrt(2))/2
-    0.4142135623f); // sqrt(2)-1
-  // reflections
+    // vec3(sqrt(2+sqrt(2))/2, sqrt(2-sqrt(2))/2, sqrt(2)-1)
+    const vec3 k = vec3(-0.9238795325f, 0.3826834323f, 0.4142135623f);
+    // reflections
     p = abs(p);
     p.xy -= 2.0f * min(dot(vec2(k.x, k.y), p.xy), 0.0f) * vec2(k.x, k.y);
     p.xy -= 2.0f * min(dot(vec2(-k.x, k.y), p.xy), 0.0f) * vec2(-k.x, k.y);
-  // polygon side
+    // polygon side
     p.xy -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
     vec2 d = vec2(length(p.xy) * sign(p.y), p.z - h);
     return min(max(d.x, d.y), 0.0f) + length(max(d, 0.0f));
@@ -166,9 +165,13 @@ float sdRoundCone(in vec3 p, in float r1, float r2, float h)
     float k = dot(q, vec2(-b, a));
 
     if(k < 0.0f)
+    {
         return length(q) - r1;
+    }
     if(k > a * h)
+    {
         return length(q - vec2(0.0f, h)) - r2;
+    }
 
     return dot(q, vec2(a, b)) - r1;
 }
@@ -192,10 +195,16 @@ float sdRoundCone(vec3 p, vec3 a, vec3 b, float r1, float r2)
 
     // single square root!
     float k = sign(rr) * rr * rr * x2;
+
     if(sign(z) * a2 * z2 > k)
+    {
         return sqrt(x2 + z2) * il2 - r2;
+    }
     if(sign(y) * a2 * y2 < k)
+    {
         return sqrt(x2 + y2) * il2 - r1;
+    }
+
     return (sqrt(x2 * a2 * il2) + y * rr) * il2 - r1;
 }
 
@@ -207,7 +216,9 @@ float sdTriPrism(vec3 p, vec2 h)
     p.x = abs(p.x) - 1.0f;
     p.y = p.y + 1.0f / k;
     if(p.x + k * p.y > 0.0f)
+    {
         p.xy = vec2(p.x - k * p.y, -k * p.x - p.y) / 2.0f;
+    }
     p.x -= clamp(p.x, -2.0f, 0.0f);
     float d1 = length(p.xy) * sign(-p.y) * h.x;
     float d2 = abs(p.z) - h.y;
@@ -302,29 +313,37 @@ float sdOctahedron(vec3 p, float s)
 
     // exact distance
     #if 0
-    vec3 o = min(3.0f * p - m, 0.0f);
-    o = max(6.0f * p - m * 2.0f - o * 3.0f + (o.x + o.y + o.z), 0.0f);
-    return length(p - s * o / (o.x + o.y + o.z));
+        vec3 o = min(3.0f * p - m, 0.0f);
+        o = max(6.0f * p - m * 2.0f - o * 3.0f + (o.x + o.y + o.z), 0.0f);
+        return length(p - s * o / (o.x + o.y + o.z));
     #endif
 
     // exact distance
     #if 1
-    vec3 q;
-    if(3.0f * p.x < m)
-        q = p.xyz;
-    else if(3.0f * p.y < m)
-        q = p.yzx;
-    else if(3.0f * p.z < m)
-        q = p.zxy;
-    else
-        return m * 0.57735027f;
-    float k = clamp(0.5f * (q.z - q.y + s), 0.0f, s);
-    return length(vec3(q.x, q.y - s + k, q.z - k));
+        vec3 q;
+        if(3.0f * p.x < m)
+        {
+            q = p.xyz;
+        }
+        else if(3.0f * p.y < m)
+        {
+            q = p.yzx;
+        }
+        else if(3.0f * p.z < m)
+        {
+            q = p.zxy;
+        }
+        else
+        {
+            return m * 0.57735027f;
+        }
+        float k = clamp(0.5f * (q.z - q.y + s), 0.0f, s);
+        return length(vec3(q.x, q.y - s + k, q.z - k));
     #endif
 
     // bound, not exact
     #if 0
-    return m * 0.57735027f;
+        return m * 0.57735027f;
     #endif
 }
 
@@ -350,7 +369,6 @@ float sdPyramid(in vec3 p, in float h)
 
     // recover 3D and scale, and add sign
     return sqrt((d2 + q.z * q.z) / m2) * sign(max(q.z, -p.y));
-    ;
 }
 
 // la,lb=semi axis, h=height, ra=corner
