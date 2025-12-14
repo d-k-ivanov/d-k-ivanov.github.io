@@ -19,6 +19,7 @@ const SHADER_COLLECTION = [
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
+const STORAGE_KEY = "shaders-selected-shader";
 
 export class ShaderEditor
 {
@@ -171,6 +172,9 @@ export class ShaderEditor
             this.originalVertSource = vertSrc;
             this.originalFragSource = fragSrc;
 
+            // Save selection to localStorage
+            this.saveShaderSelection(shader);
+
             // Update editors
             this.elements.vertSource.value = vertSrc;
             this.elements.fragSource.value = fragSrc;
@@ -205,6 +209,43 @@ export class ShaderEditor
             throw new Error(`Failed to load: ${url}`);
         }
         return response.text();
+    }
+
+    saveShaderSelection(shader)
+    {
+        try
+        {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(shader));
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+    }
+
+    getSavedShader()
+    {
+        try
+        {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved)
+            {
+                const shader = JSON.parse(saved);
+                // Validate that the shader exists in the collection
+                const exists = SHADER_COLLECTION.some(
+                    s => s.folder === shader.folder && s.name === shader.name
+                );
+                if (exists)
+                {
+                    return shader;
+                }
+            }
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+        return null;
     }
 
     updateFileTreeSelection(shader)

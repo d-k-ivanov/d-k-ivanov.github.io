@@ -15,5 +15,6 @@ const editor = new ShaderEditor(renderer);
 const resizer = new PanelResizer();
 const themeManager = new ThemeManager();
 
-// Load Hello World shader by default
-editor.loadShader({ folder: "basics", name: "hello_world" });
+// Load saved shader or default to Hello World
+const savedShader = editor.getSavedShader();
+editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
