@@ -14,7 +14,8 @@ const SHADER_COLLECTION = [
     { folder: "misc", name: "iq_primitives" },
 
     // Signed Distance Field (SDF) Examples
-    { folder: "sdf", name: "2d_distances" }
+    { folder: "sdf", name: "2d_distances" },
+    // { folder: "sdf", name: "3d_distances" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";

@@ -14,11 +14,10 @@ float sdCircle(in vec2 center, in float radius)
 
 void main()
 {
-    vec2 screenCenter = (2.0f * gl_FragCoord.xy - iResolution.xy) / iResolution.y;
-    vec2 m = (2.0f * iMouse.xy - iResolution.xy) / iResolution.y;
+    vec2 position = (2.0f * gl_FragCoord.xy - iResolution.xy) / iResolution.y;
 
     float radius = 0.5f + 0.2f * sin(iTime);
-    float disctance = sdCircle(screenCenter, radius);
+    float disctance = sdCircle(position, radius);
 
     // coloring
     vec3 color;
