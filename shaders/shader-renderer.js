@@ -76,8 +76,10 @@ export class ShaderRenderer
         this.uniforms = {
             iResolution: gl.getUniformLocation(newProgram, "iResolution"),
             iTime: gl.getUniformLocation(newProgram, "iTime"),
+            iTimeDelta: gl.getUniformLocation(newProgram, "iTimeDelta"),
+            iFrame: gl.getUniformLocation(newProgram, "iFrame"),
+            iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
             iMouse: gl.getUniformLocation(newProgram, "iMouse"),
-            iFrame: gl.getUniformLocation(newProgram, "iFrame")
         };
 
         // Reset frame counter when shaders change
@@ -95,6 +97,7 @@ export class ShaderRenderer
         const gl = this.gl;
         const canvas = this.canvas;
 
+        let lastRenderTime = null;
         const render = (time) =>
         {
             if (!this.program)
@@ -107,24 +110,46 @@ export class ShaderRenderer
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.useProgram(this.program);
 
+            // Calculate time in seconds
+            const t = time * 0.001;
+            let delta = 0.0;
+            let frameRate = 0.0;
+            if (lastRenderTime !== null)
+            {
+                delta = t - lastRenderTime;
+                frameRate = delta > 0 ? 1.0 / delta : 0.0;
+            }
+            lastRenderTime = t;
+
             if (this.uniforms.iResolution)
             {
                 gl.uniform3f(this.uniforms.iResolution, canvas.width, canvas.height, 1.0);
             }
+
             if (this.uniforms.iTime)
             {
-                gl.uniform1f(this.uniforms.iTime, time * 0.001);
+                gl.uniform1f(this.uniforms.iTime, t);
             }
+            if (this.uniforms.iTimeDelta)
+            {
+                gl.uniform1f(this.uniforms.iTimeDelta, delta);
+            }
+
+            if (this.uniforms.iFrame)
+            {
+                gl.uniform1i(this.uniforms.iFrame, this.frameCount);
+            }
+            if (this.uniforms.iFrameRate)
+            {
+                gl.uniform1f(this.uniforms.iFrameRate, frameRate);
+            }
+
             if (this.uniforms.iMouse)
             {
                 const m = this.mouse;
                 // Shadertoy convention: xy = current pos, zw = click pos (negative z if not pressed)
                 const zSign = m.isDown ? 1 : -1;
                 gl.uniform4f(this.uniforms.iMouse, m.x, m.y, m.clickX * zSign, m.clickY);
-            }
-            if (this.uniforms.iFrame)
-            {
-                gl.uniform1i(this.uniforms.iFrame, this.frameCount);
             }
 
             gl.drawArrays(gl.TRIANGLES, 0, 3);
