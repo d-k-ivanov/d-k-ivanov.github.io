@@ -257,13 +257,23 @@ export class ShaderEditor
             prevActive.classList.remove("active");
         }
 
-        // Set new selection
+        // Set new selection and expand parent folder
         const items = this.elements.fileTree.querySelectorAll(".shaders-tree-item");
         for (const item of items)
         {
             if (item.dataset.folder === shader.folder && item.dataset.name === shader.name)
             {
                 item.classList.add("active");
+
+                // Expand the parent folder
+                const parentFolder = item.closest(".shaders-tree-folder");
+                if (parentFolder)
+                {
+                    parentFolder.classList.remove("collapsed");
+                }
+
+                // Scroll item into view
+                item.scrollIntoView({ block: "nearest", behavior: "smooth" });
                 break;
             }
         }
