@@ -14,12 +14,16 @@ const SHADER_COLLECTION = [
     { folder: "misc", name: "iq_primitives", vertex: true, fragment: true },
 
     // Shader Art Examples
-    { folder: "shader_art", name: "kishimisu_introduction_1", vertex: false, fragment: true },
-    { folder: "shader_art", name: "kishimisu_introduction_2", vertex: false, fragment: true },
-    { folder: "shader_art", name: "kishimisu_introduction_3", vertex: false, fragment: true },
-    { folder: "shader_art", name: "kishimisu_introduction_4", vertex: false, fragment: true },
-    { folder: "shader_art", name: "kishimisu_introduction_5", vertex: false, fragment: true },
-    { folder: "shader_art", name: "kishimisu_introduction_6", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_01", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_02", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_03", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_04", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_05", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_06", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_07", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_08", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_09", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_10", vertex: false, fragment: true },
 
     // Signed Distance Field (SDF) Examples
     { folder: "sdf", name: "2d_distances", vertex: true, fragment: true  },
