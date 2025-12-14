@@ -15,6 +15,9 @@ const SHADER_COLLECTION = [
 
     // Shader Art Examples
     { folder: "shader_art", name: "kishimisu_introduction_1", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_2", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_3", vertex: false, fragment: true },
+    { folder: "shader_art", name: "kishimisu_introduction_4", vertex: false, fragment: true },
 
     // Signed Distance Field (SDF) Examples
     { folder: "sdf", name: "2d_distances", vertex: true, fragment: true  },

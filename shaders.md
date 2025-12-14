@@ -17,8 +17,8 @@ permalink: /shaders/
                 <option value="320x200">320×200 (CGA)</option>
                 <option value="320x240">320×240 (QVGA)</option>
                 <option value="400x300">400×300</option>
-                <option value="480x320" selected>480×320 (HVGA)</option>
-                <option value="512x512">512×512</option>
+                <option value="480x320">480×320 (HVGA)</option>
+                <option value="512x512" selected>512×512</option>
                 <option value="576x384">576×384 (PAL)</option>
                 <option value="640x480">640×480 (VGA)</option>
                 <option value="800x600">800×600 (SVGA)</option>

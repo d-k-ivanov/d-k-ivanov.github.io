@@ -46,28 +46,50 @@ void main(void)
     fragColor = vec4(color.xyz, 1.0f);
 }
 
+vec3 drawAxis(vec2 uv, vec3 background)
+{
+    // Draw X axis (horizontal line at y=0)
+    float xAxis = smoothstep(0.01, 0.0, abs(uv.y));
+
+    // Draw Y axis (vertical line at x=0)
+    float yAxis = smoothstep(0.01, 0.0, abs(uv.x));
+
+    // Axis color: white
+    vec3 axisColor = vec3(1.0);
+
+    // Blend axis lines over background
+    return mix(background, axisColor, max(xAxis, yAxis));
+}
+
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
-    // Clipspace coordinates between 0 and 1
-    vec2 uv = fragCoord / iResolution.xy;
-    int numberOfVariants = 4;
+    // Clipspace coordinates between -1 and 1
+    // vec2 uv = fragCoord / iResolution.xy * 2.0f - 1.0f;
+
+    // Correct aspect ratio to avoid stretching
+    // uv *= iResolution.x / iResolution.y;
+
+    // Combined version
+    vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+
+    float distance = length(uv);
+
+    int numberOfVariants = 2;
     int variant = int(mod(floor(iTime / 2.0f), float(numberOfVariants)));
+    vec3 color = vec3(0.0f);
     switch(variant)
     {
         case 0:
-            fragColor = vec4(uv.x, 0.0f, 0.0f, 1.0f);
+            color = vec3(distance, 0.0f, 0.0f);
             break;
         case 1:
-            fragColor = vec4(0.0f, uv.y, 0.0f, 1.0f);
-            break;
-        case 2:
-            fragColor = vec4(uv.x, uv.y, 0.0f, 1.0f);
-            break;
-        case 3:
-            fragColor = vec4(0.0f, 0.0f, uv.x + uv.y, 1.0f);
+            color = vec3(distance, distance, distance);
             break;
         default:
-            fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            color = vec3(0.0f, 0.0f, 0.0f);
             break;
     }
+
+    color = drawAxis(uv, color);
+    fragColor = vec4(color, 1.0f);
 }

@@ -49,7 +49,20 @@ void main(void)
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     // Clipspace coordinates between 0 and 1
-    vec2 uv = fragCoord / iResolution.xy;
+    // vec2 uv = fragCoord / iResolution.xy;
+
+    // Center UV coordinates around (0,0)
+    // uv = uv - 0.5f;
+
+    // Scale UV coordinates to maintain -1.0f to 1.0f range
+    // uv = uv * 2.0f;
+
+    // Or
+    // uv = uv * 2.0f - 1.0f;
+
+    // Combined version
+    vec2 uv = fragCoord / iResolution.xy * 2.0f - 1.0f;
+
     int numberOfVariants = 4;
     int variant = int(mod(floor(iTime / 2.0f), float(numberOfVariants)));
     switch(variant)
