@@ -40,7 +40,7 @@ const SHADER_COLLECTION = [
     { folder: "tutorials", name: "kishimisu_introduction_24", vertex: false, fragment: true },
 
     // Signed Distance Field (SDF) Examples
-    { folder: "sdf", name: "2d_distances", vertex: true, fragment: true  },
+    { folder: "sdf", name: "2d_distances", vertex: true, fragment: true },
     // { folder: "sdf", name: "3d_distances" }
 ];
 
@@ -391,12 +391,41 @@ export class ShaderEditor
             const textarea = e.target;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
+            const value = textarea.value;
 
-            textarea.value = textarea.value.substring(0, start) + "    " + textarea.value.substring(end);
-            textarea.selectionStart = textarea.selectionEnd = start + 4;
+            // Check if there is a selection (multiline or partial line)
+            if (start !== end)
+            {
+                // Get selected text
+                const before = value.substring(0, start);
+                const selected = value.substring(start, end);
+                const after = value.substring(end);
 
-            // Trigger input event for recompile
-            textarea.dispatchEvent(new Event("input"));
+                // Split selection into lines
+                const lines = selected.split('\n');
+                // Insert 4 spaces at the start of each line
+                const indented = lines.map(line => "    " + line).join('\n');
+
+                // Replace selection with indented text
+                textarea.value = before + indented + after;
+
+                // Calculate new selection range
+                // Start stays the same, end increases by 4 chars per line
+                const lineCount = lines.length;
+                textarea.selectionStart = start;
+                textarea.selectionEnd = end + (4 * lineCount);
+
+                // Trigger input event for recompile
+                textarea.dispatchEvent(new Event("input"));
+            } else
+            {
+                // No selection, insert 4 spaces at cursor
+                textarea.value = value.substring(0, start) + "    " + value.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + 4;
+
+                // Trigger input event for recompile
+                textarea.dispatchEvent(new Event("input"));
+            }
         }
     }
 
