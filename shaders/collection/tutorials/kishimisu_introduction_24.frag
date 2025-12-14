@@ -87,7 +87,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         float distance = length(uv) * exp(-length(uv0));
 
         // Resulting color
-        vec3 color = palette(length(uv0) + i * 0.4f +iTime * 0.4f);
+        vec3 color = palette(length(uv0) + i * 0.4f + iTime * 0.4f);
 
         distance = sin(distance * 8.0f + iTime) / 8.0f;
         distance = abs(distance);
