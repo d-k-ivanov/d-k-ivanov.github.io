@@ -64,23 +64,6 @@ vec3 drawAxis(in vec2 uv, in vec3 background)
     return mix(background, axisColor, max(xAxis, yAxis));
 }
 
-float drawLine(in vec2 p1, in vec2 p2, in vec2 uv, in float thickness)
-{
-    float a = abs(distance(p1, uv));
-    float b = abs(distance(p2, uv));
-    float c = abs(distance(p1, p2));
-
-    if(a >= c || b >= c)
-        return 0.0f;
-
-    float p = (a + b + c) * 0.5f;
-
-    // median to (p1, p2) vector
-    float h = 2.0f / c * sqrt(p * (p - a) * (p - b) * (p - c));
-
-    return mix(1.0f, 0.0f, smoothstep(0.5f * thickness, 1.5f * thickness, h));
-}
-
 // **********************************************************************
 // SDF functions
 // **********************************************************************
@@ -114,9 +97,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     // Resulting color
     vec3 color = vec3(0.0f);
 
-    // float distance = length(uv);
-    // distance -= 0.5f; // Circle radius
     float distance = sdCircle(uv, 0.5f);
+    distance = abs(distance);
 
     // Coloring based on distance
     color = vec3(distance, distance, distance);
@@ -126,28 +108,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
     // Draw axis lines
     color = drawAxis(uv, color);
-
-    // Draw a distance line from the mouse position to the distance field
-    if(iMouse.z > 0.001f)
-    {
-        // Mouse position in NDC
-        vec2 mousePos = (iMouse.xy * 2.0f - iResolution.xy) / iResolution.y;
-
-        // Colors
-        vec3 ousideOfTheCircleColor = vec3(0.0f, 0.5f, 0.0f);
-        vec3 insideOfTheCircleColor = vec3(1.0f, 0.0f, 0.0f);
-        vec3 markerColor = vec3(1.0f, 1.0f, 0.0f);
-
-        // Draw line from mouse position to the circle edge
-        float distToCircle = sdCircle(mousePos, 0.5f);
-        float lineIntensity = smoothstep(0.01f, 0.005f, abs(distance - distToCircle));
-        vec3 lineColor = (distance > 0.0f) ? ousideOfTheCircleColor : insideOfTheCircleColor;
-        color = mix(color, lineColor, lineIntensity);
-
-        // Draw a marker at the mouse position
-        float markerIntensity = smoothstep(0.0f, 0.005f, length(uv - mousePos) - 0.01f);
-        color = mix(color, markerColor, 1.0f - markerIntensity);
-    }
 
     fragColor = vec4(color, 1.0f);
 }
