@@ -248,6 +248,18 @@ export class ShaderEditor
         return null;
     }
 
+    clearSavedShader()
+    {
+        try
+        {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+    }
+
     updateFileTreeSelection(shader)
     {
         // Remove previous selection

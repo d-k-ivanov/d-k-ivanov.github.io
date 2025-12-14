@@ -107,4 +107,16 @@ export class ThemeManager
             panel.button.title = panel.isDark ? "Switch to light theme" : "Switch to dark theme";
         }
     }
+
+    resetThemes()
+    {
+        try
+        {
+            localStorage.removeItem("shaders-theme-prefs");
+        }
+        catch (e)
+        {
+            // Ignore localStorage errors
+        }
+    }
 }
