@@ -18,7 +18,7 @@ const themeManager = new ThemeManager();
 // Handle Ctrl+F5 to reset to initial state
 document.addEventListener("keydown", (e) =>
 {
-    if (e.key === "F5" && e.ctrlKey)
+    if ((e.key === "F5" && e.ctrlKey) || (e.key === "R" && e.ctrlKey && e.shiftKey))
     {
         e.preventDefault();
         editor.clearSavedShader();

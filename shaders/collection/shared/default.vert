@@ -1,6 +1,7 @@
 #version 300 es
 
-// License: CC BY-NC-SA 4.0
+// Full-screen triangle vertex shader
+// Common vertex shader used when specific vertex shader is not provided.
 
 void main()
 {

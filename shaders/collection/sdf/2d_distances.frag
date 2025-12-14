@@ -1,5 +1,12 @@
 #version 300 es
-precision highp float;
+
+#if GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    precision highp int;
+#else
+    precision mediump float;
+    precision mediump int;
+#endif
 
 uniform vec3 iResolution;
 uniform float iTime;

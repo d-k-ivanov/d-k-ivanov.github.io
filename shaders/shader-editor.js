@@ -4,21 +4,25 @@ import { GLSLHighlighter } from "./glsl-highlighter.js";
 
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
-    { folder: "basics", name: "hello_world" },
+    { folder: "basics", name: "hello_world", vertex: true, fragment: true },
 
     // Miscellaneous Examples from other authors
-    { folder: "misc", name: "bµg_moonlight_shadertoy" },
-    { folder: "misc", name: "bµg_moonlight" },
-    { folder: "misc", name: "curena_alhambra" },
-    { folder: "misc", name: "curena_p6mm" },
-    { folder: "misc", name: "iq_primitives" },
+    { folder: "misc", name: "bµg_moonlight_shadertoy", vertex: true, fragment: true },
+    { folder: "misc", name: "bµg_moonlight", vertex: true, fragment: true },
+    { folder: "misc", name: "curena_alhambra", vertex: true, fragment: true },
+    { folder: "misc", name: "curena_p6mm", vertex: true, fragment: true },
+    { folder: "misc", name: "iq_primitives", vertex: true, fragment: true },
+
+    // Shader Art Examples
+    { folder: "shader_art", name: "kishimisu_introduction_1", vertex: false, fragment: true },
 
     // Signed Distance Field (SDF) Examples
-    { folder: "sdf", name: "2d_distances" },
+    { folder: "sdf", name: "2d_distances", vertex: true, fragment: true  },
     // { folder: "sdf", name: "3d_distances" }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
+const SHARED_BASE_PATH = "/shaders/collection/shared";
 const STORAGE_KEY = "shaders-selected-shader";
 
 export class ShaderEditor
@@ -164,7 +168,7 @@ export class ShaderEditor
             this.setStatus("Loading shader...", false);
 
             const [vertSrc, fragSrc] = await Promise.all([
-                this.fetchShaderSource(`${basePath}.vert`),
+                this.fetchShaderSource(shader.vertex ? `${basePath}.vert` : `${SHARED_BASE_PATH}/default.vert`),
                 this.fetchShaderSource(`${basePath}.frag`)
             ]);
 
