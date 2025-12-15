@@ -1,4 +1,12 @@
 main:
+  - title: "Shader Editor for WebGL"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/d-k-ivanov.github.io/tree/main/shaders
+    badge: WebGL, Graphics
+    image: /assets/img/projects/ShaderEditorWeb.png
+    page: https://d-k-ivanov.github.io/shaders
+    notes: Under Development
+
   - title: "Ray-Tracing Framework and Visualizer"
     authors: Dmitry Ivanov
     code: https://github.com/d-k-ivanov/ray-tracing
@@ -7,7 +15,7 @@ main:
     page: https://github.com/d-k-ivanov/ray-tracing
     pdf: https://raw.githubusercontent.com/d-k-ivanov/ray-tracing/main/Docs/tfm.pdf
     demo: https://www.youtube.com/watch?v=koZc1S7LPkQ
-    # notes: Oral Presentation
+    # notes: Published
 
   - title: "Geometric Algorithms"
     authors: Dmitry Ivanov
@@ -15,7 +23,7 @@ main:
     badge: C++, Geometry
     image: https://github.com/d-k-ivanov/geometric-algorithms/raw/main/Docs/p4/images/p4-5.gif
     page: https://github.com/d-k-ivanov/geometric-algorithms
-    # notes: Early Accept
+    # notes: Educational
 
   - title: "Russian Alphabet for Android"
     authors: Dmitry Ivanov
@@ -23,7 +31,7 @@ main:
     badge: Android
     image: /assets/img/projects/RussianAlphabet.png
     page: https://play.google.com/store/apps/details?id=com.pupupon.russian_alphabet
-    # notes: Early Accept
+    notes: Production
 
   - title: "Armenian Alphabet for Android"
     authors: Dmitry Ivanov
@@ -31,4 +39,4 @@ main:
     badge: Android
     image: /assets/img/projects/ArmenianAlphabet.png
     page: https://play.google.com/store/apps/details?id=com.pupupon.armenianalphabet
-    # notes: Oral Presentation
+    notes: Production

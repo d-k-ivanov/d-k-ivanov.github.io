@@ -62,7 +62,7 @@ vec3 palette(in float t)
     vec3 a = vec3(0.5f, 0.5f, 0.5f);
     vec3 b = vec3(0.5f, 0.5f, 0.5f);
     vec3 c = vec3(1.0f, 1.0f, 1.0f);
-    vec3 d = vec3(0.263f, 0.416f, 0.557f);
+    vec3 d = vec3(0.8f, 0.9f, 0.3f);
     return a + b * cos(6.28318f * (c * t + d));
 }
 
