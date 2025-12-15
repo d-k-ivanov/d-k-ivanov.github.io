@@ -6,6 +6,7 @@ import { GLSLHighlighter } from "./glsl-highlighter.js";
 const SHADER_COLLECTION = [
     { folder: "basics", name: "hello_world", vertex: true, fragment: true },
     { folder: "basics", name: "plotter", vertex: false, fragment: true },
+    { folder: "basics", name: "print_text", vertex: false, fragment: true },
 
     // Miscellaneous Examples from other authors
     { folder: "misc", name: "bµg_moonlight_shadertoy", vertex: true, fragment: true },

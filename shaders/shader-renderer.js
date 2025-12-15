@@ -1,5 +1,7 @@
 "use strict";
 
+import { TextureLoader } from "./texture-loader.js";
+
 export class ShaderRenderer
 {
     constructor(canvas)
@@ -15,6 +17,9 @@ export class ShaderRenderer
         this.animationId = null;
         this.uniforms = {};
         this.frameCount = 0;
+        this.channelUniforms = [];
+        this.programVersion = 0;
+        this.textureLoader = new TextureLoader(this.gl);
 
         // Mouse state: (x, y, click x, click y)
         // xy = current position if mouse down, else last position
@@ -70,6 +75,8 @@ export class ShaderRenderer
             gl.deleteProgram(this.program);
         }
 
+        this.programVersion++;
+        const version = this.programVersion;
         this.program = newProgram;
 
         // Update uniform locations
@@ -81,6 +88,9 @@ export class ShaderRenderer
             iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
             iMouse: gl.getUniformLocation(newProgram, "iMouse"),
         };
+
+        this.detectChannelUniforms(newProgram);
+        await this.prepareChannelTextures(version);
 
         // Reset frame counter when shaders change
         this.frameCount = 0;
@@ -152,6 +162,7 @@ export class ShaderRenderer
                 gl.uniform4f(this.uniforms.iMouse, m.x, m.y, m.clickX * zSign, m.clickY);
             }
 
+            this.bindChannelTextures();
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             this.frameCount++;
             this.animationId = requestAnimationFrame(render);
@@ -213,6 +224,96 @@ export class ShaderRenderer
         {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
+        }
+    }
+
+    detectChannelUniforms(program)
+    {
+        const gl = this.gl;
+        const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+        const channels = [null, null, null, null];
+
+        for (let i = 0; i < uniformCount; i++)
+        {
+            const info = gl.getActiveUniform(program, i);
+            if (!info)
+            {
+                continue;
+            }
+
+            const baseName = info.name.replace(/\[0\]$/, "");
+            const match = baseName.match(/^iChannel([0-3])$/);
+            if (!match)
+            {
+                continue;
+            }
+
+            const index = parseInt(match[1], 10);
+            const type = info.type === gl.SAMPLER_CUBE ? "cube" : "2d";
+            const location = gl.getUniformLocation(program, baseName);
+
+            channels[index] = {
+                index,
+                name: baseName,
+                type,
+                location,
+                texture: this.textureLoader.getFallback(type)
+            };
+        }
+
+        this.channelUniforms = channels;
+    }
+
+    async prepareChannelTextures(version)
+    {
+        const loaders = [];
+        for (const channel of this.channelUniforms)
+        {
+            if (!channel || !channel.location)
+            {
+                continue;
+            }
+
+            const loader = this.textureLoader.loadChannelTexture(channel.index, channel.type)
+                .then((texture) =>
+                {
+                    if (version !== this.programVersion)
+                    {
+                        return;
+                    }
+
+                    channel.texture = texture || this.textureLoader.getFallback(channel.type);
+                })
+                .catch(() =>
+                {
+                    channel.texture = this.textureLoader.getFallback(channel.type);
+                });
+
+            loaders.push(loader);
+        }
+
+        await Promise.all(loaders);
+    }
+
+    bindChannelTextures()
+    {
+        const gl = this.gl;
+
+        for (const channel of this.channelUniforms)
+        {
+            if (!channel || !channel.location)
+            {
+                continue;
+            }
+
+            const textureUnit = channel.index;
+            const isCube = channel.type === "cube";
+            const target = isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+            const texture = channel.texture || this.textureLoader.getFallback(channel.type);
+
+            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.bindTexture(target, texture);
+            gl.uniform1i(channel.location, textureUnit);
         }
     }
 }

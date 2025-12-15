@@ -218,6 +218,30 @@
     font-size: 12px;
 }
 
+.shaders-note {
+    padding: 10px 12px;
+    background: var(--sh-bg-secondary);
+    border-bottom: 1px solid var(--sh-border);
+    color: var(--sh-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.shaders-note-title {
+    color: var(--sh-text-primary);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.shaders-note code {
+    background: var(--sh-bg-input);
+    color: var(--sh-text-primary);
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: 1px solid var(--sh-border-light);
+}
+
 .shaders-file-tree-content {
     flex: 1;
     overflow-y: auto;

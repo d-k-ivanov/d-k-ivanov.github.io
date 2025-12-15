@@ -50,6 +50,21 @@ permalink: /shaders/
                 <span>Shaders</span>
                 <button class="shaders-theme-toggle" id="control-theme-toggle" title="Toggle theme">☾</button>
             </div>
+            <div class="shaders-note">
+                <div class="shaders-note-title">Inputs:</div>
+                <p>
+                        vec3 iResolution<br>
+                        float iTime<br>
+                        float iTimeDelta<br>
+                        int iFrame<br>
+                        float iFrameRate<br>
+                        vec4 iMouse<br>
+                        sampler{2D,Cube} iChannel0<br>
+                        sampler{2D,Cube} iChannel1<br>
+                        sampler{2D,Cube} iChannel2<br>
+                        sampler{2D,Cube} iChannel3<br>
+                </p>
+            </div>
             <div class="shaders-file-tree-content" id="file-tree">
                 <!-- File tree items will be populated by JS -->
             </div>
