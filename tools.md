@@ -9,6 +9,10 @@ permalink: /tools/
 - <a name="Compare Two Lists" href="/tools/compare-two-lists/">Compare Two Lists</a>
 - <a name="Random Lines Picker" href="/tools/random-lines/">Random Lines Picker</a>
 
+## Shader Tools
+
+- <a name="Shader Font Generator" href="/tools/shader_fontgen/">Shader Font Generator by Otavio Good  and Tim Maffett</a>
+
 ## Playgrounds
 
 ### 3D Playground
