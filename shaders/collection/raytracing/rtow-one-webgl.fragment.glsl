@@ -18,11 +18,11 @@ uniform float iFrameRate;
 uniform vec4 iMouse;
 
 const float PI = 3.14159265359;
-const float FOV = radians(20.0);
+const float FOV = radians(50.0);
 const float FOCUS_DISTANCE = 1.0;
-const float DEFOCUS_ANGLE = 0.6; // degrees
+const float DEFOCUS_ANGLE = 0.0; // degrees
 const int SAMPLES_PER_PIXEL = 4;
-const int MAX_DEPTH = 8;
+const int MAX_DEPTH = 4;
 const int SPHERE_COUNT = 4;
 const int MATERIAL_COUNT = 4;
 

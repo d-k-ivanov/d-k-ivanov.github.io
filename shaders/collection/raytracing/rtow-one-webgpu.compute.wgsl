@@ -15,12 +15,12 @@ struct ShaderUniforms
 
 const PI : f32 = 3.14159265359;
 const SAMPLES_PER_PIXEL : u32 = 4u;
-const MAX_DEPTH : u32 = 8u;
+const MAX_DEPTH : u32 = 4u;
 const SPHERE_COUNT : u32 = 4u;
 const MATERIAL_COUNT : u32 = 4u;
-const FOV_DEGREES : f32 = 20.0;
+const FOV_DEGREES : f32 = 50.0;
 const FOCUS_DISTANCE : f32 = 1.0;
-const DEFOCUS_ANGLE : f32 = 0.6; // degrees
+const DEFOCUS_ANGLE : f32 = 0.0; // degrees
 
 struct Ray
 {
