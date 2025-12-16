@@ -15,7 +15,7 @@ uniform samplerCube iChannel1;
 uniform samplerCube iChannel2;
 uniform samplerCube iChannel3;
 
-Files load from /shaders/textures/
+Files load from ./textures/
 
 2D Samplers:
 iChannel0.{png,jpg,jpeg,webp}
@@ -36,7 +36,7 @@ const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 
 export class TextureLoader
 {
-    constructor(gl, basePath = "/shaders/textures")
+    constructor(gl, basePath = "./textures")
     {
         this.gl = gl;
         this.basePath = basePath.replace(/\/$/, "");

@@ -2,8 +2,8 @@
 
 import { RENDER_CONTEXTS } from "./shader-renderer.js";
 
-export const COLLECTION_BASE_PATH = "/shaders/collection";
-export const SHARED_BASE_PATH = "/shaders/collection/shared";
+export const COLLECTION_BASE_PATH = "./collection";
+export const SHARED_BASE_PATH = "./collection/shared";
 
 export const SHADER_COLLECTION = [
     // Basics
