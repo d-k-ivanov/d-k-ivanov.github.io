@@ -58,6 +58,10 @@ export class ShaderCollection
         // Signed Distance Field (SDF) Examples
         { language: "glsl", folder: "sdf", vertex: true, fragment: true, name: "2d_distances" },
 
+        // Ray Tracing in One Weekend
+        { language: "glsl", folder: "raytracing", vertex: true, fragment: true, name: "rtow-one-webgl" },
+        { language: "wgsl", folder: "raytracing", vertex: true, fragment: true, compute: true, name: "rtow-one-webgpu" },
+
         // WebGPU WGSL Examples
         { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: true, name: "hello_world" },
         { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_triangle" },
