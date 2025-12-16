@@ -40,9 +40,12 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
 
     let mouse = shaderUniforms.iMouse;
     var glow = 0.0;
-    if (mouse.z > 0.0) {
-        let mouseUv = mouse.xy / shaderUniforms.iResolution.xy;
-        glow = exp(-140.0 * length(uv - mouseUv));
+    if (mouse.z > 0.0)
+    {
+        let mousePos = mouse.xy / shaderUniforms.iResolution.xy;
+        let distToMouse = length(uv - mousePos);
+        glow = smoothstep(0.2, 0.0, distToMouse) * (1.0 + 0.5 * sin(time));
+        // glow = exp(-140.0 * distToMouse);
     }
 
     let color = clamp(baseColor + vec3f(glow, glow * 0.5, 0.0), vec3f(0.0), vec3f(1.0));
