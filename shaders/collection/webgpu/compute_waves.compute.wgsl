@@ -1,5 +1,5 @@
-// Compute pass writes a swirling wave field into the storage texture at @binding(1).
-struct ShaderUniforms {
+struct ShaderUniforms
+{
     iResolution : vec3f,
     _padding0 : f32,
     iTime : f32,
@@ -13,7 +13,8 @@ struct ShaderUniforms {
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 @group(0) @binding(1) var outputTex : texture_storage_2d<rgba8unorm, write>;
 
-fn palette(t : f32) -> vec3f {
+fn palette(t : f32) -> vec3f
+{
     let a = vec3f(0.12, 0.18, 0.28);
     let b = vec3f(0.22, 0.32, 0.48);
     let c = vec3f(0.22, 0.16, 0.12);
@@ -22,9 +23,11 @@ fn palette(t : f32) -> vec3f {
 }
 
 @compute @workgroup_size(8, 8)
-fn main(@builtin(global_invocation_id) gid : vec3u) {
+fn main(@builtin(global_invocation_id) gid : vec3u)
+{
     let dims = textureDimensions(outputTex);
-    if (gid.x >= dims.x || gid.y >= dims.y) {
+    if (gid.x >= dims.x || gid.y >= dims.y)
+    {
         return;
     }
 

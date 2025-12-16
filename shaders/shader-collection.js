@@ -57,6 +57,7 @@ export const SHADER_COLLECTION = [
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_triangle" },
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "atomic_pulse" },
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: true, name: "compute_waves" },
+    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "print_text" },
 ];
 
 export const getShaderLanguage = (shader) =>

@@ -1,4 +1,5 @@
-struct VSOut {
+struct VSOut
+{
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
@@ -6,7 +7,8 @@ struct VSOut {
 // Common vertex shader used when specific vertex shader is not provided.
 
 @vertex
-fn vert(@builtin(vertex_index) idx : u32) -> VSOut {
+fn vert(@builtin(vertex_index) idx : u32) -> VSOut
+{
     var positions = array<vec2f, 3>(
         vec2f(-1.0, -1.0),
         vec2f(3.0, -1.0),

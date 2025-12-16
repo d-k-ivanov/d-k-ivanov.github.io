@@ -1,4 +1,5 @@
-struct ShaderUniforms {
+struct ShaderUniforms
+{
     iResolution : vec3f,
     _padding0 : f32,
     iTime : f32,
@@ -11,12 +12,14 @@ struct ShaderUniforms {
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
-struct VSOut {
+struct VSOut
+{
     @builtin(position) Position : vec4f,
 };
 
 @vertex
-fn vert(@builtin(vertex_index) idx : u32) -> VSOut {
+fn vert(@builtin(vertex_index) idx : u32) -> VSOut
+{
     var positions = array<vec2f, 3>(
         vec2f(0.0, 0.5),
         vec2f(-0.5, -0.5),

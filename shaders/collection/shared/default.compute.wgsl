@@ -1,4 +1,5 @@
-struct ShaderUniforms {
+struct ShaderUniforms
+{
     iResolution : vec3f,
     _padding0 : f32,
     iTime : f32,
@@ -15,9 +16,11 @@ struct ShaderUniforms {
 // Minimal compute shader used when a specific compute shader is not provided.
 
 @compute @workgroup_size(8, 8)
-fn main(@builtin(global_invocation_id) gid : vec3u) {
+fn main(@builtin(global_invocation_id) gid : vec3u)
+{
     let dims = textureDimensions(outputTex);
-    if (gid.x >= dims.x || gid.y >= dims.y) {
+    if (gid.x >= dims.x || gid.y >= dims.y)
+    {
         return;
     }
 

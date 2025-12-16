@@ -1,4 +1,5 @@
-struct ShaderUniforms {
+struct ShaderUniforms
+{
     iResolution : vec3f,
     _padding0 : f32,
     iTime : f32,
@@ -13,13 +14,15 @@ struct ShaderUniforms {
 @group(0) @binding(2) var computeTexture : texture_2d<f32>;
 @group(0) @binding(3) var computeSampler : sampler;
 
-struct VSOut {
+struct VSOut
+{
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
 
 @fragment
-fn frag(input : VSOut) -> @location(0) vec4f {
+fn frag(input : VSOut) -> @location(0) vec4f
+{
     let uv = input.uv;
     let t = shaderUniforms.iTime;
     let wave = 0.5 + 0.5 * sin(t);

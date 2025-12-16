@@ -10,6 +10,9 @@ export const RENDER_CONTEXTS = {
 const WEBGPU_UNIFORM_SIZE = 64;
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
+const FONT_TEXTURE_URL = "/shaders/textures/iChannel0.png";
+const FONT_TEXTURE_BINDING = 4;
+const FONT_SAMPLER_BINDING = 5;
 const UNIFORM_OFFSETS = {
     resolution: 0,
     time: 4,
@@ -309,6 +312,10 @@ class WebGPURendererBackend
         this.computeTextureSize = { width: 0, height: 0 };
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
         this.useComputeTextureSampling = false;
+        this.fontTexture = null;
+        this.fontTextureView = null;
+        this.fontSampler = null;
+        this.needsFontTexture = false;
 
         this.uniformBuffer = null;
         this.animationId = null;
@@ -543,6 +550,7 @@ class WebGPURendererBackend
         ];
 
         const renderEntries = [...baseRenderEntries];
+        const includeFont = this.needsFontTexture && this.fontTextureView && this.fontSampler;
 
         if (includeCompute && this.useComputeTextureSampling)
         {
@@ -550,6 +558,14 @@ class WebGPURendererBackend
             renderEntries.push(
                 { binding: 2, resource: this.computeTextureSampleView },
                 { binding: 3, resource: this.computeSampler }
+            );
+        }
+
+        if (includeFont)
+        {
+            renderEntries.push(
+                { binding: FONT_TEXTURE_BINDING, resource: this.fontTextureView },
+                { binding: FONT_SAMPLER_BINDING, resource: this.fontSampler }
             );
         }
 
@@ -603,6 +619,57 @@ class WebGPURendererBackend
         return hasBinding || mentionsTexture;
     }
 
+    fragmentUsesFontTexture(source)
+    {
+        if (!source)
+        {
+            return false;
+        }
+        const hasBinding = new RegExp(`@binding\\s*\\(\\s*${FONT_TEXTURE_BINDING}\\s*\\)`).test(source);
+        const mentionsName = /\biChannel0\b/.test(source);
+        return hasBinding || mentionsName;
+    }
+
+    async loadFontTexture()
+    {
+        if (this.fontTextureView && this.fontSampler)
+        {
+            return;
+        }
+
+        const response = await fetch(FONT_TEXTURE_URL);
+        if (!response.ok)
+        {
+            throw new Error(`Failed to load font texture: ${FONT_TEXTURE_URL}`);
+        }
+
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+
+        const texture = this.device.createTexture({
+            size: { width: image.width, height: image.height },
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING |
+                GPUTextureUsage.COPY_DST |
+                GPUTextureUsage.RENDER_ATTACHMENT
+        });
+
+        this.device.queue.copyExternalImageToTexture(
+            { source: image },
+            { texture },
+            { width: image.width, height: image.height }
+        );
+
+        this.fontTexture = texture;
+        this.fontTextureView = texture.createView();
+        this.fontSampler = this.device.createSampler({
+            magFilter: "linear",
+            minFilter: "linear",
+            addressModeU: "clamp-to-edge",
+            addressModeV: "clamp-to-edge"
+        });
+    }
+
     async updateShaders(sources)
     {
         await this.init();
@@ -613,6 +680,7 @@ class WebGPURendererBackend
         const computeSource = (sources.compute || "").trim();
         const includeCompute = computeSource.length > 0;
         this.useComputeTextureSampling = includeCompute && this.fragmentUsesComputeTexture(fragmentSource);
+        this.needsFontTexture = this.fragmentUsesFontTexture(fragmentSource);
 
         if (!vertexSource || !fragmentSource)
         {
@@ -672,6 +740,11 @@ class WebGPURendererBackend
             this.computePipeline = null;
             this.destroyComputeTarget();
             this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+        }
+
+        if (this.needsFontTexture)
+        {
+            await this.loadFontTexture();
         }
 
         this.buildBindGroups(includeCompute);
