@@ -23,8 +23,8 @@ const float FOCUS_DISTANCE = 10.0;
 const float DEFOCUS_ANGLE = 0.6; // degrees
 const int SAMPLES_PER_PIXEL = 4;
 const int MAX_DEPTH = 8;
-const int SPHERE_COUNT = 8;
-const int MATERIAL_COUNT = 6;
+const int SPHERE_COUNT = 4;
+const int MATERIAL_COUNT = 4;
 
 struct Ray
 {
@@ -50,10 +50,12 @@ struct Sphere
 struct Hit
 {
     vec3 p;
+    vec3 center;
     vec3 normal;
     float t;
     int material;
     bool frontFace;
+    Material mat;
 };
 
 uint hashUint(uint x)
@@ -125,30 +127,42 @@ float schlick(float cosine, float refIdx)
     return r0 + (1.0 - r0) * pow(1.0 - cosine, 5.0);
 }
 
+float hash31(vec3 p)
+{
+    return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
+
+vec3 randomColor(vec3 seed)
+{
+    return vec3(hash31(seed + 1.3), hash31(seed + 2.7), hash31(seed + 5.1));
+}
+
 const Material MATERIALS[MATERIAL_COUNT] = Material[](
-    Material(0, vec3(0.5), 0.0, 1.0),
-    Material(0, vec3(0.4, 0.2, 0.1), 0.0, 1.0),
-    Material(1, vec3(0.7, 0.6, 0.5), 0.0, 1.0),
-    Material(2, vec3(1.0), 0.0, 1.5),
-    Material(0, vec3(0.3, 0.7, 0.9), 0.0, 1.0),
-    Material(1, vec3(0.9, 0.8, 0.6), 0.05, 1.0)
+    Material(0, vec3(0.5), 0.0, 1.0),          // ground
+    Material(2, vec3(1.0), 0.0, 1.5),          // glass center
+    Material(0, vec3(0.4, 0.2, 0.1), 0.0, 1.0),// lambert big
+    Material(1, vec3(0.7, 0.6, 0.5), 0.0, 1.0) // metal big
 );
 
-const Sphere SCENE[SPHERE_COUNT] = Sphere[](
+const Sphere SCENE[4] = Sphere[](
     Sphere(vec3(0.0, -1000.0, 0.0), 1000.0, 0),
-    Sphere(vec3(0.0, 1.0, 0.0), 1.0, 3),
-    Sphere(vec3(-4.0, 1.0, 0.0), 1.0, 1),
-    Sphere(vec3(4.0, 1.0, 0.0), 1.0, 2),
-    Sphere(vec3(-2.5, 0.35, -1.4), 0.35, 4),
-    Sphere(vec3(1.6, 0.25, -0.6), 0.25, 5),
-    Sphere(vec3(2.2, 0.2, 1.3), 0.2, 4),
-    Sphere(vec3(-1.2, 0.28, 1.6), 0.28, 5)
+    Sphere(vec3(0.0, 1.0, 0.0), 1.0, 1),
+    Sphere(vec3(-4.0, 1.0, 0.0), 1.0, 2),
+    Sphere(vec3(4.0, 1.0, 0.0), 1.0, 3)
 );
 
 Hit setFaceNormal(Ray r, vec3 outward)
 {
     bool front = dot(r.dir, outward) < 0.0;
-    return Hit(vec3(0.0), front ? outward : -outward, 0.0, 0, front);
+    Hit h;
+    h.p = vec3(0.0);
+    h.center = vec3(0.0);
+    h.normal = front ? outward : -outward;
+    h.t = 0.0;
+    h.material = 0;
+    h.frontFace = front;
+    h.mat = MATERIALS[0];
+    return h;
 }
 
 bool hitSphere(Sphere s, Ray r, float tMin, float tMax, out Hit hit)
@@ -180,6 +194,8 @@ bool hitSphere(Sphere s, Ray r, float tMin, float tMax, out Hit hit)
     hit.normal = base.normal;
     hit.frontFace = base.frontFace;
     hit.material = s.material;
+    hit.center = s.center;
+    hit.mat = MATERIALS[min(s.material, MATERIAL_COUNT - 1)];
     return true;
 }
 
@@ -196,6 +212,54 @@ bool hitWorld(Ray r, float tMin, float tMax, Sphere scn[SPHERE_COUNT], out Hit h
             found = true;
             closest = temp.t;
             hit = temp;
+        }
+    }
+
+    // Procedural grid of spheres (-11..10)
+    for (int a = -11; a < 11; ++a)
+    {
+        for (int b = -11; b < 11; ++b)
+        {
+            vec3 cell = vec3(float(a), 0.0, float(b));
+            vec3 center = vec3(float(a) + 0.9 * hash31(cell + vec3(1.0, 0.0, 0.0)),
+                               0.2,
+                               float(b) + 0.9 * hash31(cell + vec3(0.0, 0.0, 1.0)));
+
+            if (length(center - vec3(4.0, 0.2, 0.0)) <= 0.9)
+            {
+                continue;
+            }
+
+            float chooseMat = hash31(cell + vec3(2.0, 2.0, 2.0));
+            int matId = (chooseMat < 0.8) ? 10 : (chooseMat < 0.95 ? 11 : 12);
+
+            Sphere s = Sphere(center, 0.2, matId);
+            Hit temp;
+            if (hitSphere(s, r, tMin, closest, temp))
+            {
+                found = true;
+                closest = temp.t;
+                temp.center = center;
+
+                if (matId == 10)
+                {
+                    vec3 aColor = randomColor(center);
+                    vec3 bColor = randomColor(center + 3.7);
+                    temp.mat = Material(0, aColor * bColor, 0.0, 1.0);
+                }
+                else if (matId == 11)
+                {
+                    vec3 albedo = mix(vec3(0.5), vec3(1.0), randomColor(center));
+                    float fuzz = hash31(center + 2.1) * 0.5;
+                    temp.mat = Material(1, albedo, fuzz, 1.0);
+                }
+                else
+                {
+                    temp.mat = Material(2, vec3(1.0), 0.0, 1.5);
+                }
+
+                hit = temp;
+            }
         }
     }
     return found;
@@ -248,7 +312,7 @@ vec3 skyColor(Ray r)
     return mix(vec3(1.0), vec3(0.5, 0.7, 1.0), t);
 }
 
-vec3 rayColor(Ray r, Sphere scn[SPHERE_COUNT], Material mats[MATERIAL_COUNT], inout uint seed)
+vec3 rayColor(Ray r, Sphere scn[SPHERE_COUNT], inout uint seed)
 {
     vec3 attenuation = vec3(1.0);
     Ray current = r;
@@ -263,7 +327,7 @@ vec3 rayColor(Ray r, Sphere scn[SPHERE_COUNT], Material mats[MATERIAL_COUNT], in
 
         Ray scattered;
         vec3 atten;
-        if (!scatter(mats[h.material], current, h, seed, scattered, atten))
+        if (!scatter(h.mat, current, h, seed, scattered, atten))
         {
             return vec3(0.0);
         }
@@ -282,7 +346,6 @@ void main()
     float unused = (iTime + iTimeDelta + float(iFrame) + iFrameRate + iMouse.x + iMouse.y + iMouse.z + iMouse.w) * 0.0;
 
     Sphere scn[SPHERE_COUNT] = SCENE;
-    Material mats[MATERIAL_COUNT] = MATERIALS;
 
     vec3 lookfrom = vec3(13.0, 2.0, 3.0);
     vec3 lookat = vec3(0.0);
@@ -326,7 +389,7 @@ void main()
         }
 
         vec3 rayDir = pixelSample - rayOrigin;
-        color += rayColor(Ray(rayOrigin, rayDir), scn, mats, seed);
+        color += rayColor(Ray(rayOrigin, rayDir), scn, seed);
     }
 
     color /= float(SAMPLES_PER_PIXEL);
