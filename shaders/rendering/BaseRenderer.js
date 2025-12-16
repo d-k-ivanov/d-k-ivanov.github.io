@@ -1,6 +1,6 @@
 "use strict";
 
-import { ShaderUniformState } from "./uniform-state.js";
+import { ShaderUniformState } from "./ShaderUniformState.js";
 
 export class BaseRenderer
 {

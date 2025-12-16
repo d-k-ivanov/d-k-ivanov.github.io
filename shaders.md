@@ -3,4 +3,4 @@ layout: shaders
 title : Shaders
 permalink: /shaders/
 ---
-<script type="module" src="/shaders/main.js"></script>
+<script type="module" src="/shaders/Main.js"></script>

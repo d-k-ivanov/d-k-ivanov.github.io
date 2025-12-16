@@ -1,10 +1,10 @@
 "use strict";
 
-import { CanvasControls } from "./canvas-controls.js";
-import { PanelResizer } from "./panel-resizer.js";
-import { ShaderEditor } from "./shader-editor.js";
-import { ShaderRenderer } from "./shader-renderer.js";
-import { ThemeManager } from "./theme-manager.js";
+import { CanvasControls } from "./CanvasControls.js";
+import { PanelResizer } from "./PanelResizer.js";
+import { ShaderEditor } from "./ShaderEditor.js";
+import { ShaderRenderer } from "./ShaderRenderer.js";
+import { ThemeManager } from "./ThemeManager.js";
 
 const SHADER_UI_TEMPLATE = `
 <div class="shaders-main-container">
@@ -97,7 +97,7 @@ const SHADER_UI_TEMPLATE = `
 </div>
 `;
 
-class ShaderApp
+export class ShaderApp
 {
     constructor()
     {
@@ -216,22 +216,4 @@ class ShaderApp
         const savedShader = this.editor.getSavedShader();
         await this.editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
     }
-}
-
-function initShaderApp()
-{
-    const app = new ShaderApp();
-    app.start().catch((error) =>
-    {
-        app.editor.setStatus(`Init error: ${error.message}`, true);
-    });
-}
-
-if (document.readyState === "loading")
-{
-    document.addEventListener("DOMContentLoaded", initShaderApp, { once: true });
-}
-else
-{
-    initShaderApp();
 }

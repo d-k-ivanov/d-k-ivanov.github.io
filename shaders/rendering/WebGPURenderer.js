@@ -1,8 +1,8 @@
 "use strict";
 
-import { BaseRenderer } from "./base-renderer.js";
-import { SamplerState } from "./sampler-state.js";
-import { createUniformViews, WEBGPU_UNIFORM_BUFFER_SIZE } from "./uniform-state.js";
+import { BaseRenderer } from "./BaseRenderer.js";
+import { SamplerState } from "./SamplerState.js";
+import { ShaderUniformState } from "./ShaderUniformState.js";
 
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
@@ -38,11 +38,8 @@ export class WebGPURenderer extends BaseRenderer
 
         this.samplers = new SamplerState();
         this.uniformBuffer = null;
-        const views = createUniformViews(WEBGPU_UNIFORM_BUFFER_SIZE);
-        this.uniformBufferSize = WEBGPU_UNIFORM_BUFFER_SIZE;
-        this.uniformBufferData = views.buffer;
-        this.uniformFloatView = views.floatView;
-        this.uniformUintView = views.uintView;
+        this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
+        this.uniformViews = this.uniformState.getViews();
     }
 
     async init()
@@ -508,9 +505,8 @@ export class WebGPURenderer extends BaseRenderer
                 return;
             }
 
-            const frameData = this.uniformState.nextFrame(time);
-            this.uniformState.writeToViews(this.uniformFloatView, this.uniformUintView, frameData);
-            this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferData);
+            this.uniformState.nextFrame(time);
+            this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformViews.buffer);
 
             const encoder = this.device.createCommandEncoder();
 

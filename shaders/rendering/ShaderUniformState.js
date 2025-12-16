@@ -1,0 +1,132 @@
+"use strict";
+
+export class ShaderUniformState
+{
+    static BUFFER_SIZE = 64;
+
+    static OFFSETS = {
+        resolution: 0,
+        time: 4,
+        timeDelta: 5,
+        frame: 6,
+        frameRate: 7,
+        mouse: 12
+    };
+
+    constructor(canvas, mouse)
+    {
+        this.canvas = canvas;
+        this.mouse = mouse;
+        this.buffer = new ArrayBuffer(ShaderUniformState.BUFFER_SIZE);
+        this.floatView = new Float32Array(this.buffer);
+        this.uintView = new Uint32Array(this.buffer);
+        this.reset();
+    }
+
+    setCanvas(canvas)
+    {
+        this.canvas = canvas;
+    }
+
+    reset()
+    {
+        this.frameCount = 0;
+        this.lastTime = null;
+        this.current = null;
+        this.clearViews();
+    }
+
+    clearViews()
+    {
+        this.floatView.fill(0);
+        this.uintView.fill(0);
+    }
+
+    nextFrame(timeMs)
+    {
+        const data = this.buildFrameData(timeMs);
+        this.current = data;
+        this.writeToViews(data);
+        return data;
+    }
+
+    buildFrameData(timeMs)
+    {
+        const timeSeconds = timeMs * 0.001;
+        const deltaSeconds = this.lastTime === null ? 0.0 : timeSeconds - this.lastTime;
+        this.lastTime = timeSeconds;
+
+        const resolution = {
+            x: this.canvas?.width || 0,
+            y: this.canvas?.height || 0,
+            z: 1.0
+        };
+
+        const mouse = this.mouse || {};
+        const mouseState = {
+            x: mouse.x || 0,
+            y: mouse.y || 0,
+            clickX: mouse.clickX || 0,
+            clickY: mouse.clickY || 0,
+            zSign: mouse.isDown ? 1 : -1
+        };
+
+        const frame = this.frameCount++;
+        const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
+
+        return {
+            resolution,
+            timeSeconds,
+            deltaSeconds,
+            frame,
+            frameRate,
+            mouse: mouseState
+        };
+    }
+
+    writeToViews(data = this.current)
+    {
+        if (!data)
+        {
+            return;
+        }
+
+        const offsets = ShaderUniformState.OFFSETS;
+        const f = this.floatView;
+        const u = this.uintView;
+
+        f[offsets.resolution + 0] = data.resolution.x;
+        f[offsets.resolution + 1] = data.resolution.y;
+        f[offsets.resolution + 2] = data.resolution.z;
+        f[offsets.resolution + 3] = 0.0;
+
+        f[offsets.time] = data.timeSeconds;
+        f[offsets.timeDelta] = data.deltaSeconds;
+        u[offsets.frame] = data.frame;
+        f[offsets.frameRate] = data.frameRate;
+
+        f[8] = 0.0;
+        f[9] = 0.0;
+        f[10] = 0.0;
+        f[11] = 0.0;
+
+        f[offsets.mouse + 0] = data.mouse.x;
+        f[offsets.mouse + 1] = data.mouse.y;
+        f[offsets.mouse + 2] = data.mouse.clickX * data.mouse.zSign;
+        f[offsets.mouse + 3] = data.mouse.clickY;
+    }
+
+    getViews()
+    {
+        return {
+            buffer: this.buffer,
+            floatView: this.floatView,
+            uintView: this.uintView
+        };
+    }
+
+    getCurrent()
+    {
+        return this.current;
+    }
+}

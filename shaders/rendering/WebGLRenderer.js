@@ -1,8 +1,8 @@
 "use strict";
 
-import { TextureLoader } from "../texture-loader.js";
-import { BaseRenderer } from "./base-renderer.js";
-import { SamplerState } from "./sampler-state.js";
+import { TextureLoader } from "../TextureLoader.js";
+import { BaseRenderer } from "./BaseRenderer.js";
+import { SamplerState } from "./SamplerState.js";
 
 export class WebGLRenderer extends BaseRenderer
 {

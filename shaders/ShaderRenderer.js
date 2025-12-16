@@ -1,19 +1,19 @@
 "use strict";
 
-import { WebGLRenderer } from "./rendering/webgl-renderer.js";
-import { WebGPURenderer } from "./rendering/webgpu-renderer.js";
-
-export const RENDER_CONTEXTS = {
-    WEBGL2: "webgl2",
-    WEBGPU: "webgpu"
-};
+import { WebGLRenderer } from "./rendering/WebGLRenderer.js";
+import { WebGPURenderer } from "./rendering/WebGPURenderer.js";
 
 export class ShaderRenderer
 {
+    static CONTEXTS = {
+        WEBGL2: "webgl2",
+        WEBGPU: "webgpu"
+    };
+
     constructor(canvas)
     {
         this.canvas = canvas;
-        this.contextType = RENDER_CONTEXTS.WEBGL2;
+        this.contextType = ShaderRenderer.CONTEXTS.WEBGL2;
         this.activeRenderer = null;
         this.webglRenderer = null;
         this.webgpuRenderer = null;
@@ -97,7 +97,7 @@ export class ShaderRenderer
                 this.recreateCanvas();
             }
 
-            if (contextType === RENDER_CONTEXTS.WEBGPU)
+            if (contextType === ShaderRenderer.CONTEXTS.WEBGPU)
             {
                 const renderer = new WebGPURenderer(this.canvas, this.mouse);
                 await renderer.init();

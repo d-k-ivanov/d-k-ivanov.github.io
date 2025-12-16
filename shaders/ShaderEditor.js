@@ -1,26 +1,13 @@
 "use strict";
 
-import { GLSLHighlighter } from "./glsl-highlighter.js";
-
-import
-{
-    COLLECTION_BASE_PATH,
-    SHADER_COLLECTION,
-    SHARED_BASE_PATH,
-    getShaderBaseName,
-    getShaderContext,
-    getShaderDisplayName,
-    getShaderLanguage,
-    groupShadersByFolder,
-    isKnownShader
-} from "./shader-collection.js";
-
-import { RENDER_CONTEXTS } from "./shader-renderer.js";
+import { GLSLHighlighter } from "./GLSLHighlighter.js";
+import { ShaderCollection } from "./ShaderCollection.js";
+import { ShaderRenderer } from "./ShaderRenderer.js";
 
 const SHADER_TYPES = [
     { id: "vertex", label: "Vertex", extension: "vertex", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
     { id: "fragment", label: "Fragment", extension: "fragment", icon: "fragment", context: null, placeholder: "Fragment shader source..." },
-    { id: "compute", label: "Compute", extension: "compute", icon: "compute", context: RENDER_CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
+    { id: "compute", label: "Compute", extension: "compute", icon: "compute", context: ShaderRenderer.CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
 ];
 
 const STORAGE_KEY = "shaders-selected-shader";
@@ -33,7 +20,7 @@ export class ShaderEditor
         this.highlighter = new GLSLHighlighter();
 
         this.currentShader = null;
-        this.currentContext = RENDER_CONTEXTS.WEBGL2;
+        this.currentContext = ShaderRenderer.CONTEXTS.WEBGL2;
         this.sources = {};
         this.originalSources = {};
         this.activeTab = null;
@@ -133,7 +120,7 @@ export class ShaderEditor
         }
 
         tree.innerHTML = "";
-        const folders = groupShadersByFolder(SHADER_COLLECTION);
+        const folders = ShaderCollection.groupByFolder();
         for (const { folder, shaders } of folders)
         {
             tree.appendChild(this.createFolderElement(folder, shaders));
@@ -170,8 +157,8 @@ export class ShaderEditor
 
     createTreeItem(shader)
     {
-        const context = getShaderContext(shader);
-        const displayName = getShaderDisplayName(shader);
+        const context = ShaderCollection.getContext(shader);
+        const displayName = ShaderCollection.getDisplayName(shader);
 
         const itemEl = document.createElement("div");
         itemEl.className = "shaders-tree-item";
@@ -200,7 +187,7 @@ export class ShaderEditor
         {
             this.setStatus("Loading shader...", false);
 
-            const context = getShaderContext(shader);
+            const context = ShaderCollection.getContext(shader);
             await this.renderer.setContext(context);
             this.currentContext = context;
 
@@ -224,7 +211,7 @@ export class ShaderEditor
 
             if (token === this.loadToken && this.elements.statusShader)
             {
-                this.elements.statusShader.textContent = `${shader.folder}/${getShaderDisplayName(shader)}`;
+                this.elements.statusShader.textContent = `${shader.folder}/${ShaderCollection.getDisplayName(shader)}`;
             }
             this.setStatus("Ready", false);
         }
@@ -265,7 +252,7 @@ export class ShaderEditor
 
     async loadSourceForType(shader, type, context)
     {
-        const language = getShaderLanguage(shader);
+        const language = ShaderCollection.getLanguage(shader);
         const computeEnabled = language === "wgsl" && shader.compute === true;
 
         if (type.context && type.context !== context)
@@ -300,16 +287,16 @@ export class ShaderEditor
             candidates.push({ url, optional });
         };
 
-        const baseName = getShaderBaseName(shader);
-        const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
-        const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
+        const baseName = ShaderCollection.getBaseName(shader);
+        const basePath = `${ShaderCollection.BASE_PATH}/${shader.folder}/${baseName}`;
+        const isWebGPU = context === ShaderRenderer.CONTEXTS.WEBGPU;
 
         if (type.id === "compute")
         {
             if (isWebGPU && computeEnabled)
             {
                 addCandidate(`${basePath}.compute.wgsl`, true);
-                addCandidate(`${SHARED_BASE_PATH}/default.compute.wgsl`, false);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.compute.wgsl`, false);
             }
             else
             {
@@ -324,7 +311,7 @@ export class ShaderEditor
                 {
                     addCandidate(`${basePath}.vertex.wgsl`, true);
                 }
-                addCandidate(`${SHARED_BASE_PATH}/default.vertex.wgsl`, false);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.wgsl`, false);
             }
             else
             {
@@ -332,7 +319,7 @@ export class ShaderEditor
                 {
                     addCandidate(`${basePath}.vertex.glsl`, true);
                 }
-                addCandidate(`${SHARED_BASE_PATH}/default.vertex.glsl`, false);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.glsl`, false);
             }
         }
         else
@@ -415,7 +402,7 @@ export class ShaderEditor
             if (saved)
             {
                 const shader = JSON.parse(saved);
-                if (isKnownShader(shader))
+                if (ShaderCollection.isKnown(shader))
                 {
                     return shader;
                 }
