@@ -1,5 +1,8 @@
 "use strict";
 
+/**
+ * Handles drag-to-resize behavior for canvas and tree panels.
+ */
 export class PanelResizer
 {
     constructor()
@@ -12,12 +15,18 @@ export class PanelResizer
         this.init();
     }
 
+    /**
+     * Initializes resize handles.
+     */
     init()
     {
         this.setupMainResize();
         this.setupTreeResize();
     }
 
+    /**
+     * Wires the main canvas/control panel splitter.
+     */
     setupMainResize()
     {
         const handle = document.getElementById("resize-main");
@@ -72,6 +81,9 @@ export class PanelResizer
         });
     }
 
+    /**
+     * Wires the shader tree/editor area splitter.
+     */
     setupTreeResize()
     {
         const handle = document.getElementById("resize-tree");

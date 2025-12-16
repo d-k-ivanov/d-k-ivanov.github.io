@@ -2,11 +2,16 @@
 
 import { ShaderRenderer } from "./ShaderRenderer.js";
 
+/**
+ * Central registry of example shaders and helper utilities to resolve
+ * language, context, paths, and display names.
+ */
 export class ShaderCollection
 {
     static BASE_PATH = "./collection";
     static SHARED_PATH = "./collection/shared";
 
+    /** Catalog of built-in shader examples used by the editor UI. */
     static ITEMS = [
         // Basics
         { language: "glsl", folder: "basics", vertex: true, fragment: true, name: "hello_world" },
@@ -61,6 +66,9 @@ export class ShaderCollection
         { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "print_text" }
     ];
 
+    /**
+     * Infers shader language from definition or filename.
+     */
     static getLanguage(shader)
     {
         const name = (shader?.name || "").toLowerCase();
@@ -79,6 +87,9 @@ export class ShaderCollection
         return "glsl";
     }
 
+    /**
+     * Determines rendering context for the shader.
+     */
     static getContext(shader)
     {
         return ShaderCollection.getLanguage(shader) === "wgsl"
@@ -86,18 +97,27 @@ export class ShaderCollection
             : ShaderRenderer.CONTEXTS.WEBGL2;
     }
 
+    /**
+     * Strips file extension to get the base shader name.
+     */
     static getBaseName(shader)
     {
         const name = shader?.name || "";
         return name.replace(/\.(wgsl|glsl)$/i, "");
     }
 
+    /**
+     * Returns a display name with inferred extension suffix.
+     */
     static getDisplayName(shader)
     {
         const suffix = ShaderCollection.getLanguage(shader) === "wgsl" ? ".wgsl" : ".glsl";
         return `${ShaderCollection.getBaseName(shader)}${suffix}`;
     }
 
+    /**
+     * Groups shader definitions by folder for the tree UI.
+     */
     static groupByFolder(collection = ShaderCollection.ITEMS)
     {
         const folders = new Map();
@@ -120,6 +140,9 @@ export class ShaderCollection
             }));
     }
 
+    /**
+     * Checks if a shader exists in the collection.
+     */
     static isKnown(shader)
     {
         if (!shader)

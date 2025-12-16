@@ -1,5 +1,8 @@
 "use strict";
 
+/**
+ * Remembers and toggles light/dark themes for canvas and control panels.
+ */
 export class ThemeManager
 {
     constructor()
@@ -20,6 +23,9 @@ export class ThemeManager
         this.init();
     }
 
+    /**
+     * Loads preferences and attaches theme toggle listeners.
+     */
     init()
     {
         // Load saved preferences
@@ -41,6 +47,9 @@ export class ThemeManager
         this.applyTheme("control");
     }
 
+    /**
+     * Restores persisted theme choices.
+     */
     loadPreferences()
     {
         try
@@ -65,6 +74,9 @@ export class ThemeManager
         }
     }
 
+    /**
+     * Persists current theme selections.
+     */
     savePreferences()
     {
         try
@@ -80,6 +92,9 @@ export class ThemeManager
         }
     }
 
+    /**
+     * Toggles theme for a specific panel.
+     */
     toggleTheme(panelName)
     {
         const panel = this.panels[panelName];
@@ -90,6 +105,9 @@ export class ThemeManager
         this.savePreferences();
     }
 
+    /**
+     * Applies theme classes and button labels.
+     */
     applyTheme(panelName)
     {
         const panel = this.panels[panelName];
@@ -108,6 +126,9 @@ export class ThemeManager
         }
     }
 
+    /**
+     * Clears stored theme preferences.
+     */
     resetThemes()
     {
         try

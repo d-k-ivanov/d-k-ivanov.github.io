@@ -58,6 +58,9 @@ const WGSL_PATTERNS = [
     { pattern: /\b(global_invocation_id|local_invocation_id|workgroup_id|num_workgroups|workgroup_size|dpdx|dpdy|dpdxCoarse|dpdyCoarse|dpdxFine|dpdyFine|fwidth|textureSample|textureSampleLevel|textureLoad|textureDimensions)\b/g, class: "glsl-builtin-var" }
 ];
 
+/**
+ * Simple regex-based highlighter for GLSL and WGSL used in the editor previews.
+ */
 export class GLSLHighlighter
 {
     constructor()
@@ -65,6 +68,9 @@ export class GLSLHighlighter
         this.cache = new Map();
     }
 
+    /**
+     * Heuristically determines if code is WGSL or GLSL.
+     */
     detectLanguage(code)
     {
         const lower = code.toLowerCase();
@@ -79,6 +85,9 @@ export class GLSLHighlighter
         return "glsl";
     }
 
+    /**
+     * Returns HTML-highlighted code, cached for performance.
+     */
     highlight(code)
     {
         const makePlaceholder = (prefix, index) => `\x00${prefix}${"X".repeat(index + 1)}\x00`;
@@ -161,6 +170,9 @@ export class GLSLHighlighter
         return highlighted;
     }
 
+    /**
+     * Escapes HTML entities inside shader source.
+     */
     escapeHtml(text)
     {
         return text
@@ -169,6 +181,9 @@ export class GLSLHighlighter
             .replace(/>/g, "&gt;");
     }
 
+    /**
+     * Drops cached highlight results.
+     */
     clearCache()
     {
         this.cache.clear();

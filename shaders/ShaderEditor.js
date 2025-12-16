@@ -12,8 +12,14 @@ const SHADER_TYPES = [
 
 const STORAGE_KEY = "shaders-selected-shader";
 
+/**
+ * Manages shader source editing, tree navigation, tab handling, and compilation.
+ */
 export class ShaderEditor
 {
+    /**
+     * @param {ShaderRenderer} renderer - renderer facade that compiles sources.
+     */
     constructor(renderer)
     {
         this.renderer = renderer;
@@ -44,12 +50,18 @@ export class ShaderEditor
         this.init();
     }
 
+    /**
+     * Initializes editor panes and builds the shader tree.
+     */
     init()
     {
         this.createEditorPanes();
         this.buildFileTree();
     }
 
+    /**
+     * Creates code panes and highlights for each shader stage.
+     */
     createEditorPanes()
     {
         const container = this.elements.editorPanes;
@@ -102,6 +114,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Returns shader stages relevant to the current context/shader config.
+     */
     getVisibleShaderTypes(context = this.currentContext, shader = this.currentShader)
     {
         const wantsCompute = shader?.compute === true;
@@ -111,6 +126,9 @@ export class ShaderEditor
         );
     }
 
+    /**
+     * Populates the file tree UI from the shader collection.
+     */
     buildFileTree()
     {
         const tree = this.elements.fileTree;
@@ -127,6 +145,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Builds a folder entry with its shader children.
+     */
     createFolderElement(folderName, shaders)
     {
         const folderEl = document.createElement("div");
@@ -155,6 +176,9 @@ export class ShaderEditor
         return folderEl;
     }
 
+    /**
+     * Builds a clickable shader item for the tree.
+     */
     createTreeItem(shader)
     {
         const context = ShaderCollection.getContext(shader);
@@ -174,6 +198,9 @@ export class ShaderEditor
         return itemEl;
     }
 
+    /**
+     * Loads a shader definition, fetches sources, updates UI, and compiles.
+     */
     async loadShader(shader)
     {
         if (!shader)
@@ -226,6 +253,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Retrieves all stage sources for the given shader/context pair.
+     */
     async loadSourcesForShader(shader, context)
     {
         const visibleTypes = this.getVisibleShaderTypes(context, shader);
@@ -250,6 +280,9 @@ export class ShaderEditor
         return { sources, originals };
     }
 
+    /**
+     * Picks the best-matching source file for a specific shader stage.
+     */
     async loadSourceForType(shader, type, context)
     {
         const language = ShaderCollection.getLanguage(shader);
@@ -357,6 +390,9 @@ export class ShaderEditor
         return "";
     }
 
+    /**
+     * Fetches shader text; returns empty string when optional and missing.
+     */
     async fetchShaderSource(url, optional = false)
     {
         try
@@ -382,6 +418,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Persists the last selected shader to storage.
+     */
     saveShaderSelection(shader)
     {
         try
@@ -394,6 +433,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Restores the last saved shader if present in the collection.
+     */
     getSavedShader()
     {
         try
@@ -415,6 +457,9 @@ export class ShaderEditor
         return null;
     }
 
+    /**
+     * Clears any saved shader selection.
+     */
     clearSavedShader()
     {
         try
@@ -427,6 +472,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Writes loaded sources into editors and syncs highlighting.
+     */
     populateEditors()
     {
         for (const [id, editor] of this.editors)
@@ -437,6 +485,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Highlights the active shader in the tree.
+     */
     updateFileTreeSelection(shader)
     {
         const tree = this.elements.fileTree;
@@ -470,6 +521,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Builds tab buttons for visible shader stages.
+     */
     updateTabs()
     {
         const tabBar = this.elements.tabBar;
@@ -510,11 +564,20 @@ export class ShaderEditor
         this.refreshPaneVisibility();
     }
 
+    /**
+     * Returns tab label for a shader stage.
+     */
     getTabLabel(type)
     {
         return type.label;
     }
 
+    /**
+     * Shows or hides editor panes based on currently visible stages.
+     */
+    /**
+     * Synchronizes pane visibility and tab display with current filter.
+     */
     refreshPaneVisibility()
     {
         const visibleTypes = this.getVisibleShaderTypes(this.currentContext, this.currentShader).map(t => t.id);
@@ -540,6 +603,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Activates a tab and its corresponding editor pane.
+     */
     showTab(tabName)
     {
         this.activeTab = tabName;
@@ -561,6 +627,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Handles user edits and schedules recompilation.
+     */
     handleSourceInput(typeId)
     {
         const editor = this.editors.get(typeId);
@@ -575,6 +644,9 @@ export class ShaderEditor
         this.scheduleRecompile();
     }
 
+    /**
+     * Refreshes syntax highlighting for a given editor.
+     */
     updateHighlight(typeId)
     {
         const editor = this.editors.get(typeId);
@@ -598,6 +670,9 @@ export class ShaderEditor
         this.highlightQueue.set(typeId, rafId);
     }
 
+    /**
+     * Implements Tab-to-spaces behavior inside shader editors.
+     */
     handleTabKey(e, textarea)
     {
         if (e.key !== "Tab")
@@ -634,6 +709,9 @@ export class ShaderEditor
         textarea.dispatchEvent(new Event("input"));
     }
 
+    /**
+     * Flags a tab as modified when its contents diverge from loaded sources.
+     */
     markTabModified(tabName, isModified)
     {
         const editor = this.editors.get(tabName);
@@ -644,6 +722,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Debounces shader recompilation calls.
+     */
     scheduleRecompile()
     {
         if (this.compileTimeout)
@@ -658,6 +739,9 @@ export class ShaderEditor
         }, this.compileDelay);
     }
 
+    /**
+     * Gathers currently visible shader sources for compilation.
+     */
     collectSourcesForContext()
     {
         const visibleTypes = this.getVisibleShaderTypes();
@@ -669,6 +753,9 @@ export class ShaderEditor
         return result;
     }
 
+    /**
+     * Sends current sources to the renderer and updates status messages.
+     */
     async recompileShader()
     {
         if (!this.currentShader)
@@ -689,6 +776,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * Chooses the tab to show after loading a shader.
+     */
     resolveDefaultTab()
     {
         const visible = this.getVisibleShaderTypes(this.currentContext, this.currentShader);
@@ -696,6 +786,9 @@ export class ShaderEditor
         return preferred ? preferred.id : (visible[0] ? visible[0].id : null);
     }
 
+    /**
+     * Updates status bar text and error styling.
+     */
     setStatus(message, isError)
     {
         if (this.elements.statusMessage)
@@ -708,6 +801,9 @@ export class ShaderEditor
         }
     }
 
+    /**
+     * @returns {boolean} true when a shader is currently loaded.
+     */
     hasShaderLoaded()
     {
         return !!this.currentShader;

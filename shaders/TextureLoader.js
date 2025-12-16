@@ -34,6 +34,9 @@ iChannel0_nz.{png,jpg,jpeg,webp}
 
 const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 
+/**
+ * Loads 2D and cubemap textures for shader channels with caching and fallbacks.
+ */
 export class TextureLoader
 {
     constructor(gl, basePath = "./textures")
@@ -47,17 +50,26 @@ export class TextureLoader
         this.fallbackCube = this.createFallbackCube();
     }
 
+    /**
+     * Returns the fallback texture for 2D or cubemap channels.
+     */
     getFallback(type)
     {
         return type === "cube" ? this.fallbackCube : this.fallback2D;
     }
 
+    /**
+     * Loads a channel texture (2D or cube) by index.
+     */
     async loadChannelTexture(channelIndex, type)
     {
         const name = `iChannel${channelIndex}`;
         return type === "cube" ? this.loadCube(name) : this.load2D(name);
     }
 
+    /**
+     * Loads a 2D texture by base name with caching and extension probing.
+     */
     async load2D(name)
     {
         if (this.cache2D.has(name))
@@ -97,6 +109,9 @@ export class TextureLoader
         return texturePromise;
     }
 
+    /**
+     * Loads a cubemap texture by base name with caching and extension probing.
+     */
     async loadCube(name)
     {
         if (this.cacheCube.has(name))
@@ -151,6 +166,9 @@ export class TextureLoader
         return texturePromise;
     }
 
+    /**
+     * Tries supported extensions until an image is found.
+     */
     async loadImageWithExtensions(name)
     {
         for (const ext of SUPPORTED_EXTENSIONS)
@@ -167,6 +185,9 @@ export class TextureLoader
         return null;
     }
 
+    /**
+     * Fetches an image and converts it to ImageBitmap or HTMLImageElement.
+     */
     async loadImage(url)
     {
         try
@@ -203,6 +224,9 @@ export class TextureLoader
         }
     }
 
+    /**
+     * Generates a checkerboard fallback 2D texture.
+     */
     createFallback2D()
     {
         const gl = this.gl;
@@ -224,6 +248,9 @@ export class TextureLoader
         return texture;
     }
 
+    /**
+     * Generates a colored-face fallback cubemap.
+     */
     createFallbackCube()
     {
         const gl = this.gl;

@@ -2,8 +2,15 @@
 
 import { ShaderUniformState } from "./ShaderUniformState.js";
 
+/**
+ * Abstract base renderer that owns animation loop plumbing and uniform state.
+ */
 export class BaseRenderer
 {
+    /**
+     * @param {HTMLCanvasElement} canvas - render target.
+     * @param {object} mouse - shared mouse state.
+     */
     constructor(canvas, mouse)
     {
         this.canvas = canvas;
@@ -12,12 +19,18 @@ export class BaseRenderer
         this.uniformState = new ShaderUniformState(canvas, mouse);
     }
 
+    /**
+     * Updates the canvas reference and propagates to uniform state.
+     */
     setCanvas(canvas)
     {
         this.canvas = canvas;
         this.uniformState.setCanvas(canvas);
     }
 
+    /**
+     * Resets uniform frame counters and time tracking.
+     */
     resetFrameState()
     {
         this.uniformState.reset();
@@ -28,6 +41,9 @@ export class BaseRenderer
         // Optional override in subclasses.
     }
 
+    /**
+     * Cancels the active animation frame.
+     */
     stop()
     {
         if (this.animationId)
@@ -37,6 +53,9 @@ export class BaseRenderer
         }
     }
 
+    /**
+     * Stores the requestAnimationFrame id for cleanup.
+     */
     requestFrame(callback)
     {
         this.animationId = requestAnimationFrame(callback);

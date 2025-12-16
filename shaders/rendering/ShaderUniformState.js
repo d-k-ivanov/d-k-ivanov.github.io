@@ -1,5 +1,8 @@
 "use strict";
 
+/**
+ * Tracks per-frame uniform values and packs them into shared buffers.
+ */
 export class ShaderUniformState
 {
     static BUFFER_SIZE = 64;
@@ -13,6 +16,10 @@ export class ShaderUniformState
         mouse: 12
     };
 
+    /**
+     * @param {HTMLCanvasElement} canvas - render target.
+     * @param {object} mouse - shared mouse state.
+     */
     constructor(canvas, mouse)
     {
         this.canvas = canvas;
@@ -23,11 +30,17 @@ export class ShaderUniformState
         this.reset();
     }
 
+    /**
+     * Updates tracked canvas reference.
+     */
     setCanvas(canvas)
     {
         this.canvas = canvas;
     }
 
+    /**
+     * Resets frame counters and clears uniform buffers.
+     */
     reset()
     {
         this.frameCount = 0;
@@ -36,12 +49,18 @@ export class ShaderUniformState
         this.clearViews();
     }
 
+    /**
+     * Fills uniform views with zeros.
+     */
     clearViews()
     {
         this.floatView.fill(0);
         this.uintView.fill(0);
     }
 
+    /**
+     * Advances to the next frame, computing timing and mouse data.
+     */
     nextFrame(timeMs)
     {
         const data = this.buildFrameData(timeMs);
@@ -50,6 +69,9 @@ export class ShaderUniformState
         return data;
     }
 
+    /**
+     * Builds uniform data snapshot for the given timestamp.
+     */
     buildFrameData(timeMs)
     {
         const timeSeconds = timeMs * 0.001;
@@ -84,6 +106,9 @@ export class ShaderUniformState
         };
     }
 
+    /**
+     * Writes the provided uniform data into the underlying views.
+     */
     writeToViews(data = this.current)
     {
         if (!data)
@@ -116,6 +141,9 @@ export class ShaderUniformState
         f[offsets.mouse + 3] = data.mouse.clickY;
     }
 
+    /**
+     * Returns references to the underlying uniform buffer and views.
+     */
     getViews()
     {
         return {
@@ -125,6 +153,9 @@ export class ShaderUniformState
         };
     }
 
+    /**
+     * Returns the last computed uniform snapshot.
+     */
     getCurrent()
     {
         return this.current;

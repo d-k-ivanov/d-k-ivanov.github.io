@@ -6,6 +6,9 @@ import { ShaderEditor } from "./ShaderEditor.js";
 import { ShaderRenderer } from "./ShaderRenderer.js";
 import { ThemeManager } from "./ThemeManager.js";
 
+/**
+ * Static HTML scaffold for the editor layout. Injected on startup.
+ */
 const SHADER_UI_TEMPLATE = `
 <div class="shaders-main-container">
     <div class="shaders-canvas-panel theme-dark" id="canvas-panel">
@@ -97,6 +100,9 @@ const SHADER_UI_TEMPLATE = `
 </div>
 `;
 
+/**
+ * High-level coordinator that wires UI, editor, renderer, and controls together.
+ */
 export class ShaderApp
 {
     constructor()
@@ -120,6 +126,9 @@ export class ShaderApp
         this.bindNoteToggle();
     }
 
+    /**
+     * Ensures the shader stylesheet is loaded once.
+     */
     linkStyles()
     {
         if (document.querySelector('link[href="./shaders.css"]'))
@@ -132,6 +141,9 @@ export class ShaderApp
         document.head.appendChild(link);
     }
 
+    /**
+     * Injects the shader editor DOM structure if it does not already exist.
+     */
     createUI()
     {
         if (document.querySelector(".shaders-main-container"))
@@ -147,6 +159,9 @@ export class ShaderApp
         host.appendChild(root);
     }
 
+    /**
+     * Re-connects canvas-aware helpers when the renderer recreates the canvas.
+     */
     handleCanvasChanged(newCanvas)
     {
         this.canvas = newCanvas;
@@ -156,6 +171,9 @@ export class ShaderApp
         }
     }
 
+    /**
+     * Asks the renderer to recreate the canvas (useful when switching contexts).
+     */
     recreateCanvas()
     {
         const newCanvas = this.renderer.recreateCanvas();
@@ -166,6 +184,9 @@ export class ShaderApp
         return newCanvas;
     }
 
+    /**
+     * Binds application-wide hotkeys (reset and reload).
+     */
     bindHotkeys()
     {
         document.addEventListener("keydown", (e) =>
@@ -180,6 +201,9 @@ export class ShaderApp
         });
     }
 
+    /**
+     * Makes the input note collapsible for quick reference.
+     */
     bindNoteToggle()
     {
         const note = document.querySelector(".shaders-note");
@@ -210,6 +234,9 @@ export class ShaderApp
         });
     }
 
+    /**
+     * Entry point after construction: sync canvas, restore or load default shader.
+     */
     async start()
     {
         this.recreateCanvas();

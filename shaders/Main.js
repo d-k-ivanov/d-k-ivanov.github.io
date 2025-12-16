@@ -2,6 +2,10 @@
 
 import { ShaderApp } from "./ShaderApp.js";
 
+/**
+ * Bootstraps the Shader Editor experience after the DOM is ready.
+ * Keeps the entry file minimal while the app logic lives in ShaderApp.
+ */
 function initShaderApp()
 {
     const app = new ShaderApp();

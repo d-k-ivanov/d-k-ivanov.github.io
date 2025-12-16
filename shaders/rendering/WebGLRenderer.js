@@ -4,8 +4,15 @@ import { TextureLoader } from "../TextureLoader.js";
 import { BaseRenderer } from "./BaseRenderer.js";
 import { SamplerState } from "./SamplerState.js";
 
+/**
+ * WebGL2 renderer backend for the shader editor.
+ */
 export class WebGLRenderer extends BaseRenderer
 {
+    /**
+     * @param {HTMLCanvasElement} canvas - render target.
+     * @param {object} mouse - shared mouse state.
+     */
     constructor(canvas, mouse)
     {
         super(canvas, mouse);
@@ -22,6 +29,9 @@ export class WebGLRenderer extends BaseRenderer
         this.textureLoader = new TextureLoader(this.gl);
     }
 
+    /**
+     * Compiles a shader source into a WebGL shader object.
+     */
     compileShader(source, type)
     {
         const gl = this.gl;
@@ -38,6 +48,9 @@ export class WebGLRenderer extends BaseRenderer
         return shader;
     }
 
+    /**
+     * Links a new program from vertex/fragment sources and starts rendering.
+     */
     async updateShaders(sources)
     {
         const gl = this.gl;
@@ -95,6 +108,9 @@ export class WebGLRenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Begins the requestAnimationFrame loop for WebGL rendering.
+     */
     startRenderLoop()
     {
         if (this.animationId)
@@ -127,6 +143,9 @@ export class WebGLRenderer extends BaseRenderer
         this.requestFrame(render);
     }
 
+    /**
+     * Uploads standard uniforms for the current frame.
+     */
     applyUniforms(frameData)
     {
         const gl = this.gl;
@@ -159,6 +178,9 @@ export class WebGLRenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Scans a program for iChannel uniforms and prepares sampler state.
+     */
     detectChannelUniforms(program)
     {
         const gl = this.gl;
@@ -194,6 +216,9 @@ export class WebGLRenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Loads textures for detected iChannel uniforms with version safety.
+     */
     async prepareChannelTextures(version)
     {
         const loaders = [];
@@ -225,6 +250,9 @@ export class WebGLRenderer extends BaseRenderer
         await Promise.all(loaders);
     }
 
+    /**
+     * Binds channel textures to the correct texture units.
+     */
     bindChannelTextures()
     {
         const gl = this.gl;

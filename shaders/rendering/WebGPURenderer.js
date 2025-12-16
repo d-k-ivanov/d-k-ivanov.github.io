@@ -10,8 +10,15 @@ const FONT_TEXTURE_URL = "./textures/iChannel0.png";
 const FONT_TEXTURE_BINDING = 4;
 const FONT_SAMPLER_BINDING = 5;
 
+/**
+ * WebGPU renderer backend supporting render and optional compute pipelines.
+ */
 export class WebGPURenderer extends BaseRenderer
 {
+    /**
+     * @param {HTMLCanvasElement} canvas - render target.
+     * @param {object} mouse - shared mouse state.
+     */
     constructor(canvas, mouse)
     {
         super(canvas, mouse);
@@ -42,6 +49,9 @@ export class WebGPURenderer extends BaseRenderer
         this.uniformViews = this.uniformState.getViews();
     }
 
+    /**
+     * Requests adapter/device, configures context, and allocates uniform buffer.
+     */
     async init()
     {
         if (typeof navigator === "undefined" || !navigator.gpu)
@@ -74,6 +84,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Configures the WebGPU canvas context.
+     */
     configureContext()
     {
         if (!this.context || !this.device || !this.format)
@@ -93,6 +106,9 @@ export class WebGPURenderer extends BaseRenderer
         super.stop();
     }
 
+    /**
+     * Reconfigures context and compute targets on resize.
+     */
     handleResize()
     {
         this.configureContext();
@@ -106,6 +122,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Detects GLSL markers to guard against misusing WGSL path.
+     */
     isLikelyGLSL(source)
     {
         const glslMarkers = [
@@ -118,6 +137,9 @@ export class WebGPURenderer extends BaseRenderer
         return glslMarkers.some((rx) => rx.test(source));
     }
 
+    /**
+     * Throws if the WGSL source appears to be GLSL.
+     */
     validateWGSLSource(source, label)
     {
         if (this.isLikelyGLSL(source))
@@ -126,6 +148,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Extracts an entry point name for the given shader stage.
+     */
     getEntryPoint(source, stage)
     {
         const attr = stage === "vertex" ? "@vertex"
@@ -136,6 +161,9 @@ export class WebGPURenderer extends BaseRenderer
         return match ? match[1] : null;
     }
 
+    /**
+     * Validates compiled shader module and reports errors.
+     */
     async validateModule(module, label)
     {
         const getInfo = module.compilationInfo || module.getCompilationInfo;
@@ -153,6 +181,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Creates and validates a GPUShaderModule from WGSL code.
+     */
     async createShaderModule(code, label)
     {
         const module = this.device.createShaderModule({ code, label });
@@ -160,6 +191,9 @@ export class WebGPURenderer extends BaseRenderer
         return module;
     }
 
+    /**
+     * Parses @workgroup_size, falling back to defaults.
+     */
     extractWorkgroupSize(source)
     {
         const match = source.match(/@workgroup_size\s*\(\s*(\d+)\s*(?:,\s*(\d+))?\s*(?:,\s*(\d+))?\s*\)/i);
@@ -176,6 +210,9 @@ export class WebGPURenderer extends BaseRenderer
         };
     }
 
+    /**
+     * Releases compute-texture resources.
+     */
     destroyComputeTarget()
     {
         if (this.computeTexture)
@@ -189,6 +226,9 @@ export class WebGPURenderer extends BaseRenderer
         this.computeTextureSize = { width: 0, height: 0 };
     }
 
+    /**
+     * Allocates or reuses a compute texture matching canvas size.
+     */
     ensureComputeTarget()
     {
         const width = Math.max(1, Math.floor(this.canvas.width));
@@ -246,6 +286,9 @@ export class WebGPURenderer extends BaseRenderer
         return true;
     }
 
+    /**
+     * Resets sampler state for compute/font bindings prior to bind-group creation.
+     */
     refreshSamplerBindings(includeCompute)
     {
         this.samplers.reset();
@@ -272,6 +315,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Creates bind groups for render and compute pipelines.
+     */
     buildBindGroups(includeCompute)
     {
         this.refreshSamplerBindings(includeCompute);
@@ -342,6 +388,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Checks if the fragment shader expects the compute texture.
+     */
     fragmentUsesComputeTexture(source)
     {
         if (!source)
@@ -353,6 +402,9 @@ export class WebGPURenderer extends BaseRenderer
         return hasBinding || mentionsTexture;
     }
 
+    /**
+     * Checks if the fragment shader requests the font atlas bindings.
+     */
     fragmentUsesFontTexture(source)
     {
         if (!source)
@@ -364,6 +416,9 @@ export class WebGPURenderer extends BaseRenderer
         return hasBinding || mentionsName;
     }
 
+    /**
+     * Loads and uploads the font atlas texture/sampler.
+     */
     async loadFontTexture()
     {
         if (this.fontTextureView && this.fontSampler)
@@ -404,6 +459,9 @@ export class WebGPURenderer extends BaseRenderer
         });
     }
 
+    /**
+     * Builds render/compute pipelines from WGSL sources and starts rendering.
+     */
     async updateShaders(sources)
     {
         await this.init();
@@ -490,6 +548,9 @@ export class WebGPURenderer extends BaseRenderer
         }
     }
 
+    /**
+     * Begins the WebGPU render loop with optional compute pass.
+     */
     startRenderLoop()
     {
         if (this.animationId)

@@ -1,7 +1,14 @@
 "use strict";
 
+/**
+ * Manages canvas resolution selection and fullscreen toggling.
+ */
 export class CanvasControls
 {
+    /**
+     * @param {HTMLCanvasElement} canvas - target canvas.
+     * @param {{onResolutionChange?: Function}} param1 - callback when resolution changes.
+     */
     constructor(canvas, { onResolutionChange = null } = {})
     {
         this.canvas = canvas;
@@ -19,6 +26,9 @@ export class CanvasControls
         this.initFullscreenToggle();
     }
 
+    /**
+     * Sets up the resolution dropdown and applies initial resolution.
+     */
     initResolutionSelector()
     {
         const selector = this.elements.resolutionSelect;
@@ -46,6 +56,9 @@ export class CanvasControls
         applyResolution();
     }
 
+    /**
+     * Configures fullscreen toggle button and resolution handling.
+     */
     initFullscreenToggle()
     {
         const btn = this.elements.fullscreenBtn;
@@ -93,6 +106,9 @@ export class CanvasControls
         document.addEventListener("fullscreenchange", updateIcon);
     }
 
+    /**
+     * Rebinds controls to a new canvas element.
+     */
     setCanvas(canvas)
     {
         this.canvas = canvas;

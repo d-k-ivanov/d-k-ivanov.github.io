@@ -3,6 +3,10 @@
 import { WebGLRenderer } from "./rendering/WebGLRenderer.js";
 import { WebGPURenderer } from "./rendering/WebGPURenderer.js";
 
+/**
+ * Facade that owns the active renderer implementation (WebGL2 or WebGPU),
+ * keeps mouse state, and exposes a consistent API to the editor.
+ */
 export class ShaderRenderer
 {
     static CONTEXTS = {
@@ -10,6 +14,9 @@ export class ShaderRenderer
         WEBGPU: "webgpu"
     };
 
+    /**
+     * @param {HTMLCanvasElement} canvas - Target canvas for rendering.
+     */
     constructor(canvas)
     {
         this.canvas = canvas;
@@ -24,11 +31,17 @@ export class ShaderRenderer
         this.setupMouseEvents();
     }
 
+    /**
+     * @returns {HTMLCanvasElement} the current canvas in use.
+     */
     getCanvas()
     {
         return this.canvas;
     }
 
+    /**
+     * Switches the canvas instance (e.g., after recreation) and resets state.
+     */
     setCanvas(canvas)
     {
         this.stop();
@@ -44,11 +57,17 @@ export class ShaderRenderer
         this.activeRenderer = null;
     }
 
+    /**
+     * Registers a callback invoked when the renderer recreates the canvas.
+     */
     setCanvasChangeHandler(handler)
     {
         this.canvasChangeHandler = handler;
     }
 
+    /**
+     * Clones and replaces the canvas element, keeping dimensions and id.
+     */
     recreateCanvas()
     {
         const oldCanvas = this.canvas;
@@ -73,6 +92,10 @@ export class ShaderRenderer
         return newCanvas;
     }
 
+    /**
+     * Initializes the requested rendering context and backend renderer.
+     * @param {string} contextType - one of ShaderRenderer.CONTEXTS values.
+     */
     async setContext(contextType)
     {
         if (!contextType)
@@ -119,11 +142,17 @@ export class ShaderRenderer
         }
     }
 
+    /**
+     * @returns {string} current active context type.
+     */
     getContextType()
     {
         return this.contextType;
     }
 
+    /**
+     * Compiles/uploads new shader sources on the active renderer.
+     */
     async updateShaders(sources)
     {
         if (!this.activeRenderer)
@@ -139,6 +168,9 @@ export class ShaderRenderer
         await this.activeRenderer.updateShaders(sources);
     }
 
+    /**
+     * Notifies the active renderer about canvas size changes.
+     */
     handleResize()
     {
         if (this.activeRenderer && typeof this.activeRenderer.handleResize === "function")
@@ -147,6 +179,9 @@ export class ShaderRenderer
         }
     }
 
+    /**
+     * Stops any active render loop.
+     */
     stop()
     {
         if (this.activeRenderer && typeof this.activeRenderer.stop === "function")
@@ -155,6 +190,9 @@ export class ShaderRenderer
         }
     }
 
+    /**
+     * Tracks mouse interactions over the canvas for iMouse uniform.
+     */
     setupMouseEvents()
     {
         if (this.removeMouseListeners)
