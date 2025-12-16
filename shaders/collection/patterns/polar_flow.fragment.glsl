@@ -10,21 +10,20 @@ out vec4 fragColor;
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * iResolution.xy) / iResolution.y;
-    float t = iTime * 0.6;
+    float t = iTime;
 
-    float radius = length(uv);
+    float radius = length(uv) - 0.2;
     float angle = atan(uv.y, uv.x);
 
-    float swirl = sin(4.0 * angle - t * 2.0);
-    float bands = sin(radius * 10.0 - t * 1.5 + swirl * 0.5);
-    float rings = smoothstep(-0.25, 0.75, bands);
+    float swirl = sin(5.0 * angle - t * 6.0);
+    float bands = sin(radius * 100.0 - t * 10.0 + swirl * 1.0);
+    float rings = smoothstep(-1.0, 1.0, bands);
 
-    vec3 base = mix(vec3(0.05, 0.12, 0.24), vec3(0.92, 0.55, 0.32), rings);
-    vec3 accent = vec3(0.18, 0.65, 0.94) * (0.5 + 0.5 * cos(angle * 3.0 - t * 0.5));
-    vec3 glow = vec3(0.9, 0.9, 1.2) * smoothstep(0.02, 0.0, abs(radius - 0.35 - 0.05 * sin(t)));
+    vec3 base = mix(vec3(0.0, 2.0, 1.0), vec3(1.0, 0.5, 0.3), rings);
+    vec3 accent = vec3(0.0, 1.0, 0.0) * (0.1 + 0.1 * cos(angle * 3.0 - t * 0.5));
+    vec3 glow = vec3(0.0, 2.0, 0.0) * smoothstep(0.1, 0.01, abs(radius - 0.2 - 0.4 * sin(2.0 * t)));
 
-    float vignette = smoothstep(1.2, 0.9, radius);
-    vec3 color = (base + accent * 0.35 + glow * 0.25) * vignette;
+    vec3 color = (base * 0.3 + accent * 1.0 + glow * 0.2);
 
     fragColor = vec4(color, 1.0);
 }

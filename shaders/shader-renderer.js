@@ -7,6 +7,18 @@ export const RENDER_CONTEXTS = {
     WEBGPU: "webgpu"
 };
 
+const WEBGPU_UNIFORM_SIZE = 64;
+const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
+const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
+const UNIFORM_OFFSETS = {
+    resolution: 0,
+    time: 4,
+    timeDelta: 5,
+    frame: 6,
+    frameRate: 7,
+    mouse: 12
+};
+
 class WebGLRendererBackend
 {
     constructor(canvas, mouse)
@@ -285,14 +297,23 @@ class WebGPURendererBackend
         this.adapter = null;
         this.context = null;
         this.format = null;
-        this.pipeline = null;
+        this.renderPipeline = null;
+        this.computePipeline = null;
+        this.renderBindGroup = null;
+        this.computeBindGroup = null;
+        this.computeTexture = null;
+        this.computeTextureView = null;
+        this.computeSampler = null;
+        this.computeTextureFormat = null;
+        this.computeTextureSize = { width: 0, height: 0 };
+        this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+
         this.uniformBuffer = null;
-        this.uniformBindGroup = null;
         this.animationId = null;
         this.frameCount = 0;
         this.lastRenderTime = null;
 
-        this.uniformBufferSize = 64;
+        this.uniformBufferSize = WEBGPU_UNIFORM_SIZE;
         this.uniformBufferData = new ArrayBuffer(this.uniformBufferSize);
         this.uniformFloatView = new Float32Array(this.uniformBufferData);
         this.uniformUintView = new Uint32Array(this.uniformBufferData);
@@ -356,6 +377,14 @@ class WebGPURendererBackend
     handleResize()
     {
         this.configureContext();
+        if (this.computePipeline)
+        {
+            const targetChanged = this.ensureComputeTarget();
+            if (targetChanged)
+            {
+                this.buildBindGroups(true);
+            }
+        }
     }
 
     isLikelyGLSL(source)
@@ -374,7 +403,7 @@ class WebGPURendererBackend
     {
         if (this.isLikelyGLSL(source))
         {
-            throw new Error(`${label} looks like GLSL. WebGPU expects WGSL with @vertex/@fragment entry points. Switch to WebGL2 or update the shader to WGSL.`);
+            throw new Error(`${label} looks like GLSL. WebGPU expects WGSL with @vertex/@fragment/@compute entry points. Switch to WebGL2 or update the shader to WGSL.`);
         }
     }
 
@@ -382,7 +411,9 @@ class WebGPURendererBackend
     {
         const regex = stage === "vertex"
             ? /@vertex\s+fn\s+(\w+)/m
-            : /@fragment\s+fn\s+(\w+)/m;
+            : stage === "fragment"
+                ? /@fragment\s+fn\s+(\w+)/m
+                : /@compute\s+fn\s+(\w+)/m;
         const match = source.match(regex);
         return match ? match[1] : null;
     }
@@ -405,18 +436,156 @@ class WebGPURendererBackend
         }
     }
 
-    async compileExtras(sources)
+    async createShaderModule(code, label)
     {
-        const entries = Object.entries(sources).filter(([key]) => key !== "vertex" && key !== "fragment");
-        for (const [key, code] of entries)
-        {
-            if (!code || !code.trim())
-            {
-                continue;
-            }
+        const module = this.device.createShaderModule({ code, label });
+        await this.validateModule(module, label);
+        return module;
+    }
 
-            const module = this.device.createShaderModule({ code });
-            await this.validateModule(module, `${key} shader`);
+    extractWorkgroupSize(source)
+    {
+        const match = source.match(/@workgroup_size\s*\(\s*(\d+)\s*(?:,\s*(\d+))?\s*(?:,\s*(\d+))?\s*\)/i);
+        if (!match)
+        {
+            return { ...DEFAULT_WORKGROUP_SIZE };
+        }
+
+        const [, x, y, z] = match;
+        return {
+            x: parseInt(x, 10) || DEFAULT_WORKGROUP_SIZE.x,
+            y: parseInt(y || "1", 10) || DEFAULT_WORKGROUP_SIZE.y,
+            z: parseInt(z || "1", 10) || DEFAULT_WORKGROUP_SIZE.z
+        };
+    }
+
+    destroyComputeTarget()
+    {
+        if (this.computeTexture)
+        {
+            this.computeTexture.destroy();
+        }
+        this.computeTexture = null;
+        this.computeTextureView = null;
+        this.computeSampler = null;
+        this.computeTextureSize = { width: 0, height: 0 };
+    }
+
+    ensureComputeTarget()
+    {
+        const width = Math.max(1, Math.floor(this.canvas.width));
+        const height = Math.max(1, Math.floor(this.canvas.height));
+
+        if (this.computeTexture &&
+            this.computeTextureSize.width === width &&
+            this.computeTextureSize.height === height)
+        {
+            return false;
+        }
+
+        this.destroyComputeTarget();
+
+        let texture = null;
+        let formatInUse = this.computeTextureFormat || COMPUTE_TEXTURE_FORMATS[0];
+        const formats = this.computeTextureFormat
+            ? [this.computeTextureFormat, ...COMPUTE_TEXTURE_FORMATS.filter(f => f !== this.computeTextureFormat)]
+            : COMPUTE_TEXTURE_FORMATS;
+
+        for (const format of formats)
+        {
+            try
+            {
+                texture = this.device.createTexture({
+                    size: { width, height },
+                    format,
+                    usage: GPUTextureUsage.TEXTURE_BINDING |
+                        GPUTextureUsage.COPY_DST |
+                        GPUTextureUsage.STORAGE_BINDING
+                });
+                formatInUse = format;
+                break;
+            }
+            catch (err)
+            {
+                console.warn(`Failed to allocate compute texture (${format}):`, err);
+            }
+        }
+
+        if (!texture)
+        {
+            throw new Error("Unable to allocate storage texture for compute pass");
+        }
+
+        this.computeTexture = texture;
+        this.computeTextureView = texture.createView();
+        this.computeSampler = this.device.createSampler({
+            magFilter: "linear",
+            minFilter: "linear"
+        });
+        this.computeTextureFormat = formatInUse;
+        this.computeTextureSize = { width, height };
+        return true;
+    }
+
+    buildBindGroups(includeCompute)
+    {
+        // Bind group 0 is shared: binding 0 = uniforms, binding 1 = compute storage texture,
+        // binding 2 = sampled compute texture view, binding 3 = sampler (when the fragment shader opts in).
+        const renderLayout = this.renderPipeline.getBindGroupLayout(0);
+        const baseRenderEntries = [
+            {
+                binding: 0,
+                resource: { buffer: this.uniformBuffer }
+            }
+        ];
+
+        const renderEntries = [...baseRenderEntries];
+
+        if (includeCompute)
+        {
+            this.ensureComputeTarget();
+            renderEntries.push(
+                { binding: 2, resource: this.computeTextureView },
+                { binding: 3, resource: this.computeSampler }
+            );
+        }
+
+        const createRenderGroup = (entries) => this.device.createBindGroup({
+            layout: renderLayout,
+            entries
+        });
+
+        try
+        {
+            this.renderBindGroup = createRenderGroup(renderEntries);
+        }
+        catch (err)
+        {
+            if (includeCompute)
+            {
+                console.warn("Render pipeline does not consume compute texture; using uniform-only bind group.", err);
+                this.renderBindGroup = createRenderGroup(baseRenderEntries);
+            }
+            else
+            {
+                throw err;
+            }
+        }
+
+        if (includeCompute && this.computePipeline)
+        {
+            const computeLayout = this.computePipeline.getBindGroupLayout(0);
+            this.computeBindGroup = this.device.createBindGroup({
+                layout: computeLayout,
+                entries: [
+                    { binding: 0, resource: { buffer: this.uniformBuffer } },
+                    { binding: 1, resource: this.computeTextureView }
+                ]
+            });
+        }
+        else
+        {
+            this.computeBindGroup = null;
         }
     }
 
@@ -425,33 +594,42 @@ class WebGPURendererBackend
         await this.init();
         this.stop();
 
-        const vertSource = sources.vertex || "";
-        const fragSource = sources.fragment || "";
-        if (!vertSource.trim() || !fragSource.trim())
+        const vertexSource = (sources.vertex || "").trim();
+        const fragmentSource = (sources.fragment || "").trim();
+        const computeSource = (sources.compute || "").trim();
+        const includeCompute = computeSource.length > 0;
+
+        if (!vertexSource || !fragmentSource)
         {
             throw new Error("WebGPU requires WGSL vertex and fragment shaders");
         }
 
-        this.validateWGSLSource(vertSource, "Vertex shader");
-        this.validateWGSLSource(fragSource, "Fragment shader");
+        this.validateWGSLSource(vertexSource, "Vertex shader");
+        this.validateWGSLSource(fragmentSource, "Fragment shader");
+        if (includeCompute)
+        {
+            this.validateWGSLSource(computeSource, "Compute shader");
+        }
 
-        const vertexModule = this.device.createShaderModule({ code: vertSource });
-        const fragmentModule = this.device.createShaderModule({ code: fragSource });
-
-        await Promise.all([
-            this.validateModule(vertexModule, "Vertex shader"),
-            this.validateModule(fragmentModule, "Fragment shader"),
-            this.compileExtras(sources)
+        const [vertexModule, fragmentModule, computeModule] = await Promise.all([
+            this.createShaderModule(vertexSource, "Vertex shader"),
+            this.createShaderModule(fragmentSource, "Fragment shader"),
+            includeCompute ? this.createShaderModule(computeSource, "Compute shader") : Promise.resolve(null)
         ]);
 
-        const vertexEntry = this.getEntryPoint(vertSource, "vertex");
-        const fragmentEntry = this.getEntryPoint(fragSource, "fragment");
+        const vertexEntry = this.getEntryPoint(vertexSource, "vertex");
+        const fragmentEntry = this.getEntryPoint(fragmentSource, "fragment");
+        const computeEntry = includeCompute ? this.getEntryPoint(computeSource, "compute") : null;
         if (!vertexEntry || !fragmentEntry)
         {
             throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
         }
+        if (includeCompute && !computeEntry)
+        {
+            throw new Error("Compute shader must declare @compute entry point");
+        }
 
-        this.pipeline = this.device.createRenderPipeline({
+        this.renderPipeline = this.device.createRenderPipeline({
             layout: "auto",
             vertex: {
                 module: vertexModule,
@@ -465,15 +643,23 @@ class WebGPURendererBackend
             primitive: { topology: "triangle-list" }
         });
 
-        this.uniformBindGroup = this.device.createBindGroup({
-            layout: this.pipeline.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: { buffer: this.uniformBuffer }
-                }
-            ]
-        });
+        if (includeCompute && computeModule)
+        {
+            this.computePipeline = this.device.createComputePipeline({
+                layout: "auto",
+                compute: { module: computeModule, entryPoint: computeEntry }
+            });
+            this.workgroupSize = this.extractWorkgroupSize(computeSource);
+            this.ensureComputeTarget();
+        }
+        else
+        {
+            this.computePipeline = null;
+            this.destroyComputeTarget();
+            this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+        }
+
+        this.buildBindGroups(includeCompute);
 
         this.frameCount = 0;
         this.lastRenderTime = null;
@@ -490,29 +676,27 @@ class WebGPURendererBackend
         const m = this.mouse;
         const zSign = m.isDown ? 1 : -1;
 
-        this.uniformFloatView[0] = canvas.width;
-        this.uniformFloatView[1] = canvas.height;
-        this.uniformFloatView[2] = 1.0;
-        this.uniformFloatView[3] = 0.0; // padding after vec3<f32>
+        this.uniformFloatView[UNIFORM_OFFSETS.resolution + 0] = canvas.width;
+        this.uniformFloatView[UNIFORM_OFFSETS.resolution + 1] = canvas.height;
+        this.uniformFloatView[UNIFORM_OFFSETS.resolution + 2] = 1.0;
+        this.uniformFloatView[UNIFORM_OFFSETS.resolution + 3] = 0.0;
 
-        this.uniformFloatView[4] = timeSeconds;     // iTime
-        this.uniformFloatView[5] = deltaSeconds;    // iTimeDelta
-        this.uniformUintView[6] = this.frameCount;  // iFrame
+        this.uniformFloatView[UNIFORM_OFFSETS.time] = timeSeconds;
+        this.uniformFloatView[UNIFORM_OFFSETS.timeDelta] = deltaSeconds;
+        this.uniformUintView[UNIFORM_OFFSETS.frame] = this.frameCount;
 
         const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
-        this.uniformFloatView[7] = frameRate;       // iFrameRate
+        this.uniformFloatView[UNIFORM_OFFSETS.frameRate] = frameRate;
 
-        // _padding1 (vec2f) starts at offset 32 (float indices 8-9)
         this.uniformFloatView[8] = 0.0;
         this.uniformFloatView[9] = 0.0;
-        // Padding between vec2f and vec4f (float indices 10-11)
         this.uniformFloatView[10] = 0.0;
         this.uniformFloatView[11] = 0.0;
 
-        this.uniformFloatView[12] = m.x;                   // iMouse.x (offset 48)
-        this.uniformFloatView[13] = m.y;                   // iMouse.y (offset 52)
-        this.uniformFloatView[14] = m.clickX * zSign;      // iMouse.z (offset 56)
-        this.uniformFloatView[15] = m.clickY;              // iMouse.w (offset 60)
+        this.uniformFloatView[UNIFORM_OFFSETS.mouse + 0] = m.x;
+        this.uniformFloatView[UNIFORM_OFFSETS.mouse + 1] = m.y;
+        this.uniformFloatView[UNIFORM_OFFSETS.mouse + 2] = m.clickX * zSign;
+        this.uniformFloatView[UNIFORM_OFFSETS.mouse + 3] = m.clickY;
 
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferData);
     }
@@ -521,7 +705,7 @@ class WebGPURendererBackend
     {
         const render = (time) =>
         {
-            if (!this.pipeline || !this.context)
+            if (!this.renderPipeline || !this.context)
             {
                 this.animationId = requestAnimationFrame(render);
                 return;
@@ -538,6 +722,26 @@ class WebGPURendererBackend
             this.updateUniforms(t, delta);
 
             const encoder = this.device.createCommandEncoder();
+
+            if (this.computePipeline && this.computeBindGroup)
+            {
+                const computeChanged = this.ensureComputeTarget();
+                if (computeChanged)
+                {
+                    this.buildBindGroups(true);
+                }
+
+                const computePass = encoder.beginComputePass();
+                computePass.setPipeline(this.computePipeline);
+                computePass.setBindGroup(0, this.computeBindGroup);
+
+                const groupsX = Math.max(1, Math.ceil(this.computeTextureSize.width / this.workgroupSize.x));
+                const groupsY = Math.max(1, Math.ceil(this.computeTextureSize.height / this.workgroupSize.y));
+
+                computePass.dispatchWorkgroups(groupsX, groupsY, this.workgroupSize.z || 1);
+                computePass.end();
+            }
+
             const textureView = this.context.getCurrentTexture().createView();
 
             const pass = encoder.beginRenderPass({
@@ -551,10 +755,10 @@ class WebGPURendererBackend
                 ]
             });
 
-            pass.setPipeline(this.pipeline);
-            if (this.uniformBindGroup)
+            pass.setPipeline(this.renderPipeline);
+            if (this.renderBindGroup)
             {
-                pass.setBindGroup(0, this.uniformBindGroup);
+                pass.setBindGroup(0, this.renderBindGroup);
             }
             pass.draw(3, 1, 0, 0);
             pass.end();

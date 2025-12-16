@@ -38,7 +38,7 @@ export class ShaderEditor
         this.originalSources = {};
         this.activeTab = null;
         this.compileTimeout = null;
-        this.compileDelay = 500;
+        this.compileDelay = 100;
         this.editors = new Map();
         this.loadToken = 0;
         this.highlightQueue = new Map();
@@ -115,10 +115,12 @@ export class ShaderEditor
         }
     }
 
-    getVisibleShaderTypes(context = this.currentContext)
+    getVisibleShaderTypes(context = this.currentContext, shader = this.currentShader)
     {
-        return SHADER_TYPES.filter(
-            (type) => !type.context || type.context === context
+        const wantsCompute = shader?.compute === true;
+        return SHADER_TYPES.filter((type) =>
+            (!type.context || type.context === context) &&
+            (type.id !== "compute" || wantsCompute)
         );
     }
 
@@ -239,7 +241,7 @@ export class ShaderEditor
 
     async loadSourcesForShader(shader, context)
     {
-        const visibleTypes = this.getVisibleShaderTypes(context);
+        const visibleTypes = this.getVisibleShaderTypes(context, shader);
         const sources = {};
         const originals = {};
 
@@ -304,12 +306,9 @@ export class ShaderEditor
 
         if (type.id === "compute")
         {
-            if (isWebGPU)
+            if (isWebGPU && computeEnabled)
             {
-                if (computeEnabled)
-                {
-                    addCandidate(`${basePath}.compute.wgsl`, true);
-                }
+                addCandidate(`${basePath}.compute.wgsl`, true);
                 addCandidate(`${SHARED_BASE_PATH}/default.compute.wgsl`, false);
             }
             else
@@ -494,7 +493,7 @@ export class ShaderEditor
 
         tabBar.innerHTML = "";
 
-        const visibleTypes = this.getVisibleShaderTypes();
+        const visibleTypes = this.getVisibleShaderTypes(this.currentContext, this.currentShader);
         if (!visibleTypes.some(t => t.id === this.activeTab))
         {
             this.activeTab = this.resolveDefaultTab();
@@ -531,7 +530,7 @@ export class ShaderEditor
 
     refreshPaneVisibility()
     {
-        const visibleTypes = this.getVisibleShaderTypes().map(t => t.id);
+        const visibleTypes = this.getVisibleShaderTypes(this.currentContext, this.currentShader).map(t => t.id);
 
         for (const [id, editor] of this.editors)
         {
@@ -705,7 +704,7 @@ export class ShaderEditor
 
     resolveDefaultTab()
     {
-        const visible = this.getVisibleShaderTypes();
+        const visible = this.getVisibleShaderTypes(this.currentContext, this.currentShader);
         const preferred = visible.find(t => t.id === "fragment") || visible.find(t => t.id === "vertex");
         return preferred ? preferred.id : (visible[0] ? visible[0].id : null);
     }

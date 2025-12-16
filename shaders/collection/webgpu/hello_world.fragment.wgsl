@@ -18,8 +18,7 @@ struct VSOut {
 
 @fragment
 fn frag(input : VSOut) -> @location(0) vec4f {
-    let res = shaderUniforms.iResolution.xy;
-    let uv = input.uv / res;
+    let uv = input.uv;
     let t = shaderUniforms.iTime;
     let wave = 0.5 + 0.5 * sin(t);
     let color = vec3f(uv.x + sin(t), uv.y + cos(t), wave);
