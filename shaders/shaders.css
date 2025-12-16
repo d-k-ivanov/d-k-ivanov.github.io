@@ -227,11 +227,32 @@
     line-height: 1.5;
 }
 
+.shaders-note.collapsed {
+    padding-bottom: 6px;
+    cursor: pointer;
+}
+
+.shaders-note.collapsed > :not(.shaders-note-title) {
+    display: none;
+}
+
 .shaders-note-title {
     color: var(--sh-text-primary);
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 6px;
+}
+
+.shaders-note.collapsed .shaders-note-title::after {
+    content: " (show)";
+    font-weight: 400;
+    color: var(--sh-text-muted);
+}
+
+.shaders-note:not(.collapsed) .shaders-note-title::after {
+    content: " (hide)";
+    font-weight: 400;
+    color: var(--sh-text-muted);
 }
 
 .shaders-note code {

@@ -66,6 +66,30 @@ document.addEventListener("keydown", (e) =>
 
 const init = async () =>
 {
+    const note = document.querySelector(".shaders-note");
+    if (note)
+    {
+        note.classList.add("collapsed");
+        const toggle = () => note.classList.toggle("collapsed");
+        const title = note.querySelector(".shaders-note-title");
+        if (title)
+        {
+            title.style.cursor = "pointer";
+            title.addEventListener("click", (e) =>
+            {
+                e.stopPropagation();
+                toggle();
+            });
+        }
+        note.addEventListener("click", (e) =>
+        {
+            if (e.target === note)
+            {
+                toggle();
+            }
+        });
+    }
+
     recreateCanvas();
     const savedShader = editor.getSavedShader();
     await editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
