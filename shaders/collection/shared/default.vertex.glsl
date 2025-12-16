@@ -1,6 +1,5 @@
 #version 300 es
 
-// Full-screen triangle vertex shader
 // Common vertex shader used when specific vertex shader is not provided.
 
 void main()

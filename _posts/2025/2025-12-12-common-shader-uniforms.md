@@ -4,6 +4,10 @@ description: common shader uniforms used
 date: 2025-12-12
 ---
 # Common Shader Uniforms
+{:.no_toc}
+
+* TOC
+{:toc}
 
 ## ShaderToy Vertex Shader Structure WebGL 2.0
 
