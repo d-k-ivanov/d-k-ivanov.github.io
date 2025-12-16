@@ -12,8 +12,8 @@ struct ShaderUniforms {
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
 // Minimal compute shader used when a specific compute shader is not provided.
+
 @compute @workgroup_size(1)
 fn main() {
-    // Consume a uniform to avoid unused-binding warnings.
     let _frame = shaderUniforms.iFrame;
 }

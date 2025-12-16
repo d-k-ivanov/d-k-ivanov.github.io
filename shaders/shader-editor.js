@@ -5,53 +5,53 @@ import { RENDER_CONTEXTS } from "./shader-renderer.js";
 
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
-    { folder: "basics", name: "hello_world", language: "glsl", vertex: true, fragment: true, compute: false },
-    { folder: "basics", name: "hello_world_wgsl", language: "wgsl", vertex: true, fragment: true, compute: false },
-    { folder: "basics", name: "plotter", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "basics", name: "print_text", language: "glsl", vertex: false, fragment: true, compute: false },
+    { language: "glsl", folder: "basics", vertex: true, fragment: true, name: "hello_world" },
+    { language: "wgsl", folder: "basics", vertex: true, fragment: true, compute: false, name: "hello_world_wgsl" },
+    { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "plotter" },
+    { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "print_text" },
 
     // Miscellaneous Examples from other authors
-    { folder: "misc", name: "bµg_moonlight_shadertoy", language: "glsl", vertex: true, fragment: true, compute: false },
-    { folder: "misc", name: "bµg_moonlight", language: "glsl", vertex: true, fragment: true, compute: false },
-    { folder: "misc", name: "curena_alhambra", language: "glsl", vertex: true, fragment: true, compute: false },
-    { folder: "misc", name: "curena_p6mm", language: "glsl", vertex: true, fragment: true, compute: false },
-    { folder: "misc", name: "iq_primitives", language: "glsl", vertex: true, fragment: true, compute: false },
+    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "bµg_moonlight_shadertoy" },
+    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "bµg_moonlight" },
+    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "curena_alhambra" },
+    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "curena_p6mm" },
+    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "iq_primitives" },
 
     // Shader Art Examples
-    { folder: "tutorials", name: "kishimisu_introduction_01", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_02", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_03", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_04", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_05", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_06", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_07", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_08", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_09", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_10", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_11", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_12", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_13", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_14", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_15", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_16", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_17", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_18", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_19", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_20", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_21", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_22", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_23", language: "glsl", vertex: false, fragment: true, compute: false },
-    { folder: "tutorials", name: "kishimisu_introduction_24", language: "glsl", vertex: false, fragment: true, compute: false },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_01" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_02" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_03" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_04" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_05" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_06" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_07" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_08" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_09" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_10" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_11" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_12" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_13" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_14" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_15" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_16" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_17" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_18" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_19" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_20" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_21" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_22" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_23" },
+    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_24" },
 
     // Signed Distance Field (SDF) Examples
-    { folder: "sdf", name: "2d_distances", language: "glsl", vertex: true, fragment: true, compute: false },
+    { language: "glsl", folder: "sdf", vertex: true, fragment: true, name: "2d_distances" },
     // { folder: "sdf", name: "3d_distances" }
 ];
 
 const SHADER_TYPES = [
-    { id: "vertex", label: "Vertex", extension: "vertex", legacyExt: "vert", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
-    { id: "fragment", label: "Fragment", extension: "fragment", legacyExt: "frag", icon: "fragment", context: null, placeholder: "Fragment shader source..." },
-    { id: "compute", label: "Compute", extension: "compute", legacyExt: null, icon: "compute", context: RENDER_CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
+    { id: "vertex", label: "Vertex", extension: "vertex", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
+    { id: "fragment", label: "Fragment", extension: "fragment", icon: "fragment", context: null, placeholder: "Fragment shader source..." },
+    { id: "compute", label: "Compute", extension: "compute", icon: "compute", context: RENDER_CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
@@ -309,11 +309,10 @@ export class ShaderEditor
 
     async loadSourceForType(shader, type, context)
     {
+        const language = this.getShaderLanguage(shader);
+        const computeEnabled = language === "wgsl" && shader.compute === true;
+
         if (type.context && type.context !== context)
-        {
-            return "";
-        }
-        if (type.id === "compute" && shader.compute !== true)
         {
             return "";
         }
@@ -352,16 +351,15 @@ export class ShaderEditor
         const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
         const expectsFile = type.id === "vertex"
             ? shader.vertex !== false
-            : (type.id === "compute" ? shader.compute === true : true);
+            : (type.id === "compute" ? true : true);
 
         if (isWebGPU)
         {
-            if (type.id === "compute" && shader.compute === true)
+            if (type.id === "compute")
             {
-                addCandidate(`${basePath}.${type.extension}.wgsl`, true);
-                if (type.legacyExt)
+                if (computeEnabled)
                 {
-                    addCandidate(`${basePath}.${type.legacyExt}.wgsl`, true);
+                    addCandidate(`${basePath}.${type.extension}.wgsl`, true);
                 }
                 addCandidate(`${SHARED_BASE_PATH}/default.compute.wgsl`, false);
             }
@@ -369,24 +367,13 @@ export class ShaderEditor
         else if (expectsFile)
         {
             addCandidate(`${basePath}.${type.extension}.glsl`, false);
-            if (type.legacyExt)
-            {
-                addCandidate(`${basePath}.${type.legacyExt}.glsl`, true);
-            }
         }
 
         const path = this.getShaderPath(shader, type, context);
         if (path)
         {
-            const optional = type.id === "compute" ? true : false;
+            const optional = type.id === "compute" ? false : false;
             addCandidate(path, optional);
-        }
-
-        // Legacy fallback without language suffix
-        if (!isWebGPU && expectsFile)
-        {
-            const legacyPath = `${basePath}.${type.extension}`;
-            addCandidate(legacyPath, true);
         }
 
         for (const candidate of candidates)
@@ -403,6 +390,8 @@ export class ShaderEditor
 
     getShaderPath(shader, type, context)
     {
+        const language = this.getShaderLanguage(shader);
+        const computeEnabled = language === "wgsl" && shader.compute === true;
         const baseName = this.getShaderBaseName(shader);
         const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
         const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
@@ -415,7 +404,11 @@ export class ShaderEditor
             case "fragment":
                 return `${basePath}.fragment.${ext}`;
             case "compute":
-                return `${basePath}.compute.${ext}`;
+                if (!isWebGPU)
+                {
+                    return "";
+                }
+                return computeEnabled ? `${basePath}.compute.${ext}` : `${SHARED_BASE_PATH}/default.compute.${ext}`;
             default:
                 return `${basePath}.${type.extension}.${ext}`;
         }
