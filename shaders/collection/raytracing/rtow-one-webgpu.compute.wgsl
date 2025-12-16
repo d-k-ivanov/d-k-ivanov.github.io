@@ -16,10 +16,10 @@ struct ShaderUniforms
 const PI : f32 = 3.14159265359;
 const SAMPLES_PER_PIXEL : u32 = 4u;
 const MAX_DEPTH : u32 = 8u;
-const SPHERE_COUNT : u32 = 8u;
-const MATERIAL_COUNT : u32 = 6u;
+const SPHERE_COUNT : u32 = 4u;
+const MATERIAL_COUNT : u32 = 4u;
 const FOV_DEGREES : f32 = 20.0;
-const FOCUS_DISTANCE : f32 = 10.0;
+const FOCUS_DISTANCE : f32 = 1.0;
 const DEFOCUS_ANGLE : f32 = 0.6; // degrees
 
 struct Ray
@@ -46,11 +46,24 @@ struct Sphere
 struct Hit
 {
     p : vec3f,
+    center : vec3f,
     normal : vec3f,
     t : f32,
     material : u32,
     frontFace : bool,
+    mat : Material,
 };
+
+const MATERIALS : array<Material, MATERIAL_COUNT> = array<Material, MATERIAL_COUNT>(
+    // 0: ground
+    Material(0u, vec3f(0.5, 0.5, 0.5), 0.0, 1.0),
+    // 1: glass center
+    Material(2u, vec3f(1.0, 1.0, 1.0), 0.0, 1.5),
+    // 2: left big lambertian
+    Material(0u, vec3f(0.4, 0.2, 0.1), 0.0, 1.0),
+    // 3: right big metal
+    Material(1u, vec3f(0.7, 0.6, 0.5), 0.0, 1.0)
+);
 
 fn hash(seed : ptr<function, u32>) -> f32
 {
@@ -113,21 +126,17 @@ fn schlick(cosine : f32, refIdx : f32) -> f32
     return r0 + (1.0 - r0) * pow((1.0 - cosine), 5.0);
 }
 
-fn makeMaterials() -> array<Material, MATERIAL_COUNT>
+fn hash_function(p : vec3f) -> f32
 {
-    return array<Material, MATERIAL_COUNT>(
-        // 0: ground
-        Material(0u, vec3f(0.5, 0.5, 0.5), 0.0, 1.0),
-        // 1: left big lambertian
-        Material(0u, vec3f(0.4, 0.2, 0.1), 0.0, 1.0),
-        // 2: right big metal
-        Material(1u, vec3f(0.7, 0.6, 0.5), 0.0, 1.0),
-        // 3: glass center
-        Material(2u, vec3f(1.0, 1.0, 1.0), 0.0, 1.5),
-        // 4: small cool lambertian
-        Material(0u, vec3f(0.3, 0.7, 0.9), 0.0, 1.0),
-        // 5: small warm metal
-        Material(1u, vec3f(0.9, 0.8, 0.6), 0.05, 1.0)
+    return fract(sin(dot(p, vec3f(127.1, 311.7, 74.7))) * 43758.5453);
+}
+
+fn randomColor(seed : vec3f) -> vec3f
+{
+    return vec3f(
+        hash_function(seed + vec3f(1.3, 1.3, 1.3)),
+        hash_function(seed + vec3f(2.7, 2.7, 2.7)),
+        hash_function(seed + vec3f(5.1, 5.1, 5.1))
     );
 }
 
@@ -135,13 +144,9 @@ fn makeScene() -> array<Sphere, SPHERE_COUNT>
 {
     return array<Sphere, SPHERE_COUNT>(
         Sphere(vec3f(0.0, -1000.0, 0.0), 1000.0, 0u),
-        Sphere(vec3f(0.0, 1.0, 0.0), 1.0, 3u),
-        Sphere(vec3f(-4.0, 1.0, 0.0), 1.0, 1u),
-        Sphere(vec3f(4.0, 1.0, 0.0), 1.0, 2u),
-        Sphere(vec3f(-2.5, 0.35, -1.4), 0.35, 4u),
-        Sphere(vec3f(1.6, 0.25, -0.6), 0.25, 5u),
-        Sphere(vec3f(2.2, 0.2, 1.3), 0.2, 4u),
-        Sphere(vec3f(-1.2, 0.28, 1.6), 0.28, 5u)
+        Sphere(vec3f(0.0, 1.0, 0.0), 1.0, 1u),
+        Sphere(vec3f(-4.0, 1.0, 0.0), 1.0, 2u),
+        Sphere(vec3f(4.0, 1.0, 0.0), 1.0, 3u)
     );
 }
 
@@ -153,7 +158,7 @@ fn setFaceNormal(r : Ray, outward : vec3f) -> Hit
     {
         normal = -outward;
     }
-    return Hit(vec3f(0.0), normal, 0.0, 0u, front);
+    return Hit(vec3f(0.0), vec3f(0.0), normal, 0.0, 0u, front, MATERIALS[0]);
 }
 
 fn hitSphere(s : Sphere, r : Ray, tMin : f32, tMax : f32, hit : ptr<function, Hit>) -> bool
@@ -185,6 +190,8 @@ fn hitSphere(s : Sphere, r : Ray, tMin : f32, tMax : f32, hit : ptr<function, Hi
     hit.normal = base.normal;
     hit.frontFace = base.frontFace;
     hit.material = s.material;
+    hit.center = s.center;
+    hit.mat = MATERIALS[min(s.material, MATERIAL_COUNT - 1u)];
     return true;
 }
 
@@ -195,16 +202,82 @@ fn hitWorld(r : Ray, tMin : f32, tMax : f32, scene : array<Sphere, SPHERE_COUNT>
 
     for (var i = 0u; i < SPHERE_COUNT; i = i + 1u)
     {
-        var temp = Hit(vec3f(0.0), vec3f(0.0), 0.0, 0u, false);
+        var temp = Hit(vec3f(0.0), vec3f(0.0), vec3f(0.0), 0.0, 0u, false, MATERIALS[0]);
         if (hitSphere(scene[i], r, tMin, closest, &temp))
         {
             found = true;
             closest = temp.t;
             hit.p = temp.p;
+            hit.center = temp.center;
             hit.normal = temp.normal;
             hit.t = temp.t;
             hit.material = temp.material;
             hit.frontFace = temp.frontFace;
+            hit.mat = temp.mat;
+        }
+    }
+
+    // Procedural grid of spheres (-11..10)
+    for (var a = -11; a < 11; a = a + 1)
+    {
+        for (var b = -11; b < 11; b = b + 1)
+        {
+            let cell = vec3f(f32(a), 0.0, f32(b));
+            let center = vec3f(
+                f32(a) + 0.9 * hash_function(cell + vec3f(1.0, 0.0, 0.0)),
+                0.2,
+                f32(b) + 0.9 * hash_function(cell + vec3f(0.0, 0.0, 1.0))
+            );
+
+            if (length(center - vec3f(4.0, 0.2, 0.0)) <= 0.9)
+            {
+                continue;
+            }
+
+            let chooseMat = hash_function(cell + vec3f(2.0, 2.0, 2.0));
+            var matId : u32 = 12u;
+            if (chooseMat < 0.8)
+            {
+                matId = 10u;
+            }
+            else if (chooseMat < 0.95)
+            {
+                matId = 11u;
+            }
+
+            let s = Sphere(center, 0.2, matId);
+            var temp = Hit(vec3f(0.0), vec3f(0.0), vec3f(0.0), 0.0, 0u, false, MATERIALS[0]);
+            if (hitSphere(s, r, tMin, closest, &temp))
+            {
+                found = true;
+                closest = temp.t;
+                temp.center = center;
+
+                if (matId == 10u)
+                {
+                    let aColor = randomColor(center);
+                    let bColor = randomColor(center + vec3f(3.7, 3.7, 3.7));
+                    temp.mat = Material(0u, aColor * bColor, 0.0, 1.0);
+                }
+                else if (matId == 11u)
+                {
+                    let albedo = mix(vec3f(0.5, 0.5, 0.5), vec3f(1.0, 1.0, 1.0), randomColor(center));
+                    let fuzz = hash_function(center + vec3f(2.1, 2.1, 2.1)) * 0.5;
+                    temp.mat = Material(1u, albedo, fuzz, 1.0);
+                }
+                else
+                {
+                    temp.mat = Material(2u, vec3f(1.0, 1.0, 1.0), 0.0, 1.5);
+                }
+
+                hit.p = temp.p;
+                hit.center = temp.center;
+                hit.normal = temp.normal;
+                hit.t = temp.t;
+                hit.material = temp.material;
+                hit.frontFace = temp.frontFace;
+                hit.mat = temp.mat;
+            }
         }
     }
 
@@ -266,23 +339,22 @@ fn sky(r : Ray) -> vec3f
     return mix(vec3f(1.0, 1.0, 1.0), vec3f(0.5, 0.7, 1.0), vec3f(t));
 }
 
-fn rayColor(r : Ray, scene : array<Sphere, SPHERE_COUNT>, materials : array<Material, MATERIAL_COUNT>, seed : ptr<function, u32>) -> vec3f
+fn rayColor(r : Ray, scene : array<Sphere, SPHERE_COUNT>, seed : ptr<function, u32>) -> vec3f
 {
     var attenuation = vec3f(1.0);
     var ray = r;
 
     for (var depth = 0u; depth < MAX_DEPTH; depth = depth + 1u)
     {
-        var rec = Hit(vec3f(0.0), vec3f(0.0), 0.0, 0u, false);
+        var rec = Hit(vec3f(0.0), vec3f(0.0), vec3f(0.0), 0.0, 0u, false, MATERIALS[0]);
         if (!hitWorld(ray, 0.001, 1e9, scene, &rec))
         {
             return attenuation * sky(ray);
         }
 
-        let mat = materials[rec.material];
         var scattered = Ray(vec3f(0.0), vec3f(0.0));
         var atten = vec3f(1.0);
-        if (!scatter(mat, ray, rec, seed, &scattered, &atten))
+        if (!scatter(rec.mat, ray, rec, seed, &scattered, &atten))
         {
             return vec3f(0.0);
         }
@@ -325,7 +397,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     let defocusDiskV = v * defocusRadius;
 
     let scene = makeScene();
-    let materials = makeMaterials();
 
     var color = vec3f(0.0);
     for (var s = 0u; s < SAMPLES_PER_PIXEL; s = s + 1u)
@@ -344,7 +415,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
 
         let focusTarget = rayOrigin + forward * FOCUS_DISTANCE + ndc.x * u * (fovScale * FOCUS_DISTANCE) + ndc.y * v * (fovScale * FOCUS_DISTANCE);
         let r = Ray(rayOrigin, normalize(focusTarget - rayOrigin));
-        color = color + rayColor(r, scene, materials, &seed);
+        color = color + rayColor(r, scene, &seed);
     }
 
     color = color / f32(SAMPLES_PER_PIXEL);

@@ -19,7 +19,7 @@ uniform vec4 iMouse;
 
 const float PI = 3.14159265359;
 const float FOV = radians(20.0);
-const float FOCUS_DISTANCE = 10.0;
+const float FOCUS_DISTANCE = 1.0;
 const float DEFOCUS_ANGLE = 0.6; // degrees
 const int SAMPLES_PER_PIXEL = 4;
 const int MAX_DEPTH = 8;
@@ -127,14 +127,14 @@ float schlick(float cosine, float refIdx)
     return r0 + (1.0 - r0) * pow(1.0 - cosine, 5.0);
 }
 
-float hash31(vec3 p)
+float hash_function(vec3 p)
 {
     return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
 }
 
 vec3 randomColor(vec3 seed)
 {
-    return vec3(hash31(seed + 1.3), hash31(seed + 2.7), hash31(seed + 5.1));
+    return vec3(hash_function(seed + 1.3), hash_function(seed + 2.7), hash_function(seed + 5.1));
 }
 
 const Material MATERIALS[MATERIAL_COUNT] = Material[](
@@ -221,16 +221,16 @@ bool hitWorld(Ray r, float tMin, float tMax, Sphere scn[SPHERE_COUNT], out Hit h
         for (int b = -11; b < 11; ++b)
         {
             vec3 cell = vec3(float(a), 0.0, float(b));
-            vec3 center = vec3(float(a) + 0.9 * hash31(cell + vec3(1.0, 0.0, 0.0)),
+            vec3 center = vec3(float(a) + 0.9 * hash_function(cell + vec3(1.0, 0.0, 0.0)),
                                0.2,
-                               float(b) + 0.9 * hash31(cell + vec3(0.0, 0.0, 1.0)));
+                               float(b) + 0.9 * hash_function(cell + vec3(0.0, 0.0, 1.0)));
 
             if (length(center - vec3(4.0, 0.2, 0.0)) <= 0.9)
             {
                 continue;
             }
 
-            float chooseMat = hash31(cell + vec3(2.0, 2.0, 2.0));
+            float chooseMat = hash_function(cell + vec3(2.0, 2.0, 2.0));
             int matId = (chooseMat < 0.8) ? 10 : (chooseMat < 0.95 ? 11 : 12);
 
             Sphere s = Sphere(center, 0.2, matId);
@@ -250,7 +250,7 @@ bool hitWorld(Ray r, float tMin, float tMax, Sphere scn[SPHERE_COUNT], out Hit h
                 else if (matId == 11)
                 {
                     vec3 albedo = mix(vec3(0.5), vec3(1.0), randomColor(center));
-                    float fuzz = hash31(center + 2.1) * 0.5;
+                    float fuzz = hash_function(center + 2.1) * 0.5;
                     temp.mat = Material(1, albedo, fuzz, 1.0);
                 }
                 else
