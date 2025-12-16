@@ -13,6 +13,6 @@ struct ShaderUniforms {
 
 @fragment
 fn frag() -> @location(0) vec4f {
-    let pulse = 0.5 + 0.5 * sin(shaderUniforms.iTime * 0.5);
-    return vec4f(vec3f(1.0, 0.0, 0.0) * pulse, 1.0);
+    let pulse = sin(f32(shaderUniforms.iFrame) / 128);
+    return vec4f(1.0, pulse, 0.0, 1.0);
 }

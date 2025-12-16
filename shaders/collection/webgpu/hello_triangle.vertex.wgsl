@@ -17,14 +17,19 @@ struct VSOut {
 
 @vertex
 fn vert(@builtin(vertex_index) idx : u32) -> VSOut {
-    // Fullscreen-sized triangle covering the center area
     var positions = array<vec2f, 3>(
-        vec2f(0.0, 0.6),
-        vec2f(-0.6, -0.6),
-        vec2f(0.6, -0.6)
+        vec2f(0.0, 0.5),
+        vec2f(-0.5, -0.5),
+        vec2f(0.5, -0.5)
     );
 
+    // Calculate aspect ratio (width / height)
+    let aspect = shaderUniforms.iResolution.x / shaderUniforms.iResolution.y;
+
+    // Scale x coordinate by 1/aspect to maintain proportions
+    let pos = vec2f(positions[idx].x / aspect, positions[idx].y);
+
     var out : VSOut;
-    out.Position = vec4f(positions[idx], 0.0, 1.0);
+    out.Position = vec4f(pos, 0.0, 1.0);
     return out;
 }
