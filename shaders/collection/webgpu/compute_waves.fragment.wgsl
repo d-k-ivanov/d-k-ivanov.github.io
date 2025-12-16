@@ -21,7 +21,8 @@ struct VSOut {
 
 @fragment
 fn frag(input : VSOut) -> @location(0) vec4f {
-    let uv = clamp(input.uv, vec2f(0.0), vec2f(1.0));
+    // Default fullscreen triangle provides UVs in 0..2 range; normalize to 0..1.
+    let uv = clamp(input.uv * 0.5, vec2f(0.0), vec2f(1.0));
     let texel = textureSampleLevel(computeTexture, computeSampler, uv, 0.0).rgb;
     let vignette = smoothstep(0.9, 0.35, length(uv - 0.5));
     let highlight = 0.08 * sin(shaderUniforms.iTime * 3.0 + uv.x * 6.2831);

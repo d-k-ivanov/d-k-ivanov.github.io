@@ -53,7 +53,7 @@ export const SHADER_COLLECTION = [
     // { folder: "sdf", name: "3d_distances" }
 
     // WebGPU WGSL Examples
-    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_world" },
+    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: true, name: "hello_world" },
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_triangle" },
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "atomic_pulse" },
     { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: true, name: "compute_waves" },

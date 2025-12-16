@@ -302,7 +302,8 @@ class WebGPURendererBackend
         this.renderBindGroup = null;
         this.computeBindGroup = null;
         this.computeTexture = null;
-        this.computeTextureView = null;
+        this.computeTextureSampleView = null;
+        this.computeTextureStorageView = null;
         this.computeSampler = null;
         this.computeTextureFormat = null;
         this.computeTextureSize = { width: 0, height: 0 };
@@ -409,12 +410,11 @@ class WebGPURendererBackend
 
     getEntryPoint(source, stage)
     {
-        const regex = stage === "vertex"
-            ? /@vertex\s+fn\s+(\w+)/m
-            : stage === "fragment"
-                ? /@fragment\s+fn\s+(\w+)/m
-                : /@compute\s+fn\s+(\w+)/m;
-        const match = source.match(regex);
+        const attr = stage === "vertex" ? "@vertex"
+            : stage === "fragment" ? "@fragment"
+                : "@compute";
+        const regex = new RegExp(`${attr}[\\s\\S]*?fn\\s+(\\w+)`, "m");
+        const match = regex.exec(source);
         return match ? match[1] : null;
     }
 
@@ -466,7 +466,8 @@ class WebGPURendererBackend
             this.computeTexture.destroy();
         }
         this.computeTexture = null;
-        this.computeTextureView = null;
+        this.computeTextureSampleView = null;
+        this.computeTextureStorageView = null;
         this.computeSampler = null;
         this.computeTextureSize = { width: 0, height: 0 };
     }
@@ -517,7 +518,8 @@ class WebGPURendererBackend
         }
 
         this.computeTexture = texture;
-        this.computeTextureView = texture.createView();
+        this.computeTextureSampleView = texture.createView();
+        this.computeTextureStorageView = texture.createView();
         this.computeSampler = this.device.createSampler({
             magFilter: "linear",
             minFilter: "linear"
@@ -545,7 +547,7 @@ class WebGPURendererBackend
         {
             this.ensureComputeTarget();
             renderEntries.push(
-                { binding: 2, resource: this.computeTextureView },
+                { binding: 2, resource: this.computeTextureSampleView },
                 { binding: 3, resource: this.computeSampler }
             );
         }
@@ -579,7 +581,7 @@ class WebGPURendererBackend
                 layout: computeLayout,
                 entries: [
                     { binding: 0, resource: { buffer: this.uniformBuffer } },
-                    { binding: 1, resource: this.computeTextureView }
+                    { binding: 1, resource: this.computeTextureStorageView }
                 ]
             });
         }
