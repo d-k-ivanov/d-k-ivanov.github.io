@@ -32,6 +32,32 @@ const GLSL_PATTERNS = [
     { pattern: /\b(radians|degrees|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|pow|exp|log|exp2|log2|sqrt|inversesqrt|abs|sign|floor|trunc|round|roundEven|ceil|fract|mod|modf|min|max|clamp|mix|step|smoothstep|isnan|isinf|floatBitsToInt|floatBitsToUint|intBitsToFloat|uintBitsToFloat|fma|frexp|ldexp|packUnorm2x16|packSnorm2x16|packUnorm4x8|packSnorm4x8|unpackUnorm2x16|unpackSnorm2x16|unpackUnorm4x8|unpackSnorm4x8|packHalf2x16|unpackHalf2x16|packDouble2x32|unpackDouble2x32|length|distance|dot|cross|normalize|faceforward|reflect|refract|matrixCompMult|outerProduct|transpose|determinant|inverse|lessThan|lessThanEqual|greaterThan|greaterThanEqual|equal|notEqual|any|all|not|uaddCarry|usubBorrow|umulExtended|imulExtended|bitfieldExtract|bitfieldInsert|bitfieldReverse|bitCount|findLSB|findMSB|textureSize|textureQueryLod|textureQueryLevels|textureSamples|texture|textureProj|textureLod|textureOffset|texelFetch|texelFetchOffset|textureProjOffset|textureLodOffset|textureProjLod|textureProjLodOffset|textureGrad|textureGradOffset|textureProjGrad|textureProjGradOffset|textureGather|textureGatherOffset|textureGatherOffsets|atomicCounterIncrement|atomicCounterDecrement|atomicCounter|atomicCounterAdd|atomicCounterSubtract|atomicCounterMin|atomicCounterMax|atomicCounterAnd|atomicCounterOr|atomicCounterXor|atomicCounterExchange|atomicCounterCompSwap|atomicAdd|atomicMin|atomicMax|atomicAnd|atomicOr|atomicXor|atomicExchange|atomicCompSwap|imageSize|imageSamples|imageLoad|imageStore|imageAtomicAdd|imageAtomicMin|imageAtomicMax|imageAtomicAnd|imageAtomicOr|imageAtomicXor|imageAtomicExchange|imageAtomicCompSwap|dFdx|dFdy|dFdxFine|dFdyFine|dFdxCoarse|dFdyCoarse|fwidth|fwidthFine|fwidthCoarse|interpolateAtCentroid|interpolateAtSample|interpolateAtOffset|barrier|memoryBarrier|memoryBarrierAtomicCounter|memoryBarrierBuffer|memoryBarrierShared|memoryBarrierImage|groupMemoryBarrier|EmitStreamVertex|EndStreamPrimitive|EmitVertex|EndPrimitive|noise1|noise2|noise3|noise4)\b/g, class: "glsl-function" }
 ];
 
+// WGSL syntax highlighting patterns
+const WGSL_PATTERNS = [
+    // Comments - same as GLSL
+    { pattern: /(\/\/.*$)/gm, class: "glsl-comment" },
+    { pattern: /(\/\*[\s\S]*?\*\/)/g, class: "glsl-comment" },
+
+    // Attributes (@vertex, @binding, etc)
+    { pattern: /(@[a-zA-Z_][\w:]*)/g, class: "glsl-qualifier" },
+
+    // Strings
+    { pattern: /("(?:[^"\\]|\\.)*")/g, class: "glsl-string" },
+
+    // Numbers (floats/ints)
+    { pattern: /\b(\d+\.\d*(?:[eE][+-]?\d+)?[fF]?|\.\d+(?:[eE][+-]?\d+)?[fF]?|\d+[eE][+-]?\d+[fF]?|\d+[fF])\b/g, class: "glsl-number" },
+    { pattern: /\b(0[xX][0-9a-fA-F]+|0b[01]+|\d+)(u|i)?\b/g, class: "glsl-number" },
+
+    // Keywords
+    { pattern: /\b(fn|let|var|const|override|struct|return|if|else|break|continue|loop|while|for|switch|case|default|fallthrough|discard|true|false|workgroup|uniform|storage|private|function)\b/g, class: "glsl-keyword" },
+
+    // Types
+    { pattern: /\b(f32|f16|i32|u32|bool|vec2|vec3|vec4|mat2x2|mat2x3|mat2x4|mat3x2|mat3x3|mat3x4|mat4x2|mat4x3|mat4x4|array|texture_\w+|sampler|sampler_comparison|ptr|atomic|vec2f|vec3f|vec4f)\b/g, class: "glsl-type" },
+
+    // Built-in variables/functions (basic)
+    { pattern: /\b(global_invocation_id|local_invocation_id|workgroup_id|num_workgroups|workgroup_size|dpdx|dpdy|dpdxCoarse|dpdyCoarse|dpdxFine|dpdyFine|fwidth|textureSample|textureSampleLevel|textureLoad|textureDimensions)\b/g, class: "glsl-builtin-var" }
+];
+
 export class GLSLHighlighter
 {
     constructor()
@@ -39,47 +65,84 @@ export class GLSLHighlighter
         this.cache = new Map();
     }
 
+    detectLanguage(code)
+    {
+        const lower = code.toLowerCase();
+        if (lower.includes("@vertex") || lower.includes("@fragment") || lower.includes("@compute") || /@group\s*\(\d+\)/i.test(code))
+        {
+            return "wgsl";
+        }
+        if (/^\s*#version/m.test(code) || /\bprecision\s+(lowp|mediump|highp)\b/.test(code))
+        {
+            return "glsl";
+        }
+        return "glsl";
+    }
+
     highlight(code)
     {
+        const makePlaceholder = (prefix, index) => `\x00${prefix}${"X".repeat(index + 1)}\x00`;
+        let placeholderIndex = 0;
+
         // Check cache
         if (this.cache.has(code))
         {
             return this.cache.get(code);
         }
 
+        const language = this.detectLanguage(code);
+        const patterns = language === "wgsl" ? WGSL_PATTERNS : GLSL_PATTERNS;
+
         // Escape HTML
         let highlighted = this.escapeHtml(code);
 
         // Track regions that shouldn't be re-highlighted (comments, strings)
         const protectedRegions = [];
+        const addProtected = (html) =>
+        {
+            const placeholder = makePlaceholder("P", placeholderIndex++);
+            protectedRegions.push({ placeholder, html });
+            return placeholder;
+        };
 
         // First pass: protect comments and strings
         highlighted = highlighted.replace(/(\/\/.*$)/gm, (match, p1, offset) =>
         {
-            const placeholder = `\x00COMMENT${protectedRegions.length}\x00`;
-            protectedRegions.push({ placeholder, html: `<span class="glsl-comment">${p1}</span>` });
-            return placeholder;
+            return addProtected(`<span class="glsl-comment">${p1}</span>`);
         });
 
         highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, (match, p1) =>
         {
-            const placeholder = `\x00BLOCKCOMMENT${protectedRegions.length}\x00`;
-            protectedRegions.push({ placeholder, html: `<span class="glsl-comment">${p1}</span>` });
-            return placeholder;
+            return addProtected(`<span class="glsl-comment">${p1}</span>`);
         });
 
-        highlighted = highlighted.replace(/(#\s*(?:version|define|undef|if|ifdef|ifndef|else|elif|endif|error|pragma|extension|line)\b.*$)/gm, (match, p1) =>
+        if (language === "glsl")
         {
-            const placeholder = `\x00PREPROC${protectedRegions.length}\x00`;
-            protectedRegions.push({ placeholder, html: `<span class="glsl-preprocessor">${p1}</span>` });
-            return placeholder;
+            highlighted = highlighted.replace(/(#\s*(?:version|define|undef|if|ifdef|ifndef|else|elif|endif|error|pragma|extension|line)\b.*$)/gm, (match, p1) =>
+            {
+                return addProtected(`<span class="glsl-preprocessor">${p1}</span>`);
+            });
+        }
+
+        // Protect strings so inner tokens do not get highlighted
+        highlighted = highlighted.replace(/("(?:[^"\\]|\\.)*")/g, (match, p1) =>
+        {
+            return addProtected(`<span class="glsl-string">${p1}</span>`);
         });
 
         // Apply remaining patterns
-        for (const { pattern, class: className } of GLSL_PATTERNS.slice(3))
+        const skipIndices = language === "glsl"
+            ? new Set([0, 1, 2, 3]) // comments, block comments, preprocessor, strings handled
+            : new Set([0, 1, 3]);   // comments, block comments, strings handled (keep attributes)
+
+        patterns.forEach(({ pattern, class: className }, idx) =>
         {
+            if (skipIndices.has(idx))
+            {
+                return;
+            }
             highlighted = highlighted.replace(pattern, `<span class="${className}">$1</span>`);
-        }
+        });
 
         // Restore protected regions
         for (const { placeholder, html } of protectedRegions)
