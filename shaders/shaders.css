@@ -292,6 +292,7 @@
     cursor: pointer;
     color: var(--sh-text-secondary);
     font-size: 13px;
+    gap: 6px;
 }
 
 .shaders-tree-item:hover {
@@ -303,9 +304,21 @@
 }
 
 .shaders-tree-item-icon {
-    margin-right: 6px;
     font-size: 12px;
     color: var(--sh-icon-shader);
+}
+
+.shaders-tree-item-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shaders-tree-item[data-context="webgl2"] .shaders-tree-item-icon {
+    color: #3fa34d;
+}
+
+.shaders-tree-item[data-context="webgpu"] .shaders-tree-item-icon {
+    color: #3b8cff;
 }
 
 /* Editor Area */
@@ -355,12 +368,16 @@
     font-size: 12px;
 }
 
-.shaders-tab-icon.vert {
+.shaders-tab-icon.vertex {
     color: var(--sh-icon-vert);
 }
 
-.shaders-tab-icon.frag {
+.shaders-tab-icon.fragment {
     color: var(--sh-icon-frag);
+}
+
+.shaders-tab-icon.compute {
+    color: var(--sh-accent);
 }
 
 .shaders-tab-label {
@@ -387,6 +404,12 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.shaders-editor-panes {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .shaders-editor-pane {

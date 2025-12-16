@@ -2,10 +2,13 @@
 
 export class CanvasControls
 {
-    constructor(canvas)
+    constructor(canvas, { onResolutionChange = null } = {})
     {
         this.canvas = canvas;
         this.savedResolution = null;
+        this.onResolutionChange = onResolutionChange;
+        this.currentResolutionValue = null;
+        this.boundResolutionHandler = null;
 
         this.elements = {
             resolutionSelect: document.getElementById("resolution-select"),
@@ -21,14 +24,25 @@ export class CanvasControls
         const selector = this.elements.resolutionSelect;
         if (!selector) return;
 
+        if (this.boundResolutionHandler)
+        {
+            selector.removeEventListener("change", this.boundResolutionHandler);
+        }
+
         const applyResolution = () =>
         {
             const [width, height] = selector.value.split("x").map(Number);
+            this.currentResolutionValue = selector.value;
             this.canvas.width = width;
             this.canvas.height = height;
+            if (this.onResolutionChange)
+            {
+                this.onResolutionChange(width, height);
+            }
         };
 
         selector.addEventListener("change", applyResolution);
+        this.boundResolutionHandler = applyResolution;
         applyResolution();
     }
 
@@ -57,6 +71,11 @@ export class CanvasControls
                 this.canvas.height = this.savedResolution.height;
                 this.savedResolution = null;
             }
+
+            if (this.onResolutionChange)
+            {
+                this.onResolutionChange(this.canvas.width, this.canvas.height);
+            }
         };
 
         btn.addEventListener("click", () =>
@@ -72,5 +91,24 @@ export class CanvasControls
         });
 
         document.addEventListener("fullscreenchange", updateIcon);
+    }
+
+    setCanvas(canvas)
+    {
+        this.canvas = canvas;
+        if (this.currentResolutionValue)
+        {
+            const [width, height] = this.currentResolutionValue.split("x").map(Number);
+            this.canvas.width = width;
+            this.canvas.height = height;
+            if (this.onResolutionChange)
+            {
+                this.onResolutionChange(width, height);
+            }
+        }
+        else
+        {
+            this.initResolutionSelector();
+        }
     }
 }

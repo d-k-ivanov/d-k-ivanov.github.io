@@ -22,6 +22,6 @@ fn frag(input : VSOut) -> @location(0) vec4f {
     let uv = input.uv / res;
     let t = shaderUniforms.iTime;
     let wave = 0.5 + 0.5 * sin(t);
-    let color = vec3f(uv.x, uv.y, wave);
+    let color = vec3f(uv.x + sin(t), uv.y + cos(t), wave);
     return vec4f(color, 1.0);
 }

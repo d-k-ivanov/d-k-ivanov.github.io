@@ -8,34 +8,36 @@ permalink: /shaders/
 <div class="shaders-main-container">
     <div class="shaders-canvas-panel theme-dark" id="canvas-panel">
         <div class="shaders-canvas-toolbar">
-            <label for="resolution-select">Resolution:</label>
-            <select id="resolution-select">
-                <option value="64x64">64×64</option>
-                <option value="128x128">128×128</option>
-                <option value="160x120">160×120 (QQVGA)</option>
-                <option value="256x256">256×256</option>
-                <option value="320x200">320×200 (CGA)</option>
-                <option value="320x240">320×240 (QVGA)</option>
-                <option value="400x300">400×300</option>
-                <option value="480x320">480×320 (HVGA)</option>
-                <option value="512x512" selected>512×512</option>
-                <option value="576x384">576×384 (PAL)</option>
-                <option value="640x480">640×480 (VGA)</option>
-                <option value="800x600">800×600 (SVGA)</option>
-                <option value="960x600">960×600 (WSVGA)</option>
-                <option value="1024x768">1024×768 (XGA)</option>
-                <option value="1024x1024">1024×1024</option>
-                <option value="1280x720">1280×720 (HD)</option>
-                <option value="1280x800">1280×800 (WXGA)</option>
-                <option value="1920x1080">1920×1080 (Full HD)</option>
-                <option value="1920x1280">1920×1280 (UXGA)</option>
-                <option value="2048x2048">2048×2048</option>
-                <option value="2560x1440">2560×1440 (QHD)</option>
-                <option value="2560x1600">2560×1600 (WQXGA)</option>
-                <option value="3840x2160">3840×2160 (4K UHD)</option>
-                <option value="3840x2400">3840×2400 (WQUXGA)</option>
-                <option value="4096x4096">4096×4096</option>
-            </select>
+            <div class="shaders-toolbar-group">
+                <label for="resolution-select">Resolution:</label>
+                <select id="resolution-select">
+                    <option value="64x64">64×64</option>
+                    <option value="128x128">128×128</option>
+                    <option value="160x120">160×120 (QQVGA)</option>
+                    <option value="256x256">256×256</option>
+                    <option value="320x200">320×200 (CGA)</option>
+                    <option value="320x240">320×240 (QVGA)</option>
+                    <option value="400x300">400×300</option>
+                    <option value="480x320">480×320 (HVGA)</option>
+                    <option value="512x512" selected>512×512</option>
+                    <option value="576x384">576×384 (PAL)</option>
+                    <option value="640x480">640×480 (VGA)</option>
+                    <option value="800x600">800×600 (SVGA)</option>
+                    <option value="960x600">960×600 (WSVGA)</option>
+                    <option value="1024x768">1024×768 (XGA)</option>
+                    <option value="1024x1024">1024×1024</option>
+                    <option value="1280x720">1280×720 (HD)</option>
+                    <option value="1280x800">1280×800 (WXGA)</option>
+                    <option value="1920x1080">1920×1080 (Full HD)</option>
+                    <option value="1920x1280">1920×1280 (UXGA)</option>
+                    <option value="2048x2048">2048×2048</option>
+                    <option value="2560x1440">2560×1440 (QHD)</option>
+                    <option value="2560x1600">2560×1600 (WQXGA)</option>
+                    <option value="3840x2160">3840×2160 (4K UHD)</option>
+                    <option value="3840x2400">3840×2400 (WQUXGA)</option>
+                    <option value="4096x4096">4096×4096</option>
+                </select>
+            </div>
             <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
@@ -78,18 +80,7 @@ permalink: /shaders/
                 <div class="shaders-editor-empty" id="editor-empty">
                     Select a shader from the file tree
                 </div>
-                <div class="shaders-editor-pane" id="editor-vert">
-                    <div class="shaders-editor-wrapper">
-                        <pre class="shaders-editor-highlight" id="vert-highlight"></pre>
-                        <textarea id="vert-source" spellcheck="false" placeholder="Vertex shader source..."></textarea>
-                    </div>
-                </div>
-                <div class="shaders-editor-pane" id="editor-frag">
-                    <div class="shaders-editor-wrapper">
-                        <pre class="shaders-editor-highlight" id="frag-highlight"></pre>
-                        <textarea id="frag-source" spellcheck="false" placeholder="Fragment shader source..."></textarea>
-                    </div>
-                </div>
+                <div class="shaders-editor-panes" id="editor-panes"></div>
             </div>
             <div class="shaders-status-bar" id="status-bar">
                 <div class="shaders-status-left">

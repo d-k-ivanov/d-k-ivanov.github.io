@@ -1,49 +1,57 @@
 "use strict";
 
 import { GLSLHighlighter } from "./glsl-highlighter.js";
+import { RENDER_CONTEXTS } from "./shader-renderer.js";
 
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
-    { folder: "basics", name: "hello_world", vertex: true, fragment: true },
-    { folder: "basics", name: "plotter", vertex: false, fragment: true },
-    { folder: "basics", name: "print_text", vertex: false, fragment: true },
+    { folder: "basics", name: "hello_world", language: "glsl", vertex: true, fragment: true, compute: false },
+    { folder: "basics", name: "hello_world_wgsl", language: "wgsl", vertex: true, fragment: true, compute: false },
+    { folder: "basics", name: "plotter", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "basics", name: "print_text", language: "glsl", vertex: false, fragment: true, compute: false },
 
     // Miscellaneous Examples from other authors
-    { folder: "misc", name: "bµg_moonlight_shadertoy", vertex: true, fragment: true },
-    { folder: "misc", name: "bµg_moonlight", vertex: true, fragment: true },
-    { folder: "misc", name: "curena_alhambra", vertex: true, fragment: true },
-    { folder: "misc", name: "curena_p6mm", vertex: true, fragment: true },
-    { folder: "misc", name: "iq_primitives", vertex: true, fragment: true },
+    { folder: "misc", name: "bµg_moonlight_shadertoy", language: "glsl", vertex: true, fragment: true, compute: false },
+    { folder: "misc", name: "bµg_moonlight", language: "glsl", vertex: true, fragment: true, compute: false },
+    { folder: "misc", name: "curena_alhambra", language: "glsl", vertex: true, fragment: true, compute: false },
+    { folder: "misc", name: "curena_p6mm", language: "glsl", vertex: true, fragment: true, compute: false },
+    { folder: "misc", name: "iq_primitives", language: "glsl", vertex: true, fragment: true, compute: false },
 
     // Shader Art Examples
-    { folder: "tutorials", name: "kishimisu_introduction_01", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_02", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_03", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_04", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_05", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_06", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_07", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_08", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_09", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_10", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_11", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_12", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_13", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_14", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_15", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_16", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_17", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_18", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_19", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_20", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_21", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_22", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_23", vertex: false, fragment: true },
-    { folder: "tutorials", name: "kishimisu_introduction_24", vertex: false, fragment: true },
+    { folder: "tutorials", name: "kishimisu_introduction_01", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_02", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_03", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_04", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_05", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_06", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_07", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_08", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_09", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_10", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_11", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_12", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_13", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_14", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_15", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_16", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_17", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_18", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_19", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_20", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_21", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_22", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_23", language: "glsl", vertex: false, fragment: true, compute: false },
+    { folder: "tutorials", name: "kishimisu_introduction_24", language: "glsl", vertex: false, fragment: true, compute: false },
 
     // Signed Distance Field (SDF) Examples
-    { folder: "sdf", name: "2d_distances", vertex: true, fragment: true },
+    { folder: "sdf", name: "2d_distances", language: "glsl", vertex: true, fragment: true, compute: false },
     // { folder: "sdf", name: "3d_distances" }
+];
+
+const SHADER_TYPES = [
+    { id: "vertex", label: "Vertex", extension: "vertex", legacyExt: "vert", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
+    { id: "fragment", label: "Fragment", extension: "fragment", legacyExt: "frag", icon: "fragment", context: null, placeholder: "Fragment shader source..." },
+    { id: "compute", label: "Compute", extension: "compute", legacyExt: null, icon: "compute", context: RENDER_CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
 ];
 
 const COLLECTION_BASE_PATH = "/shaders/collection";
@@ -57,23 +65,20 @@ export class ShaderEditor
         this.renderer = renderer;
         this.highlighter = new GLSLHighlighter();
         this.currentShader = null;
-        this.originalVertSource = "";
-        this.originalFragSource = "";
+        this.currentContext = RENDER_CONTEXTS.WEBGL2;
+        this.sources = {};
+        this.originalSources = {};
         this.activeTab = null;
         this.compileTimeout = null;
         this.compileDelay = 500; // ms delay before recompiling
+        this.editors = new Map();
 
         this.elements = {
             fileTree: document.getElementById("file-tree"),
             tabBar: document.getElementById("tab-bar"),
             editorContent: document.getElementById("editor-content"),
             editorEmpty: document.getElementById("editor-empty"),
-            editorVert: document.getElementById("editor-vert"),
-            editorFrag: document.getElementById("editor-frag"),
-            vertSource: document.getElementById("vert-source"),
-            fragSource: document.getElementById("frag-source"),
-            vertHighlight: document.getElementById("vert-highlight"),
-            fragHighlight: document.getElementById("frag-highlight"),
+            editorPanes: document.getElementById("editor-panes"),
             statusBar: document.getElementById("status-bar"),
             statusMessage: document.getElementById("status-message"),
             statusShader: document.getElementById("status-shader")
@@ -82,48 +87,109 @@ export class ShaderEditor
         this.init();
     }
 
+    getShaderLanguage(shader)
+    {
+        const name = shader.name || "";
+        if (name.toLowerCase().endsWith(".wgsl"))
+        {
+            return "wgsl";
+        }
+        if (name.toLowerCase().endsWith(".glsl"))
+        {
+            return "glsl";
+        }
+
+        if (shader.language)
+        {
+            return shader.language.toLowerCase();
+        }
+        return "glsl";
+    }
+
+    getShaderContext(shader)
+    {
+        return this.getShaderLanguage(shader) === "wgsl"
+            ? RENDER_CONTEXTS.WEBGPU
+            : RENDER_CONTEXTS.WEBGL2;
+    }
+
+    getShaderBaseName(shader)
+    {
+        const name = shader.name || "";
+        return name.replace(/\.(wgsl|glsl)$/i, "");
+    }
+
+    getShaderDisplayName(shader)
+    {
+        const base = this.getShaderBaseName(shader);
+        const lang = this.getShaderLanguage(shader);
+        const suffix = lang === "wgsl" ? ".wgsl" : ".glsl";
+        return `${base}${suffix}`;
+    }
+
     init()
     {
-        // Block browser extensions from interfering with shader code
-        this.elements.vertSource.setAttribute("data-gramm", "false");
-        this.elements.vertSource.setAttribute("data-lt-active", "false");
-        this.elements.vertSource.spellcheck = false;
-        this.elements.vertSource.autocomplete = "off";
-
-        this.elements.fragSource.setAttribute("data-gramm", "false");
-        this.elements.fragSource.setAttribute("data-lt-active", "false");
-        this.elements.fragSource.spellcheck = false;
-        this.elements.fragSource.autocomplete = "off";
-
+        this.createEditorPanes();
         this.buildFileTree();
-        this.setupEditorEvents();
-        this.setupScrollSync();
     }
 
-    setupScrollSync()
+    createEditorPanes()
     {
-        // Sync scroll between textarea and highlight overlay
-        this.elements.vertSource.addEventListener("scroll", () =>
+        const container = this.elements.editorPanes;
+        if (!container)
         {
-            this.elements.vertHighlight.scrollTop = this.elements.vertSource.scrollTop;
-            this.elements.vertHighlight.scrollLeft = this.elements.vertSource.scrollLeft;
-        });
+            return;
+        }
 
-        this.elements.fragSource.addEventListener("scroll", () =>
+        for (const type of SHADER_TYPES)
         {
-            this.elements.fragHighlight.scrollTop = this.elements.fragSource.scrollTop;
-            this.elements.fragHighlight.scrollLeft = this.elements.fragSource.scrollLeft;
-        });
+            const pane = document.createElement("div");
+            pane.className = "shaders-editor-pane";
+            pane.dataset.type = type.id;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "shaders-editor-wrapper";
+
+            const highlight = document.createElement("pre");
+            highlight.className = "shaders-editor-highlight";
+            highlight.id = `${type.id}-highlight`;
+
+            const textarea = document.createElement("textarea");
+            textarea.id = `${type.id}-source`;
+            textarea.placeholder = type.placeholder;
+            textarea.spellcheck = false;
+            textarea.autocomplete = "off";
+            textarea.setAttribute("data-gramm", "false");
+            textarea.setAttribute("data-lt-active", "false");
+
+            textarea.addEventListener("input", () => this.handleSourceInput(type.id));
+            textarea.addEventListener("scroll", () =>
+            {
+                highlight.scrollTop = textarea.scrollTop;
+                highlight.scrollLeft = textarea.scrollLeft;
+            });
+            textarea.addEventListener("keydown", (e) => this.handleTabKey(e, textarea));
+
+            wrapper.appendChild(highlight);
+            wrapper.appendChild(textarea);
+            pane.appendChild(wrapper);
+            container.appendChild(pane);
+
+            this.editors.set(type.id, {
+                type,
+                pane,
+                textarea,
+                highlight,
+                tab: null
+            });
+        }
     }
 
-    updateHighlight(type)
+    getVisibleShaderTypes()
     {
-        const textarea = type === "vert" ? this.elements.vertSource : this.elements.fragSource;
-        const highlight = type === "vert" ? this.elements.vertHighlight : this.elements.fragHighlight;
-        const code = textarea.value;
-
-        // Add extra newline to ensure highlight matches textarea height
-        highlight.innerHTML = this.highlighter.highlight(code) + "\n";
+        return SHADER_TYPES.filter(
+            (type) => !type.context || type.context === this.currentContext
+        );
     }
 
     buildFileTree()
@@ -131,7 +197,6 @@ export class ShaderEditor
         const tree = this.elements.fileTree;
         tree.innerHTML = "";
 
-        // Group shaders by folder
         const folders = new Map();
         for (const shader of SHADER_COLLECTION)
         {
@@ -142,7 +207,6 @@ export class ShaderEditor
             folders.get(shader.folder).push(shader);
         }
 
-        // Build tree structure
         for (const [folderName, shaders] of folders)
         {
             const folderEl = document.createElement("div");
@@ -158,22 +222,24 @@ export class ShaderEditor
             const itemsContainer = folderEl.querySelector(".shaders-tree-folder-items");
             const folderHeader = folderEl.querySelector(".shaders-tree-folder-header");
 
-            // Toggle folder
             folderHeader.addEventListener("click", () =>
             {
                 folderEl.classList.toggle("collapsed");
             });
 
-            // Add shader items
             for (const shader of shaders)
             {
+                const context = this.getShaderContext(shader);
+                const displayName = this.getShaderDisplayName(shader);
+
                 const itemEl = document.createElement("div");
                 itemEl.className = "shaders-tree-item";
                 itemEl.dataset.folder = shader.folder;
                 itemEl.dataset.name = shader.name;
+                itemEl.dataset.context = context;
                 itemEl.innerHTML = `
                     <span class="shaders-tree-item-icon">✦</span>
-                    <span>${shader.name}</span>
+                    <span class="shaders-tree-item-label">${displayName}</span>
                 `;
 
                 itemEl.addEventListener("click", () => this.loadShader(shader));
@@ -186,42 +252,53 @@ export class ShaderEditor
 
     async loadShader(shader)
     {
-        const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${shader.name}`;
-
         try
         {
             this.setStatus("Loading shader...", false);
 
-            const [vertSrc, fragSrc] = await Promise.all([
-                this.fetchShaderSource(shader.vertex ? `${basePath}.vert` : `${SHARED_BASE_PATH}/default.vert`),
-                this.fetchShaderSource(`${basePath}.frag`)
-            ]);
+            const context = this.getShaderContext(shader);
+            await this.renderer.setContext(context);
+            this.currentContext = context;
+
+            const visibleTypes = this.getVisibleShaderTypes();
+            const sources = {};
+            const originalSources = {};
+
+            for (const type of SHADER_TYPES)
+            {
+                if (visibleTypes.find(t => t.id === type.id))
+                {
+                    const src = await this.loadSourceForType(shader, type, context);
+                    sources[type.id] = src;
+                    originalSources[type.id] = src;
+                }
+                else
+                {
+                    sources[type.id] = "";
+                    originalSources[type.id] = "";
+                }
+            }
 
             this.currentShader = shader;
-            this.originalVertSource = vertSrc;
-            this.originalFragSource = fragSrc;
-
-            // Save selection to localStorage
+            this.sources = sources;
+            this.originalSources = originalSources;
             this.saveShaderSelection(shader);
 
-            // Update editors
-            this.elements.vertSource.value = vertSrc;
-            this.elements.fragSource.value = fragSrc;
+            for (const [id, editor] of this.editors)
+            {
+                editor.textarea.value = sources[id] || "";
+                this.updateHighlight(id);
+                this.markTabModified(id, false);
+            }
 
-            // Update syntax highlighting
-            this.updateHighlight("vert");
-            this.updateHighlight("frag");
-
-            // Update UI
             this.updateFileTreeSelection(shader);
-            this.updateTabs(shader);
-            this.showTab("frag");
+            this.updateTabs();
+            this.showTab(this.resolveDefaultTab());
 
-            // Compile and render
             await this.recompileShader();
 
             this.setStatus("Ready", false);
-            this.elements.statusShader.textContent = `${shader.folder}/${shader.name}`;
+            this.elements.statusShader.textContent = `${shader.folder}/${this.getShaderDisplayName(shader)}`;
         }
         catch (error)
         {
@@ -230,15 +307,145 @@ export class ShaderEditor
         }
     }
 
-    async fetchShaderSource(url)
+    async loadSourceForType(shader, type, context)
     {
-        const response = await fetch(url);
-        if (!response.ok)
+        if (type.context && type.context !== context)
         {
-            throw new Error(`Failed to load: ${url}`);
+            return "";
         }
-        return response.text();
+        if (type.id === "compute" && shader.compute !== true)
+        {
+            return "";
+        }
+
+        const candidates = [];
+        const added = new Map();
+        const addCandidate = (url, optional) =>
+        {
+            if (!url)
+            {
+                return;
+            }
+
+            const existing = added.get(url);
+            if (existing !== undefined)
+            {
+                if (existing === true && optional === false)
+                {
+                    // Upgrade to required if a stricter candidate is added later.
+                    const idx = candidates.findIndex(c => c.url === url);
+                    if (idx !== -1)
+                    {
+                        candidates[idx].optional = false;
+                    }
+                    added.set(url, false);
+                }
+                return;
+            }
+
+            added.set(url, optional);
+            candidates.push({ url, optional });
+        };
+
+        const baseName = this.getShaderBaseName(shader);
+        const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
+        const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
+        const expectsFile = type.id === "vertex"
+            ? shader.vertex !== false
+            : (type.id === "compute" ? shader.compute === true : true);
+
+        if (isWebGPU)
+        {
+            if (type.id === "compute" && shader.compute === true)
+            {
+                addCandidate(`${basePath}.${type.extension}.wgsl`, true);
+                if (type.legacyExt)
+                {
+                    addCandidate(`${basePath}.${type.legacyExt}.wgsl`, true);
+                }
+                addCandidate(`${SHARED_BASE_PATH}/default.compute.wgsl`, false);
+            }
+        }
+        else if (expectsFile)
+        {
+            addCandidate(`${basePath}.${type.extension}.glsl`, false);
+            if (type.legacyExt)
+            {
+                addCandidate(`${basePath}.${type.legacyExt}.glsl`, true);
+            }
+        }
+
+        const path = this.getShaderPath(shader, type, context);
+        if (path)
+        {
+            const optional = type.id === "compute" ? true : false;
+            addCandidate(path, optional);
+        }
+
+        // Legacy fallback without language suffix
+        if (!isWebGPU && expectsFile)
+        {
+            const legacyPath = `${basePath}.${type.extension}`;
+            addCandidate(legacyPath, true);
+        }
+
+        for (const candidate of candidates)
+        {
+            const content = await this.fetchShaderSource(candidate.url, candidate.optional);
+            if (content)
+            {
+                return content;
+            }
+        }
+
+        return "";
     }
+
+    getShaderPath(shader, type, context)
+    {
+        const baseName = this.getShaderBaseName(shader);
+        const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
+        const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
+        const ext = isWebGPU ? "wgsl" : "glsl";
+
+        switch (type.id)
+        {
+            case "vertex":
+                return shader.vertex !== false ? `${basePath}.vertex.${ext}` : `${SHARED_BASE_PATH}/default.vertex.${ext}`;
+            case "fragment":
+                return `${basePath}.fragment.${ext}`;
+            case "compute":
+                return `${basePath}.compute.${ext}`;
+            default:
+                return `${basePath}.${type.extension}.${ext}`;
+        }
+    }
+
+    async fetchShaderSource(url, optional = false)
+    {
+        try
+        {
+            const response = await fetch(url);
+            if (!response.ok)
+            {
+                if (optional)
+                {
+                    return "";
+                }
+                throw new Error(`Failed to load: ${url}`);
+            }
+            return response.text();
+        }
+        catch (err)
+        {
+            if (optional)
+            {
+                return "";
+            }
+            throw err;
+        }
+    }
+
 
     saveShaderSelection(shader)
     {
@@ -260,7 +467,6 @@ export class ShaderEditor
             if (saved)
             {
                 const shader = JSON.parse(saved);
-                // Validate that the shader exists in the collection
                 const exists = SHADER_COLLECTION.some(
                     s => s.folder === shader.folder && s.name === shader.name
                 );
@@ -291,14 +497,12 @@ export class ShaderEditor
 
     updateFileTreeSelection(shader)
     {
-        // Remove previous selection
         const prevActive = this.elements.fileTree.querySelector(".shaders-tree-item.active");
         if (prevActive)
         {
             prevActive.classList.remove("active");
         }
 
-        // Set new selection and expand parent folder
         const items = this.elements.fileTree.querySelectorAll(".shaders-tree-item");
         for (const item of items)
         {
@@ -306,131 +510,167 @@ export class ShaderEditor
             {
                 item.classList.add("active");
 
-                // Expand the parent folder
                 const parentFolder = item.closest(".shaders-tree-folder");
                 if (parentFolder)
                 {
                     parentFolder.classList.remove("collapsed");
                 }
 
-                // Scroll item into view
                 item.scrollIntoView({ block: "nearest", behavior: "smooth" });
                 break;
             }
         }
     }
 
-    updateTabs(shader)
+    updateTabs()
     {
-        this.elements.tabBar.innerHTML = `
-            <div class="shaders-tab active" data-tab="vert">
-                <span class="shaders-tab-icon vert">▣</span>
-                <span class="shaders-tab-label">${shader.name}.vert</span>
-                <span class="shaders-tab-modified"></span>
-            </div>
-            <div class="shaders-tab" data-tab="frag">
-                <span class="shaders-tab-icon frag">▣</span>
-                <span class="shaders-tab-label">${shader.name}.frag</span>
-                <span class="shaders-tab-modified"></span>
-            </div>
-        `;
+        const tabBar = this.elements.tabBar;
+        tabBar.innerHTML = "";
 
-        // Add tab click handlers
-        const tabs = this.elements.tabBar.querySelectorAll(".shaders-tab");
-        for (const tab of tabs)
+        const visibleTypes = this.getVisibleShaderTypes();
+        if (!visibleTypes.some(t => t.id === this.activeTab))
         {
-            tab.addEventListener("click", () => this.showTab(tab.dataset.tab));
+            this.activeTab = this.resolveDefaultTab();
+        }
+
+        for (const type of visibleTypes)
+        {
+            const tab = document.createElement("div");
+            tab.className = `shaders-tab${type.id === this.activeTab ? " active" : ""}`;
+            tab.dataset.tab = type.id;
+            tab.innerHTML = `
+                <span class="shaders-tab-icon ${type.icon || ""}">▣</span>
+                <span class="shaders-tab-label">${this.getTabLabel(type)}</span>
+                <span class="shaders-tab-modified"></span>
+            `;
+
+            tab.addEventListener("click", () => this.showTab(type.id));
+            tabBar.appendChild(tab);
+
+            const editor = this.editors.get(type.id);
+            if (editor)
+            {
+                editor.tab = tab;
+            }
+        }
+
+        this.refreshPaneVisibility();
+    }
+
+    getTabLabel(type)
+    {
+        return type.label;
+    }
+
+    refreshPaneVisibility()
+    {
+        const visibleTypes = this.getVisibleShaderTypes().map(t => t.id);
+
+        for (const [id, editor] of this.editors)
+        {
+            const shouldShow = visibleTypes.includes(id);
+            if (shouldShow)
+            {
+                editor.pane.style.display = "";
+                editor.pane.classList.toggle("active", id === this.activeTab);
+            }
+            else
+            {
+                editor.pane.classList.remove("active");
+                editor.pane.style.display = "none";
+            }
+
+            if (editor.tab)
+            {
+                editor.tab.style.display = shouldShow ? "flex" : "none";
+            }
         }
     }
 
     showTab(tabName)
     {
         this.activeTab = tabName;
-
-        // Hide empty state
         this.elements.editorEmpty.style.display = "none";
 
-        // Update tab active state
         const tabs = this.elements.tabBar.querySelectorAll(".shaders-tab");
         for (const tab of tabs)
         {
             tab.classList.toggle("active", tab.dataset.tab === tabName);
         }
 
-        // Show/hide editor panes
-        this.elements.editorVert.classList.toggle("active", tabName === "vert");
-        this.elements.editorFrag.classList.toggle("active", tabName === "frag");
-    }
-
-    setupEditorEvents()
-    {
-        // Vertex shader editing
-        this.elements.vertSource.addEventListener("input", () =>
+        for (const [id, editor] of this.editors)
         {
-            this.updateHighlight("vert");
-            this.markTabModified("vert", this.elements.vertSource.value !== this.originalVertSource);
-            this.scheduleRecompile();
-        });
-
-        // Fragment shader editing
-        this.elements.fragSource.addEventListener("input", () =>
-        {
-            this.updateHighlight("frag");
-            this.markTabModified("frag", this.elements.fragSource.value !== this.originalFragSource);
-            this.scheduleRecompile();
-        });
-
-        // Tab key support for textareas
-        this.elements.vertSource.addEventListener("keydown", (e) => this.handleTabKey(e));
-        this.elements.fragSource.addEventListener("keydown", (e) => this.handleTabKey(e));
-    }
-
-    handleTabKey(e)
-    {
-        if (e.key === "Tab")
-        {
-            e.preventDefault();
-            const textarea = e.target;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const value = textarea.value;
-
-            // Check if there is a selection (multiline or partial line)
-            if (start !== end)
-            {
-                // Get selected text
-                const before = value.substring(0, start);
-                const selected = value.substring(start, end);
-                const after = value.substring(end);
-
-                // Split selection into lines
-                const lines = selected.split('\n');
-                // Insert 4 spaces at the start of each line
-                const indented = lines.map(line => "    " + line).join('\n');
-
-                // Replace selection with indented text
-                textarea.value = before + indented + after;
-
-                // Calculate new selection range
-                // Start stays the same, end increases by 4 chars per line
-                const lineCount = lines.length;
-                textarea.selectionStart = start;
-                textarea.selectionEnd = end + (4 * lineCount);
-            } else
-            {
-                // No selection, insert 4 spaces at cursor
-                textarea.value = value.substring(0, start) + "    " + value.substring(end);
-                textarea.selectionStart = textarea.selectionEnd = start + 4;
-            }
-
-            // Trigger input event for recompile
-            textarea.dispatchEvent(new Event("input"));
+            const isActive = id === tabName && editor.pane.style.display !== "none";
+            editor.pane.classList.toggle("active", isActive);
         }
+    }
+
+    handleSourceInput(typeId)
+    {
+        const editor = this.editors.get(typeId);
+        if (!editor)
+        {
+            return;
+        }
+
+        this.sources[typeId] = editor.textarea.value;
+        this.updateHighlight(typeId);
+        this.markTabModified(typeId, this.sources[typeId] !== this.originalSources[typeId]);
+        this.scheduleRecompile();
+    }
+
+    updateHighlight(typeId)
+    {
+        const editor = this.editors.get(typeId);
+        if (!editor)
+        {
+            return;
+        }
+
+        const code = editor.textarea.value;
+        editor.highlight.innerHTML = this.highlighter.highlight(code) + "\n";
+    }
+
+    handleTabKey(e, textarea)
+    {
+        if (e.key !== "Tab")
+        {
+            return;
+        }
+
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        if (start !== end)
+        {
+            const before = value.substring(0, start);
+            const selected = value.substring(start, end);
+            const after = value.substring(end);
+
+            const lines = selected.split("\n");
+            const indented = lines.map(line => "    " + line).join("\n");
+
+            textarea.value = before + indented + after;
+
+            const lineCount = lines.length;
+            textarea.selectionStart = start;
+            textarea.selectionEnd = end + (4 * lineCount);
+        }
+        else
+        {
+            textarea.value = value.substring(0, start) + "    " + value.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + 4;
+        }
+
+        textarea.dispatchEvent(new Event("input"));
     }
 
     markTabModified(tabName, isModified)
     {
-        const tab = this.elements.tabBar.querySelector(`.shaders-tab[data-tab="${tabName}"]`);
+        const editor = this.editors.get(tabName);
+        const tab = editor ? editor.tab : null;
         if (tab)
         {
             tab.classList.toggle("modified", isModified);
@@ -450,6 +690,17 @@ export class ShaderEditor
         }, this.compileDelay);
     }
 
+    collectSourcesForContext()
+    {
+        const visibleTypes = this.getVisibleShaderTypes();
+        const result = {};
+        for (const type of visibleTypes)
+        {
+            result[type.id] = this.sources[type.id] || "";
+        }
+        return result;
+    }
+
     async recompileShader()
     {
         if (!this.currentShader)
@@ -457,13 +708,10 @@ export class ShaderEditor
             return;
         }
 
-        const vertSrc = this.elements.vertSource.value;
-        const fragSrc = this.elements.fragSource.value;
-
         try
         {
             this.setStatus("Compiling...", false);
-            await this.renderer.updateShaders(vertSrc, fragSrc);
+            await this.renderer.updateShaders(this.collectSourcesForContext());
             this.setStatus("Compiled successfully", false);
         }
         catch (error)
@@ -473,19 +721,21 @@ export class ShaderEditor
         }
     }
 
+    resolveDefaultTab()
+    {
+        const visible = this.getVisibleShaderTypes();
+        const preferred = visible.find(t => t.id === "fragment") || visible.find(t => t.id === "vertex");
+        return preferred ? preferred.id : (visible[0] ? visible[0].id : null);
+    }
+
     setStatus(message, isError)
     {
         this.elements.statusMessage.textContent = message;
         this.elements.statusBar.classList.toggle("error", isError);
     }
 
-    getVertexSource()
+    hasShaderLoaded()
     {
-        return this.elements.vertSource.value;
-    }
-
-    getFragmentSource()
-    {
-        return this.elements.fragSource.value;
+        return !!this.currentShader;
     }
 }
