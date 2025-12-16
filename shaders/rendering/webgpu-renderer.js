@@ -6,7 +6,7 @@ import { createUniformViews, WEBGPU_UNIFORM_BUFFER_SIZE } from "./uniform-state.
 
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
-const FONT_TEXTURE_URL = "/shaders/textures/iChannel0.png";
+const FONT_TEXTURE_URL = "./textures/iChannel0.png";
 const FONT_TEXTURE_BINDING = 4;
 const FONT_SAMPLER_BINDING = 5;
 
