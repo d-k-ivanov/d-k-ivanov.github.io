@@ -364,9 +364,8 @@ class WebGPURendererBackend
             /^\s*#version/m,
             /\bprecision\s+(?:lowp|mediump|highp)\b/,
             /\blayout\s*\(/,
-            /\bvoid\s+main\s*\(/,
-            /\bsampler2D\b/,
-            /\buniform\s+\w+/
+            /\bgl_(FragCoord|Position|VertexID|InstanceID)\b/,
+            /\bsampler2D\b/
         ];
         return glslMarkers.some((rx) => rx.test(source));
     }
