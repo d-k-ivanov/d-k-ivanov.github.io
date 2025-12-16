@@ -6,7 +6,6 @@ import { RENDER_CONTEXTS } from "./shader-renderer.js";
 // Shader collection registry - add new shaders here
 const SHADER_COLLECTION = [
     { language: "glsl", folder: "basics", vertex: true, fragment: true, name: "hello_world" },
-    { language: "wgsl", folder: "basics", vertex: true, fragment: true, compute: false, name: "hello_world_wgsl" },
     { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "plotter" },
     { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "print_text" },
 
@@ -45,7 +44,13 @@ const SHADER_COLLECTION = [
 
     // Signed Distance Field (SDF) Examples
     { language: "glsl", folder: "sdf", vertex: true, fragment: true, name: "2d_distances" },
+    { language: "wgsl", folder: "sdf", vertex: false, fragment: true, compute: false, name: "2d_distances_wgsl" },
     // { folder: "sdf", name: "3d_distances" }
+
+    // WebGPU WGSL Examples
+    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_triangle" },
+    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_world" },
+
 ];
 
 const SHADER_TYPES = [
@@ -326,12 +331,10 @@ export class ShaderEditor
                 return;
             }
 
-            const existing = added.get(url);
-            if (existing !== undefined)
+            if (added.has(url))
             {
-                if (existing === true && optional === false)
+                if (added.get(url) === true && optional === false)
                 {
-                    // Upgrade to required if a stricter candidate is added later.
                     const idx = candidates.findIndex(c => c.url === url);
                     if (idx !== -1)
                     {
@@ -349,39 +352,70 @@ export class ShaderEditor
         const baseName = this.getShaderBaseName(shader);
         const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
         const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
-        const expectsFile = type.id === "vertex"
-            ? shader.vertex !== false
-            : (type.id === "compute" ? true : true);
 
-        if (isWebGPU)
+        if (type.id === "compute")
         {
-            if (type.id === "compute")
+            if (isWebGPU)
             {
                 if (computeEnabled)
                 {
-                    addCandidate(`${basePath}.${type.extension}.wgsl`, true);
+                    addCandidate(`${basePath}.compute.wgsl`, true);
                 }
                 addCandidate(`${SHARED_BASE_PATH}/default.compute.wgsl`, false);
             }
+            else
+            {
+                return "";
+            }
         }
-        else if (expectsFile)
+        else if (type.id === "vertex")
         {
-            addCandidate(`${basePath}.${type.extension}.glsl`, false);
+            if (isWebGPU)
+            {
+                if (shader.vertex !== false)
+                {
+                    addCandidate(`${basePath}.vertex.wgsl`, true);
+                }
+                addCandidate(`${SHARED_BASE_PATH}/default.vertex.wgsl`, false);
+            }
+            else
+            {
+                if (shader.vertex !== false)
+                {
+                    addCandidate(`${basePath}.vertex.glsl`, true);
+                }
+                addCandidate(`${SHARED_BASE_PATH}/default.vertex.glsl`, false);
+            }
         }
-
-        const path = this.getShaderPath(shader, type, context);
-        if (path)
+        else
         {
-            const optional = type.id === "compute" ? false : false;
-            addCandidate(path, optional);
+            if (isWebGPU)
+            {
+                addCandidate(`${basePath}.fragment.wgsl`, false);
+            }
+            else
+            {
+                addCandidate(`${basePath}.fragment.glsl`, false);
+            }
         }
 
         for (const candidate of candidates)
         {
-            const content = await this.fetchShaderSource(candidate.url, candidate.optional);
-            if (content)
+            try
             {
-                return content;
+                const content = await this.fetchShaderSource(candidate.url, candidate.optional);
+                if (content)
+                {
+                    return content;
+                }
+            }
+            catch (err)
+            {
+                if (candidate.optional)
+                {
+                    continue;
+                }
+                throw err;
             }
         }
 
@@ -390,8 +424,6 @@ export class ShaderEditor
 
     getShaderPath(shader, type, context)
     {
-        const language = this.getShaderLanguage(shader);
-        const computeEnabled = language === "wgsl" && shader.compute === true;
         const baseName = this.getShaderBaseName(shader);
         const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
         const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
@@ -404,11 +436,7 @@ export class ShaderEditor
             case "fragment":
                 return `${basePath}.fragment.${ext}`;
             case "compute":
-                if (!isWebGPU)
-                {
-                    return "";
-                }
-                return computeEnabled ? `${basePath}.compute.${ext}` : `${SHARED_BASE_PATH}/default.compute.${ext}`;
+                return isWebGPU ? `${basePath}.compute.${ext}` : "";
             default:
                 return `${basePath}.${type.extension}.${ext}`;
         }
