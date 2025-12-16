@@ -308,6 +308,7 @@ class WebGPURendererBackend
         this.computeTextureFormat = null;
         this.computeTextureSize = { width: 0, height: 0 };
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+        this.useComputeTextureSampling = false;
 
         this.uniformBuffer = null;
         this.animationId = null;
@@ -543,7 +544,7 @@ class WebGPURendererBackend
 
         const renderEntries = [...baseRenderEntries];
 
-        if (includeCompute)
+        if (includeCompute && this.useComputeTextureSampling)
         {
             this.ensureComputeTarget();
             renderEntries.push(
@@ -591,6 +592,17 @@ class WebGPURendererBackend
         }
     }
 
+    fragmentUsesComputeTexture(source)
+    {
+        if (!source)
+        {
+            return false;
+        }
+        const hasBinding = /@binding\s*\(\s*2\s*\)/.test(source);
+        const mentionsTexture = /\bcomputeTexture\b/.test(source);
+        return hasBinding || mentionsTexture;
+    }
+
     async updateShaders(sources)
     {
         await this.init();
@@ -600,6 +612,7 @@ class WebGPURendererBackend
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
         const includeCompute = computeSource.length > 0;
+        this.useComputeTextureSampling = includeCompute && this.fragmentUsesComputeTexture(fragmentSource);
 
         if (!vertexSource || !fragmentSource)
         {

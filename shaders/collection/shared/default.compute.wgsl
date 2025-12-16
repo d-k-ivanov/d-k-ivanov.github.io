@@ -22,8 +22,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     }
 
     let uv = (vec2f(gid.xy) + 0.5) / vec2f(dims);
-    let t = shaderUniforms.iTime * 0.2;
-    let band = 0.5 + 0.5 * sin(uv.x * 12.0 + t);
+    let t = shaderUniforms.iTime * 10.0;
+    let band = 0.5 + 0.2 * sin((uv.x + uv.y) / 2.0 * 35.0 + t);
 
     textureStore(outputTex, vec2u(gid.xy), vec4f(vec3f(band), 1.0));
 }

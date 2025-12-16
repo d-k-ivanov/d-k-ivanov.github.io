@@ -17,8 +17,8 @@ fn palette(t : f32) -> vec3f {
     let a = vec3f(0.12, 0.18, 0.28);
     let b = vec3f(0.22, 0.32, 0.48);
     let c = vec3f(0.22, 0.16, 0.12);
-    let d = vec3f(0.0, 0.15, 0.38);
-    return a + b * cos(6.2831 * (c * t + d));
+    let d = vec3f(0.01, 0.15, 0.38);
+    return a + b * cos(6.28318 * (c * t + d));
 }
 
 @compute @workgroup_size(8, 8)

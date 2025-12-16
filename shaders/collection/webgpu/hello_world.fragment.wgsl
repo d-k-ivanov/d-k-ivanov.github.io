@@ -10,6 +10,8 @@ struct ShaderUniforms {
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
+@group(0) @binding(2) var computeTexture : texture_2d<f32>;
+@group(0) @binding(3) var computeSampler : sampler;
 
 struct VSOut {
     @builtin(position) Position : vec4f,
@@ -21,6 +23,11 @@ fn frag(input : VSOut) -> @location(0) vec4f {
     let uv = input.uv;
     let t = shaderUniforms.iTime;
     let wave = 0.5 + 0.5 * sin(t);
-    let color = vec3f(uv.x + sin(t), uv.y + cos(t), wave);
+    var color = vec3f(uv.x + sin(t), uv.y + cos(t), wave);
+
+    // Texture sampling from compute output
+    let texel = textureSampleLevel(computeTexture, computeSampler, uv, 0.0).rgb;
+    color *= texel * 0.5;
+
     return vec4f(color, 1.0);
 }
