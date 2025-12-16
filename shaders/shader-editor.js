@@ -1,57 +1,21 @@
 "use strict";
 
 import { GLSLHighlighter } from "./glsl-highlighter.js";
+
+import
+{
+    COLLECTION_BASE_PATH,
+    SHADER_COLLECTION,
+    SHARED_BASE_PATH,
+    getShaderBaseName,
+    getShaderContext,
+    getShaderDisplayName,
+    getShaderLanguage,
+    groupShadersByFolder,
+    isKnownShader
+} from "./shader-collection.js";
+
 import { RENDER_CONTEXTS } from "./shader-renderer.js";
-
-// Shader collection registry - add new shaders here
-const SHADER_COLLECTION = [
-    { language: "glsl", folder: "basics", vertex: true, fragment: true, name: "hello_world" },
-    { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "plotter" },
-    { language: "glsl", folder: "basics", vertex: false, fragment: true, name: "print_text" },
-
-    // Miscellaneous Examples from other authors
-    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "bµg_moonlight_shadertoy" },
-    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "bµg_moonlight" },
-    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "curena_alhambra" },
-    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "curena_p6mm" },
-    { language: "glsl", folder: "misc", vertex: true, fragment: true, name: "iq_primitives" },
-
-    // Shader Art Examples
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_01" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_02" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_03" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_04" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_05" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_06" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_07" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_08" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_09" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_10" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_11" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_12" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_13" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_14" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_15" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_16" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_17" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_18" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_19" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_20" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_21" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_22" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_23" },
-    { language: "glsl", folder: "tutorials", vertex: false, fragment: true, name: "kishimisu_introduction_24" },
-
-    // Signed Distance Field (SDF) Examples
-    { language: "glsl", folder: "sdf", vertex: true, fragment: true, name: "2d_distances" },
-    { language: "wgsl", folder: "sdf", vertex: false, fragment: true, compute: false, name: "2d_distances_wgsl" },
-    // { folder: "sdf", name: "3d_distances" }
-
-    // WebGPU WGSL Examples
-    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_triangle" },
-    { language: "wgsl", folder: "webgpu", vertex: true, fragment: true, compute: false, name: "hello_world" },
-
-];
 
 const SHADER_TYPES = [
     { id: "vertex", label: "Vertex", extension: "vertex", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
@@ -59,8 +23,6 @@ const SHADER_TYPES = [
     { id: "compute", label: "Compute", extension: "compute", icon: "compute", context: RENDER_CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
 ];
 
-const COLLECTION_BASE_PATH = "/shaders/collection";
-const SHARED_BASE_PATH = "/shaders/collection/shared";
 const STORAGE_KEY = "shaders-selected-shader";
 
 export class ShaderEditor
@@ -69,14 +31,17 @@ export class ShaderEditor
     {
         this.renderer = renderer;
         this.highlighter = new GLSLHighlighter();
+
         this.currentShader = null;
         this.currentContext = RENDER_CONTEXTS.WEBGL2;
         this.sources = {};
         this.originalSources = {};
         this.activeTab = null;
         this.compileTimeout = null;
-        this.compileDelay = 500; // ms delay before recompiling
+        this.compileDelay = 500;
         this.editors = new Map();
+        this.loadToken = 0;
+        this.highlightQueue = new Map();
 
         this.elements = {
             fileTree: document.getElementById("file-tree"),
@@ -90,46 +55,6 @@ export class ShaderEditor
         };
 
         this.init();
-    }
-
-    getShaderLanguage(shader)
-    {
-        const name = shader.name || "";
-        if (name.toLowerCase().endsWith(".wgsl"))
-        {
-            return "wgsl";
-        }
-        if (name.toLowerCase().endsWith(".glsl"))
-        {
-            return "glsl";
-        }
-
-        if (shader.language)
-        {
-            return shader.language.toLowerCase();
-        }
-        return "glsl";
-    }
-
-    getShaderContext(shader)
-    {
-        return this.getShaderLanguage(shader) === "wgsl"
-            ? RENDER_CONTEXTS.WEBGPU
-            : RENDER_CONTEXTS.WEBGL2;
-    }
-
-    getShaderBaseName(shader)
-    {
-        const name = shader.name || "";
-        return name.replace(/\.(wgsl|glsl)$/i, "");
-    }
-
-    getShaderDisplayName(shader)
-    {
-        const base = this.getShaderBaseName(shader);
-        const lang = this.getShaderLanguage(shader);
-        const suffix = lang === "wgsl" ? ".wgsl" : ".glsl";
-        return `${base}${suffix}`;
     }
 
     init()
@@ -190,131 +115,155 @@ export class ShaderEditor
         }
     }
 
-    getVisibleShaderTypes()
+    getVisibleShaderTypes(context = this.currentContext)
     {
         return SHADER_TYPES.filter(
-            (type) => !type.context || type.context === this.currentContext
+            (type) => !type.context || type.context === context
         );
     }
 
     buildFileTree()
     {
         const tree = this.elements.fileTree;
+        if (!tree)
+        {
+            return;
+        }
+
         tree.innerHTML = "";
-
-        const folders = new Map();
-        for (const shader of SHADER_COLLECTION)
+        const folders = groupShadersByFolder(SHADER_COLLECTION);
+        for (const { folder, shaders } of folders)
         {
-            if (!folders.has(shader.folder))
-            {
-                folders.set(shader.folder, []);
-            }
-            folders.get(shader.folder).push(shader);
+            tree.appendChild(this.createFolderElement(folder, shaders));
+        }
+    }
+
+    createFolderElement(folderName, shaders)
+    {
+        const folderEl = document.createElement("div");
+        folderEl.className = "shaders-tree-folder collapsed";
+
+        const header = document.createElement("div");
+        header.className = "shaders-tree-folder-header";
+        header.innerHTML = `
+            <span class="shaders-tree-folder-icon">▼</span>
+            <span>${folderName}</span>
+        `;
+        header.addEventListener("click", () =>
+        {
+            folderEl.classList.toggle("collapsed");
+        });
+
+        const itemsContainer = document.createElement("div");
+        itemsContainer.className = "shaders-tree-folder-items";
+        for (const shader of shaders)
+        {
+            itemsContainer.appendChild(this.createTreeItem(shader));
         }
 
-        for (const [folderName, shaders] of folders)
-        {
-            const folderEl = document.createElement("div");
-            folderEl.className = "shaders-tree-folder collapsed";
-            folderEl.innerHTML = `
-                <div class="shaders-tree-folder-header">
-                    <span class="shaders-tree-folder-icon">▼</span>
-                    <span>${folderName}</span>
-                </div>
-                <div class="shaders-tree-folder-items"></div>
-            `;
+        folderEl.appendChild(header);
+        folderEl.appendChild(itemsContainer);
+        return folderEl;
+    }
 
-            const itemsContainer = folderEl.querySelector(".shaders-tree-folder-items");
-            const folderHeader = folderEl.querySelector(".shaders-tree-folder-header");
+    createTreeItem(shader)
+    {
+        const context = getShaderContext(shader);
+        const displayName = getShaderDisplayName(shader);
 
-            folderHeader.addEventListener("click", () =>
-            {
-                folderEl.classList.toggle("collapsed");
-            });
+        const itemEl = document.createElement("div");
+        itemEl.className = "shaders-tree-item";
+        itemEl.dataset.folder = shader.folder;
+        itemEl.dataset.name = shader.name;
+        itemEl.dataset.context = context;
+        itemEl.innerHTML = `
+            <span class="shaders-tree-item-icon">✦</span>
+            <span class="shaders-tree-item-label">${displayName}</span>
+        `;
 
-            for (const shader of shaders)
-            {
-                const context = this.getShaderContext(shader);
-                const displayName = this.getShaderDisplayName(shader);
-
-                const itemEl = document.createElement("div");
-                itemEl.className = "shaders-tree-item";
-                itemEl.dataset.folder = shader.folder;
-                itemEl.dataset.name = shader.name;
-                itemEl.dataset.context = context;
-                itemEl.innerHTML = `
-                    <span class="shaders-tree-item-icon">✦</span>
-                    <span class="shaders-tree-item-label">${displayName}</span>
-                `;
-
-                itemEl.addEventListener("click", () => this.loadShader(shader));
-                itemsContainer.appendChild(itemEl);
-            }
-
-            tree.appendChild(folderEl);
-        }
+        itemEl.addEventListener("click", () => this.loadShader(shader));
+        return itemEl;
     }
 
     async loadShader(shader)
     {
+        if (!shader)
+        {
+            return;
+        }
+
+        const token = ++this.loadToken;
+
         try
         {
             this.setStatus("Loading shader...", false);
 
-            const context = this.getShaderContext(shader);
+            const context = getShaderContext(shader);
             await this.renderer.setContext(context);
             this.currentContext = context;
 
-            const visibleTypes = this.getVisibleShaderTypes();
-            const sources = {};
-            const originalSources = {};
-
-            for (const type of SHADER_TYPES)
+            const { sources, originals } = await this.loadSourcesForShader(shader, context);
+            if (token !== this.loadToken)
             {
-                if (visibleTypes.find(t => t.id === type.id))
-                {
-                    const src = await this.loadSourceForType(shader, type, context);
-                    sources[type.id] = src;
-                    originalSources[type.id] = src;
-                }
-                else
-                {
-                    sources[type.id] = "";
-                    originalSources[type.id] = "";
-                }
+                return;
             }
 
             this.currentShader = shader;
             this.sources = sources;
-            this.originalSources = originalSources;
+            this.originalSources = originals;
             this.saveShaderSelection(shader);
 
-            for (const [id, editor] of this.editors)
-            {
-                editor.textarea.value = sources[id] || "";
-                this.updateHighlight(id);
-                this.markTabModified(id, false);
-            }
-
+            this.populateEditors();
             this.updateFileTreeSelection(shader);
             this.updateTabs();
             this.showTab(this.resolveDefaultTab());
 
             await this.recompileShader();
 
+            if (token === this.loadToken && this.elements.statusShader)
+            {
+                this.elements.statusShader.textContent = `${shader.folder}/${getShaderDisplayName(shader)}`;
+            }
             this.setStatus("Ready", false);
-            this.elements.statusShader.textContent = `${shader.folder}/${this.getShaderDisplayName(shader)}`;
         }
         catch (error)
         {
+            if (token !== this.loadToken)
+            {
+                return;
+            }
             this.setStatus(`Error: ${error.message}`, true);
             console.error("Failed to load shader:", error);
         }
     }
 
+    async loadSourcesForShader(shader, context)
+    {
+        const visibleTypes = this.getVisibleShaderTypes(context);
+        const sources = {};
+        const originals = {};
+
+        for (const type of SHADER_TYPES)
+        {
+            if (visibleTypes.find((t) => t.id === type.id))
+            {
+                const src = await this.loadSourceForType(shader, type, context);
+                sources[type.id] = src;
+                originals[type.id] = src;
+            }
+            else
+            {
+                sources[type.id] = "";
+                originals[type.id] = "";
+            }
+        }
+
+        return { sources, originals };
+    }
+
     async loadSourceForType(shader, type, context)
     {
-        const language = this.getShaderLanguage(shader);
+        const language = getShaderLanguage(shader);
         const computeEnabled = language === "wgsl" && shader.compute === true;
 
         if (type.context && type.context !== context)
@@ -349,7 +298,7 @@ export class ShaderEditor
             candidates.push({ url, optional });
         };
 
-        const baseName = this.getShaderBaseName(shader);
+        const baseName = getShaderBaseName(shader);
         const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
         const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
 
@@ -422,26 +371,6 @@ export class ShaderEditor
         return "";
     }
 
-    getShaderPath(shader, type, context)
-    {
-        const baseName = this.getShaderBaseName(shader);
-        const basePath = `${COLLECTION_BASE_PATH}/${shader.folder}/${baseName}`;
-        const isWebGPU = context === RENDER_CONTEXTS.WEBGPU;
-        const ext = isWebGPU ? "wgsl" : "glsl";
-
-        switch (type.id)
-        {
-            case "vertex":
-                return shader.vertex !== false ? `${basePath}.vertex.${ext}` : `${SHARED_BASE_PATH}/default.vertex.${ext}`;
-            case "fragment":
-                return `${basePath}.fragment.${ext}`;
-            case "compute":
-                return isWebGPU ? `${basePath}.compute.${ext}` : "";
-            default:
-                return `${basePath}.${type.extension}.${ext}`;
-        }
-    }
-
     async fetchShaderSource(url, optional = false)
     {
         try
@@ -467,7 +396,6 @@ export class ShaderEditor
         }
     }
 
-
     saveShaderSelection(shader)
     {
         try
@@ -488,10 +416,7 @@ export class ShaderEditor
             if (saved)
             {
                 const shader = JSON.parse(saved);
-                const exists = SHADER_COLLECTION.some(
-                    s => s.folder === shader.folder && s.name === shader.name
-                );
-                if (exists)
+                if (isKnownShader(shader))
                 {
                     return shader;
                 }
@@ -516,15 +441,31 @@ export class ShaderEditor
         }
     }
 
+    populateEditors()
+    {
+        for (const [id, editor] of this.editors)
+        {
+            editor.textarea.value = this.sources[id] || "";
+            this.updateHighlight(id);
+            this.markTabModified(id, false);
+        }
+    }
+
     updateFileTreeSelection(shader)
     {
-        const prevActive = this.elements.fileTree.querySelector(".shaders-tree-item.active");
+        const tree = this.elements.fileTree;
+        if (!tree)
+        {
+            return;
+        }
+
+        const prevActive = tree.querySelector(".shaders-tree-item.active");
         if (prevActive)
         {
             prevActive.classList.remove("active");
         }
 
-        const items = this.elements.fileTree.querySelectorAll(".shaders-tree-item");
+        const items = tree.querySelectorAll(".shaders-tree-item");
         for (const item of items)
         {
             if (item.dataset.folder === shader.folder && item.dataset.name === shader.name)
@@ -546,6 +487,11 @@ export class ShaderEditor
     updateTabs()
     {
         const tabBar = this.elements.tabBar;
+        if (!tabBar)
+        {
+            return;
+        }
+
         tabBar.innerHTML = "";
 
         const visibleTypes = this.getVisibleShaderTypes();
@@ -611,9 +557,12 @@ export class ShaderEditor
     showTab(tabName)
     {
         this.activeTab = tabName;
-        this.elements.editorEmpty.style.display = "none";
+        if (this.elements.editorEmpty)
+        {
+            this.elements.editorEmpty.style.display = "none";
+        }
 
-        const tabs = this.elements.tabBar.querySelectorAll(".shaders-tab");
+        const tabs = this.elements.tabBar ? this.elements.tabBar.querySelectorAll(".shaders-tab") : [];
         for (const tab of tabs)
         {
             tab.classList.toggle("active", tab.dataset.tab === tabName);
@@ -648,8 +597,19 @@ export class ShaderEditor
             return;
         }
 
-        const code = editor.textarea.value;
-        editor.highlight.innerHTML = this.highlighter.highlight(code) + "\n";
+        if (this.highlightQueue.has(typeId))
+        {
+            return;
+        }
+
+        const rafId = requestAnimationFrame(() =>
+        {
+            this.highlightQueue.delete(typeId);
+            const code = editor.textarea.value;
+            editor.highlight.innerHTML = `${this.highlighter.highlight(code)}\n`;
+        });
+
+        this.highlightQueue.set(typeId, rafId);
     }
 
     handleTabKey(e, textarea)
@@ -707,6 +667,7 @@ export class ShaderEditor
 
         this.compileTimeout = setTimeout(() =>
         {
+            this.compileTimeout = null;
             this.recompileShader();
         }, this.compileDelay);
     }
@@ -751,8 +712,14 @@ export class ShaderEditor
 
     setStatus(message, isError)
     {
-        this.elements.statusMessage.textContent = message;
-        this.elements.statusBar.classList.toggle("error", isError);
+        if (this.elements.statusMessage)
+        {
+            this.elements.statusMessage.textContent = message;
+        }
+        if (this.elements.statusBar)
+        {
+            this.elements.statusBar.classList.toggle("error", isError);
+        }
     }
 
     hasShaderLoaded()

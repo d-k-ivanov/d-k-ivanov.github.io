@@ -6,70 +6,69 @@ import { ShaderEditor } from "./shader-editor.js";
 import { ShaderRenderer } from "./shader-renderer.js";
 import { ThemeManager } from "./theme-manager.js";
 
-// Initialize application
-const canvasWrapper = document.querySelector(".shaders-canvas-wrapper");
-let canvas = document.getElementById("canvas");
-let canvasControls = null;
-
-const renderer = new ShaderRenderer(canvas);
-const editor = new ShaderEditor(renderer);
-const resizer = new PanelResizer();
-const themeManager = new ThemeManager();
-
-renderer.setCanvasChangeHandler((newCanvas) =>
+class ShaderApp
 {
-    canvas = newCanvas;
-    if (canvasControls)
+    constructor()
     {
-        canvasControls.setCanvas(newCanvas);
-    }
-});
+        this.canvas = document.getElementById("canvas");
+        this.renderer = new ShaderRenderer(this.canvas);
+        this.editor = new ShaderEditor(this.renderer);
+        this.resizer = new PanelResizer();
+        this.themeManager = new ThemeManager();
 
-const recreateCanvas = () =>
-{
-    if (!canvasWrapper || !canvas)
-    {
-        return canvas;
+        this.canvasControls = new CanvasControls(this.canvas, {
+            onResolutionChange: () => this.renderer.handleResize()
+        });
+
+        this.renderer.setCanvasChangeHandler((newCanvas) => this.handleCanvasChanged(newCanvas));
+
+        this.bindHotkeys();
+        this.bindNoteToggle();
     }
 
-    const newCanvas = canvas.cloneNode(false);
-    newCanvas.id = canvas.id;
-    newCanvas.width = canvas.width;
-    newCanvas.height = canvas.height;
-    canvasWrapper.replaceChild(newCanvas, canvas);
-    canvas = newCanvas;
-
-    if (canvasControls)
+    handleCanvasChanged(newCanvas)
     {
-        canvasControls.setCanvas(newCanvas);
+        this.canvas = newCanvas;
+        if (this.canvasControls)
+        {
+            this.canvasControls.setCanvas(newCanvas);
+        }
     }
 
-    renderer.setCanvas(newCanvas);
-    return newCanvas;
-};
-
-canvasControls = new CanvasControls(canvas, {
-    onResolutionChange: () => renderer.handleResize()
-});
-
-// Handle Ctrl+F5 to reset to initial state
-document.addEventListener("keydown", (e) =>
-{
-    if ((e.key === "F5" && e.ctrlKey) || (e.key === "R" && e.ctrlKey && e.shiftKey))
+    recreateCanvas()
     {
-        e.preventDefault();
-        editor.clearSavedShader();
-        themeManager.resetThemes();
-        location.reload();
+        const newCanvas = this.renderer.recreateCanvas();
+        if (newCanvas && this.canvasControls)
+        {
+            this.canvasControls.setCanvas(newCanvas);
+        }
+        return newCanvas;
     }
-});
 
-const init = async () =>
-{
-    const note = document.querySelector(".shaders-note");
-    if (note)
+    bindHotkeys()
     {
+        document.addEventListener("keydown", (e) =>
+        {
+            if ((e.key === "F5" && e.ctrlKey) || (e.key === "R" && e.ctrlKey && e.shiftKey))
+            {
+                e.preventDefault();
+                this.editor.clearSavedShader();
+                this.themeManager.resetThemes();
+                location.reload();
+            }
+        });
+    }
+
+    bindNoteToggle()
+    {
+        const note = document.querySelector(".shaders-note");
+        if (!note)
+        {
+            return;
+        }
+
         note.classList.add("collapsed");
+
         const toggle = () => note.classList.toggle("collapsed");
         const title = note.querySelector(".shaders-note-title");
         if (title)
@@ -90,12 +89,16 @@ const init = async () =>
         });
     }
 
-    recreateCanvas();
-    const savedShader = editor.getSavedShader();
-    await editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
-};
+    async start()
+    {
+        this.recreateCanvas();
+        const savedShader = this.editor.getSavedShader();
+        await this.editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
+    }
+}
 
-init().catch((error) =>
+const app = new ShaderApp();
+app.start().catch((error) =>
 {
-    editor.setStatus(`Init error: ${error.message}`, true);
+    app.editor.setStatus(`Init error: ${error.message}`, true);
 });
