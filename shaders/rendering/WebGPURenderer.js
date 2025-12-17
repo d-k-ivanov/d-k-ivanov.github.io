@@ -9,6 +9,7 @@ const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
 const FONT_TEXTURE_URL = "./textures/iChannel0.png";
 const FONT_TEXTURE_BINDING = 4;
 const FONT_SAMPLER_BINDING = 5;
+const DEFAULT_GRID_SIZE = 1;
 
 /**
  * WebGPU renderer backend supporting render and optional compute pipelines.
@@ -38,6 +39,7 @@ export class WebGPURenderer extends BaseRenderer
         this.computeTextureSize = { width: 0, height: 0 };
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
         this.useComputeTextureSampling = false;
+        this.grid_size = DEFAULT_GRID_SIZE;
         this.fontTexture = null;
         this.fontTextureView = null;
         this.fontSampler = null;
@@ -208,6 +210,33 @@ export class WebGPURenderer extends BaseRenderer
             y: parseInt(y || "1", 10) || DEFAULT_WORKGROUP_SIZE.y,
             z: parseInt(z || "1", 10) || DEFAULT_WORKGROUP_SIZE.z
         };
+    }
+
+    /**
+     * Extracts GRID_SIZE constant from any provided WGSL sources.
+     */
+    extractGridSize(sources)
+    {
+        const regex = /const\s+GRID_SIZE[^=]*=\s*([0-9]+)\s*u?/i;
+        for (const source of sources)
+        {
+            if (!source)
+            {
+                continue;
+            }
+
+            const match = regex.exec(source);
+            if (match)
+            {
+                const parsed = parseInt(match[1], 10);
+                if (!Number.isNaN(parsed) && parsed > 0)
+                {
+                    return parsed;
+                }
+            }
+        }
+
+        return DEFAULT_GRID_SIZE;
     }
 
     /**
@@ -471,6 +500,7 @@ export class WebGPURenderer extends BaseRenderer
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
         const includeCompute = computeSource.length > 0;
+        this.grid_size = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
         this.useComputeTextureSampling = includeCompute && this.fragmentUsesComputeTexture(fragmentSource);
         this.needsFontTexture = this.fragmentUsesFontTexture(fragmentSource);
 
@@ -614,7 +644,8 @@ export class WebGPURenderer extends BaseRenderer
             // Adjust as needed based on the vertex shader implementation
             // Shaders like game_of_life_01 may require 6 vertices
             const vertexCount = 6;
-            pass.draw(vertexCount, 1, 0, 0);
+            const instances = Math.max(1, this.grid_size || DEFAULT_GRID_SIZE);
+            pass.draw(vertexCount, instances * instances, 0, 0);
             pass.end();
 
             this.device.queue.submit([encoder.finish()]);
