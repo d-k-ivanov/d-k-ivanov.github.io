@@ -12,16 +12,21 @@ struct ShaderUniforms
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
+    @location(0) grid: vec2f,
+    @location(1) cell: vec2f,
 };
 
 @fragment
-fn frag(input : VSOut) -> @location(0) vec4f
+fn frag(input : VertexOutput) -> @location(0) vec4f
 {
-    var  color = vec3f(1.0, 0.0, 0.0);
     // Reference the frame count to prevent error about unused uniform
     let pulse = shaderUniforms.iFrame;
-    return vec4f(color, 1.0);
+    // var  color = vec3f(1.0, 0.0, 0.0);
+    // return vec4f(color, 1.0);
+
+    let cellColor = input.cell / input.grid;
+    return vec4f(cellColor, 1.0 - cellColor.x, 1.0);
 }
