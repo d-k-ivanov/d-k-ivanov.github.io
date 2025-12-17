@@ -608,7 +608,13 @@ export class WebGPURenderer extends BaseRenderer
             {
                 pass.setBindGroup(0, this.renderBindGroup);
             }
-            pass.draw(3, 1, 0, 0);
+            // The number of vertices is shader-dependent
+            // For a full-screen triangle, use 3 vertices
+            // For a full-screen quad, use 6 vertices
+            // Adjust as needed based on the vertex shader implementation
+            // Shaders like game_of_life_01 may require 6 vertices
+            const vertexCount = 6;
+            pass.draw(vertexCount, 1, 0, 0);
             pass.end();
 
             this.device.queue.submit([encoder.finish()]);
