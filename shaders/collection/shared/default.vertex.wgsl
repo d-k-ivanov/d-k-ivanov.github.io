@@ -4,7 +4,7 @@ struct VSOut
     @location(0) uv : vec2f,
 };
 
-// Common vertex shader used when specific vertex shader is not provided.
+// Default vertex shader used when specific vertex shader is not provided.
 
 @vertex
 fn vert(@builtin(vertex_index) idx : u32) -> VSOut

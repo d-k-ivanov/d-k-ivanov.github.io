@@ -1,6 +1,6 @@
 #version 300 es
 
-// Common vertex shader used when specific vertex shader is not provided.
+// Default vertex shader used when specific vertex shader is not provided.
 
 void main()
 {

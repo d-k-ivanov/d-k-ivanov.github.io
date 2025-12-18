@@ -115,15 +115,11 @@ export class ShaderEditor
     }
 
     /**
-     * Returns shader stages relevant to the current context/shader config.
+     * Returns shader stages relevant to the current context config.
      */
-    getVisibleShaderTypes(context = this.currentContext, shader = this.currentShader)
+    getVisibleShaderTypes(context = this.currentContext)
     {
-        const wantsCompute = shader?.compute === true;
-        return SHADER_TYPES.filter((type) =>
-            (!type.context || type.context === context) &&
-            (type.id !== "compute" || wantsCompute)
-        );
+        return SHADER_TYPES.filter((type) => (!type.context || type.context === context));
     }
 
     /**
@@ -258,7 +254,7 @@ export class ShaderEditor
      */
     async loadSourcesForShader(shader, context)
     {
-        const visibleTypes = this.getVisibleShaderTypes(context, shader);
+        const visibleTypes = this.getVisibleShaderTypes(context);
         const sources = {};
         const originals = {};
 
@@ -285,9 +281,6 @@ export class ShaderEditor
      */
     async loadSourceForType(shader, type, context)
     {
-        const language = ShaderCollection.getLanguage(shader);
-        const computeEnabled = language === "wgsl" && shader.compute === true;
-
         if (type.context && type.context !== context)
         {
             return "";
@@ -324,46 +317,42 @@ export class ShaderEditor
         const basePath = `${ShaderCollection.BASE_PATH}/${shader.folder}/${baseName}`;
         const isWebGPU = context === ShaderRenderer.CONTEXTS.WEBGPU;
 
+        if (type.id === "vertex")
+        {
+            if (isWebGPU)
+            {
+                addCandidate(`${basePath}.vertex.wgsl`, /*optional*/ true);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.wgsl`, /*optional*/ false);
+            }
+            else
+            {
+                addCandidate(`${basePath}.vertex.glsl`, /*optional*/ true);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.glsl`, /*optional*/ false);
+            }
+        }
+
+        if (type.id === "fragment")
+        {
+            if (isWebGPU)
+            {
+                addCandidate(`${basePath}.fragment.wgsl`, /*optional*/ false);
+            }
+            else
+            {
+                addCandidate(`${basePath}.fragment.glsl`, /*optional*/ false);
+            }
+        }
+
         if (type.id === "compute")
         {
-            if (isWebGPU && computeEnabled)
+            if (isWebGPU)
             {
-                addCandidate(`${basePath}.compute.wgsl`, true);
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.compute.wgsl`, false);
+                addCandidate(`${basePath}.compute.wgsl`, /*optional*/ true);
+                addCandidate(`${ShaderCollection.SHARED_PATH}/default.compute.wgsl`, /*optional*/ false);
             }
             else
             {
                 return "";
-            }
-        }
-        else if (type.id === "vertex")
-        {
-            if (isWebGPU)
-            {
-                if (shader.vertex !== false)
-                {
-                    addCandidate(`${basePath}.vertex.wgsl`, true);
-                }
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.wgsl`, false);
-            }
-            else
-            {
-                if (shader.vertex !== false)
-                {
-                    addCandidate(`${basePath}.vertex.glsl`, true);
-                }
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.glsl`, false);
-            }
-        }
-        else
-        {
-            if (isWebGPU)
-            {
-                addCandidate(`${basePath}.fragment.wgsl`, false);
-            }
-            else
-            {
-                addCandidate(`${basePath}.fragment.glsl`, false);
             }
         }
 
@@ -534,7 +523,7 @@ export class ShaderEditor
 
         tabBar.innerHTML = "";
 
-        const visibleTypes = this.getVisibleShaderTypes(this.currentContext, this.currentShader);
+        const visibleTypes = this.getVisibleShaderTypes(this.currentContext);
         if (!visibleTypes.some(t => t.id === this.activeTab))
         {
             this.activeTab = this.resolveDefaultTab();
@@ -573,14 +562,11 @@ export class ShaderEditor
     }
 
     /**
-     * Shows or hides editor panes based on currently visible stages.
-     */
-    /**
      * Synchronizes pane visibility and tab display with current filter.
      */
     refreshPaneVisibility()
     {
-        const visibleTypes = this.getVisibleShaderTypes(this.currentContext, this.currentShader).map(t => t.id);
+        const visibleTypes = this.getVisibleShaderTypes(this.currentContext).map(t => t.id);
 
         for (const [id, editor] of this.editors)
         {
@@ -781,7 +767,7 @@ export class ShaderEditor
      */
     resolveDefaultTab()
     {
-        const visible = this.getVisibleShaderTypes(this.currentContext, this.currentShader);
+        const visible = this.getVisibleShaderTypes(this.currentContext);
         const preferred = visible.find(t => t.id === "fragment") || visible.find(t => t.id === "vertex");
         return preferred ? preferred.id : (visible[0] ? visible[0].id : null);
     }

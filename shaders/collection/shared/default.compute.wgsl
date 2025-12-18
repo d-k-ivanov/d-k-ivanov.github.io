@@ -8,10 +8,10 @@ struct ShaderUniforms
     iMouse : vec4f,
 };
 
+// Common compute shader used when specific compute shader is not provided.
+
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 @group(0) @binding(1) var outputTex : texture_storage_2d<rgba8unorm, write>;
-
-// Minimal compute shader used when a specific compute shader is not provided.
 
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) gid : vec3u)
@@ -21,10 +21,5 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     {
         return;
     }
-
-    let uv = (vec2f(gid.xy) + 0.5) / vec2f(dims);
-    let t = shaderUniforms.iTime * 10.0;
-    let band = 0.5 + 0.2 * sin((uv.x + uv.y) / 2.0 * 35.0 + t);
-
-    textureStore(outputTex, vec2u(gid.xy), vec4f(vec3f(band), 1.0));
+    let frame = shaderUniforms.iFrame;
 }

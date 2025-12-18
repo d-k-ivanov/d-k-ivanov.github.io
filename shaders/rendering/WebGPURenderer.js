@@ -12,7 +12,6 @@ const DEFAULT_GRID_SIZE = 1;
 const BINDING_INDEX_UNIFORM = 0;
 const BINDING_INDEX_STORAGE = 1;
 
-
 const BINDING_INDEX_ICHANNEL_0 = 10;
 const BINDING_INDEX_ICHANNEL_0_SAMPLER = 11;
 const BINDING_INDEX_ICHANNEL_1 = 12;
@@ -553,6 +552,7 @@ export class WebGPURenderer extends BaseRenderer
         const vertexSource = (sources.vertex || "").trim();
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
+
         const includeCompute = computeSource.length > 0;
         this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
         this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
