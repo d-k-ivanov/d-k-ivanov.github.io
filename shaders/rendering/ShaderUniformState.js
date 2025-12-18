@@ -9,11 +9,11 @@ export class ShaderUniformState
 
     static OFFSETS = {
         resolution: 0,
-        time: 4,
-        timeDelta: 5,
-        frame: 6,
-        frameRate: 7,
-        mouse: 12
+        time: 3,
+        timeDelta: 4,
+        frame: 5,
+        frameRate: 6,
+        mouse: 7
     };
 
     /**
@@ -123,17 +123,11 @@ export class ShaderUniformState
         f[offsets.resolution + 0] = data.resolution.x;
         f[offsets.resolution + 1] = data.resolution.y;
         f[offsets.resolution + 2] = data.resolution.z;
-        f[offsets.resolution + 3] = 0.0;
 
         f[offsets.time] = data.timeSeconds;
         f[offsets.timeDelta] = data.deltaSeconds;
         u[offsets.frame] = data.frame;
         f[offsets.frameRate] = data.frameRate;
-
-        f[8] = 0.0;
-        f[9] = 0.0;
-        f[10] = 0.0;
-        f[11] = 0.0;
 
         f[offsets.mouse + 0] = data.mouse.x;
         f[offsets.mouse + 1] = data.mouse.y;

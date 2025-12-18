@@ -1,12 +1,10 @@
 struct ShaderUniforms
 {
     iResolution : vec3f,
-    _padding0 : f32,
     iTime : f32,
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    _padding1 : vec2f,
     iMouse : vec4f,
 };
 

@@ -5,12 +5,28 @@ import { SamplerState } from "./SamplerState.js";
 import { ShaderUniformState } from "./ShaderUniformState.js";
 
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
+const DEFAULT_VERTEX_COUNT = 3;
+const DEFAULT_GRID_SIZE = 1;
+
+// Binting indices:
+const BINDING_INDEX_UNIFORM = 0;
+const BINDING_INDEX_STORAGE = 1;
+
+
+const BINDING_INDEX_ICHANNEL_0 = 10;
+const BINDING_INDEX_ICHANNEL_0_SAMPLER = 11;
+const BINDING_INDEX_ICHANNEL_1 = 12;
+const BINDING_INDEX_ICHANNEL_1_SAMPLER = 13;
+const BINDING_INDEX_ICHANNEL_2 = 14;
+const BINDING_INDEX_ICHANNEL_2_SAMPLER = 15;
+const BINDING_INDEX_ICHANNEL_3 = 16;
+const BINDING_INDEX_ICHANNEL_4_SAMPLER = 17;
+
+
 const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
 const FONT_TEXTURE_URL = "./textures/iChannel0.png";
 const FONT_TEXTURE_BINDING = 4;
 const FONT_SAMPLER_BINDING = 5;
-const DEFAULT_VERTEX_COUNT = 3;
-const DEFAULT_GRID_SIZE = 1;
 
 /**
  * WebGPU renderer backend supporting render and optional compute pipelines.
@@ -28,29 +44,38 @@ export class WebGPURenderer extends BaseRenderer
         this.adapter = null;
         this.context = null;
         this.format = null;
-        this.renderPipeline = null;
-        this.computePipeline = null;
-        this.renderBindGroup = null;
-        this.computeBindGroup = null;
-        this.computeTexture = null;
-        this.computeTextureSampleView = null;
-        this.computeTextureStorageView = null;
-        this.computeSampler = null;
-        this.computeTextureFormat = null;
-        this.computeTextureSize = { width: 0, height: 0 };
-        this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
-        this.useComputeTextureSampling = false;
-        this.vertices = DEFAULT_VERTEX_COUNT;
-        this.grid_size = DEFAULT_GRID_SIZE;
-        this.fontTexture = null;
-        this.fontTextureView = null;
-        this.fontSampler = null;
-        this.needsFontTexture = false;
 
-        this.samplers = new SamplerState();
+        this.vertexCount = DEFAULT_VERTEX_COUNT;
+
+        // Buffers
         this.uniformBuffer = null;
         this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
         this.uniformViews = this.uniformState.getViews();
+
+        this.renderPipeline = null;
+        this.computePipeline = null;
+
+        this.renderBindGroup = null;
+        this.computeBindGroup = null;
+
+        this.computeTexture = null;
+        this.computeTextureSampleView = null;
+        this.computeTextureStorageView = null;
+        this.computeTextureFormat = null;
+        this.computeTextureSize = { width: 0, height: 0 };
+
+        this.samplers = new SamplerState();
+
+        this.computeSampler = null;
+        this.fontSampler = null;
+
+        this.useComputeTextureSampling = false;
+        this.fontTexture = null;
+        this.fontTextureView = null;
+        this.needsFontTexture = false;
+
+        this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+        this.gridSize = DEFAULT_GRID_SIZE;
     }
 
     /**
@@ -529,8 +554,8 @@ export class WebGPURenderer extends BaseRenderer
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
         const includeCompute = computeSource.length > 0;
-        this.vertices = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
-        this.grid_size = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
+        this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
+        this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
         this.useComputeTextureSampling = includeCompute && this.fragmentUsesComputeTexture(fragmentSource);
         this.needsFontTexture = this.fragmentUsesFontTexture(fragmentSource);
 
@@ -673,8 +698,8 @@ export class WebGPURenderer extends BaseRenderer
             // For a full-screen quad, use 6 vertices
             // Adjust as needed based on the vertex shader implementation
             // Shaders like game_of_life_01 may require 6 vertices
-            const instances = Math.max(1, this.grid_size || DEFAULT_GRID_SIZE);
-            pass.draw(this.vertices, instances * instances, 0, 0);
+            const instances = Math.max(1, this.gridSize || DEFAULT_GRID_SIZE);
+            pass.draw(this.vertexCount, instances * instances, 0, 0);
             pass.end();
 
             this.device.queue.submit([encoder.finish()]);
