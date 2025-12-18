@@ -46,7 +46,7 @@ const WGSL_PATTERNS = [
 
     // Numbers (floats/ints)
     { pattern: /\b(\d+\.\d*(?:[eE][+-]?\d+)?[fF]?|\.\d+(?:[eE][+-]?\d+)?[fF]?|\d+[eE][+-]?\d+[fF]?|\d+[fF])\b/g, class: "glsl-number" },
-    { pattern: /\b(0[xX][0-9a-fA-F]+|0b[01]+|\d+)(u|i)?\b/g, class: "glsl-number" },
+    { pattern: /\b(0[xX][0-9a-fA-F]+|0b[01]+|\d+|\d+[ui])()?\b/g, class: "glsl-number" },
 
     // Keywords
     { pattern: /\b(fn|let|var|const|override|struct|return|if|else|break|continue|loop|while|for|switch|case|default|fallthrough|discard|true|false|workgroup|uniform|storage|private|function)\b/g, class: "glsl-keyword" },
@@ -142,7 +142,7 @@ export class GLSLHighlighter
         // Apply remaining patterns
         const skipIndices = language === "glsl"
             ? new Set([0, 1, 2, 3]) // comments, block comments, preprocessor, strings handled
-            : new Set([0, 1, 3]);   // comments, block comments, strings handled (keep attributes)
+            : new Set([0, 1, 3]);   // comments, block comments, strings handled (skip attributes)
 
         patterns.forEach(({ pattern, class: className }, idx) =>
         {

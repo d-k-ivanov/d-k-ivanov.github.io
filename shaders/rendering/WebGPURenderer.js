@@ -44,6 +44,7 @@ export class WebGPURenderer extends BaseRenderer
         this.context = null;
         this.format = null;
 
+        this.bindings = new Set();
         this.vertexCount = DEFAULT_VERTEX_COUNT;
 
         // Buffers
@@ -145,7 +146,7 @@ export class WebGPURenderer extends BaseRenderer
             const targetChanged = this.ensureComputeTarget();
             if (targetChanged)
             {
-                this.buildBindGroups(true);
+                this.buildBindGroups();
             }
         }
     }
@@ -217,6 +218,22 @@ export class WebGPURenderer extends BaseRenderer
         const module = this.device.createShaderModule({ code, label });
         await this.validateModule(module, label);
         return module;
+    }
+
+    /**
+     * Parses all @binding entries and populates this.bindings set.
+     */
+    extractBindings(source)
+    {
+        this.bindings.clear();
+        const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
+        let match;
+        while ((match = regex.exec(source)) !== null)
+        {
+            const bindingIndex = parseInt(match[1], 10);
+            console.log(`Detected binding index: ${bindingIndex}`);
+            this.bindings.add(bindingIndex);
+        }
     }
 
     /**
@@ -400,9 +417,9 @@ export class WebGPURenderer extends BaseRenderer
     /**
      * Creates bind groups for render and compute pipelines.
      */
-    buildBindGroups(includeCompute)
+    buildBindGroups()
     {
-        this.refreshSamplerBindings(includeCompute);
+        this.refreshSamplerBindings(/*includeCompute*/ true);
 
         const renderLayout = this.renderPipeline.getBindGroupLayout(0);
         const baseRenderEntries = [
@@ -412,10 +429,7 @@ export class WebGPURenderer extends BaseRenderer
             }
         ];
 
-        if (includeCompute)
-        {
-            this.ensureComputeTarget();
-        }
+        this.ensureComputeTarget();
 
         const renderEntries = [...baseRenderEntries];
 
@@ -442,18 +456,11 @@ export class WebGPURenderer extends BaseRenderer
         }
         catch (err)
         {
-            if (includeCompute)
-            {
-                console.warn("Render pipeline does not consume compute texture; using uniform-only bind group.", err);
-                this.renderBindGroup = createRenderGroup(baseRenderEntries);
-            }
-            else
-            {
-                throw err;
-            }
+            console.warn("Render pipeline does not consume compute texture; using uniform-only bind group.", err);
+            this.renderBindGroup = createRenderGroup(baseRenderEntries);
         }
 
-        if (includeCompute && this.computePipeline)
+        if (this.computePipeline)
         {
             const computeLayout = this.computePipeline.getBindGroupLayout(0);
             this.computeBindGroup = this.device.createBindGroup({
@@ -553,10 +560,13 @@ export class WebGPURenderer extends BaseRenderer
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
 
-        const includeCompute = computeSource.length > 0;
+        this.extractBindings([vertexSource, fragmentSource, computeSource]);
+
         this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
+
         this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
-        this.useComputeTextureSampling = includeCompute && this.fragmentUsesComputeTexture(fragmentSource);
+
+        this.useComputeTextureSampling = this.fragmentUsesComputeTexture(fragmentSource);
         this.needsFontTexture = this.fragmentUsesFontTexture(fragmentSource);
 
         if (!vertexSource || !fragmentSource)
@@ -566,27 +576,20 @@ export class WebGPURenderer extends BaseRenderer
 
         this.validateWGSLSource(vertexSource, "Vertex shader");
         this.validateWGSLSource(fragmentSource, "Fragment shader");
-        if (includeCompute)
-        {
-            this.validateWGSLSource(computeSource, "Compute shader");
-        }
+        this.validateWGSLSource(computeSource, "Compute shader");
 
         const [vertexModule, fragmentModule, computeModule] = await Promise.all([
             this.createShaderModule(vertexSource, "Vertex shader"),
             this.createShaderModule(fragmentSource, "Fragment shader"),
-            includeCompute ? this.createShaderModule(computeSource, "Compute shader") : Promise.resolve(null)
+            this.createShaderModule(computeSource, "Compute shader")
         ]);
 
         const vertexEntry = this.getEntryPoint(vertexSource, "vertex");
         const fragmentEntry = this.getEntryPoint(fragmentSource, "fragment");
-        const computeEntry = includeCompute ? this.getEntryPoint(computeSource, "compute") : null;
+        const computeEntry = this.getEntryPoint(computeSource, "compute");
         if (!vertexEntry || !fragmentEntry)
         {
             throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
-        }
-        if (includeCompute && !computeEntry)
-        {
-            throw new Error("Compute shader must declare @compute entry point");
         }
 
         this.renderPipeline = this.device.createRenderPipeline({
@@ -603,7 +606,7 @@ export class WebGPURenderer extends BaseRenderer
             primitive: { topology: "triangle-list" }
         });
 
-        if (includeCompute && computeModule)
+        if (computeModule && computeEntry)
         {
             this.computePipeline = this.device.createComputePipeline({
                 layout: "auto",
@@ -624,7 +627,7 @@ export class WebGPURenderer extends BaseRenderer
             await this.loadFontTexture();
         }
 
-        this.buildBindGroups(includeCompute);
+        this.buildBindGroups();
         this.resetFrameState();
 
         if (!this.animationId)
@@ -661,7 +664,7 @@ export class WebGPURenderer extends BaseRenderer
                 const computeChanged = this.ensureComputeTarget();
                 if (computeChanged)
                 {
-                    this.buildBindGroups(true);
+                    this.buildBindGroups();
                 }
 
                 const computePass = encoder.beginComputePass();

@@ -508,7 +508,7 @@
 }
 
 /* GLSL Syntax Highlighting Classes */
-.glsl-comment { color: var(--glsl-comment); font-style: italic; }
+.glsl-comment { color: var(--glsl-comment); }
 .glsl-preprocessor { color: var(--glsl-preprocessor); }
 .glsl-keyword { color: var(--glsl-keyword); }
 .glsl-type { color: var(--glsl-type); }

@@ -62,17 +62,32 @@ const SHADER_UI_TEMPLATE = `
             </div>
             <div class="shaders-note">
                 <div class="shaders-note-title">Inputs:</div>
+                <b>GLSL:</b>
                 <p>
-                        vec3 iResolution<br>
-                        float iTime<br>
-                        float iTimeDelta<br>
-                        int iFrame<br>
-                        float iFrameRate<br>
-                        vec4 iMouse<br>
-                        sampler{2D,Cube} iChannel0<br>
-                        sampler{2D,Cube} iChannel1<br>
-                        sampler{2D,Cube} iChannel2<br>
-                        sampler{2D,Cube} iChannel3<br>
+                    vec3 iResolution<br>
+                    float iTime<br>
+                    float iTimeDelta<br>
+                    int iFrame<br>
+                    float iFrameRate<br>
+                    vec4 iMouse<br>
+                    sampler{2D,Cube} iChannel0<br>
+                    sampler{2D,Cube} iChannel1<br>
+                    sampler{2D,Cube} iChannel2<br>
+                    sampler{2D,Cube} iChannel3<br>
+                </p>
+                <b>WebGPU bindings:</b>
+                <p>
+                    00: uniform : Uniforms<br>
+                    01: storage : array u32<br>
+                    02: storage, read_write : array u32<br>
+                    10: iChannel0: texture_2d f32<br>
+                    11: iChannel0Sampler: sampler<br>
+                    12: iChannel1: texture_2d f32<br>
+                    13: iChannel1Sampler: sampler<br>
+                    14: iChannel2: texture_2d f32<br>
+                    15: iChannel2Sampler: sampler<br>
+                    16: iChannel3: texture_2d f32<br>
+                    17: iChannel3Sampler: sampler<br>
                 </p>
             </div>
         </div>
