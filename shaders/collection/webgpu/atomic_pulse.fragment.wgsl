@@ -10,14 +10,14 @@ struct ShaderUniforms
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
 
 @fragment
-fn frag(input : VSOut) -> @location(0) vec4f
+fn frag(input : VertexOutput) -> @location(0) vec4f
 {
     let res = shaderUniforms.iResolution.xy;
     let aspect = res.x / max(res.y, 1.0);

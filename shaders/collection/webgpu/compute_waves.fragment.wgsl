@@ -12,14 +12,14 @@ struct ShaderUniforms
 @group(0) @binding(2) var computeTexture : texture_2d<f32>;
 @group(0) @binding(3) var computeSampler : sampler;
 
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
 
 @fragment
-fn frag(input : VSOut) -> @location(0) vec4f
+fn frag(input : VertexOutput) -> @location(0) vec4f
 {
     // Default fullscreen triangle provides UVs in 0..2 range; normalize to 0..1.
     let uv = clamp(input.uv * 0.5, vec2f(0.0), vec2f(1.0));

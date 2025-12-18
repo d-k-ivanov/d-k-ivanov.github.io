@@ -12,7 +12,7 @@ struct ShaderUniforms
 @group(0) @binding(4) var fontTexture : texture_2d<f32>;
 @group(0) @binding(5) var fontSampler : sampler;
 
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
@@ -72,7 +72,7 @@ const DIGITS_LEN : u32 = 12u;
 const DIGITS : array<u32, 12> = array<u32, 12>(48u, 49u, 50u, 51u, 52u, 53u, 54u, 55u, 56u, 57u, 48u, 48u); // "012345678900"
 
 @fragment
-fn frag(input : VSOut) -> @location(0) vec4f
+fn frag(input : VertexOutput) -> @location(0) vec4f
 {
     let res = shaderUniforms.iResolution.xy;
     let uv = input.uv;

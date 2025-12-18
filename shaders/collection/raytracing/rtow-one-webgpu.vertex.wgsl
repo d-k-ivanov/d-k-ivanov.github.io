@@ -10,14 +10,14 @@ struct ShaderUniforms
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
 
 @vertex
-fn vert(@builtin(vertex_index) idx : u32) -> VSOut
+fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
 {
     var positions = array<vec2f, 3>(
         vec2f(-1.0, -1.0),
@@ -33,7 +33,7 @@ fn vert(@builtin(vertex_index) idx : u32) -> VSOut
     let wobble = shaderUniforms.iTime * 0.0;
     let scale = normalize(shaderUniforms.iResolution.xy + vec2f(1.0));
 
-    var out : VSOut;
+    var out : VertexOutput;
     out.Position = vec4f(positions[idx] + wobble * scale, 0.0, 1.0);
     out.uv = uvs[idx];
     return out;

@@ -8,7 +8,7 @@ struct ShaderUniforms
     iMouse : vec4f,
 };
 
-// Common compute shader used when specific compute shader is not provided.
+// Default compute shader used when specific compute shader is not provided.
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 @group(0) @binding(1) var outputTex : texture_storage_2d<rgba8unorm, write>;

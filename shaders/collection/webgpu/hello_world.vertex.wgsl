@@ -1,11 +1,11 @@
-struct VSOut
+struct VertexOutput
 {
     @builtin(position) Position : vec4f,
     @location(0) uv : vec2f,
 };
 
 @vertex
-fn vert(@builtin(vertex_index) idx : u32) -> VSOut
+fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
 {
     var positions = array<vec2f, 3>(
         vec2f(-1.0, -1.0),
@@ -18,7 +18,7 @@ fn vert(@builtin(vertex_index) idx : u32) -> VSOut
         vec2f(0.0, 2.0)
     );
 
-    var out : VSOut;
+    var out : VertexOutput;
     out.Position = vec4f(positions[idx], 0.0, 1.0);
     out.uv = uvs[idx];
     return out;
