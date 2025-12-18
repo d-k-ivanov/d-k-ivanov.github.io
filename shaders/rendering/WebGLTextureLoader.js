@@ -37,7 +37,7 @@ const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 /**
  * Loads 2D and cubemap textures for shader channels with caching and fallbacks.
  */
-export class TextureLoader
+export class WebGLTextureLoader
 {
     constructor(gl, basePath = "./textures")
     {

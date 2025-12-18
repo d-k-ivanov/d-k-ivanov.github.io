@@ -79,7 +79,7 @@ const SHADER_UI_TEMPLATE = `
                 <p>
                     00: uniform : Uniforms<br>
                     01: storage : array u32<br>
-                    02: storage, read_write : array u32<br>
+                    02: storage : array u32<br>
                     10: iChannel0: texture_2d f32<br>
                     11: iChannel0Sampler: sampler<br>
                     12: iChannel1: texture_2d f32<br>

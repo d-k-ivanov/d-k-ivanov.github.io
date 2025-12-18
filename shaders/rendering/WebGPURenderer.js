@@ -10,7 +10,8 @@ const DEFAULT_GRID_SIZE = 1;
 
 // Binting indices:
 const BINDING_INDEX_UNIFORM = 0;
-const BINDING_INDEX_STORAGE = 1;
+const BINDING_INDEX_STORAGE_1 = 1;
+const BINDING_INDEX_STORAGE_2 = 2;
 
 const BINDING_INDEX_ICHANNEL_0 = 10;
 const BINDING_INDEX_ICHANNEL_0_SAMPLER = 11;
@@ -47,13 +48,17 @@ export class WebGPURenderer extends BaseRenderer
         this.bindings = new Set();
         this.vertexCount = DEFAULT_VERTEX_COUNT;
 
+        this.renderPipeline = null;
+        this.computePipeline = null;
+
         // Buffers
         this.uniformBuffer = null;
         this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
         this.uniformViews = this.uniformState.getViews();
 
-        this.renderPipeline = null;
-        this.computePipeline = null;
+        // Samplers
+        this.samplers = new SamplerState();
+
 
         this.renderBindGroup = null;
         this.computeBindGroup = null;
@@ -64,7 +69,6 @@ export class WebGPURenderer extends BaseRenderer
         this.computeTextureFormat = null;
         this.computeTextureSize = { width: 0, height: 0 };
 
-        this.samplers = new SamplerState();
 
         this.computeSampler = null;
         this.fontSampler = null;
@@ -419,7 +423,6 @@ export class WebGPURenderer extends BaseRenderer
      */
     buildBindGroups()
     {
-        this.refreshSamplerBindings(/*includeCompute*/ true);
 
         const renderLayout = this.renderPipeline.getBindGroupLayout(0);
         const baseRenderEntries = [
@@ -429,10 +432,13 @@ export class WebGPURenderer extends BaseRenderer
             }
         ];
 
-        this.ensureComputeTarget();
+        this.samplers.reset();
 
+
+        this.ensureComputeTarget();
         const renderEntries = [...baseRenderEntries];
 
+        this.refreshSamplerBindings(/*includeCompute*/ true);
         for (const sampler of this.samplers.getNamedEntries())
         {
             if (sampler.binding !== undefined && sampler.textureView)

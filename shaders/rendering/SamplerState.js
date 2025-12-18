@@ -7,7 +7,6 @@ export class SamplerState
 {
     constructor()
     {
-        this.channels = [null, null, null, null];
         this.named = new Map();
     }
 
@@ -16,24 +15,7 @@ export class SamplerState
      */
     reset()
     {
-        this.channels = [null, null, null, null];
         this.named.clear();
-    }
-
-    /**
-     * Stores sampler metadata for a channel index.
-     */
-    setChannel(index, descriptor)
-    {
-        this.channels[index] = descriptor;
-    }
-
-    /**
-     * Returns all channel descriptors.
-     */
-    getChannels()
-    {
-        return this.channels;
     }
 
     /**

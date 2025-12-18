@@ -1,8 +1,7 @@
 "use strict";
 
-import { TextureLoader } from "../TextureLoader.js";
 import { BaseRenderer } from "./BaseRenderer.js";
-import { SamplerState } from "./SamplerState.js";
+import { WebGLTextureLoader } from "./WebGLTextureLoader.js";
 
 /**
  * WebGL2 renderer backend for the shader editor.
@@ -24,9 +23,9 @@ export class WebGLRenderer extends BaseRenderer
 
         this.program = null;
         this.uniforms = {};
-        this.samplers = new SamplerState();
+        this.channels = [];
         this.programVersion = 0;
-        this.textureLoader = new TextureLoader(this.gl);
+        this.textureLoader = new WebGLTextureLoader(this.gl);
     }
 
     /**
@@ -98,7 +97,7 @@ export class WebGLRenderer extends BaseRenderer
             iMouse: gl.getUniformLocation(newProgram, "iMouse")
         };
 
-        this.detectChannelUniforms(newProgram);
+        this.detectChannels(newProgram);
         await this.prepareChannelTextures(version);
         this.resetFrameState();
 
@@ -181,11 +180,11 @@ export class WebGLRenderer extends BaseRenderer
     /**
      * Scans a program for iChannel uniforms and prepares sampler state.
      */
-    detectChannelUniforms(program)
+    detectChannels(program)
     {
         const gl = this.gl;
         const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-        this.samplers.reset();
+        this.channels = [null, null, null, null];
 
         for (let i = 0; i < uniformCount; i++)
         {
@@ -206,13 +205,13 @@ export class WebGLRenderer extends BaseRenderer
             const type = info.type === gl.SAMPLER_CUBE ? "cube" : "2d";
             const location = gl.getUniformLocation(program, baseName);
 
-            this.samplers.setChannel(index, {
+            this.channels[index] = {
                 index,
                 name: baseName,
                 type,
                 location,
                 texture: this.textureLoader.getFallback(type)
-            });
+            };
         }
     }
 
@@ -222,7 +221,7 @@ export class WebGLRenderer extends BaseRenderer
     async prepareChannelTextures(version)
     {
         const loaders = [];
-        for (const channel of this.samplers.getChannels())
+        for (const channel of this.channels)
         {
             if (!channel || !channel.location)
             {
@@ -257,7 +256,7 @@ export class WebGLRenderer extends BaseRenderer
     {
         const gl = this.gl;
 
-        for (const channel of this.samplers.getChannels())
+        for (const channel of this.channels)
         {
             if (!channel || !channel.location)
             {
