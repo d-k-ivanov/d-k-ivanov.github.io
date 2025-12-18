@@ -9,8 +9,8 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(2) var computeTexture : texture_2d<f32>;
-@group(0) @binding(3) var computeSampler : sampler;
+@group(0) @binding(10) var computeTexture : texture_2d<f32>;
+@group(0) @binding(14) var computeSampler : sampler;
 
 struct VertexOutput
 {

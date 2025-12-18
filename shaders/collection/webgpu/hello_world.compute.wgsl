@@ -9,14 +9,14 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(1) var outputTex : texture_storage_2d<rgba8unorm, write>;
+@group(0) @binding(10) var computeTexture : texture_storage_2d<rgba8unorm, write>;
 
 // Minimal compute shader used when a specific compute shader is not provided.
 
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) gid : vec3u)
 {
-    let dims = textureDimensions(outputTex);
+    let dims = textureDimensions(computeTexture);
     if (gid.x >= dims.x || gid.y >= dims.y)
     {
         return;
@@ -26,5 +26,5 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     let t = shaderUniforms.iTime * 10.0;
     let band = 0.5 + 0.2 * sin((uv.x + uv.y) / 2.0 * 35.0 + t);
 
-    textureStore(outputTex, vec2u(gid.xy), vec4f(vec3f(band), 1.0));
+    textureStore(computeTexture, vec2u(gid.xy), vec4f(vec3f(band), 1.0));
 }

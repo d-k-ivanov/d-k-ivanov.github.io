@@ -9,8 +9,10 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(4) var fontTexture : texture_2d<f32>;
-@group(0) @binding(5) var fontSampler : sampler;
+
+// iChannel0URL: ./textures/iChannel0.png
+@group(0) @binding(10) var iChannel0Texture : texture_2d<f32>;
+@group(0) @binding(14) var iChannel0Sampler : sampler;
 
 struct VertexOutput
 {
@@ -38,7 +40,7 @@ fn sampleChar(code : u32, local : vec2f) -> f32
     let clamped = clamp(local, vec2f(0.0), vec2f(1.0));
     let flipped = vec2f(clamped.x, 1.0 - clamped.y);
     let uv = (atlasCell(code) + flipped) / f32(ATLAS_SIDE);
-    return textureSampleLevel(fontTexture, fontSampler, uv, 0.0).r;
+    return textureSampleLevel(iChannel0Texture, iChannel0Sampler, uv, 0.0).r;
 }
 
 // Simple helper to preview the full atlas: maps screen space to grid + glyph UVs

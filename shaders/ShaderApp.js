@@ -77,17 +77,19 @@ const SHADER_UI_TEMPLATE = `
                 </p>
                 <b>WebGPU bindings:</b>
                 <p>
-                    00: uniform : Uniforms<br>
-                    01: storage : array u32<br>
-                    02: storage : array u32<br>
-                    10: iChannel0: texture_2d f32<br>
-                    11: iChannel0Sampler: sampler<br>
-                    12: iChannel1: texture_2d f32<br>
-                    13: iChannel1Sampler: sampler<br>
-                    14: iChannel2: texture_2d f32<br>
-                    15: iChannel2Sampler: sampler<br>
-                    16: iChannel3: texture_2d f32<br>
-                    17: iChannel3Sampler: sampler<br>
+                    00: Uniforms<br>
+                    01: array u32<br>
+                    02: array u32<br>
+                    05: array f32<br>
+                    06: array f32<br>
+                    10: texture_2d f32<br>
+                    11: texture_2d f32<br>
+                    12: texture_2d f32<br>
+                    13: texture_2d f32<br>
+                    14: sampler<br>
+                    15: sampler<br>
+                    16: sampler<br>
+                    17: sampler<br>
                 </p>
             </div>
         </div>

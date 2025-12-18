@@ -1,32 +1,11 @@
 "use strict";
 
 import { BaseRenderer } from "./BaseRenderer.js";
-import { SamplerState } from "./SamplerState.js";
 import { ShaderUniformState } from "./ShaderUniformState.js";
 
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const DEFAULT_VERTEX_COUNT = 3;
 const DEFAULT_GRID_SIZE = 1;
-
-// Binting indices:
-const BINDING_INDEX_UNIFORM = 0;
-const BINDING_INDEX_STORAGE_1 = 1;
-const BINDING_INDEX_STORAGE_2 = 2;
-
-const BINDING_INDEX_ICHANNEL_0 = 10;
-const BINDING_INDEX_ICHANNEL_0_SAMPLER = 11;
-const BINDING_INDEX_ICHANNEL_1 = 12;
-const BINDING_INDEX_ICHANNEL_1_SAMPLER = 13;
-const BINDING_INDEX_ICHANNEL_2 = 14;
-const BINDING_INDEX_ICHANNEL_2_SAMPLER = 15;
-const BINDING_INDEX_ICHANNEL_3 = 16;
-const BINDING_INDEX_ICHANNEL_4_SAMPLER = 17;
-
-
-const COMPUTE_TEXTURE_FORMATS = ["rgba8unorm"];
-const FONT_TEXTURE_URL = "./textures/iChannel0.png";
-const FONT_TEXTURE_BINDING = 4;
-const FONT_SAMPLER_BINDING = 5;
 
 /**
  * WebGPU renderer backend supporting render and optional compute pipelines.
@@ -45,7 +24,8 @@ export class WebGPURenderer extends BaseRenderer
         this.context = null;
         this.format = null;
 
-        this.bindings = new Set();
+        this.bindingsRender = new Set();
+        this.bindingsCompute = new Set();
         this.vertexCount = DEFAULT_VERTEX_COUNT;
 
         this.renderPipeline = null;
@@ -56,28 +36,14 @@ export class WebGPURenderer extends BaseRenderer
         this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
         this.uniformViews = this.uniformState.getViews();
 
-        // Samplers
-        this.samplers = new SamplerState();
-
+        // Channels
+        this.channelUrls = [null, null, null, null];
 
         this.renderBindGroup = null;
         this.computeBindGroup = null;
 
-        this.computeTexture = null;
-        this.computeTextureSampleView = null;
-        this.computeTextureStorageView = null;
-        this.computeTextureFormat = null;
-        this.computeTextureSize = { width: 0, height: 0 };
-
-
-        this.computeSampler = null;
-        this.fontSampler = null;
-
-        this.useComputeTextureSampling = false;
-        this.fontTexture = null;
-        this.fontTextureView = null;
-        this.needsFontTexture = false;
-
+        this.computeWidth = 0;
+        this.computeHeight = 0;
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
         this.gridSize = DEFAULT_GRID_SIZE;
     }
@@ -140,22 +106,6 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Reconfigures context and compute targets on resize.
-     */
-    handleResize()
-    {
-        this.configureContext();
-        if (this.computePipeline)
-        {
-            const targetChanged = this.ensureComputeTarget();
-            if (targetChanged)
-            {
-                this.buildBindGroups();
-            }
-        }
-    }
-
-    /**
      * Detects GLSL markers to guard against misusing WGSL path.
      */
     isLikelyGLSL(source)
@@ -183,13 +133,17 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Extracts an entry point name for the given shader stage.
+     * @stage "vertex" | "fragment" | "compute"
      */
     getEntryPoint(source, stage)
     {
-        const attr = stage === "vertex" ? "@vertex"
-            : stage === "fragment" ? "@fragment"
-                : "@compute";
-        const regex = new RegExp(`${attr}[\\s\\S]*?fn\\s+(\\w+)`, "m");
+        let allowedStages = ["vertex", "fragment", "compute"];
+        if (!allowedStages.includes(stage))
+        {
+            throw new Error(`Invalid shader stage: ${stage}`);
+        }
+
+        const regex = new RegExp(`@${stage}[\\s\\S]*?fn\\s+(\\w+)`, "m");
         const match = regex.exec(source);
         return match ? match[1] : null;
     }
@@ -225,18 +179,61 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Parses all @binding entries and populates this.bindings set.
+     * Parses all @binding entries and populates this.bindingsRender set.
      */
-    extractBindings(source)
+    extractBindingsRender(source)
     {
-        this.bindings.clear();
+        this.bindingsRender.clear();
         const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
         let match;
         while ((match = regex.exec(source)) !== null)
         {
             const bindingIndex = parseInt(match[1], 10);
-            console.log(`Detected binding index: ${bindingIndex}`);
-            this.bindings.add(bindingIndex);
+            this.bindingsRender.add(bindingIndex);
+        }
+    }
+
+    /**
+     * Parses all @binding entries and populates this.bindingsCompute set.
+     */
+    extractBindingsCompute(source)
+    {
+        this.bindingsCompute.clear();
+        const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
+        let match;
+        while ((match = regex.exec(source)) !== null)
+        {
+            const bindingIndex = parseInt(match[1], 10);
+            this.bindingsCompute.add(bindingIndex);
+        }
+    }
+
+    /**
+     * Extracts a texture URL from sampler declaration comments.
+     * Expects comments: // iChannel0URL: ./path/to/texture.png
+     * Expects comments: // iChannel1URL: ./path/to/texture.png
+     * Expects comments: // iChannel2URL: ./path/to/texture.png
+     * Expects comments: // iChannel3URL: ./path/to/texture.png
+     * Initialize: channel[index] with extracted URLs or null.
+     */
+    extractTextureURLs(sources)
+    {
+        this.channelUrls = [null, null, null, null];
+        const regex = /\/\/\s*iChannel([0-3])URL\s*:\s*(\S+)/i;
+        for (const source of sources)
+        {
+            if (!source)
+            {
+                continue;
+            }
+            const match = regex.exec(source);
+            if (match)
+            {
+                const index = parseInt(match[1], 10);
+                const url = match[2];
+                this.channelUrls[index] = url;
+                // console.log(`Extracted iChannel${index} URL: ${url}`);
+            }
         }
     }
 
@@ -330,151 +327,87 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Allocates or reuses a compute texture matching canvas size.
-     */
-    ensureComputeTarget()
-    {
-        const width = Math.max(1, Math.floor(this.canvas.width));
-        const height = Math.max(1, Math.floor(this.canvas.height));
-
-        if (this.computeTexture &&
-            this.computeTextureSize.width === width &&
-            this.computeTextureSize.height === height)
-        {
-            return false;
-        }
-
-        this.destroyComputeTarget();
-
-        let texture = null;
-        let formatInUse = this.computeTextureFormat || COMPUTE_TEXTURE_FORMATS[0];
-        const formats = this.computeTextureFormat
-            ? [this.computeTextureFormat, ...COMPUTE_TEXTURE_FORMATS.filter(f => f !== this.computeTextureFormat)]
-            : COMPUTE_TEXTURE_FORMATS;
-
-        for (const format of formats)
-        {
-            try
-            {
-                texture = this.device.createTexture({
-                    size: { width, height },
-                    format,
-                    usage: GPUTextureUsage.TEXTURE_BINDING |
-                        GPUTextureUsage.COPY_DST |
-                        GPUTextureUsage.STORAGE_BINDING
-                });
-                formatInUse = format;
-                break;
-            }
-            catch (err)
-            {
-                console.warn(`Failed to allocate compute texture (${format}):`, err);
-            }
-        }
-
-        if (!texture)
-        {
-            throw new Error("Unable to allocate storage texture for compute pass");
-        }
-
-        this.computeTexture = texture;
-        this.computeTextureSampleView = texture.createView();
-        this.computeTextureStorageView = texture.createView();
-        this.computeSampler = this.device.createSampler({
-            magFilter: "linear",
-            minFilter: "linear"
-        });
-        this.computeTextureFormat = formatInUse;
-        this.computeTextureSize = { width, height };
-        return true;
-    }
-
-    /**
-     * Resets sampler state for compute/font bindings prior to bind-group creation.
-     */
-    refreshSamplerBindings(includeCompute)
-    {
-        this.samplers.reset();
-
-        if (includeCompute && this.useComputeTextureSampling)
-        {
-            this.ensureComputeTarget();
-            this.samplers.setNamed("computeSample", {
-                binding: 2,
-                samplerBinding: 3,
-                textureView: this.computeTextureSampleView,
-                sampler: this.computeSampler
-            });
-        }
-
-        if (this.needsFontTexture && this.fontTextureView && this.fontSampler)
-        {
-            this.samplers.setNamed("fontTexture", {
-                binding: FONT_TEXTURE_BINDING,
-                samplerBinding: FONT_SAMPLER_BINDING,
-                textureView: this.fontTextureView,
-                sampler: this.fontSampler
-            });
-        }
-    }
-
-    /**
      * Creates bind groups for render and compute pipelines.
      */
-    buildBindGroups()
+    async buildBindGroups()
     {
-
-        const renderLayout = this.renderPipeline.getBindGroupLayout(0);
-        const baseRenderEntries = [
-            {
+        const bindingEntriesRendering = [];
+        const bindingEntriesCompute = [];
+        if (this.bindingsRender.has(0))
+        {
+            bindingEntriesRendering.push({
                 binding: 0,
                 resource: { buffer: this.uniformBuffer }
-            }
-        ];
+            });
+        }
 
-        this.samplers.reset();
-
-
-        this.ensureComputeTarget();
-        const renderEntries = [...baseRenderEntries];
-
-        this.refreshSamplerBindings(/*includeCompute*/ true);
-        for (const sampler of this.samplers.getNamedEntries())
+        if (this.bindingsCompute.has(0))
         {
-            if (sampler.binding !== undefined && sampler.textureView)
+            bindingEntriesCompute.push({
+                binding: 0,
+                resource: { buffer: this.uniformBuffer }
+            });
+        }
+
+        // Channels (10, 11, 12, 14)
+        for (const index of [10, 11, 12, 13])
+        {
+            const channelIndex = index - 10;
+            const texture = await this.createTexture(this.channelUrls[channelIndex])
+
+            if (this.bindingsRender.has(index))
             {
-                renderEntries.push({ binding: sampler.binding, resource: sampler.textureView });
+                bindingEntriesRendering.push({
+                    binding: index,
+                    resource: texture.createView()
+                });
             }
-            if (sampler.samplerBinding !== undefined && sampler.sampler)
+            if (this.bindingsCompute.has(index))
             {
-                renderEntries.push({ binding: sampler.samplerBinding, resource: sampler.sampler });
+                bindingEntriesCompute.push({
+                    binding: index,
+                    resource: texture.createView()
+                });
+
+                this.computeWidth = texture.width;
+                this.computeHeight = texture.height;
             }
         }
 
-        const createRenderGroup = (entries) => this.device.createBindGroup({
-            layout: renderLayout,
-            entries
-        });
+        // Samplers (14, 15, 16, 17)
+        for (const index of [14, 15, 16, 17])
+        {
+            if (this.bindingsRender.has(index))
+            {
+                bindingEntriesRendering.push({
+                    binding: index,
+                    resource: this.device.createSampler({
+                        magFilter: "linear",
+                        minFilter: "linear",
+                        addressModeU: "clamp-to-edge",
+                        addressModeV: "clamp-to-edge"
+                    })
+                });
+            }
+        }
 
         try
         {
-            this.renderBindGroup = createRenderGroup(renderEntries);
+            this.renderBindGroup = this.device.createBindGroup({
+                layout: this.renderPipeline.getBindGroupLayout(0),
+                entries: bindingEntriesRendering
+            });
         }
         catch (err)
         {
-            console.warn("Render pipeline does not consume compute texture; using uniform-only bind group.", err);
-            this.renderBindGroup = createRenderGroup(baseRenderEntries);
+            throw new Error(`Failed to create render bind group: ${err.message}`);
         }
 
         if (this.computePipeline)
         {
-            const computeLayout = this.computePipeline.getBindGroupLayout(0);
             this.computeBindGroup = this.device.createBindGroup({
-                layout: computeLayout,
-                entries: [
-                    { binding: 0, resource: { buffer: this.uniformBuffer } },
-                    { binding: 1, resource: this.computeTextureStorageView }
-                ]
+                layout: this.computePipeline.getBindGroupLayout(0),
+                entries: bindingEntriesCompute
             });
         }
         else
@@ -484,74 +417,58 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Checks if the fragment shader expects the compute texture.
-     */
-    fragmentUsesComputeTexture(source)
-    {
-        if (!source)
-        {
-            return false;
-        }
-        const hasBinding = /@binding\s*\(\s*2\s*\)/.test(source);
-        const mentionsTexture = /\bcomputeTexture\b/.test(source);
-        return hasBinding || mentionsTexture;
-    }
-
-    /**
-     * Checks if the fragment shader requests the font atlas bindings.
-     */
-    fragmentUsesFontTexture(source)
-    {
-        if (!source)
-        {
-            return false;
-        }
-        const hasBinding = new RegExp(`@binding\\s*\\(\\s*${FONT_TEXTURE_BINDING}\\s*\\)`).test(source);
-        const mentionsName = /\biChannel0\b/.test(source);
-        return hasBinding || mentionsName;
-    }
-
-    /**
      * Loads and uploads the font atlas texture/sampler.
      */
-    async loadFontTexture()
+    async createTexture(url)
     {
-        if (this.fontTextureView && this.fontSampler)
+        if (url)
         {
-            return;
-        }
+            const response = await fetch(url);
+            if (!response.ok)
+            {
+                throw new Error(`Failed to load font texture: "${url}"`);
+            }
 
-        const response = await fetch(FONT_TEXTURE_URL);
-        if (!response.ok)
+            const blob = await response.blob();
+            const image = await createImageBitmap(blob);
+
+            const texture = this.device.createTexture({
+                size: { width: image.width, height: image.height },
+                format: "rgba8unorm",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
+            });
+
+            if (!texture)
+            {
+                throw new Error("Unable to allocate image texture");
+            }
+
+            this.device.queue.copyExternalImageToTexture(
+                { source: image },
+                { texture },
+                { width: image.width, height: image.height }
+            );
+
+            return texture;
+        }
+        else
         {
-            throw new Error(`Failed to load font texture: ${FONT_TEXTURE_URL}`);
+            const width = Math.max(1, Math.floor(this.canvas.width));
+            const height = Math.max(1, Math.floor(this.canvas.height));
+
+            const texture = this.device.createTexture({
+                size: { width, height },
+                format: "rgba8unorm",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
+            });
+
+            if (!texture)
+            {
+                throw new Error("Unable to allocate storage texture");
+            }
+
+            return texture;
         }
-
-        const blob = await response.blob();
-        const image = await createImageBitmap(blob);
-
-        const texture = this.device.createTexture({
-            size: { width: image.width, height: image.height },
-            format: "rgba8unorm",
-            usage: GPUTextureUsage.TEXTURE_BINDING |
-                GPUTextureUsage.COPY_DST |
-                GPUTextureUsage.RENDER_ATTACHMENT
-        });
-
-        this.device.queue.copyExternalImageToTexture(
-            { source: image },
-            { texture },
-            { width: image.width, height: image.height }
-        );
-
-        this.fontTexture = texture;
-        this.fontTextureView = texture.createView();
-        this.fontSampler = this.device.createSampler({
-            magFilter: "linear",
-            minFilter: "linear",
-            addressModeU: "clamp-to-edge",
-            addressModeV: "clamp-to-edge"
-        });
     }
 
     /**
@@ -565,15 +482,6 @@ export class WebGPURenderer extends BaseRenderer
         const vertexSource = (sources.vertex || "").trim();
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
-
-        this.extractBindings([vertexSource, fragmentSource, computeSource]);
-
-        this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
-
-        this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
-
-        this.useComputeTextureSampling = this.fragmentUsesComputeTexture(fragmentSource);
-        this.needsFontTexture = this.fragmentUsesFontTexture(fragmentSource);
 
         if (!vertexSource || !fragmentSource)
         {
@@ -607,7 +515,9 @@ export class WebGPURenderer extends BaseRenderer
             fragment: {
                 module: fragmentModule,
                 entryPoint: fragmentEntry,
-                targets: [{ format: this.format }]
+                targets: [{
+                    format: this.format
+                }]
             },
             primitive: { topology: "triangle-list" }
         });
@@ -616,10 +526,12 @@ export class WebGPURenderer extends BaseRenderer
         {
             this.computePipeline = this.device.createComputePipeline({
                 layout: "auto",
-                compute: { module: computeModule, entryPoint: computeEntry }
+                compute: {
+                    module: computeModule,
+                    entryPoint: computeEntry
+                }
             });
             this.workgroupSize = this.extractWorkgroupSize(computeSource);
-            this.ensureComputeTarget();
         }
         else
         {
@@ -628,10 +540,12 @@ export class WebGPURenderer extends BaseRenderer
             this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
         }
 
-        if (this.needsFontTexture)
-        {
-            await this.loadFontTexture();
-        }
+        this.extractBindingsRender([vertexSource, fragmentSource]);
+        this.extractBindingsCompute([computeSource]);
+        this.extractTextureURLs([vertexSource, fragmentSource, computeSource]);
+
+        this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
+        this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
 
         this.buildBindGroups();
         this.resetFrameState();
@@ -667,29 +581,21 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.computePipeline && this.computeBindGroup)
             {
-                const computeChanged = this.ensureComputeTarget();
-                if (computeChanged)
-                {
-                    this.buildBindGroups();
-                }
-
                 const computePass = encoder.beginComputePass();
                 computePass.setPipeline(this.computePipeline);
                 computePass.setBindGroup(0, this.computeBindGroup);
 
-                const groupsX = Math.max(1, Math.ceil(this.computeTextureSize.width / this.workgroupSize.x));
-                const groupsY = Math.max(1, Math.ceil(this.computeTextureSize.height / this.workgroupSize.y));
+                const groupsX = Math.max(1, Math.ceil(this.computeWidth / this.workgroupSize.x));
+                const groupsY = Math.max(1, Math.ceil(this.computeHeight / this.workgroupSize.y));
 
                 computePass.dispatchWorkgroups(groupsX, groupsY, this.workgroupSize.z || 1);
                 computePass.end();
             }
 
-            const textureView = this.context.getCurrentTexture().createView();
-
             const pass = encoder.beginRenderPass({
                 colorAttachments: [
                     {
-                        view: textureView,
+                        view: this.context.getCurrentTexture().createView(),
                         clearValue: { r: 0, g: 0, b: 0, a: 1 },
                         loadOp: "clear",
                         storeOp: "store"

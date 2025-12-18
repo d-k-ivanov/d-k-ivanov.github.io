@@ -9,7 +9,7 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(1) var outputTex : texture_storage_2d<rgba8unorm, write>;
+@group(0) @binding(10) var computeTexture : texture_storage_2d<rgba8unorm, write>;
 
 fn palette(t : f32) -> vec3f
 {
@@ -23,7 +23,7 @@ fn palette(t : f32) -> vec3f
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) gid : vec3u)
 {
-    let dims = textureDimensions(outputTex);
+    let dims = textureDimensions(computeTexture);
     if (gid.x >= dims.x || gid.y >= dims.y)
     {
         return;
@@ -50,5 +50,5 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     }
 
     let color = clamp(baseColor + vec3f(glow, glow * 0.5, 0.0), vec3f(0.0), vec3f(1.0));
-    textureStore(outputTex, vec2u(gid.xy), vec4f(color, 1.0));
+    textureStore(computeTexture, vec2u(gid.xy), vec4f(color, 1.0));
 }
