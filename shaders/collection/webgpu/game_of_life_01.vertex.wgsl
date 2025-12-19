@@ -9,11 +9,13 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
+@group(0) @binding(1) var<storage> cellStateA: array<u32>;
+@group(0) @binding(2) var<storage> cellStateB: array<u32>;
 
 // This variables also controls the number of instances drawn in the WebGPURenderer.
 // Use unsinged integer to allow WebGPURenderer to extract it.
 const VERTEX_COUNT : u32 = 6u;
-const GRID_SIZE : u32 = 32u;
+const GRID_SIZE : u32 = 256u;
 
 struct VertexInput
 {
@@ -73,9 +75,29 @@ fn vert(input : VertexInput) -> VertexOutput
     let i = f32(input.instance_index); // Save the instance_index as a float
 
     // Compute the cell coordinate from the instance_index
+    // let cell = vec2f(i % grid.x, floor(i / grid.x));
+    // let cellOffset = cell / grid * 2;
+    // let gridPos = (positions[input.vertex_index] + 1.0) / grid - 1.0 + cellOffset;
+
+    // 7: State
+    var state : f32;
+    var stateA = f32(cellStateA[input.instance_index]);
+    let stateB = f32(cellStateB[input.instance_index]);
+
+    // Replace state every 2 seconds for visibility
+    let interval = 2.0;
+    if ((shaderUniforms.iTime % interval * 2.0) < interval)
+    {
+        state = stateA;
+    }
+    else
+    {
+        state = stateB;
+    }
+
     let cell = vec2f(i % grid.x, floor(i / grid.x));
     let cellOffset = cell / grid * 2;
-    let gridPos = (positions[input.vertex_index] + 1.0) / grid - 1.0 + cellOffset;
+    let gridPos = (positions[input.vertex_index] * stateA + 1.0) / grid - 1.0 + cellOffset;
 
     // Outputs
     out.grid = grid;

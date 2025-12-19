@@ -336,6 +336,7 @@ export class WebGPURenderer extends BaseRenderer
         if (this.bindingsRender.has(0))
         {
             bindingEntriesRendering.push({
+                laber: "Uniform Buffer: Render",
                 binding: 0,
                 resource: { buffer: this.uniformBuffer }
             });
@@ -344,9 +345,76 @@ export class WebGPURenderer extends BaseRenderer
         if (this.bindingsCompute.has(0))
         {
             bindingEntriesCompute.push({
+                laber: "Uniform Buffer: Compute",
                 binding: 0,
                 resource: { buffer: this.uniformBuffer }
             });
+        }
+
+        // Uint32Array(this.gridSize * this.gridSize) buffers (1, 2)
+        for (const index of [1, 2])
+        {
+            if (this.bindingsRender.has(index))
+            {
+                const bufferArray = new Uint32Array(this.gridSize * this.gridSize);
+                const buffer = this.device.createBuffer({
+                    label: `Storage Buffer Binding ${index}`,
+                    size: bufferArray.byteLength,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+                    mappedAtCreation: true
+                });
+
+                // Interestiing Buffer initialization pattern for game_of_life_01
+                // Each even cell is active:
+                // for (let i = 0; i < bufferArray.length; i++)
+                // {
+                //     bufferArray[i] = i % 2;
+                // }
+
+                // Each 3rd cell is active:
+                // for (let i = 0; i < bufferArray.length; i += 3)
+                // {
+                //     bufferArray[i] = 1;
+                // }
+
+                // Each 7th cell is active: Only 512x512 grid looks good
+                // for (let i = 0; i < bufferArray.length; i += 7)
+                // {
+                //     bufferArray[i] = 1;
+                // }
+
+                // Each 5th cell is active: Only 512x512 grid looks good
+                // for (let i = 0; i < bufferArray.length; i += 5)
+                // {
+                //     bufferArray[i] = 1;
+                // }
+
+                // Random initialization:
+                for (let i = 0; i < bufferArray.length; ++i)
+                {
+                    bufferArray[i] = Math.random() > 0.6 ? 1 : 0;
+                }
+
+                new Uint32Array(buffer.getMappedRange()).set(bufferArray);
+                buffer.unmap();
+
+                this.device.queue.writeBuffer(buffer, 0, bufferArray);
+
+                bindingEntriesRendering.push({
+                    label: `Storage Buffer Binding ${index}`,
+                    binding: index,
+                    resource: { buffer }
+                });
+
+                if (this.bindingsCompute.has(index))
+                {
+                    bindingEntriesCompute.push({
+                        label: `Storage Buffer Binding ${index}`,
+                        binding: index,
+                        resource: { buffer }
+                    });
+                }
+            }
         }
 
         // Channels (10, 11, 12, 14)
@@ -358,6 +426,7 @@ export class WebGPURenderer extends BaseRenderer
             if (this.bindingsRender.has(index))
             {
                 bindingEntriesRendering.push({
+                    label: `Texture Binding ${index}: Render`,
                     binding: index,
                     resource: texture.createView()
                 });
@@ -365,6 +434,7 @@ export class WebGPURenderer extends BaseRenderer
             if (this.bindingsCompute.has(index))
             {
                 bindingEntriesCompute.push({
+                    label: `Texture Binding ${index}: Compute`,
                     binding: index,
                     resource: texture.createView()
                 });
@@ -380,6 +450,7 @@ export class WebGPURenderer extends BaseRenderer
             if (this.bindingsRender.has(index))
             {
                 bindingEntriesRendering.push({
+                    label: `Sampler Binding ${index}: Render`,
                     binding: index,
                     resource: this.device.createSampler({
                         magFilter: "linear",
@@ -394,6 +465,7 @@ export class WebGPURenderer extends BaseRenderer
         try
         {
             this.renderBindGroup = this.device.createBindGroup({
+                label: "Render Bind Group",
                 layout: this.renderPipeline.getBindGroupLayout(0),
                 entries: bindingEntriesRendering
             });
@@ -406,6 +478,7 @@ export class WebGPURenderer extends BaseRenderer
         if (this.computePipeline)
         {
             this.computeBindGroup = this.device.createBindGroup({
+                label: "Compute Bind Group",
                 layout: this.computePipeline.getBindGroupLayout(0),
                 entries: bindingEntriesCompute
             });
@@ -433,6 +506,7 @@ export class WebGPURenderer extends BaseRenderer
             const image = await createImageBitmap(blob);
 
             const texture = this.device.createTexture({
+                label: `Texture: ${url}`,
                 size: { width: image.width, height: image.height },
                 format: "rgba8unorm",
                 usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
@@ -457,6 +531,7 @@ export class WebGPURenderer extends BaseRenderer
             const height = Math.max(1, Math.floor(this.canvas.height));
 
             const texture = this.device.createTexture({
+                label: `Texture: Canvas ${width}x${height}`,
                 size: { width, height },
                 format: "rgba8unorm",
                 usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
@@ -507,6 +582,7 @@ export class WebGPURenderer extends BaseRenderer
         }
 
         this.renderPipeline = this.device.createRenderPipeline({
+            label: "Render Pipeline",
             layout: "auto",
             vertex: {
                 module: vertexModule,
@@ -525,6 +601,7 @@ export class WebGPURenderer extends BaseRenderer
         if (computeModule && computeEntry)
         {
             this.computePipeline = this.device.createComputePipeline({
+                label: "Compute Pipeline",
                 layout: "auto",
                 compute: {
                     module: computeModule,
@@ -584,15 +661,23 @@ export class WebGPURenderer extends BaseRenderer
                 const computePass = encoder.beginComputePass();
                 computePass.setPipeline(this.computePipeline);
                 computePass.setBindGroup(0, this.computeBindGroup);
+                if (this.gridSize > 1)
+                {
+                    const gridWorkgroupCount = Math.max(1, Math.ceil(this.gridSize / this.workgroupSize.x));
+                    computePass.dispatchWorkgroups(gridWorkgroupCount, gridWorkgroupCount, this.workgroupSize.z || 1);
+                }
+                else
+                {
+                    const groupsX = Math.max(1, Math.ceil(this.computeWidth / this.workgroupSize.x));
+                    const groupsY = Math.max(1, Math.ceil(this.computeHeight / this.workgroupSize.y));
+                    computePass.dispatchWorkgroups(groupsX, groupsY, this.workgroupSize.z || 1);
+                }
 
-                const groupsX = Math.max(1, Math.ceil(this.computeWidth / this.workgroupSize.x));
-                const groupsY = Math.max(1, Math.ceil(this.computeHeight / this.workgroupSize.y));
-
-                computePass.dispatchWorkgroups(groupsX, groupsY, this.workgroupSize.z || 1);
                 computePass.end();
             }
 
             const pass = encoder.beginRenderPass({
+                label: "Render Pass",
                 colorAttachments: [
                     {
                         view: this.context.getCurrentTexture().createView(),

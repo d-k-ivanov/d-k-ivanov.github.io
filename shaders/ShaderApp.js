@@ -78,10 +78,10 @@ const SHADER_UI_TEMPLATE = `
                 <b>WebGPU bindings:</b>
                 <p>
                     00: Uniforms<br>
-                    01: array u32<br>
-                    02: array u32<br>
-                    05: array f32<br>
-                    06: array f32<br>
+                    01: storage u32[2xGRIDxRand]<br>
+                    02: storage u32[2xGRIDxRand]<br>
+                    05: storage f32[2xGRIDxRand]<br>
+                    06: storage f32[2xGRIDxRand]<br>
                     10: texture_2d f32<br>
                     11: texture_2d f32<br>
                     12: texture_2d f32<br>
