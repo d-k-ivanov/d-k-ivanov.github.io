@@ -1,3 +1,8 @@
+// This variables also controls the number of instances drawn in the WebGPURenderer.
+// Use unsinged integer to allow WebGPURenderer to extract it.
+const VERTEX_COUNT : u32 = 6u;
+const GRID_SIZE : u32 = 256u;
+
 struct ShaderUniforms
 {
     iResolution : vec3f,
@@ -10,11 +15,6 @@ struct ShaderUniforms
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 @group(0) @binding(1) var<storage> cellState: array<u32>;
-
-// This variables also controls the number of instances drawn in the WebGPURenderer.
-// Use unsinged integer to allow WebGPURenderer to extract it.
-const VERTEX_COUNT : u32 = 6u;
-const GRID_SIZE : u32 = 128u;
 
 struct VertexInput
 {

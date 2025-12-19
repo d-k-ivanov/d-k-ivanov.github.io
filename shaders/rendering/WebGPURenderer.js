@@ -390,10 +390,10 @@ export class WebGPURenderer extends BaseRenderer
                 // }
 
                 // Random initialization:
-                for (let i = 0; i < bufferArray.length; ++i)
-                {
-                    bufferArray[i] = Math.random() > 0.6 ? 1 : 0;
-                }
+                // for (let i = 0; i < bufferArray.length; ++i)
+                // {
+                //     bufferArray[i] = Math.random() > 0.6 ? 1 : 0;
+                // }
 
                 new Uint32Array(buffer.getMappedRange()).set(bufferArray);
                 buffer.unmap();
