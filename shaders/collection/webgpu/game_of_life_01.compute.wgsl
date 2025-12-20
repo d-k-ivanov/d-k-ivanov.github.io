@@ -30,7 +30,39 @@ fn randomCellValue1(x: u32, y: u32) -> u32
     return u32(floor(randomValue * 2.0));
 }
 
-// Returns the time-dependent random 0 or 1 value for the given cell index.
+// Returns the random 0 or 1 value for the given cell index, influenced by iResolution, iTime, and iMouse.
+fn randomCellValue2(x: u32, y: u32) -> u32
+{
+    let px = f32(x) / shaderUniforms.iResolution.x;
+    let py = f32(y) / shaderUniforms.iResolution.y;
+    let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
+    let timeInfluence = shaderUniforms.iTime * 0.1234;
+    let seed = px * 12.9898 + py * 78.233 + mouseInfluence * 31.4159 + timeInfluence;
+    let randomValue = fract(sin(seed) * 43758.5453123);
+    return u32(floor(randomValue * 2.0));
+}
+
+// Returns the random 0 or 1 value for the given cell index, influenced by iResolution
+fn randomCellValue3(x: u32, y: u32) -> u32
+{
+    let px = f32(x) / shaderUniforms.iResolution.x;
+    let py = f32(y) / shaderUniforms.iResolution.y;
+    let seed = px * 12.9898 + py * 78.233 + 31.4159;
+    let randomValue = fract(sin(seed) * 43758.5453123);
+    return u32(floor(randomValue * 2.0));
+}
+
+// Returns the random 0 or 1 value for the given cell index, influenced by iMouse.
+fn randomCellValue4(x: u32, y: u32) -> u32
+{
+    let px = f32(x) / shaderUniforms.iResolution.x;
+    let py = f32(y) / shaderUniforms.iResolution.y;
+    let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
+    let seed = mouseInfluence * 12.9898 + mouseInfluence * 78.233 + mouseInfluence * 31.4159;
+    let randomValue = fract(sin(seed) * 43758.5453123);
+    return u32(floor(randomValue * 2.0));
+}
+
 
 // Initialize cellState with random values
 fn initCellState1(x: u32, y: u32)

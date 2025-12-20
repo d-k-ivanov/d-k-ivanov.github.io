@@ -24,24 +24,28 @@ export class WebGPURenderer extends BaseRenderer
         this.context = null;
         this.format = null;
 
-        this.bindingsRender = new Set();
-        this.bindingsCompute = new Set();
+        // Vertex number extracted from VERTEX_COUNT constant in WGSL.
         this.vertexCount = DEFAULT_VERTEX_COUNT;
 
+        // Bindings. Extracted from @binding() attributes in WGSL.
+        this.bindingsRender = new Set();
+        this.bindingsCompute = new Set();
+
+        // Pipelines and bind groups
         this.renderPipeline = null;
+        this.renderBindGroup = null;
         this.computePipeline = null;
+        this.computeBindGroup = null;
 
         // Buffers
         this.uniformBuffer = null;
         this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
         this.uniformViews = this.uniformState.getViews();
 
-        // Channels
+        // Channels. Extracted from iChannelURL comments in WGSL.
         this.channelUrls = [null, null, null, null];
 
-        this.renderBindGroup = null;
-        this.computeBindGroup = null;
-
+        // Compute target
         this.computeWidth = 0;
         this.computeHeight = 0;
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
