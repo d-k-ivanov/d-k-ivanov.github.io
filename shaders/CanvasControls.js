@@ -9,28 +9,34 @@ export class CanvasControls
 {
     /**
      * @param {HTMLCanvasElement} canvas - target canvas.
-     * @param {{onResolutionChange?: Function, onModelChange?: Function}} param1 - callbacks for toolbar controls.
+     * @param {{onResolutionChange?: Function, onModelChange?: Function, onModelLoad?: Function}} param1 - callbacks for toolbar controls.
      */
-    constructor(canvas, { onResolutionChange = null, onModelChange = null } = {})
+    constructor(canvas, { onResolutionChange = null, onModelChange = null, onModelLoad = null } = {})
     {
         this.canvas = canvas;
         this.savedResolution = null;
         this.onResolutionChange = onResolutionChange;
         this.onModelChange = onModelChange;
+        this.onModelLoad = onModelLoad;
         this.currentResolutionValue = null;
         this.currentModelId = "";
         this.boundResolutionHandler = null;
         this.boundModelHandler = null;
+        this.boundModelLoadHandler = null;
+        this.boundModelFileHandler = null;
 
         this.elements = {
             resolutionSelect: document.getElementById("resolution-select"),
             fullscreenBtn: document.getElementById("fullscreen-toggle"),
-            modelSelect: document.getElementById("model-select")
+            modelSelect: document.getElementById("model-select"),
+            modelLoadBtn: document.getElementById("model-load-btn"),
+            modelFileInput: document.getElementById("model-file-input")
         };
 
         this.initResolutionSelector();
         this.initFullscreenToggle();
         this.initModelSelector();
+        this.initModelLoader();
     }
 
     /**
@@ -158,6 +164,104 @@ export class CanvasControls
 
         selector.addEventListener("change", applyModel);
         this.boundModelHandler = applyModel;
+    }
+
+    /**
+     * Sets up the model load button and file input handlers.
+     */
+    initModelLoader()
+    {
+        const btn = this.elements.modelLoadBtn;
+        const input = this.elements.modelFileInput;
+
+        if (btn)
+        {
+            if (this.boundModelLoadHandler)
+            {
+                btn.removeEventListener("click", this.boundModelLoadHandler);
+            }
+
+            const handleClick = () =>
+            {
+                const message = "Enter model URL (OBJ/STL/PLY/DRC). Leave empty to choose a local file.";
+                const url = window.prompt(message, "");
+                if (url === null)
+                {
+                    return;
+                }
+
+                const trimmed = url.trim();
+                if (trimmed)
+                {
+                    this.triggerModelLoad({ url: trimmed, name: this.getNameFromUrl(trimmed), revokeUrl: null });
+                }
+                else if (input)
+                {
+                    input.click();
+                }
+            };
+
+            btn.addEventListener("click", handleClick);
+            this.boundModelLoadHandler = handleClick;
+        }
+
+        if (input)
+        {
+            if (this.boundModelFileHandler)
+            {
+                input.removeEventListener("change", this.boundModelFileHandler);
+            }
+
+            const handleFile = () =>
+            {
+                const file = input.files && input.files[0];
+                if (!file)
+                {
+                    return;
+                }
+
+                const objectUrl = URL.createObjectURL(file);
+                const namedUrl = `${objectUrl}#${encodeURIComponent(file.name)}`;
+                this.triggerModelLoad({ url: namedUrl, name: file.name, revokeUrl: objectUrl });
+                input.value = "";
+            };
+
+            input.addEventListener("change", handleFile);
+            this.boundModelFileHandler = handleFile;
+        }
+    }
+
+    triggerModelLoad(source)
+    {
+        if (this.onModelLoad)
+        {
+            this.onModelLoad(source);
+        }
+    }
+
+    getNameFromUrl(url)
+    {
+        if (!url)
+        {
+            return null;
+        }
+        const trimmed = url.trim();
+        const hashIndex = trimmed.lastIndexOf("#");
+        if (hashIndex !== -1)
+        {
+            const hashPart = decodeURIComponent(trimmed.slice(hashIndex + 1));
+            if (hashPart)
+            {
+                return hashPart.replace(/\.[^/.]+$/, "");
+            }
+        }
+        const base = trimmed.split("?")[0];
+        const file = base.split("/").pop();
+        if (!file)
+        {
+            return null;
+        }
+        return file.replace(/\.[^/.]+$/, "");
     }
 
     /**

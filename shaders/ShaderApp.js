@@ -50,6 +50,12 @@ const SHADER_UI_TEMPLATE = `
                     <option value="" selected>None</option>
                 </select>
             </div>
+            <div class="shaders-toolbar-group">
+                <button class="shaders-toolbar-action" id="model-load-btn" type="button" title="Load a model from URL or file">
+                    Load Model…
+                </button>
+                <input class="shaders-file-input" id="model-file-input" type="file" accept=".obj,.stl,.ply,.drc">
+            </div>
             <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
@@ -144,7 +150,8 @@ export class ShaderApp
 
         this.canvasControls = new CanvasControls(this.canvas, {
             onResolutionChange: () => this.renderer.handleResize(),
-            onModelChange: (model) => this.handleModelSelected(model)
+            onModelChange: (model) => this.handleModelSelected(model),
+            onModelLoad: (source) => this.handleCustomModelLoad(source)
         });
 
         this.renderer.setCanvasChangeHandler((newCanvas) => this.handleCanvasChanged(newCanvas));
@@ -185,6 +192,54 @@ export class ShaderApp
             }
             this.editor.setStatus(`Model error: ${error.message}`, true);
             console.error("Failed to load model:", error);
+        }
+    }
+
+    /**
+     * Loads a custom model from a URL or file selection.
+     */
+    async handleCustomModelLoad(source)
+    {
+        if (!source || !source.url)
+        {
+            return;
+        }
+
+        const token = ++this.modelLoadToken;
+        const revokeUrl = source.revokeUrl;
+        const url = source.url;
+        const name = source.name || null;
+
+        this.editor.clearSavedModel();
+        if (this.canvasControls)
+        {
+            this.canvasControls.setModelSelection("", { notify: false });
+        }
+
+        try
+        {
+            const payload = await this.modelLoader.load({ url, name });
+            if (token !== this.modelLoadToken)
+            {
+                return;
+            }
+            this.renderer.setModel(payload);
+        }
+        catch (error)
+        {
+            if (token !== this.modelLoadToken)
+            {
+                return;
+            }
+            this.editor.setStatus(`Model error: ${error.message}`, true);
+            console.error("Failed to load custom model:", error);
+        }
+        finally
+        {
+            if (revokeUrl)
+            {
+                URL.revokeObjectURL(revokeUrl);
+            }
         }
     }
 

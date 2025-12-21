@@ -65,7 +65,7 @@ export class ModelLoader
             return this.cache.get(url);
         }
 
-        const format = this.getFormatForUrl(url);
+        const format = this.getFormatForUrl(url, name);
         if (!format)
         {
             throw new Error(`Unsupported model format: ${url}`);
@@ -83,9 +83,9 @@ export class ModelLoader
     /**
      * Returns the first format that supports the given URL extension.
      */
-    getFormatForUrl(url)
+    getFormatForUrl(url, name = null)
     {
-        const extension = this.getExtension(url);
+        const extension = this.getExtension(url, name);
         if (!extension)
         {
             return null;
@@ -93,15 +93,62 @@ export class ModelLoader
         return this.formats.find((format) => format.supportsExtension(extension)) || null;
     }
 
-    getExtension(url)
+    getExtension(url, name = null)
     {
-        if (!url)
+        const extensionFromValue = (value) =>
         {
-            return null;
+            if (!value)
+            {
+                return null;
+            }
+
+            let decoded = value;
+            try
+            {
+                decoded = decodeURIComponent(value);
+            }
+            catch (e)
+            {
+                decoded = value;
+            }
+
+            const base = decoded.split("?")[0];
+            const file = base.split("/").pop();
+            if (!file)
+            {
+                return null;
+            }
+
+            const dotIndex = file.lastIndexOf(".");
+            if (dotIndex <= 0)
+            {
+                return null;
+            }
+            return file.slice(dotIndex + 1).toLowerCase();
+        };
+
+        if (url)
+        {
+            const trimmed = url.trim();
+            const hashIndex = trimmed.lastIndexOf("#");
+            if (hashIndex !== -1)
+            {
+                const hashPart = trimmed.slice(hashIndex + 1);
+                const hashExt = extensionFromValue(hashPart);
+                if (hashExt)
+                {
+                    return hashExt;
+                }
+            }
+
+            const baseExt = extensionFromValue(trimmed);
+            if (baseExt)
+            {
+                return baseExt;
+            }
         }
-        const fragment = url.split("?")[0];
-        const parts = fragment.split(".");
-        return parts.length > 1 ? parts.pop().toLowerCase() : null;
+
+        return extensionFromValue(name);
     }
 
     getNameFromUrl(url)
@@ -110,7 +157,26 @@ export class ModelLoader
         {
             return null;
         }
-        const file = url.split("/").pop();
+        const trimmed = url.trim();
+        const hashIndex = trimmed.lastIndexOf("#");
+        if (hashIndex !== -1)
+        {
+            try
+            {
+                const hashPart = decodeURIComponent(trimmed.slice(hashIndex + 1));
+                if (hashPart)
+                {
+                    return hashPart.replace(/\.[^/.]+$/, "");
+                }
+            }
+            catch (e)
+            {
+                // Ignore decode errors.
+            }
+        }
+
+        const base = trimmed.split("?")[0];
+        const file = base.split("/").pop();
         if (!file)
         {
             return null;

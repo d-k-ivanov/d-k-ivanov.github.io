@@ -104,6 +104,36 @@
     box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
 }
 
+.shaders-toolbar-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--sh-border-light);
+    border-radius: 4px;
+    background: var(--sh-bg-input);
+    color: var(--sh-text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.shaders-toolbar-action:hover {
+    border-color: var(--sh-accent);
+    background: var(--sh-bg-hover);
+}
+
+.shaders-toolbar-action:focus {
+    outline: none;
+    border-color: var(--sh-accent);
+    box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
+}
+
+.shaders-file-input {
+    display: none;
+}
+
 .shaders-main-container {
     position: absolute;
     top: 46px;
