@@ -5,7 +5,7 @@
  */
 export class ModelCollection
 {
-    static BASE_PATH = "./models";
+    static BASE_PATH = "./assets/models";
 
     static ITEMS = [
         { id: "blub", name: "blub.obj", file: "blub.obj" },

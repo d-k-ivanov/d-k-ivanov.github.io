@@ -15,7 +15,7 @@ uniform samplerCube iChannel1;
 uniform samplerCube iChannel2;
 uniform samplerCube iChannel3;
 
-Files load from ./textures/
+Files load from ./assets/textures/
 
 2D Samplers:
 iChannel0.{png,jpg,jpeg,webp}
@@ -39,7 +39,7 @@ const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
  */
 export class WebGLTextureLoader
 {
-    constructor(gl, basePath = "./textures")
+    constructor(gl, basePath = "./assets/textures")
     {
         this.gl = gl;
         this.basePath = basePath.replace(/\/$/, "");

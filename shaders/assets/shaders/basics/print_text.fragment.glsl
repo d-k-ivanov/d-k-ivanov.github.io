@@ -11,7 +11,7 @@ precision mediump int;
 uniform vec3 iResolution;
 uniform float iTime;
 
-// Texture with font atlas: textures/iChannel0.png
+// Texture with font atlas: assets/textures/iChannel0.png
 uniform sampler2D iChannel0;
 
 out vec4 fragColor;

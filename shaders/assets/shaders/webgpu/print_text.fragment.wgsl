@@ -10,7 +10,7 @@ struct ShaderUniforms
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
 
-// iChannel0URL: ./textures/iChannel0.png
+// iChannel0URL: ./assets/textures/iChannel0.png
 @group(0) @binding(10) var iChannel0Texture : texture_2d<f32>;
 @group(0) @binding(14) var iChannel0Sampler : sampler;
 

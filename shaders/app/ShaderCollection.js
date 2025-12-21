@@ -8,8 +8,8 @@ import { ShaderRenderer } from "./ShaderRenderer.js";
  */
 export class ShaderCollection
 {
-    static BASE_PATH = "./collection";
-    static SHARED_PATH = "./collection/shared";
+    static BASE_PATH = "./assets/shaders";
+    static SHARED_PATH = "./assets/shaders/shared";
 
     /** Catalog of built-in shader examples used by the editor UI. */
     static ITEMS = [

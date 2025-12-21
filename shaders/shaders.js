@@ -1,6 +1,6 @@
 "use strict";
 
-import { ShaderApp } from "./ShaderApp.js";
+import { ShaderApp } from "./app/ShaderApp.js";
 
 /**
  * Bootstraps the Shader Editor experience after the DOM is ready.

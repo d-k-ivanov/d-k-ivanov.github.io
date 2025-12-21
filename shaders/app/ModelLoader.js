@@ -13,7 +13,7 @@ export class ModelLoader
 {
     constructor({ basePath = ModelCollection.BASE_PATH, formats = null } = {})
     {
-        this.basePath = (basePath || "./models").replace(/\/$/, "");
+        this.basePath = (basePath || "./assets/models").replace(/\/$/, "");
         this.formats = Array.isArray(formats) && formats.length
             ? formats
             : [new WavefrontObjFormat(), new StlFormat(), new PlyFormat(), new DracoFormat()];
