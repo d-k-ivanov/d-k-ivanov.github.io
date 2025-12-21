@@ -11,6 +11,7 @@ const SHADER_TYPES = [
 ];
 
 const STORAGE_KEY = "shaders-selected-shader";
+const STORAGE_KEY_MODEL = "shaders-selected-model";
 
 /**
  * Manages shader source editing, tree navigation, tab handling, and compilation.
@@ -423,6 +424,26 @@ export class ShaderEditor
     }
 
     /**
+     * Persists the last selected model id to storage.
+     */
+    saveModelSelection(model)
+    {
+        try
+        {
+            if (!model || !model.id)
+            {
+                localStorage.removeItem(STORAGE_KEY_MODEL);
+                return;
+            }
+            localStorage.setItem(STORAGE_KEY_MODEL, model.id);
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+    }
+
+    /**
      * Restores the last saved shader if present in the collection.
      */
     getSavedShader()
@@ -447,6 +468,23 @@ export class ShaderEditor
     }
 
     /**
+     * Restores the last saved model id if present.
+     */
+    getSavedModelId()
+    {
+        try
+        {
+            const saved = localStorage.getItem(STORAGE_KEY_MODEL);
+            return saved || null;
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+        return null;
+    }
+
+    /**
      * Clears any saved shader selection.
      */
     clearSavedShader()
@@ -454,6 +492,21 @@ export class ShaderEditor
         try
         {
             localStorage.removeItem(STORAGE_KEY);
+        }
+        catch (e)
+        {
+            // Ignore storage errors
+        }
+    }
+
+    /**
+     * Clears any saved model selection.
+     */
+    clearSavedModel()
+    {
+        try
+        {
+            localStorage.removeItem(STORAGE_KEY_MODEL);
         }
         catch (e)
         {

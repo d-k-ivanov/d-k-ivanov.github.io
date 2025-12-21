@@ -162,12 +162,14 @@ export class ShaderApp
 
         if (!model)
         {
+            this.editor.clearSavedModel();
             this.renderer.setModel(null);
             return;
         }
 
         try
         {
+            this.editor.saveModelSelection(model);
             const payload = await this.modelLoader.load(model);
             if (token !== this.modelLoadToken)
             {
@@ -300,6 +302,11 @@ export class ShaderApp
     async start()
     {
         this.recreateCanvas();
+        const savedModelId = this.editor.getSavedModelId();
+        if (savedModelId && this.canvasControls)
+        {
+            this.canvasControls.setModelSelection(savedModelId, { notify: true });
+        }
         const savedShader = this.editor.getSavedShader();
         await this.editor.loadShader(savedShader || { folder: "basics", name: "hello_world" });
     }

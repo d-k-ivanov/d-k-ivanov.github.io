@@ -161,6 +161,25 @@ export class CanvasControls
     }
 
     /**
+     * Updates the model selector and optionally notifies listeners.
+     */
+    setModelSelection(modelId, { notify = true } = {})
+    {
+        this.currentModelId = modelId || "";
+        const selector = this.elements.modelSelect;
+        if (selector)
+        {
+            selector.value = this.currentModelId;
+        }
+
+        if (notify && this.onModelChange)
+        {
+            const model = ModelCollection.getById(this.currentModelId);
+            this.onModelChange(model);
+        }
+    }
+
+    /**
      * Rebinds controls to a new canvas element.
      */
     setCanvas(canvas)
