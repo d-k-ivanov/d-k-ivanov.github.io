@@ -7,6 +7,9 @@ import { ModelFormat } from "./ModelFormat.js";
  */
 export class StlFormat extends ModelFormat
 {
+    /**
+     * Initializes STL format metadata.
+     */
     constructor()
     {
         super({ id: "stl", extensions: ["stl"] });
@@ -55,6 +58,9 @@ export class StlFormat extends ModelFormat
         throw new Error("Unsupported STL source.");
     }
 
+    /**
+     * Returns true when the STL buffer appears to be binary.
+     */
     isBinary(buffer)
     {
         if (buffer.byteLength < 84)
@@ -80,6 +86,9 @@ export class StlFormat extends ModelFormat
         return true;
     }
 
+    /**
+     * Parses binary STL data into flat buffers.
+     */
     parseBinary(buffer, options)
     {
         const view = new DataView(buffer);
@@ -134,6 +143,9 @@ export class StlFormat extends ModelFormat
         return this.buildPayload(positions, normals, boundsMin, boundsMax, options);
     }
 
+    /**
+     * Parses ASCII STL text into flat buffers.
+     */
     parseASCII(text, options)
     {
         const positions = [];
@@ -228,6 +240,9 @@ export class StlFormat extends ModelFormat
         return this.buildPayload(positions, normals, boundsMin, boundsMax, options);
     }
 
+    /**
+     * Normalizes or recomputes the face normal for a triangle.
+     */
     normalizeNormal(normal, vertices)
     {
         let nx = normal[0];
@@ -256,6 +271,9 @@ export class StlFormat extends ModelFormat
         return [nx / norm, ny / norm, nz / norm];
     }
 
+    /**
+     * Builds a standardized model payload from STL arrays.
+     */
     buildPayload(positions, normals, boundsMin, boundsMax, options)
     {
         if (positions.length === 0)
@@ -278,6 +296,9 @@ export class StlFormat extends ModelFormat
         };
     }
 
+    /**
+     * Extracts a base name from a URL for display.
+     */
     getNameFromUrl(url)
     {
         if (!url)

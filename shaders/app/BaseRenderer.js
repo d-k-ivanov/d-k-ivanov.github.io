@@ -45,6 +45,9 @@ export class BaseRenderer
         this.uniformState.reset();
     }
 
+    /**
+     * Handles canvas resize events (optional override in subclasses).
+     */
     handleResize()
     {
         // Optional override in subclasses.

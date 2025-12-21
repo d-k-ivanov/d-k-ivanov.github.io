@@ -5,6 +5,9 @@
  */
 export class ModelFormat
 {
+    /**
+     * @param {{id?: string, extensions?: string[]}} param0 - format metadata.
+     */
     constructor({ id, extensions } = {})
     {
         if (new.target === ModelFormat)

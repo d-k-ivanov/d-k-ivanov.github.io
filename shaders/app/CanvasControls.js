@@ -231,6 +231,9 @@ export class CanvasControls
         }
     }
 
+    /**
+     * Forwards a custom model source payload to the configured handler.
+     */
     triggerModelLoad(source)
     {
         if (this.onModelLoad)
@@ -239,6 +242,9 @@ export class CanvasControls
         }
     }
 
+    /**
+     * Extracts a model name from a URL or hash-suffixed filename.
+     */
     getNameFromUrl(url)
     {
         if (!url)

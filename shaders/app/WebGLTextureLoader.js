@@ -39,6 +39,10 @@ const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
  */
 export class WebGLTextureLoader
 {
+    /**
+     * @param {WebGL2RenderingContext} gl - active WebGL context.
+     * @param {string} basePath - base path for texture assets.
+     */
     constructor(gl, basePath = "./assets/textures")
     {
         this.gl = gl;

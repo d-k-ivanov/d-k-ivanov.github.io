@@ -5,6 +5,9 @@
  */
 export class PanelResizer
 {
+    /**
+     * Initializes resize state and attaches handlers.
+     */
     constructor()
     {
         this.activeHandle = null;

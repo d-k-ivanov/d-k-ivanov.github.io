@@ -7,6 +7,9 @@ import { ModelFormat } from "./ModelFormat.js";
  */
 export class DracoFormat extends ModelFormat
 {
+    /**
+     * @param {{decoderPath?: string}} param0 - decoder script/wasm base URL.
+     */
     constructor({ decoderPath = "https://www.gstatic.com/draco/versioned/decoders/1.5.7" } = {})
     {
         super({ id: "draco", extensions: ["drc"] });
@@ -83,6 +86,9 @@ export class DracoFormat extends ModelFormat
         }
     }
 
+    /**
+     * Builds a flat payload from Draco mesh attributes.
+     */
     buildMeshPayload(module, decoder, mesh, options)
     {
         const numFaces = mesh.num_faces();
@@ -188,6 +194,9 @@ export class DracoFormat extends ModelFormat
         };
     }
 
+    /**
+     * Extracts a typed attribute into a packed Float32Array.
+     */
     extractAttribute(module, decoder, mesh, attribute, targetComponents)
     {
         const numPoints = mesh.num_points();
@@ -210,6 +219,9 @@ export class DracoFormat extends ModelFormat
         return array;
     }
 
+    /**
+     * Reads a vec3 from a packed array with stride.
+     */
     readVec3(array, index, stride)
     {
         const base = index * stride;
@@ -220,6 +232,9 @@ export class DracoFormat extends ModelFormat
         ];
     }
 
+    /**
+     * Reads a vec2 from a packed array with stride.
+     */
     readVec2(array, index, stride)
     {
         const base = index * stride;
@@ -229,6 +244,9 @@ export class DracoFormat extends ModelFormat
         ];
     }
 
+    /**
+     * Computes a normalized face normal for three positions.
+     */
     computeFaceNormal(a, b, c)
     {
         const abx = b[0] - a[0];
@@ -250,6 +268,9 @@ export class DracoFormat extends ModelFormat
         return [nx / length, ny / length, nz / length];
     }
 
+    /**
+     * Loads or reuses the Draco decoder module.
+     */
     async getDecoderModule(options = {})
     {
         if (DracoFormat.decoderModule)
@@ -296,6 +317,9 @@ export class DracoFormat extends ModelFormat
         return DracoFormat.decoderPromise;
     }
 
+    /**
+     * Injects the Draco decoder script into the document.
+     */
     async loadDecoderScript(url)
     {
         if (DracoFormat.decoderScriptPromise)
@@ -335,6 +359,9 @@ export class DracoFormat extends ModelFormat
         return DracoFormat.decoderScriptPromise;
     }
 
+    /**
+     * Extracts a base name from a URL for display.
+     */
     getNameFromUrl(url)
     {
         if (!url)

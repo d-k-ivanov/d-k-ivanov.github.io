@@ -7,6 +7,9 @@ import { ModelFormat } from "./ModelFormat.js";
  */
 export class WavefrontObjFormat extends ModelFormat
 {
+    /**
+     * Initializes OBJ format metadata.
+     */
     constructor()
     {
         super({ id: "wavefront-obj", extensions: ["obj"] });
@@ -234,6 +237,9 @@ export class WavefrontObjFormat extends ModelFormat
         };
     }
 
+    /**
+     * Extracts a base name from a URL for display.
+     */
     getNameFromUrl(url)
     {
         if (!url)

@@ -135,6 +135,9 @@ const SHADER_UI_TEMPLATE = `
  */
 export class ShaderApp
 {
+    /**
+     * Initializes the editor UI, renderer, and controls.
+     */
     constructor()
     {
         this.linkStyles();

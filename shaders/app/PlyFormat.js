@@ -26,6 +26,9 @@ const TYPE_INFO = {
  */
 export class PlyFormat extends ModelFormat
 {
+    /**
+     * Initializes PLY format metadata.
+     */
     constructor()
     {
         super({ id: "ply", extensions: ["ply"] });
@@ -82,6 +85,9 @@ export class PlyFormat extends ModelFormat
         throw new Error("Unsupported PLY source.");
     }
 
+    /**
+     * Extracts the PLY header from a binary buffer.
+     */
     parseHeaderFromBuffer(buffer)
     {
         const bytes = new Uint8Array(buffer);
@@ -121,6 +127,9 @@ export class PlyFormat extends ModelFormat
         return this.parseHeaderText(headerText, headerEnd);
     }
 
+    /**
+     * Extracts the PLY header from ASCII text.
+     */
     parseHeaderFromText(text)
     {
         const endIndex = text.indexOf("end_header");
@@ -143,6 +152,9 @@ export class PlyFormat extends ModelFormat
         return this.parseHeaderText(headerText, headerEnd);
     }
 
+    /**
+     * Parses header text into format and element descriptors.
+     */
     parseHeaderText(headerText, headerSize)
     {
         const lines = headerText.split(/\r?\n/);
@@ -225,6 +237,9 @@ export class PlyFormat extends ModelFormat
         };
     }
 
+    /**
+     * Parses ASCII PLY vertex/face data into buffers.
+     */
     parseASCII(text, header, options)
     {
         const vertexElement = header.elements.vertex;
@@ -405,6 +420,9 @@ export class PlyFormat extends ModelFormat
         return this.buildPayload(outPositions, outNormals, outUVs, boundsMin, boundsMax, options, hasUVs);
     }
 
+    /**
+     * Parses binary PLY vertex/face data into buffers.
+     */
     parseBinary(buffer, header, options)
     {
         const vertexElement = header.elements.vertex;
@@ -595,6 +613,9 @@ export class PlyFormat extends ModelFormat
         return this.buildPayload(outPositions, outNormals, outUVs, boundsMin, boundsMax, options, hasUVs);
     }
 
+    /**
+     * Reads a typed scalar value from a DataView.
+     */
     readScalar(view, offset, type, littleEndian)
     {
         const info = TYPE_INFO[type];
@@ -608,6 +629,9 @@ export class PlyFormat extends ModelFormat
         };
     }
 
+    /**
+     * Finds the first matching property index by name.
+     */
     findPropertyIndex(properties, names)
     {
         for (const name of names)
@@ -621,6 +645,9 @@ export class PlyFormat extends ModelFormat
         return -1;
     }
 
+    /**
+     * Finds a matching pair of UV property names.
+     */
     findUVPair(properties)
     {
         const pairs = [
@@ -643,6 +670,9 @@ export class PlyFormat extends ModelFormat
         return null;
     }
 
+    /**
+     * Chooses the list property that represents face indices.
+     */
     findFaceListProperty(properties)
     {
         return properties.find((prop) => prop.isList && /vertex/i.test(prop.name))
@@ -650,6 +680,9 @@ export class PlyFormat extends ModelFormat
             || null;
     }
 
+    /**
+     * Computes a normalized face normal from indexed positions.
+     */
     computeFaceNormal(positions, indices)
     {
         const aIndex = indices[0] * 3;
@@ -685,6 +718,9 @@ export class PlyFormat extends ModelFormat
         return [nx / length, ny / length, nz / length];
     }
 
+    /**
+     * Builds a standardized model payload from PLY arrays.
+     */
     buildPayload(positions, normals, uvs, boundsMin, boundsMax, options, hasUVs)
     {
         if (!positions.length)
@@ -707,6 +743,9 @@ export class PlyFormat extends ModelFormat
         };
     }
 
+    /**
+     * Extracts a base name from a URL for display.
+     */
     getNameFromUrl(url)
     {
         if (!url)

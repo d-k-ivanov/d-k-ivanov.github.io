@@ -11,6 +11,9 @@ import { WavefrontObjFormat } from "./WavefrontObjFormat.js";
  */
 export class ModelLoader
 {
+    /**
+     * @param {{basePath?: string, formats?: ModelFormat[]}} param0 - loader overrides.
+     */
     constructor({ basePath = ModelCollection.BASE_PATH, formats = null } = {})
     {
         this.basePath = (basePath || "./assets/models").replace(/\/$/, "");
@@ -93,6 +96,9 @@ export class ModelLoader
         return this.formats.find((format) => format.supportsExtension(extension)) || null;
     }
 
+    /**
+     * Derives a lowercase file extension from URL, hash, or name.
+     */
     getExtension(url, name = null)
     {
         const extensionFromValue = (value) =>
@@ -151,6 +157,9 @@ export class ModelLoader
         return extensionFromValue(name);
     }
 
+    /**
+     * Extracts a display-friendly base name from a URL or hash.
+     */
     getNameFromUrl(url)
     {
         if (!url)

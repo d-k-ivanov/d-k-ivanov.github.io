@@ -127,6 +127,9 @@ export class WebGPURenderer extends BaseRenderer
         });
     }
 
+    /**
+     * Stops the render loop.
+     */
     stop()
     {
         super.stop();

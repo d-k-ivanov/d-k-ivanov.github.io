@@ -63,6 +63,9 @@ const WGSL_PATTERNS = [
  */
 export class GLSLHighlighter
 {
+    /**
+     * Initializes the highlighter cache.
+     */
     constructor()
     {
         this.cache = new Map();

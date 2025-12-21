@@ -5,6 +5,9 @@
  */
 export class ThemeManager
 {
+    /**
+     * Caches panel references and applies saved themes.
+     */
     constructor()
     {
         this.panels = {
