@@ -27,6 +27,10 @@ export class WebGPURenderer extends BaseRenderer
         // Vertex number extracted from VERTEX_COUNT constant in WGSL.
         this.vertexCount = DEFAULT_VERTEX_COUNT;
 
+        // Grid size extracted from GRID_SIZE constant in WGSL.
+        // Used for allocating storage buffers.
+        this.gridSize = DEFAULT_GRID_SIZE;
+
         // Bindings. Extracted from @binding() attributes in WGSL.
         this.bindingsRender = new Set();
         this.bindingsCompute = new Set();
@@ -49,7 +53,6 @@ export class WebGPURenderer extends BaseRenderer
         this.computeWidth = 0;
         this.computeHeight = 0;
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
-        this.gridSize = DEFAULT_GRID_SIZE;
     }
 
     /**
