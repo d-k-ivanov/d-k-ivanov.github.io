@@ -54,7 +54,7 @@ const SHADER_UI_TEMPLATE = `
                 <button class="shaders-toolbar-action" id="model-load-btn" type="button" title="Load a model from URL or file">
                     Load Model…
                 </button>
-                <input class="shaders-file-input" id="model-file-input" type="file" accept=".obj,.stl,.ply,.drc">
+                <input class="shaders-file-input" id="model-file-input" type="file" accept=".obj,.stl,.ply,.drc,.vox">
             </div>
             <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>

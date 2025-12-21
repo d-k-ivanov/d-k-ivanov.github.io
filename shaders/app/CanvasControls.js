@@ -183,7 +183,7 @@ export class CanvasControls
 
             const handleClick = () =>
             {
-                const message = "Enter model URL (OBJ/STL/PLY/DRC). Leave empty to choose a local file.";
+                const message = "Enter model URL (OBJ/STL/PLY/DRC/VOX). Leave empty to choose a local file.";
                 const url = window.prompt(message, "");
                 if (url === null)
                 {

@@ -8,16 +8,17 @@ export class ModelCollection
     static BASE_PATH = "./assets/models";
 
     static ITEMS = [
-        { id: "blub", name: "blub.obj", file: "blub.obj" },
-        { id: "box", name: "box.stl", file: "box.stl" },
+        { id: "blub_obj", name: "blub.obj", file: "blub.obj" },
+        { id: "box_stl", name: "box.stl", file: "box.stl" },
         { id: "bunny_drc", name: "bunny.drc", file: "bunny.drc" },
-        { id: "bunny_res3", name: "bunny_res3.ply", file: "bunny_res3.ply" },
-        { id: "bunny_res4", name: "bunny_res4.ply", file: "bunny_res4.ply" },
-        { id: "dragon_res4", name: "dragon_res4.ply", file: "dragon_res4.ply" },
-        { id: "magnolia", name: "magnolia.stl", file: "magnolia.stl" },
-        { id: "pig", name: "pig.obj", file: "pig.obj" },
-        { id: "skull", name: "skull.obj", file: "skull.obj" },
-        { id: "spot", name: "spot.obj", file: "spot.obj" },
+        { id: "bunny_ply_res3", name: "bunny_res3.ply", file: "bunny_res3.ply" },
+        { id: "bunny_ply_res4", name: "bunny_res4.ply", file: "bunny_res4.ply" },
+        { id: "bunny_vox", name: "bunny.vox", file: "bunny.vox" },
+        { id: "dragon_ply_res4", name: "dragon_res4.ply", file: "dragon_res4.ply" },
+        { id: "magnolia_stl", name: "magnolia.stl", file: "magnolia.stl" },
+        { id: "pig_obj", name: "pig.obj", file: "pig.obj" },
+        { id: "skull_obj", name: "skull.obj", file: "skull.obj" },
+        { id: "spot_obj", name: "spot.obj", file: "spot.obj" },
     ];
 
     /**
