@@ -55,6 +55,17 @@ fn rotationY(angle : f32) -> mat3x3<f32>
     );
 }
 
+fn rotationZ(angle : f32) -> mat3x3<f32>
+{
+    let c = cos(angle);
+    let s = sin(angle);
+    return mat3x3<f32>(
+        vec3f(c, -s, 0.0),
+        vec3f(s, c, 0.0),
+        vec3f(0.0, 0.0, 1.0)
+    );
+}
+
 @vertex
 fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
 {
@@ -86,7 +97,7 @@ fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
     let uv = modelUVs[idx].xy;
 
     let localPos = (position - modelInfo.center.xyz) * modelInfo.boundsMax.w;
-    let rot = rotationY(shaderUniforms.iTime * 0.6) * rotationX(0.0);
+    let rot = rotationY(shaderUniforms.iTime * 0.6) * rotationX(0.0) * rotationZ(0.0);
     let world = rot * localPos;
     let normalRot = normalize(rot * normal);
 

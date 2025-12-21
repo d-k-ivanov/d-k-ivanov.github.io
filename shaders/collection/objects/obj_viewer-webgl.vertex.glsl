@@ -39,6 +39,17 @@ mat3 rotationY(float angle)
     );
 }
 
+mat3 rotationZ(float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat3(
+        c, -s, 0.0,
+        s, c, 0.0,
+        0.0, 0.0, 1.0
+    );
+}
+
 void main()
 {
     if (uHasModel < 0.5)
@@ -52,7 +63,7 @@ void main()
     }
 
     vec3 localPos = (aPosition - uModelCenter) * uModelScale;
-    mat3 rot = rotationY(iTime * 0.6) * rotationX(0.0);
+    mat3 rot = rotationY(iTime * 0.6) * rotationX(0.0) * rotationZ(0.0);
     vec3 world = rot * localPos;
     vec3 normal = normalize(rot * aNormal);
 
