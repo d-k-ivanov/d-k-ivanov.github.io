@@ -8,10 +8,12 @@ export class ModelCollection
     static BASE_PATH = "./models";
 
     static ITEMS = [
-        { id: "blub", name: "Blub", file: "blub.obj" },
-        { id: "pig", name: "Pig", file: "pig.obj" },
-        { id: "skull", name: "Skull", file: "skull.obj" },
-        { id: "spot", name: "Spot", file: "spot.obj" },
+        { id: "blub", name: "blub.obj", file: "blub.obj" },
+        { id: "box", name: "box.stl", file: "box.stl" },
+        { id: "magnolia", name: "magnolia.stl", file: "magnolia.stl" },
+        { id: "pig", name: "pig.obj", file: "pig.obj" },
+        { id: "skull", name: "skull.obj", file: "skull.obj" },
+        { id: "spot", name: "spot.obj", file: "spot.obj" },
     ];
 
     /**

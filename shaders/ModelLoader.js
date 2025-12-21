@@ -1,6 +1,7 @@
 "use strict";
 
 import { ModelCollection } from "./ModelCollection.js";
+import { StlFormat } from "./StlFormat.js";
 import { WavefrontObjFormat } from "./WavefrontObjFormat.js";
 
 /**
@@ -11,7 +12,9 @@ export class ModelLoader
     constructor({ basePath = ModelCollection.BASE_PATH, formats = null } = {})
     {
         this.basePath = (basePath || "./models").replace(/\/$/, "");
-        this.formats = Array.isArray(formats) && formats.length ? formats : [new WavefrontObjFormat()];
+        this.formats = Array.isArray(formats) && formats.length
+            ? formats
+            : [new WavefrontObjFormat(), new StlFormat()];
         this.cache = new Map();
     }
 
