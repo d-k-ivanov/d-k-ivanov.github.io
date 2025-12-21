@@ -1,7 +1,7 @@
 "use strict";
 
-import { WebGLRenderer } from "./rendering/WebGLRenderer.js";
-import { WebGPURenderer } from "./rendering/WebGPURenderer.js";
+import { WebGLRenderer } from "./WebGLRenderer.js";
+import { WebGPURenderer } from "./WebGPURenderer.js";
 
 /**
  * Facade that owns the active renderer implementation (WebGL2 or WebGPU),
