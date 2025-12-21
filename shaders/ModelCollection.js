@@ -10,6 +10,7 @@ export class ModelCollection
     static ITEMS = [
         { id: "blub", name: "Blub", file: "blub.obj" },
         { id: "pig", name: "Pig", file: "pig.obj" },
+        { id: "skull", name: "Skull", file: "skull.obj" },
         { id: "spot", name: "Spot", file: "spot.obj" },
     ];
 
