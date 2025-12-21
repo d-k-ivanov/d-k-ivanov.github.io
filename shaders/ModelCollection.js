@@ -10,6 +10,9 @@ export class ModelCollection
     static ITEMS = [
         { id: "blub", name: "blub.obj", file: "blub.obj" },
         { id: "box", name: "box.stl", file: "box.stl" },
+        { id: "bunny_res3", name: "bunny_res3.ply", file: "bunny_res3.ply" },
+        { id: "bunny_res4", name: "bunny_res4.ply", file: "bunny_res4.ply" },
+        { id: "dragon_res4", name: "dragon_res4.ply", file: "dragon_res4.ply" },
         { id: "magnolia", name: "magnolia.stl", file: "magnolia.stl" },
         { id: "pig", name: "pig.obj", file: "pig.obj" },
         { id: "skull", name: "skull.obj", file: "skull.obj" },
