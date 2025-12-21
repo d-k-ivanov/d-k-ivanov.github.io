@@ -25,6 +25,7 @@ export class ShaderRenderer
         this.webglRenderer = null;
         this.webgpuRenderer = null;
         this.canvasChangeHandler = null;
+        this.model = null;
 
         this.mouse = { x: 0, y: 0, clickX: 0, clickY: 0, isDown: false };
         this.removeMouseListeners = null;
@@ -133,6 +134,11 @@ export class ShaderRenderer
                 this.webglRenderer = renderer;
                 this.activeRenderer = renderer;
             }
+
+            if (this.model && typeof this.activeRenderer.setModel === "function")
+            {
+                this.activeRenderer.setModel(this.model);
+            }
         }
         catch (err)
         {
@@ -148,6 +154,26 @@ export class ShaderRenderer
     getContextType()
     {
         return this.contextType;
+    }
+
+    /**
+     * Sets the active model payload for renderers that consume geometry.
+     */
+    setModel(model)
+    {
+        this.model = model;
+        if (this.activeRenderer && typeof this.activeRenderer.setModel === "function")
+        {
+            this.activeRenderer.setModel(model);
+        }
+    }
+
+    /**
+     * @returns {object|null} the last loaded model payload.
+     */
+    getModel()
+    {
+        return this.model;
     }
 
     /**

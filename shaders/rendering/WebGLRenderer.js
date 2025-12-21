@@ -3,6 +3,8 @@
 import { BaseRenderer } from "./BaseRenderer.js";
 import { WebGLTextureLoader } from "./WebGLTextureLoader.js";
 
+const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
+
 /**
  * WebGL2 renderer backend for the shader editor.
  */
@@ -26,6 +28,9 @@ export class WebGLRenderer extends BaseRenderer
         this.channels = [];
         this.programVersion = 0;
         this.textureLoader = new WebGLTextureLoader(this.gl);
+        this.modelBuffers = null;
+        this.modelInfo = null;
+        this.useModelGeometry = false;
     }
 
     /**
@@ -87,6 +92,7 @@ export class WebGLRenderer extends BaseRenderer
         this.programVersion++;
         const version = this.programVersion;
         this.program = newProgram;
+        this.useModelGeometry = this.detectModelGeometry(vertSrc, fragSrc);
 
         this.uniforms = {
             iResolution: gl.getUniformLocation(newProgram, "iResolution"),
@@ -94,7 +100,12 @@ export class WebGLRenderer extends BaseRenderer
             iTimeDelta: gl.getUniformLocation(newProgram, "iTimeDelta"),
             iFrame: gl.getUniformLocation(newProgram, "iFrame"),
             iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
-            iMouse: gl.getUniformLocation(newProgram, "iMouse")
+            iMouse: gl.getUniformLocation(newProgram, "iMouse"),
+            uHasModel: gl.getUniformLocation(newProgram, "uHasModel"),
+            uModelCenter: gl.getUniformLocation(newProgram, "uModelCenter"),
+            uModelScale: gl.getUniformLocation(newProgram, "uModelScale"),
+            uModelBoundsMin: gl.getUniformLocation(newProgram, "uModelBoundsMin"),
+            uModelBoundsMax: gl.getUniformLocation(newProgram, "uModelBoundsMax")
         };
 
         this.detectChannels(newProgram);
@@ -129,13 +140,41 @@ export class WebGLRenderer extends BaseRenderer
             }
 
             const frameData = this.uniformState.nextFrame(time);
+            const hasModel = this.useModelGeometry && this.modelBuffers && this.modelBuffers.vertexCount > 0;
             gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            if (hasModel)
+            {
+                gl.enable(gl.DEPTH_TEST);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            }
+            else
+            {
+                gl.disable(gl.DEPTH_TEST);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+            }
+
             gl.useProgram(this.program);
 
             this.applyUniforms(frameData);
             this.bindChannelTextures();
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+            if (this.useModelGeometry)
+            {
+                if (hasModel && this.modelBuffers)
+                {
+                    gl.bindVertexArray(this.modelBuffers.vao);
+                }
+                const vertexCount = hasModel ? this.modelBuffers.vertexCount : 3;
+                gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+                if (hasModel)
+                {
+                    gl.bindVertexArray(null);
+                }
+            }
+            else
+            {
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            }
             this.requestFrame(render);
         };
 
@@ -175,6 +214,8 @@ export class WebGLRenderer extends BaseRenderer
             const mouse = frameData.mouse;
             gl.uniform4f(u.iMouse, mouse.x, mouse.y, mouse.clickX * mouse.zSign, mouse.clickY);
         }
+
+        this.applyModelUniforms();
     }
 
     /**
@@ -271,6 +312,160 @@ export class WebGLRenderer extends BaseRenderer
             gl.activeTexture(gl.TEXTURE0 + textureUnit);
             gl.bindTexture(target, texture);
             gl.uniform1i(channel.location, textureUnit);
+        }
+    }
+
+    /**
+     * Accepts model data and uploads vertex buffers.
+     */
+    setModel(model)
+    {
+        super.setModel(model);
+        this.modelInfo = model ? this.buildModelInfo(model) : null;
+        this.updateModelBuffers();
+    }
+
+    /**
+     * Parses sources for model-geometry markers.
+     */
+    detectModelGeometry(vertexSource, fragmentSource)
+    {
+        const combined = `${vertexSource || ""}\n${fragmentSource || ""}`;
+        return MODEL_GEOMETRY_MARKER.test(combined);
+    }
+
+    /**
+     * Computes derived model info (center/scale/bounds).
+     */
+    buildModelInfo(model)
+    {
+        const bounds = model?.bounds || {};
+        const min = bounds.min || [0, 0, 0];
+        const max = bounds.max || [0, 0, 0];
+        const center = [
+            (min[0] + max[0]) * 0.5,
+            (min[1] + max[1]) * 0.5,
+            (min[2] + max[2]) * 0.5
+        ];
+        const size = [
+            max[0] - min[0],
+            max[1] - min[1],
+            max[2] - min[2]
+        ];
+        const maxAxis = Math.max(size[0], size[1], size[2], 0.0001);
+        const scale = 1.6 / maxAxis;
+
+        return {
+            center,
+            scale,
+            boundsMin: min,
+            boundsMax: max
+        };
+    }
+
+    /**
+     * Uploads model buffers into a VAO for rendering.
+     */
+    updateModelBuffers()
+    {
+        const gl = this.gl;
+
+        if (!this.model || !this.model.positions || !this.model.normals)
+        {
+            this.disposeModelBuffers();
+            return;
+        }
+
+        const positions = this.model.positions;
+        const normals = this.model.normals;
+        const vertexCount = positions.length / 3;
+        const uvs = this.model.uvs || new Float32Array(vertexCount * 2);
+
+        if (!this.modelBuffers)
+        {
+            this.modelBuffers = {
+                vao: gl.createVertexArray(),
+                position: gl.createBuffer(),
+                normal: gl.createBuffer(),
+                uv: gl.createBuffer(),
+                vertexCount: 0
+            };
+        }
+
+        gl.bindVertexArray(this.modelBuffers.vao);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.position);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.normal);
+        gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.uv);
+        gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindVertexArray(null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        this.modelBuffers.vertexCount = vertexCount;
+    }
+
+    /**
+     * Releases model buffers from GPU memory.
+     */
+    disposeModelBuffers()
+    {
+        const gl = this.gl;
+        if (!this.modelBuffers)
+        {
+            return;
+        }
+
+        gl.deleteBuffer(this.modelBuffers.position);
+        gl.deleteBuffer(this.modelBuffers.normal);
+        gl.deleteBuffer(this.modelBuffers.uv);
+        gl.deleteVertexArray(this.modelBuffers.vao);
+        this.modelBuffers = null;
+    }
+
+    /**
+     * Sends model-related uniforms when available.
+     */
+    applyModelUniforms()
+    {
+        const gl = this.gl;
+        const u = this.uniforms || {};
+        const info = this.modelInfo;
+        const hasModel = !!info;
+
+        if (u.uHasModel)
+        {
+            gl.uniform1f(u.uHasModel, hasModel ? 1.0 : 0.0);
+        }
+        if (u.uModelCenter)
+        {
+            const center = info ? info.center : [0, 0, 0];
+            gl.uniform3f(u.uModelCenter, center[0], center[1], center[2]);
+        }
+        if (u.uModelScale)
+        {
+            const scale = info ? info.scale : 1.0;
+            gl.uniform1f(u.uModelScale, scale);
+        }
+        if (u.uModelBoundsMin)
+        {
+            const min = info ? info.boundsMin : [0, 0, 0];
+            gl.uniform3f(u.uModelBoundsMin, min[0], min[1], min[2]);
+        }
+        if (u.uModelBoundsMax)
+        {
+            const max = info ? info.boundsMax : [0, 0, 0];
+            gl.uniform3f(u.uModelBoundsMax, max[0], max[1], max[2]);
         }
     }
 }

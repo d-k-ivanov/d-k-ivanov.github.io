@@ -129,9 +129,16 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
     padding: 8px 12px;
     background: var(--sh-bg-toolbar);
     border-bottom: 1px solid var(--sh-border-light);
+}
+
+.shaders-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .shaders-canvas-toolbar label {

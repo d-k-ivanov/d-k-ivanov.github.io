@@ -5,6 +5,7 @@ import { PanelResizer } from "./PanelResizer.js";
 import { ShaderEditor } from "./ShaderEditor.js";
 import { ShaderRenderer } from "./ShaderRenderer.js";
 import { ThemeManager } from "./ThemeManager.js";
+import { ModelLoader } from "./ModelLoader.js";
 
 /**
  * Static HTML scaffold for the editor layout. Injected on startup.
@@ -41,6 +42,12 @@ const SHADER_UI_TEMPLATE = `
                     <option value="3840x2160">3840×2160 (4K UHD)</option>
                     <option value="3840x2400">3840×2400 (WQUXGA)</option>
                     <option value="4096x4096">4096×4096</option>
+                </select>
+            </div>
+            <div class="shaders-toolbar-group">
+                <label for="model-select">Model:</label>
+                <select id="model-select">
+                    <option value="" selected>None</option>
                 </select>
             </div>
             <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
@@ -132,15 +139,51 @@ export class ShaderApp
         this.editor = new ShaderEditor(this.renderer);
         this.resizer = new PanelResizer();
         this.themeManager = new ThemeManager();
+        this.modelLoader = new ModelLoader();
+        this.modelLoadToken = 0;
 
         this.canvasControls = new CanvasControls(this.canvas, {
-            onResolutionChange: () => this.renderer.handleResize()
+            onResolutionChange: () => this.renderer.handleResize(),
+            onModelChange: (model) => this.handleModelSelected(model)
         });
 
         this.renderer.setCanvasChangeHandler((newCanvas) => this.handleCanvasChanged(newCanvas));
 
         this.bindHotkeys();
         this.bindNoteToggle();
+    }
+
+    /**
+     * Loads a selected model and forwards it to the renderer.
+     */
+    async handleModelSelected(model)
+    {
+        const token = ++this.modelLoadToken;
+
+        if (!model)
+        {
+            this.renderer.setModel(null);
+            return;
+        }
+
+        try
+        {
+            const payload = await this.modelLoader.load(model);
+            if (token !== this.modelLoadToken)
+            {
+                return;
+            }
+            this.renderer.setModel(payload);
+        }
+        catch (error)
+        {
+            if (token !== this.modelLoadToken)
+            {
+                return;
+            }
+            this.editor.setStatus(`Model error: ${error.message}`, true);
+            console.error("Failed to load model:", error);
+        }
     }
 
     /**

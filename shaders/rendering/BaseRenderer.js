@@ -17,6 +17,7 @@ export class BaseRenderer
         this.mouse = mouse;
         this.animationId = null;
         this.uniformState = new ShaderUniformState(canvas, mouse);
+        this.model = null;
     }
 
     /**
@@ -26,6 +27,14 @@ export class BaseRenderer
     {
         this.canvas = canvas;
         this.uniformState.setCanvas(canvas);
+    }
+
+    /**
+     * Stores model data for renderers that support geometry input.
+     */
+    setModel(model)
+    {
+        this.model = model;
     }
 
     /**

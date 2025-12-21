@@ -6,6 +6,14 @@ import { ShaderUniformState } from "./ShaderUniformState.js";
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const DEFAULT_VERTEX_COUNT = 3;
 const DEFAULT_GRID_SIZE = 1;
+const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
+const MODEL_BINDINGS = {
+    positions: 20,
+    normals: 21,
+    uvs: 22,
+    info: 23
+};
+const MODEL_INFO_FLOATS = 12;
 
 /**
  * WebGPU renderer backend supporting render and optional compute pipelines.
@@ -49,10 +57,22 @@ export class WebGPURenderer extends BaseRenderer
         // Channels. Extracted from iChannelURL comments in WGSL.
         this.channelUrls = [null, null, null, null];
 
+        // Model data buffers.
+        this.modelBuffers = null;
+        this.modelInfo = null;
+        this.modelVertexCount = 0;
+        this.modelPayload = null;
+        this.useModelGeometry = false;
+
         // Compute target
         this.computeWidth = 0;
         this.computeHeight = 0;
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+
+        // Depth target for model rendering.
+        this.depthTexture = null;
+        this.depthTextureSize = { width: 0, height: 0 };
+        this.depthFormat = "depth24plus";
     }
 
     /**
@@ -110,6 +130,36 @@ export class WebGPURenderer extends BaseRenderer
     stop()
     {
         super.stop();
+    }
+
+    /**
+     * Accepts model payload and prepares buffers for GPU consumption.
+     */
+    setModel(model)
+    {
+        super.setModel(model);
+        this.modelInfo = model ? this.buildModelInfo(model) : null;
+        this.modelVertexCount = model?.vertexCount || 0;
+        this.modelPayload = this.buildModelPayload(model);
+
+        if (!this.device)
+        {
+            return;
+        }
+
+        const needsRebind = this.updateModelBuffers();
+        if (this.useModelGeometry)
+        {
+            this.vertexCount = this.modelVertexCount > 0 ? this.modelVertexCount : DEFAULT_VERTEX_COUNT;
+        }
+
+        if (needsRebind && this.renderPipeline)
+        {
+            this.buildBindGroups().catch((error) =>
+            {
+                console.error("Failed to rebuild model bind group:", error);
+            });
+        }
     }
 
     /**
@@ -318,6 +368,181 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Checks WGSL sources for model-geometry markers.
+     */
+    detectModelGeometry(sources)
+    {
+        return sources.some((source) => MODEL_GEOMETRY_MARKER.test(source || ""));
+    }
+
+    /**
+     * Returns true when shader bindings include model buffers.
+     */
+    usesModelBindings()
+    {
+        return Object.values(MODEL_BINDINGS).some((binding) => this.bindingsRender.has(binding));
+    }
+
+    /**
+     * Computes model center/scale/bounds for shader use.
+     */
+    buildModelInfo(model)
+    {
+        const bounds = model?.bounds || {};
+        const min = bounds.min || [0, 0, 0];
+        const max = bounds.max || [0, 0, 0];
+        const center = [
+            (min[0] + max[0]) * 0.5,
+            (min[1] + max[1]) * 0.5,
+            (min[2] + max[2]) * 0.5
+        ];
+        const size = [
+            max[0] - min[0],
+            max[1] - min[1],
+            max[2] - min[2]
+        ];
+        const maxAxis = Math.max(size[0], size[1], size[2], 0.0001);
+        const scale = 1.6 / maxAxis;
+
+        return {
+            center,
+            scale,
+            boundsMin: min,
+            boundsMax: max
+        };
+    }
+
+    /**
+     * Builds CPU-side payloads for model storage buffers.
+     */
+    buildModelPayload(model)
+    {
+        const vertexCount = model?.vertexCount || 0;
+        const count = Math.max(vertexCount, DEFAULT_VERTEX_COUNT);
+        const positions = new Float32Array(count * 4);
+        const normals = new Float32Array(count * 4);
+        const uvs = new Float32Array(count * 4);
+        const readValue = (array, index, fallback) =>
+        {
+            const value = array[index];
+            return Number.isFinite(value) ? value : fallback;
+        };
+
+        if (model?.positions)
+        {
+            const srcPos = model.positions;
+            const srcNorm = model.normals || [];
+            const srcUv = model.uvs || [];
+
+            for (let i = 0; i < vertexCount; i++)
+            {
+                const pIndex = i * 3;
+                const oIndex = i * 4;
+                const uvIndex = i * 2;
+
+                positions[oIndex + 0] = readValue(srcPos, pIndex + 0, 0);
+                positions[oIndex + 1] = readValue(srcPos, pIndex + 1, 0);
+                positions[oIndex + 2] = readValue(srcPos, pIndex + 2, 0);
+                positions[oIndex + 3] = 1.0;
+
+                normals[oIndex + 0] = readValue(srcNorm, pIndex + 0, 0);
+                normals[oIndex + 1] = readValue(srcNorm, pIndex + 1, 0);
+                normals[oIndex + 2] = readValue(srcNorm, pIndex + 2, 1.0);
+                normals[oIndex + 3] = 0.0;
+
+                uvs[oIndex + 0] = readValue(srcUv, uvIndex + 0, 0);
+                uvs[oIndex + 1] = readValue(srcUv, uvIndex + 1, 0);
+                uvs[oIndex + 2] = 0.0;
+                uvs[oIndex + 3] = 0.0;
+            }
+        }
+
+        const info = model ? this.buildModelInfo(model) : null;
+        const hasModel = vertexCount > 0 ? 1.0 : 0.0;
+        const boundsMin = info ? info.boundsMin : [0, 0, 0];
+        const boundsMax = info ? info.boundsMax : [0, 0, 0];
+        const center = info ? info.center : [0, 0, 0];
+        const scale = info ? info.scale : 1.0;
+
+        const infoData = new Float32Array(MODEL_INFO_FLOATS);
+        infoData[0] = boundsMin[0];
+        infoData[1] = boundsMin[1];
+        infoData[2] = boundsMin[2];
+        infoData[3] = hasModel;
+        infoData[4] = boundsMax[0];
+        infoData[5] = boundsMax[1];
+        infoData[6] = boundsMax[2];
+        infoData[7] = scale;
+        infoData[8] = center[0];
+        infoData[9] = center[1];
+        infoData[10] = center[2];
+        infoData[11] = 0.0;
+
+        return {
+            positions,
+            normals,
+            uvs,
+            info: infoData
+        };
+    }
+
+    /**
+     * Creates or updates GPU buffers with current model payload.
+     */
+    updateModelBuffers()
+    {
+        if (!this.device)
+        {
+            return false;
+        }
+
+        const payload = this.modelPayload || this.buildModelPayload(this.model);
+        this.modelPayload = payload;
+
+        if (!this.modelBuffers)
+        {
+            this.modelBuffers = {};
+        }
+
+        const needsRebind = [
+            this.ensureModelBuffer("positions", payload.positions, "Model Positions"),
+            this.ensureModelBuffer("normals", payload.normals, "Model Normals"),
+            this.ensureModelBuffer("uvs", payload.uvs, "Model UVs"),
+            this.ensureModelBuffer("info", payload.info, "Model Info")
+        ].some(Boolean);
+
+        this.device.queue.writeBuffer(this.modelBuffers.positions.buffer, 0, payload.positions);
+        this.device.queue.writeBuffer(this.modelBuffers.normals.buffer, 0, payload.normals);
+        this.device.queue.writeBuffer(this.modelBuffers.uvs.buffer, 0, payload.uvs);
+        this.device.queue.writeBuffer(this.modelBuffers.info.buffer, 0, payload.info);
+
+        return needsRebind;
+    }
+
+    /**
+     * Allocates a model buffer if missing or too small.
+     */
+    ensureModelBuffer(key, data, label)
+    {
+        const size = Math.max(4, data.byteLength || 0);
+        const existing = this.modelBuffers[key];
+        if (!existing || existing.size < size)
+        {
+            this.modelBuffers[key] = {
+                buffer: this.device.createBuffer({
+                    label,
+                    size,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+                }),
+                size
+            };
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Releases compute-texture resources.
      */
     destroyComputeTarget()
@@ -331,6 +556,47 @@ export class WebGPURenderer extends BaseRenderer
         this.computeTextureStorageView = null;
         this.computeSampler = null;
         this.computeTextureSize = { width: 0, height: 0 };
+    }
+
+    /**
+     * Ensures depth texture matches the current canvas size.
+     */
+    ensureDepthTexture()
+    {
+        if (!this.device || !this.useModelGeometry)
+        {
+            return;
+        }
+
+        const width = Math.max(1, Math.floor(this.canvas.width));
+        const height = Math.max(1, Math.floor(this.canvas.height));
+        if (this.depthTexture && this.depthTextureSize.width === width && this.depthTextureSize.height === height)
+        {
+            return;
+        }
+
+        this.releaseDepthTexture();
+
+        this.depthTexture = this.device.createTexture({
+            label: `Depth Texture ${width}x${height}`,
+            size: { width, height },
+            format: this.depthFormat,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        this.depthTextureSize = { width, height };
+    }
+
+    /**
+     * Releases depth texture resources.
+     */
+    releaseDepthTexture()
+    {
+        if (this.depthTexture)
+        {
+            this.depthTexture.destroy();
+        }
+        this.depthTexture = null;
+        this.depthTextureSize = { width: 0, height: 0 };
     }
 
     /**
@@ -421,6 +687,47 @@ export class WebGPURenderer extends BaseRenderer
                         resource: { buffer }
                     });
                 }
+            }
+        }
+
+        if (this.usesModelBindings())
+        {
+            this.updateModelBuffers();
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.positions))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Positions",
+                    binding: MODEL_BINDINGS.positions,
+                    resource: { buffer: this.modelBuffers.positions.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.normals))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Normals",
+                    binding: MODEL_BINDINGS.normals,
+                    resource: { buffer: this.modelBuffers.normals.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.uvs))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model UVs",
+                    binding: MODEL_BINDINGS.uvs,
+                    resource: { buffer: this.modelBuffers.uvs.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.info))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Info",
+                    binding: MODEL_BINDINGS.info,
+                    resource: { buffer: this.modelBuffers.info.buffer }
+                });
             }
         }
 
@@ -564,6 +871,13 @@ export class WebGPURenderer extends BaseRenderer
         const vertexSource = (sources.vertex || "").trim();
         const fragmentSource = (sources.fragment || "").trim();
         const computeSource = (sources.compute || "").trim();
+        const shaderSources = [vertexSource, fragmentSource, computeSource];
+
+        this.useModelGeometry = this.detectModelGeometry(shaderSources);
+        if (!this.useModelGeometry)
+        {
+            this.releaseDepthTexture();
+        }
 
         if (!vertexSource || !fragmentSource)
         {
@@ -588,7 +902,7 @@ export class WebGPURenderer extends BaseRenderer
             throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
         }
 
-        this.renderPipeline = this.device.createRenderPipeline({
+        const pipelineDescriptor = {
             label: "Render Pipeline",
             layout: "auto",
             vertex: {
@@ -603,7 +917,18 @@ export class WebGPURenderer extends BaseRenderer
                 }]
             },
             primitive: { topology: "triangle-list" }
-        });
+        };
+
+        if (this.useModelGeometry)
+        {
+            pipelineDescriptor.depthStencil = {
+                format: this.depthFormat,
+                depthWriteEnabled: true,
+                depthCompare: "less"
+            };
+        }
+
+        this.renderPipeline = this.device.createRenderPipeline(pipelineDescriptor);
 
         if (computeModule && computeEntry)
         {
@@ -626,10 +951,14 @@ export class WebGPURenderer extends BaseRenderer
 
         this.extractBindingsRender([vertexSource, fragmentSource]);
         this.extractBindingsCompute([computeSource]);
-        this.extractTextureURLs([vertexSource, fragmentSource, computeSource]);
+        this.extractTextureURLs(shaderSources);
 
-        this.vertexCount = this.extractVertexCount([vertexSource, fragmentSource, computeSource]);
-        this.gridSize = this.extractGridSize([vertexSource, fragmentSource, computeSource]);
+        this.vertexCount = this.extractVertexCount(shaderSources);
+        if (this.useModelGeometry && this.modelVertexCount > 0)
+        {
+            this.vertexCount = this.modelVertexCount;
+        }
+        this.gridSize = this.extractGridSize(shaderSources);
 
         this.buildBindGroups();
         this.resetFrameState();
@@ -683,7 +1012,12 @@ export class WebGPURenderer extends BaseRenderer
                 computePass.end();
             }
 
-            const pass = encoder.beginRenderPass({
+            if (this.useModelGeometry)
+            {
+                this.ensureDepthTexture();
+            }
+
+            const passDescriptor = {
                 label: "Render Pass",
                 colorAttachments: [
                     {
@@ -693,7 +1027,19 @@ export class WebGPURenderer extends BaseRenderer
                         storeOp: "store"
                     }
                 ]
-            });
+            };
+
+            if (this.useModelGeometry && this.depthTexture)
+            {
+                passDescriptor.depthStencilAttachment = {
+                    view: this.depthTexture.createView(),
+                    depthClearValue: 1.0,
+                    depthLoadOp: "clear",
+                    depthStoreOp: "store"
+                };
+            }
+
+            const pass = encoder.beginRenderPass(passDescriptor);
 
             pass.setPipeline(this.renderPipeline);
             if (this.renderBindGroup)

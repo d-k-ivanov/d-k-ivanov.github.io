@@ -1,5 +1,7 @@
 "use strict";
 
+import { ModelCollection } from "./ModelCollection.js";
+
 /**
  * Manages canvas resolution selection and fullscreen toggling.
  */
@@ -7,23 +9,28 @@ export class CanvasControls
 {
     /**
      * @param {HTMLCanvasElement} canvas - target canvas.
-     * @param {{onResolutionChange?: Function}} param1 - callback when resolution changes.
+     * @param {{onResolutionChange?: Function, onModelChange?: Function}} param1 - callbacks for toolbar controls.
      */
-    constructor(canvas, { onResolutionChange = null } = {})
+    constructor(canvas, { onResolutionChange = null, onModelChange = null } = {})
     {
         this.canvas = canvas;
         this.savedResolution = null;
         this.onResolutionChange = onResolutionChange;
+        this.onModelChange = onModelChange;
         this.currentResolutionValue = null;
+        this.currentModelId = "";
         this.boundResolutionHandler = null;
+        this.boundModelHandler = null;
 
         this.elements = {
             resolutionSelect: document.getElementById("resolution-select"),
-            fullscreenBtn: document.getElementById("fullscreen-toggle")
+            fullscreenBtn: document.getElementById("fullscreen-toggle"),
+            modelSelect: document.getElementById("model-select")
         };
 
         this.initResolutionSelector();
         this.initFullscreenToggle();
+        this.initModelSelector();
     }
 
     /**
@@ -104,6 +111,53 @@ export class CanvasControls
         });
 
         document.addEventListener("fullscreenchange", updateIcon);
+    }
+
+    /**
+     * Sets up the model dropdown and sends selection changes.
+     */
+    initModelSelector()
+    {
+        const selector = this.elements.modelSelect;
+        if (!selector)
+        {
+            return;
+        }
+
+        if (this.boundModelHandler)
+        {
+            selector.removeEventListener("change", this.boundModelHandler);
+        }
+
+        selector.innerHTML = "";
+
+        const noneOption = document.createElement("option");
+        noneOption.value = "";
+        noneOption.textContent = "None";
+        selector.appendChild(noneOption);
+
+        for (const model of ModelCollection.ITEMS)
+        {
+            const option = document.createElement("option");
+            option.value = model.id;
+            option.textContent = ModelCollection.getDisplayName(model);
+            selector.appendChild(option);
+        }
+
+        selector.value = this.currentModelId || "";
+
+        const applyModel = () =>
+        {
+            this.currentModelId = selector.value;
+            const model = ModelCollection.getById(this.currentModelId);
+            if (this.onModelChange)
+            {
+                this.onModelChange(model);
+            }
+        };
+
+        selector.addEventListener("change", applyModel);
+        this.boundModelHandler = applyModel;
     }
 
     /**

@@ -25,6 +25,9 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "curena_p6mm" },
         { language: "glsl", folder: "misc", name: "iq_primitives" },
 
+        // Model rendering
+        { language: "glsl", folder: "objects", name: "obj_viewer-webgl" },
+
         // Procedural patterns
         { language: "glsl", folder: "patterns", name: "neon_grid" },
         { language: "glsl", folder: "patterns", name: "polar_flow" },
@@ -68,6 +71,7 @@ export class ShaderCollection
         { language: "wgsl", folder: "webgpu", name: "game_of_life_01" },
         { language: "wgsl", folder: "webgpu", name: "hello_triangle" },
         { language: "wgsl", folder: "webgpu", name: "hello_world" },
+        { language: "wgsl", folder: "objects", name: "obj_viewer-webgpu" },
         { language: "wgsl", folder: "webgpu", name: "print_text" },
     ];
 
