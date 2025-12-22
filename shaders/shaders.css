@@ -147,7 +147,7 @@
 }
 
 .shaders-canvas-panel {
-    flex: 1;
+    flex: 0 0 45%;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -215,7 +215,7 @@
 
 /* Control Panel - IDE Layout */
 .shaders-control-panel {
-    flex: 1;
+    flex: 0 0 55%;
     min-width: 0;
     display: flex;
     flex-direction: row;
