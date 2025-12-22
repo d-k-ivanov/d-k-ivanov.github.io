@@ -92,6 +92,11 @@ const SHADER_UI_TEMPLATE = `
                     sampler{2D,Cube} iChannel1<br>
                     sampler{2D,Cube} iChannel2<br>
                     sampler{2D,Cube} iChannel3<br>
+                    float uHasModel<br>
+                    vec3 uModelCenter<br>
+                    float uModelScale<br>
+                    vec3 uModelBoundsMin<br>
+                    vec3 uModelBoundsMax<br>
                 </p>
                 <b>WebGPU bindings:</b>
                 <p>
@@ -108,6 +113,10 @@ const SHADER_UI_TEMPLATE = `
                     15: sampler<br>
                     16: sampler<br>
                     17: sampler<br>
+                    20: storage vec4 positions<br>
+                    21: storage vec4 normals<br>
+                    22: storage vec4 uvs<br>
+                    23: storage vec4 modelInfo<br>
                 </p>
             </div>
         </div>
