@@ -30,6 +30,7 @@ export class ShaderCollection
         { language: "glsl", folder: "basics", name: "hello_world" },
         { language: "glsl", folder: "basics", name: "plotter" },
         { language: "glsl", folder: "basics", name: "print_text" },
+        { language: "glsl", folder: "basics", name: "shadertoy" },
 
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
