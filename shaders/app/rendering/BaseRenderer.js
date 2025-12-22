@@ -4,12 +4,20 @@ import { ShaderUniformState } from "./ShaderUniformState.js";
 
 /**
  * Abstract base renderer that owns animation loop plumbing and uniform state.
+ *
+ * Subclasses implement concrete backends (WebGL2/WebGPU) while inheriting
+ * shared time/mouse uniform management and frame loop lifecycle helpers.
+ *
+ * @example
+ * class CustomRenderer extends BaseRenderer {
+ *   async updateShaders() {}
+ * }
  */
 export class BaseRenderer
 {
     /**
-     * @param {HTMLCanvasElement} canvas - render target.
-     * @param {object} mouse - shared mouse state.
+     * @param {HTMLCanvasElement} canvas - Render target.
+     * @param {object} mouse - Shared mouse state for uniform tracking.
      */
     constructor(canvas, mouse)
     {
@@ -22,6 +30,9 @@ export class BaseRenderer
 
     /**
      * Updates the canvas reference and propagates to uniform state.
+     *
+     * @param {HTMLCanvasElement} canvas - New canvas element.
+     * @returns {void}
      */
     setCanvas(canvas)
     {
@@ -31,6 +42,9 @@ export class BaseRenderer
 
     /**
      * Stores model data for renderers that support geometry input.
+     *
+     * @param {object|null} model - Model payload or null.
+     * @returns {void}
      */
     setModel(model)
     {
@@ -39,6 +53,8 @@ export class BaseRenderer
 
     /**
      * Resets uniform frame counters and time tracking.
+     *
+     * @returns {void}
      */
     resetFrameState()
     {
@@ -47,6 +63,8 @@ export class BaseRenderer
 
     /**
      * Handles canvas resize events (optional override in subclasses).
+     *
+     * @returns {void}
      */
     handleResize()
     {
@@ -55,6 +73,8 @@ export class BaseRenderer
 
     /**
      * Cancels the active animation frame.
+     *
+     * @returns {void}
      */
     stop()
     {
@@ -67,6 +87,9 @@ export class BaseRenderer
 
     /**
      * Stores the requestAnimationFrame id for cleanup.
+     *
+     * @param {Function} callback - Frame callback.
+     * @returns {void}
      */
     requestFrame(callback)
     {

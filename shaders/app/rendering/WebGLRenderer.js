@@ -7,12 +7,20 @@ const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
 
 /**
  * WebGL2 renderer backend for the shader editor.
+ *
+ * This backend compiles GLSL vertex/fragment shaders, binds standard
+ * Shadertoy-style uniforms, and optionally draws model geometry when
+ * the shader opts into it.
+ *
+ * @example
+ * const renderer = new WebGLRenderer(canvas, mouseState);
+ * await renderer.updateShaders({ vertex: "...", fragment: "..." });
  */
 export class WebGLRenderer extends BaseRenderer
 {
     /**
-     * @param {HTMLCanvasElement} canvas - render target.
-     * @param {object} mouse - shared mouse state.
+     * @param {HTMLCanvasElement} canvas - Render target.
+     * @param {object} mouse - Shared mouse state.
      */
     constructor(canvas, mouse)
     {
@@ -35,6 +43,10 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Compiles a shader source into a WebGL shader object.
+     *
+     * @param {string} source - GLSL source code.
+     * @param {number} type - WebGL shader type constant.
+     * @returns {WebGLShader} Compiled shader object.
      */
     compileShader(source, type)
     {
@@ -54,6 +66,9 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Links a new program from vertex/fragment sources and starts rendering.
+     *
+     * @param {{vertex: string, fragment: string}} sources - GLSL sources.
+     * @returns {Promise<void>} Resolves when textures are ready and loop starts.
      */
     async updateShaders(sources)
     {
@@ -120,6 +135,8 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Begins the requestAnimationFrame loop for WebGL rendering.
+     *
+     * @returns {void}
      */
     startRenderLoop()
     {
@@ -183,6 +200,9 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Uploads standard uniforms for the current frame.
+     *
+     * @param {object} frameData - Data returned by {@link ShaderUniformState}.
+     * @returns {void}
      */
     applyUniforms(frameData)
     {
@@ -220,6 +240,9 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Scans a program for iChannel uniforms and prepares sampler state.
+     *
+     * @param {WebGLProgram} program - Linked program to inspect.
+     * @returns {void}
      */
     detectChannels(program)
     {
@@ -258,6 +281,9 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Loads textures for detected iChannel uniforms with version safety.
+     *
+     * @param {number} version - Program version used to avoid stale loads.
+     * @returns {Promise<void>} Resolves once textures are loaded.
      */
     async prepareChannelTextures(version)
     {
@@ -292,6 +318,8 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Binds channel textures to the correct texture units.
+     *
+     * @returns {void}
      */
     bindChannelTextures()
     {
@@ -317,6 +345,9 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Accepts model data and uploads vertex buffers.
+     *
+     * @param {object|null} model - Model payload or null to clear.
+     * @returns {void}
      */
     setModel(model)
     {
@@ -327,6 +358,10 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Parses sources for model-geometry markers.
+     *
+     * @param {string} vertexSource - Vertex shader source.
+     * @param {string} fragmentSource - Fragment shader source.
+     * @returns {boolean} True when model geometry should be used.
      */
     detectModelGeometry(vertexSource, fragmentSource)
     {
@@ -336,6 +371,10 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Computes derived model info (center/scale/bounds).
+     *
+     * @param {object} model - Model payload with bounds.
+     * @returns {{center: number[], scale: number, boundsMin: number[], boundsMax: number[]}}
+     * Derived model info.
      */
     buildModelInfo(model)
     {
@@ -365,6 +404,8 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Uploads model buffers into a VAO for rendering.
+     *
+     * @returns {void}
      */
     updateModelBuffers()
     {
@@ -417,6 +458,8 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Releases model buffers from GPU memory.
+     *
+     * @returns {void}
      */
     disposeModelBuffers()
     {
@@ -435,6 +478,8 @@ export class WebGLRenderer extends BaseRenderer
 
     /**
      * Sends model-related uniforms when available.
+     *
+     * @returns {void}
      */
     applyModelUniforms()
     {

@@ -2,11 +2,20 @@
 
 /**
  * Handles drag-to-resize behavior for canvas and tree panels.
+ *
+ * The resizer listens to mouse events on splitter handles and applies
+ * inline sizing styles to the relevant panels.
+ *
+ * @example
+ * const resizer = new PanelResizer();
+ * // Handles are wired automatically on construction.
  */
 export class PanelResizer
 {
     /**
      * Initializes resize state and attaches handlers.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -20,6 +29,8 @@ export class PanelResizer
 
     /**
      * Initializes resize handles.
+     *
+     * @returns {void}
      */
     init()
     {
@@ -29,6 +40,8 @@ export class PanelResizer
 
     /**
      * Wires the main canvas/control panel splitter.
+     *
+     * @returns {void}
      */
     setupMainResize()
     {
@@ -86,6 +99,8 @@ export class PanelResizer
 
     /**
      * Wires the shader tree/editor area splitter.
+     *
+     * @returns {void}
      */
     setupTreeResize()
     {

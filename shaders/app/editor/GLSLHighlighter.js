@@ -60,11 +60,21 @@ const WGSL_PATTERNS = [
 
 /**
  * Simple regex-based highlighter for GLSL and WGSL used in the editor previews.
+ *
+ * This is intentionally lightweight and runs on every keystroke, so it trades
+ * perfect parsing for predictable performance. It is safe for editor previews
+ * but not meant to validate shader correctness.
+ *
+ * @example
+ * const highlighter = new GLSLHighlighter();
+ * const html = highlighter.highlight("void main() { gl_FragColor = vec4(1.0); }");
  */
 export class GLSLHighlighter
 {
     /**
      * Initializes the highlighter cache.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -73,6 +83,9 @@ export class GLSLHighlighter
 
     /**
      * Heuristically determines if code is WGSL or GLSL.
+     *
+     * @param {string} code - Raw shader source.
+     * @returns {"wgsl"|"glsl"} Detected language identifier.
      */
     detectLanguage(code)
     {
@@ -90,6 +103,14 @@ export class GLSLHighlighter
 
     /**
      * Returns HTML-highlighted code, cached for performance.
+     *
+     * The output is safe for insertion into `innerHTML` because the method
+     * escapes HTML entities before applying syntax markup.
+     *
+     * @param {string} code - Shader source to highlight.
+     * @returns {string} HTML string containing span-wrapped tokens.
+     * @example
+     * highlight("uniform vec3 iResolution;");
      */
     highlight(code)
     {
@@ -175,6 +196,9 @@ export class GLSLHighlighter
 
     /**
      * Escapes HTML entities inside shader source.
+     *
+     * @param {string} text - Raw text that may contain HTML characters.
+     * @returns {string} Escaped text safe for HTML insertion.
      */
     escapeHtml(text)
     {
@@ -186,6 +210,8 @@ export class GLSLHighlighter
 
     /**
      * Drops cached highlight results.
+     *
+     * @returns {void}
      */
     clearCache()
     {

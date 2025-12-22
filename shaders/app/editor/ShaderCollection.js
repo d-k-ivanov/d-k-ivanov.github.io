@@ -1,17 +1,30 @@
 "use strict";
 
-import { ShaderRenderer } from "./ShaderRenderer.js";
+import { ShaderRenderer } from "../rendering/ShaderRenderer.js";
 
 /**
  * Central registry of example shaders and helper utilities to resolve
  * language, context, paths, and display names.
+ *
+ * Treat this class as the source of truth for the shader tree. It keeps the
+ * catalog, understands how to infer GLSL vs WGSL, and normalizes shader names.
+ *
+ * @example
+ * const folders = ShaderCollection.groupByFolder();
+ * const shader = ShaderCollection.ITEMS[0];
+ * const context = ShaderCollection.getContext(shader);
  */
 export class ShaderCollection
 {
     static BASE_PATH = "./assets/shaders";
     static SHARED_PATH = "./assets/shaders/shared";
 
-    /** Catalog of built-in shader examples used by the editor UI. */
+    /**
+     * Catalog of built-in shader examples used by the editor UI.
+     *
+     * Each entry should include `folder`, `name`, and optionally `language`.
+     * The editor uses this list to build the file tree and resolve sources.
+     */
     static ITEMS = [
         // Basics
         { language: "glsl", folder: "basics", name: "hello_world" },
@@ -77,6 +90,11 @@ export class ShaderCollection
 
     /**
      * Infers shader language from definition or filename.
+     *
+     * @param {{language?: string, name?: string}} shader - Shader definition.
+     * @returns {"glsl"|"wgsl"} Lowercase language id.
+     * @example
+     * ShaderCollection.getLanguage({ name: "example.wgsl" }); // "wgsl"
      */
     static getLanguage(shader)
     {
@@ -98,6 +116,9 @@ export class ShaderCollection
 
     /**
      * Determines rendering context for the shader.
+     *
+     * @param {{language?: string, name?: string}} shader - Shader definition.
+     * @returns {string} One of {@link ShaderRenderer.CONTEXTS}.
      */
     static getContext(shader)
     {
@@ -108,6 +129,9 @@ export class ShaderCollection
 
     /**
      * Strips file extension to get the base shader name.
+     *
+     * @param {{name?: string}} shader - Shader definition.
+     * @returns {string} Base name without extension.
      */
     static getBaseName(shader)
     {
@@ -117,6 +141,9 @@ export class ShaderCollection
 
     /**
      * Returns a display name with inferred extension suffix.
+     *
+     * @param {{language?: string, name?: string}} shader - Shader definition.
+     * @returns {string} User-friendly name with extension.
      */
     static getDisplayName(shader)
     {
@@ -126,6 +153,11 @@ export class ShaderCollection
 
     /**
      * Groups shader definitions by folder for the tree UI.
+     *
+     * @param {Array<object>} collection - Optional list override.
+     * @returns {Array<{folder: string, shaders: object[]}>} Sorted folders with entries.
+     * @example
+     * const folders = ShaderCollection.groupByFolder();
      */
     static groupByFolder(collection = ShaderCollection.ITEMS)
     {
@@ -151,6 +183,9 @@ export class ShaderCollection
 
     /**
      * Checks if a shader exists in the collection.
+     *
+     * @param {{folder?: string, name?: string}} shader - Shader definition.
+     * @returns {boolean} True when the shader is registered.
      */
     static isKnown(shader)
     {

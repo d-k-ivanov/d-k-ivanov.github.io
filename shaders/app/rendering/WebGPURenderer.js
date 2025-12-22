@@ -17,12 +17,19 @@ const MODEL_INFO_FLOATS = 12;
 
 /**
  * WebGPU renderer backend supporting render and optional compute pipelines.
+ *
+ * This backend compiles WGSL shaders, builds render/compute pipelines,
+ * and manages uniform/storage buffers used by the Shader Editor.
+ *
+ * @example
+ * const renderer = new WebGPURenderer(canvas, mouseState);
+ * await renderer.updateShaders({ vertex: "...", fragment: "...", compute: "" });
  */
 export class WebGPURenderer extends BaseRenderer
 {
     /**
-     * @param {HTMLCanvasElement} canvas - render target.
-     * @param {object} mouse - shared mouse state.
+     * @param {HTMLCanvasElement} canvas - Render target.
+     * @param {object} mouse - Shared mouse state.
      */
     constructor(canvas, mouse)
     {
@@ -77,6 +84,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Requests adapter/device, configures context, and allocates uniform buffer.
+     *
+     * @returns {Promise<void>} Resolves when the device is ready.
      */
     async init()
     {
@@ -112,6 +121,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Configures the WebGPU canvas context.
+     *
+     * @returns {void}
      */
     configureContext()
     {
@@ -129,6 +140,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Stops the render loop.
+     *
+     * @returns {void}
      */
     stop()
     {
@@ -137,6 +150,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Accepts model payload and prepares buffers for GPU consumption.
+     *
+     * @param {object|null} model - Model payload or null to clear.
+     * @returns {void}
      */
     setModel(model)
     {
@@ -167,6 +183,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Detects GLSL markers to guard against misusing WGSL path.
+     *
+     * @param {string} source - Shader source to inspect.
+     * @returns {boolean} True when the source appears to be GLSL.
      */
     isLikelyGLSL(source)
     {
@@ -182,6 +201,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Throws if the WGSL source appears to be GLSL.
+     *
+     * @param {string} source - Shader source to validate.
+     * @param {string} label - Stage label for error messages.
+     * @returns {void}
      */
     validateWGSLSource(source, label)
     {
@@ -193,7 +216,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Extracts an entry point name for the given shader stage.
-     * @stage "vertex" | "fragment" | "compute"
+     *
+     * @param {string} source - WGSL source to scan.
+     * @param {"vertex"|"fragment"|"compute"} stage - Shader stage.
+     * @returns {string|null} Entry point function name.
      */
     getEntryPoint(source, stage)
     {
@@ -210,6 +236,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Validates compiled shader module and reports errors.
+     *
+     * @param {GPUShaderModule} module - Shader module to validate.
+     * @param {string} label - Stage label for error messages.
+     * @returns {Promise<void>} Resolves when validation completes.
      */
     async validateModule(module, label)
     {
@@ -230,6 +260,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Creates and validates a GPUShaderModule from WGSL code.
+     *
+     * @param {string} code - WGSL shader source.
+     * @param {string} label - Label for debug output.
+     * @returns {Promise<GPUShaderModule>} Compiled shader module.
      */
     async createShaderModule(code, label)
     {
@@ -240,13 +274,17 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Parses all @binding entries and populates this.bindingsRender set.
+     *
+     * @param {string|Array<string>} source - WGSL source(s) to inspect.
+     * @returns {void}
      */
     extractBindingsRender(source)
     {
         this.bindingsRender.clear();
+        const sourceText = Array.isArray(source) ? source.join("\n") : (source || "");
         const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
         let match;
-        while ((match = regex.exec(source)) !== null)
+        while ((match = regex.exec(sourceText)) !== null)
         {
             const bindingIndex = parseInt(match[1], 10);
             this.bindingsRender.add(bindingIndex);
@@ -255,13 +293,17 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Parses all @binding entries and populates this.bindingsCompute set.
+     *
+     * @param {string|Array<string>} source - WGSL source(s) to inspect.
+     * @returns {void}
      */
     extractBindingsCompute(source)
     {
         this.bindingsCompute.clear();
+        const sourceText = Array.isArray(source) ? source.join("\n") : (source || "");
         const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
         let match;
-        while ((match = regex.exec(source)) !== null)
+        while ((match = regex.exec(sourceText)) !== null)
         {
             const bindingIndex = parseInt(match[1], 10);
             this.bindingsCompute.add(bindingIndex);
@@ -275,6 +317,9 @@ export class WebGPURenderer extends BaseRenderer
      * Expects comments: // iChannel2URL: ./path/to/texture.png
      * Expects comments: // iChannel3URL: ./path/to/texture.png
      * Initialize: channel[index] with extracted URLs or null.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {void}
      */
     extractTextureURLs(sources)
     {
@@ -299,6 +344,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Parses @workgroup_size, falling back to defaults.
+     *
+     * @param {string} source - WGSL compute shader source.
+     * @returns {{x: number, y: number, z: number}} Workgroup size tuple.
      */
     extractWorkgroupSize(source)
     {
@@ -318,6 +366,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Extracts VERTEX_COUNT constant from any provided WGSL sources.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {number} Vertex count to use for draw calls.
      */
     extractVertexCount(sources)
     {
@@ -345,6 +396,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Extracts GRID_SIZE constant from any provided WGSL sources.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {number} Grid size used for compute dispatches.
      */
     extractGridSize(sources)
     {
@@ -372,6 +426,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Checks WGSL sources for model-geometry markers.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {boolean} True when model geometry should be used.
      */
     detectModelGeometry(sources)
     {
@@ -380,6 +437,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Returns true when shader bindings include model buffers.
+     *
+     * @returns {boolean} True when model bindings are present.
      */
     usesModelBindings()
     {
@@ -388,6 +447,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Computes model center/scale/bounds for shader use.
+     *
+     * @param {object} model - Model payload with bounds.
+     * @returns {{center: number[], scale: number, boundsMin: number[], boundsMax: number[]}}
+     * Derived model info.
      */
     buildModelInfo(model)
     {
@@ -417,6 +480,10 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Builds CPU-side payloads for model storage buffers.
+     *
+     * @param {object|null} model - Model payload or null.
+     * @returns {{positions: Float32Array, normals: Float32Array, uvs: Float32Array, info: Float32Array}}
+     * Packed model data for GPU buffers.
      */
     buildModelPayload(model)
     {
@@ -491,6 +558,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Creates or updates GPU buffers with current model payload.
+     *
+     * @returns {boolean} True when bind groups must be rebuilt.
      */
     updateModelBuffers()
     {
@@ -524,6 +593,11 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Allocates a model buffer if missing or too small.
+     *
+     * @param {string} key - Buffer key identifier.
+     * @param {TypedArray} data - Source data to size the buffer.
+     * @param {string} label - Debug label for the buffer.
+     * @returns {boolean} True if a new buffer was allocated.
      */
     ensureModelBuffer(key, data, label)
     {
@@ -547,6 +621,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Releases compute-texture resources.
+     *
+     * @returns {void}
      */
     destroyComputeTarget()
     {
@@ -563,6 +639,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Ensures depth texture matches the current canvas size.
+     *
+     * @returns {void}
      */
     ensureDepthTexture()
     {
@@ -591,6 +669,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Releases depth texture resources.
+     *
+     * @returns {void}
      */
     releaseDepthTexture()
     {
@@ -604,6 +684,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Creates bind groups for render and compute pipelines.
+     *
+     * @returns {Promise<void>} Resolves once bind groups are rebuilt.
      */
     async buildBindGroups()
     {
@@ -808,6 +890,11 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Loads and uploads the font atlas texture/sampler.
+     *
+     * When no URL is provided, a storage texture matching the canvas size is created.
+     *
+     * @param {string|null} url - Optional texture URL.
+     * @returns {Promise<GPUTexture>} Allocated GPU texture.
      */
     async createTexture(url)
     {
@@ -865,6 +952,9 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Builds render/compute pipelines from WGSL sources and starts rendering.
+     *
+     * @param {{vertex: string, fragment: string, compute: string}} sources - WGSL sources.
+     * @returns {Promise<void>} Resolves when pipelines are ready and loop starts.
      */
     async updateShaders(sources)
     {
@@ -974,6 +1064,8 @@ export class WebGPURenderer extends BaseRenderer
 
     /**
      * Begins the WebGPU render loop with optional compute pass.
+     *
+     * @returns {void}
      */
     startRenderLoop()
     {

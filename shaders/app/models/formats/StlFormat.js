@@ -1,14 +1,23 @@
 "use strict";
 
-import { ModelFormat } from "./ModelFormat.js";
+import { ModelFormat } from "../ModelFormat.js";
 
 /**
  * Parses ASCII or binary STL files into flat vertex buffers.
+ *
+ * The loader supports both STL encodings by reading the binary payload
+ * first and falling back to ASCII parsing when needed.
+ *
+ * @example
+ * const format = new StlFormat();
+ * const model = await format.load("./assets/models/box.stl");
  */
 export class StlFormat extends ModelFormat
 {
     /**
      * Initializes STL format metadata.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -17,6 +26,10 @@ export class StlFormat extends ModelFormat
 
     /**
      * Loads STL data as binary to support both ASCII and binary encodings.
+     *
+     * @param {string} url - STL URL.
+     * @param {object} options - Parser options.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async load(url, options = {})
     {
@@ -36,7 +49,11 @@ export class StlFormat extends ModelFormat
     }
 
     /**
+     * Parses STL contents from ASCII or binary sources.
+     *
      * @param {ArrayBuffer|string} source - STL contents.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parse(source, options = {})
     {
@@ -60,6 +77,9 @@ export class StlFormat extends ModelFormat
 
     /**
      * Returns true when the STL buffer appears to be binary.
+     *
+     * @param {ArrayBuffer} buffer - Raw STL buffer.
+     * @returns {boolean} True when the buffer is binary STL.
      */
     isBinary(buffer)
     {
@@ -88,6 +108,10 @@ export class StlFormat extends ModelFormat
 
     /**
      * Parses binary STL data into flat buffers.
+     *
+     * @param {ArrayBuffer} buffer - Binary STL contents.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parseBinary(buffer, options)
     {
@@ -145,6 +169,10 @@ export class StlFormat extends ModelFormat
 
     /**
      * Parses ASCII STL text into flat buffers.
+     *
+     * @param {string} text - ASCII STL contents.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parseASCII(text, options)
     {
@@ -242,6 +270,10 @@ export class StlFormat extends ModelFormat
 
     /**
      * Normalizes or recomputes the face normal for a triangle.
+     *
+     * @param {number[]} normal - Raw normal vector.
+     * @param {Array<number[]>} vertices - Triangle vertices.
+     * @returns {number[]} Normalized normal vector.
      */
     normalizeNormal(normal, vertices)
     {
@@ -273,6 +305,13 @@ export class StlFormat extends ModelFormat
 
     /**
      * Builds a standardized model payload from STL arrays.
+     *
+     * @param {number[]} positions - Packed positions.
+     * @param {number[]} normals - Packed normals.
+     * @param {number[]} boundsMin - Bounds minimum.
+     * @param {number[]} boundsMax - Bounds maximum.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     buildPayload(positions, normals, boundsMin, boundsMax, options)
     {
@@ -298,6 +337,9 @@ export class StlFormat extends ModelFormat
 
     /**
      * Extracts a base name from a URL for display.
+     *
+     * @param {string} url - URL string.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

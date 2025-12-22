@@ -1,6 +1,6 @@
 "use strict";
 
-import { ModelFormat } from "./ModelFormat.js";
+import { ModelFormat } from "../ModelFormat.js";
 
 const VOX_MAGIC = "VOX ";
 const FACE_DEFS = [
@@ -20,11 +20,20 @@ const UVS = [
 
 /**
  * Parses MagicaVoxel VOX files into flat vertex buffers.
+ *
+ * The parser extracts voxel data and emits only visible faces to build
+ * a surface mesh suitable for rendering.
+ *
+ * @example
+ * const format = new VoxFormat();
+ * const model = await format.load("./assets/models/bunny.vox");
  */
 export class VoxFormat extends ModelFormat
 {
     /**
      * Initializes VOX format metadata.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -33,6 +42,10 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Loads VOX data as binary.
+     *
+     * @param {string} url - VOX URL.
+     * @param {object} options - Parser options.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async load(url, options = {})
     {
@@ -52,7 +65,11 @@ export class VoxFormat extends ModelFormat
     }
 
     /**
+     * Parses VOX binary payload into the standard model format.
+     *
      * @param {ArrayBuffer} source - VOX binary payload.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parse(source, options = {})
     {
@@ -90,6 +107,9 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Parses VOX chunks to extract the first model and palette.
+     *
+     * @param {ArrayBuffer} buffer - VOX binary buffer.
+     * @returns {{model: object|null}} First model found in the file.
      */
     parseVox(buffer)
     {
@@ -120,6 +140,12 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Walks VOX chunk ranges recursively to capture SIZE/XYZI data.
+     *
+     * @param {DataView} view - DataView for the VOX buffer.
+     * @param {number} start - Start offset for chunk parsing.
+     * @param {number} end - End offset for chunk parsing.
+     * @param {object} context - Parsing context storage.
+     * @returns {void}
      */
     parseChunks(view, start, end, context)
     {
@@ -161,6 +187,10 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Parses XYZI voxel data.
+     *
+     * @param {DataView} view - DataView for the VOX buffer.
+     * @param {number} offset - Offset to XYZI chunk data.
+     * @returns {{voxels: Array<object>, nextOffset: number}} Parsed voxels.
      */
     parseVoxels(view, offset)
     {
@@ -181,6 +211,9 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Infers a model size from voxel positions when SIZE is missing.
+     *
+     * @param {Array<object>} voxels - List of voxels.
+     * @returns {{x: number, y: number, z: number}} Inferred size.
      */
     inferSizeFromVoxels(voxels)
     {
@@ -198,6 +231,10 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Builds a surface-only mesh by emitting faces without neighbors.
+     *
+     * @param {{voxels: Array<object>, size: object}} model - Parsed voxel model.
+     * @returns {{positions: number[], normals: number[], uvs: number[], boundsMin: number[], boundsMax: number[]}}
+     * Generated mesh data.
      */
     buildMesh(model)
     {
@@ -262,6 +299,11 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Transforms voxel-space positions into Y-up coordinates.
+     *
+     * @param {number} x - Voxel-space x.
+     * @param {number} y - Voxel-space y.
+     * @param {number} z - Voxel-space z.
+     * @returns {number[]} Transformed position.
      */
     transformPosition(x, y, z)
     {
@@ -270,6 +312,9 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Transforms voxel-space directions into Y-up coordinates.
+     *
+     * @param {number[]} dir - Direction vector.
+     * @returns {number[]} Transformed direction.
      */
     transformDirection(dir)
     {
@@ -278,6 +323,13 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Checks if a voxel exists at the given coordinate.
+     *
+     * @param {Set<number>} set - Set of voxel keys.
+     * @param {number} x - Voxel-space x.
+     * @param {number} y - Voxel-space y.
+     * @param {number} z - Voxel-space z.
+     * @param {{x: number, y: number, z: number}|null} size - Optional bounds.
+     * @returns {boolean} True if the voxel exists.
      */
     hasVoxel(set, x, y, z, size)
     {
@@ -297,6 +349,11 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Builds a compact integer key for voxel coordinates.
+     *
+     * @param {number} x - Voxel-space x.
+     * @param {number} y - Voxel-space y.
+     * @param {number} z - Voxel-space z.
+     * @returns {number} Packed voxel key.
      */
     getKey(x, y, z)
     {
@@ -305,6 +362,11 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Reads a 4-character string from the DataView.
+     *
+     * @param {DataView} view - DataView for the VOX buffer.
+     * @param {number} offset - Byte offset.
+     * @param {number} length - Number of characters to read.
+     * @returns {string} Extracted string.
      */
     readString(view, offset, length)
     {
@@ -318,6 +380,10 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Reads a chunk header and returns offsets to its data.
+     *
+     * @param {DataView} view - DataView for the VOX buffer.
+     * @param {number} offset - Byte offset.
+     * @returns {object} Chunk header metadata.
      */
     readChunkHeader(view, offset)
     {
@@ -338,6 +404,9 @@ export class VoxFormat extends ModelFormat
 
     /**
      * Extracts a base name from a URL for display.
+     *
+     * @param {string} url - URL string.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

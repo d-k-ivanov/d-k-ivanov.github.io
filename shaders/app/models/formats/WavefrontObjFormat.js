@@ -1,14 +1,23 @@
 "use strict";
 
-import { ModelFormat } from "./ModelFormat.js";
+import { ModelFormat } from "../ModelFormat.js";
 
 /**
  * Parses Wavefront OBJ files into flat vertex buffers.
+ *
+ * Supports triangulation of polygon faces and computes normals when they
+ * are missing. UVs are optional and will default to (0, 0) when absent.
+ *
+ * @example
+ * const format = new WavefrontObjFormat();
+ * const model = await format.load("./assets/models/teapot.obj");
  */
 export class WavefrontObjFormat extends ModelFormat
 {
     /**
      * Initializes OBJ format metadata.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -16,8 +25,11 @@ export class WavefrontObjFormat extends ModelFormat
     }
 
     /**
+     * Parses OBJ text into the standard model payload.
+     *
      * @param {string} source - OBJ text contents.
-     * @param {{name?: string, url?: string}} options - metadata for the model.
+     * @param {{name?: string, url?: string}} options - Metadata for the model.
+     * @returns {object} Standardized model payload.
      */
     parse(source, options = {})
     {
@@ -239,6 +251,9 @@ export class WavefrontObjFormat extends ModelFormat
 
     /**
      * Extracts a base name from a URL for display.
+     *
+     * @param {string} url - URL string.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

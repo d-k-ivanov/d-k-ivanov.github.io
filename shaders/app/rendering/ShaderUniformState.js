@@ -2,6 +2,13 @@
 
 /**
  * Tracks per-frame uniform values and packs them into shared buffers.
+ *
+ * The packed buffer is used for both WebGL uniform updates and WebGPU
+ * uniform buffers, ensuring a consistent data layout across backends.
+ *
+ * @example
+ * const state = new ShaderUniformState(canvas, mouse);
+ * const frame = state.nextFrame(performance.now());
  */
 export class ShaderUniformState
 {
@@ -17,8 +24,8 @@ export class ShaderUniformState
     };
 
     /**
-     * @param {HTMLCanvasElement} canvas - render target.
-     * @param {object} mouse - shared mouse state.
+     * @param {HTMLCanvasElement} canvas - Render target.
+     * @param {object} mouse - Shared mouse state.
      */
     constructor(canvas, mouse)
     {
@@ -32,6 +39,9 @@ export class ShaderUniformState
 
     /**
      * Updates tracked canvas reference.
+     *
+     * @param {HTMLCanvasElement} canvas - New canvas reference.
+     * @returns {void}
      */
     setCanvas(canvas)
     {
@@ -40,6 +50,8 @@ export class ShaderUniformState
 
     /**
      * Resets frame counters and clears uniform buffers.
+     *
+     * @returns {void}
      */
     reset()
     {
@@ -51,6 +63,8 @@ export class ShaderUniformState
 
     /**
      * Fills uniform views with zeros.
+     *
+     * @returns {void}
      */
     clearViews()
     {
@@ -60,6 +74,9 @@ export class ShaderUniformState
 
     /**
      * Advances to the next frame, computing timing and mouse data.
+     *
+     * @param {number} timeMs - Timestamp in milliseconds.
+     * @returns {object} Snapshot of the computed uniform data.
      */
     nextFrame(timeMs)
     {
@@ -71,6 +88,9 @@ export class ShaderUniformState
 
     /**
      * Builds uniform data snapshot for the given timestamp.
+     *
+     * @param {number} timeMs - Timestamp in milliseconds.
+     * @returns {object} Computed uniform payload.
      */
     buildFrameData(timeMs)
     {
@@ -108,6 +128,9 @@ export class ShaderUniformState
 
     /**
      * Writes the provided uniform data into the underlying views.
+     *
+     * @param {object} data - Frame data snapshot.
+     * @returns {void}
      */
     writeToViews(data = this.current)
     {
@@ -137,6 +160,9 @@ export class ShaderUniformState
 
     /**
      * Returns references to the underlying uniform buffer and views.
+     *
+     * @returns {{buffer: ArrayBuffer, floatView: Float32Array, uintView: Uint32Array}}
+     * Buffer and typed views.
      */
     getViews()
     {
@@ -149,6 +175,8 @@ export class ShaderUniformState
 
     /**
      * Returns the last computed uniform snapshot.
+     *
+     * @returns {object|null} Last computed frame data.
      */
     getCurrent()
     {

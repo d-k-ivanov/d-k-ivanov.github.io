@@ -1,14 +1,21 @@
 "use strict";
 
-import { ModelFormat } from "./ModelFormat.js";
+import { ModelFormat } from "../ModelFormat.js";
 
 /**
  * Parses Draco-compressed meshes (.drc) into flat vertex buffers.
+ *
+ * Requires the Draco decoder script/wasm to be available at runtime.
+ * The decoder is loaded lazily on first use and cached globally.
+ *
+ * @example
+ * const format = new DracoFormat();
+ * const model = await format.load("./assets/models/bunny.drc");
  */
 export class DracoFormat extends ModelFormat
 {
     /**
-     * @param {{decoderPath?: string}} param0 - decoder script/wasm base URL.
+     * @param {{decoderPath?: string}} param0 - Decoder script/wasm base URL.
      */
     constructor({ decoderPath = "https://www.gstatic.com/draco/versioned/decoders/1.5.7" } = {})
     {
@@ -18,6 +25,10 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Loads Draco data as binary.
+     *
+     * @param {string} url - Draco URL.
+     * @param {object} options - Parser options.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async load(url, options = {})
     {
@@ -37,7 +48,11 @@ export class DracoFormat extends ModelFormat
     }
 
     /**
+     * Parses Draco binary payload into the standard model format.
+     *
      * @param {ArrayBuffer} source - Draco binary payload.
+     * @param {object} options - Parser options.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async parse(source, options = {})
     {
@@ -88,6 +103,12 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Builds a flat payload from Draco mesh attributes.
+     *
+     * @param {object} module - Draco decoder module.
+     * @param {object} decoder - Draco decoder instance.
+     * @param {object} mesh - Draco mesh.
+     * @param {object} options - Parser options.
+     * @returns {object|null} Standardized model payload or null.
      */
     buildMeshPayload(module, decoder, mesh, options)
     {
@@ -196,6 +217,13 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Extracts a typed attribute into a packed Float32Array.
+     *
+     * @param {object} module - Draco decoder module.
+     * @param {object} decoder - Draco decoder instance.
+     * @param {object} mesh - Draco mesh instance.
+     * @param {object} attribute - Draco attribute handle.
+     * @param {number} targetComponents - Components per vertex to output.
+     * @returns {Float32Array} Packed attribute data.
      */
     extractAttribute(module, decoder, mesh, attribute, targetComponents)
     {
@@ -221,6 +249,11 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Reads a vec3 from a packed array with stride.
+     *
+     * @param {Float32Array} array - Packed attribute data.
+     * @param {number} index - Vertex index.
+     * @param {number} stride - Components per vertex.
+     * @returns {number[]} Vector components.
      */
     readVec3(array, index, stride)
     {
@@ -234,6 +267,11 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Reads a vec2 from a packed array with stride.
+     *
+     * @param {Float32Array} array - Packed attribute data.
+     * @param {number} index - Vertex index.
+     * @param {number} stride - Components per vertex.
+     * @returns {number[]} Vector components.
      */
     readVec2(array, index, stride)
     {
@@ -246,6 +284,11 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Computes a normalized face normal for three positions.
+     *
+     * @param {number[]} a - First position.
+     * @param {number[]} b - Second position.
+     * @param {number[]} c - Third position.
+     * @returns {number[]} Normalized normal vector.
      */
     computeFaceNormal(a, b, c)
     {
@@ -270,6 +313,9 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Loads or reuses the Draco decoder module.
+     *
+     * @param {object} options - Decoder options.
+     * @returns {Promise<object>} Draco decoder module.
      */
     async getDecoderModule(options = {})
     {
@@ -319,6 +365,9 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Injects the Draco decoder script into the document.
+     *
+     * @param {string} url - Script URL to load.
+     * @returns {Promise<void>} Resolves when the script is loaded.
      */
     async loadDecoderScript(url)
     {
@@ -361,6 +410,9 @@ export class DracoFormat extends ModelFormat
 
     /**
      * Extracts a base name from a URL for display.
+     *
+     * @param {string} url - URL string.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

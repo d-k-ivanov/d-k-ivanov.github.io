@@ -2,6 +2,13 @@
 
 /**
  * Registry of bundled 3D models available to the shader editor.
+ *
+ * Use this class to populate UI dropdowns and resolve URLs for bundled
+ * model assets in `shaders/assets/models`.
+ *
+ * @example
+ * const model = ModelCollection.getById("bunny_drc");
+ * const url = ModelCollection.getUrl(model);
  */
 export class ModelCollection
 {
@@ -13,7 +20,6 @@ export class ModelCollection
         { id: "bunny_drc", name: "bunny.drc", file: "bunny.drc" },
         { id: "bunny_ply_res3", name: "bunny_res3.ply", file: "bunny_res3.ply" },
         { id: "bunny_ply_res4", name: "bunny_res4.ply", file: "bunny_res4.ply" },
-        { id: "bunny_vox", name: "bunny.vox", file: "bunny.vox" },
         { id: "dragon_ply_res4", name: "dragon_res4.ply", file: "dragon_res4.ply" },
         { id: "dragon_vox", name: "dragon.vox", file: "dragon.vox" },
         { id: "magnolia_stl", name: "magnolia.stl", file: "magnolia.stl" },
@@ -27,6 +33,9 @@ export class ModelCollection
 
     /**
      * Returns a model entry by id.
+     *
+     * @param {string} id - Model id.
+     * @returns {object|null} Model entry or null.
      */
     static getById(id)
     {
@@ -39,6 +48,9 @@ export class ModelCollection
 
     /**
      * Returns a display label for a model.
+     *
+     * @param {object} model - Model entry.
+     * @returns {string} Display name for UI.
      */
     static getDisplayName(model)
     {
@@ -47,6 +59,9 @@ export class ModelCollection
 
     /**
      * Resolves the fetch URL for a model entry.
+     *
+     * @param {object} model - Model entry with a `file` field.
+     * @returns {string|null} Asset URL or null.
      */
     static getUrl(model)
     {

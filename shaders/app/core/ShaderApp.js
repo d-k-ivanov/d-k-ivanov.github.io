@@ -1,14 +1,19 @@
 "use strict";
 
-import { CanvasControls } from "./CanvasControls.js";
-import { PanelResizer } from "./PanelResizer.js";
-import { ShaderEditor } from "./ShaderEditor.js";
-import { ShaderRenderer } from "./ShaderRenderer.js";
-import { ThemeManager } from "./ThemeManager.js";
-import { ModelLoader } from "./ModelLoader.js";
+import { CanvasControls } from "../ui/CanvasControls.js";
+import { PanelResizer } from "../ui/PanelResizer.js";
+import { ShaderEditor } from "../editor/ShaderEditor.js";
+import { ShaderRenderer } from "../rendering/ShaderRenderer.js";
+import { ThemeManager } from "../ui/ThemeManager.js";
+import { ModelLoader } from "../models/ModelLoader.js";
 
 /**
- * Static HTML scaffold for the editor layout. Injected on startup.
+ * Static HTML scaffold for the editor layout.
+ *
+ * This template defines the main canvas panel, the file tree, editor panes,
+ * and status bar used by the Shader Editor module. It is injected exactly
+ * once when the app boots, allowing the JS layer to remain the source of
+ * truth for UI wiring without relying on hardcoded HTML in the layout.
  */
 const SHADER_UI_TEMPLATE = `
 <div class="shaders-main-container">
@@ -132,11 +137,23 @@ const SHADER_UI_TEMPLATE = `
 
 /**
  * High-level coordinator that wires UI, editor, renderer, and controls together.
+ *
+ * The app owns lifecycle orchestration (UI scaffold, theme state, model loading,
+ * shader editing, and rendering context switches) while delegating the actual
+ * rendering or parsing work to specialized classes.
+ *
+ * @example
+ * const app = new ShaderApp();
+ * await app.start();
  */
 export class ShaderApp
 {
     /**
      * Initializes the editor UI, renderer, and controls.
+     *
+     * This constructor performs DOM injection, builds the renderer/editor
+     * wiring, and installs UI event handlers. Call {@link start} afterward
+     * to restore state and load the default shader.
      */
     constructor()
     {
@@ -165,6 +182,14 @@ export class ShaderApp
 
     /**
      * Loads a selected model and forwards it to the renderer.
+     *
+     * The method is idempotent and tokenized to guard against stale async
+     * resolutions when users select multiple models in quick succession.
+     *
+     * @param {object|null} model - Entry from {@link ModelCollection} or null to clear.
+     * @returns {Promise<void>} Resolves once the model is loaded or cleared.
+     * @example
+     * await app.handleModelSelected(ModelCollection.getById("bunny_drc"));
      */
     async handleModelSelected(model)
     {
@@ -200,6 +225,15 @@ export class ShaderApp
 
     /**
      * Loads a custom model from a URL or file selection.
+     *
+     * This is invoked by {@link CanvasControls} when the user provides a
+     * URL or selects a local file. The model is loaded through the
+     * {@link ModelLoader} and then sent to the renderer.
+     *
+     * @param {{url: string, name?: string, revokeUrl?: string}} source - Model source metadata.
+     * @returns {Promise<void>} Resolves when the model is loaded or rejected.
+     * @example
+     * await app.handleCustomModelLoad({ url: "https://example.com/model.obj" });
      */
     async handleCustomModelLoad(source)
     {
@@ -248,6 +282,11 @@ export class ShaderApp
 
     /**
      * Ensures the shader stylesheet is loaded once.
+     *
+     * The styles live in `shaders.css` and are injected dynamically to keep
+     * the Jekyll layout minimal and avoid duplicate `<link>` tags.
+     *
+     * @returns {void}
      */
     linkStyles()
     {
@@ -263,6 +302,11 @@ export class ShaderApp
 
     /**
      * Injects the shader editor DOM structure if it does not already exist.
+     *
+     * This keeps the shader UI encapsulated within the module while still
+     * allowing the static markdown entrypoint to remain lightweight.
+     *
+     * @returns {void}
      */
     createUI()
     {
@@ -281,6 +325,12 @@ export class ShaderApp
 
     /**
      * Re-connects canvas-aware helpers when the renderer recreates the canvas.
+     *
+     * WebGPU/WebGL switching can replace the underlying `<canvas>`; this
+     * method updates any components that keep a canvas reference.
+     *
+     * @param {HTMLCanvasElement} newCanvas - The freshly created canvas.
+     * @returns {void}
      */
     handleCanvasChanged(newCanvas)
     {
@@ -293,6 +343,8 @@ export class ShaderApp
 
     /**
      * Asks the renderer to recreate the canvas (useful when switching contexts).
+     *
+     * @returns {HTMLCanvasElement|null} The new canvas or null if none exists.
      */
     recreateCanvas()
     {
@@ -306,6 +358,12 @@ export class ShaderApp
 
     /**
      * Binds application-wide hotkeys (reset and reload).
+     *
+     * Supported shortcuts:
+     * - Ctrl + F5: Clear shader state and reload.
+     * - Ctrl + Shift + R: Clear shader state and reload.
+     *
+     * @returns {void}
      */
     bindHotkeys()
     {
@@ -323,6 +381,8 @@ export class ShaderApp
 
     /**
      * Makes the input note collapsible for quick reference.
+     *
+     * @returns {void}
      */
     bindNoteToggle()
     {
@@ -356,6 +416,14 @@ export class ShaderApp
 
     /**
      * Entry point after construction: sync canvas, restore or load default shader.
+     *
+     * This method restores persisted editor state, synchronizes the canvas
+     * with the renderer, and loads the initial shader example.
+     *
+     * @returns {Promise<void>} Resolves once the initial shader is loaded.
+     * @example
+     * const app = new ShaderApp();
+     * app.start();
      */
     async start()
     {

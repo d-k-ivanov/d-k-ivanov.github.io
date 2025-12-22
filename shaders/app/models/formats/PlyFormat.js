@@ -1,6 +1,6 @@
 "use strict";
 
-import { ModelFormat } from "./ModelFormat.js";
+import { ModelFormat } from "../ModelFormat.js";
 
 const TYPE_INFO = {
     char: { size: 1, getter: (view, offset) => view.getInt8(offset) },
@@ -23,11 +23,20 @@ const TYPE_INFO = {
 
 /**
  * Parses ASCII or binary PLY files into flat vertex buffers.
+ *
+ * Supports triangulating polygonal faces and reading common position,
+ * normal, and UV property names from the PLY header.
+ *
+ * @example
+ * const format = new PlyFormat();
+ * const model = await format.load("./assets/models/bunny.ply");
  */
 export class PlyFormat extends ModelFormat
 {
     /**
      * Initializes PLY format metadata.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -36,6 +45,10 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Loads PLY data as binary to support both ASCII and binary encodings.
+     *
+     * @param {string} url - PLY URL.
+     * @param {object} options - Parser options.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async load(url, options = {})
     {
@@ -55,7 +68,11 @@ export class PlyFormat extends ModelFormat
     }
 
     /**
+     * Parses PLY contents from ASCII or binary sources.
+     *
      * @param {ArrayBuffer|string} source - PLY contents.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parse(source, options = {})
     {
@@ -87,6 +104,9 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Extracts the PLY header from a binary buffer.
+     *
+     * @param {ArrayBuffer} buffer - Raw PLY binary buffer.
+     * @returns {object} Parsed header details.
      */
     parseHeaderFromBuffer(buffer)
     {
@@ -129,6 +149,9 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Extracts the PLY header from ASCII text.
+     *
+     * @param {string} text - ASCII PLY contents.
+     * @returns {object} Parsed header details.
      */
     parseHeaderFromText(text)
     {
@@ -154,6 +177,11 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Parses header text into format and element descriptors.
+     *
+     * @param {string} headerText - Raw header text.
+     * @param {number} headerSize - Size of header in bytes/characters.
+     * @returns {{format: string, headerSize: number, headerText: string, elements: object}}
+     * Header metadata.
      */
     parseHeaderText(headerText, headerSize)
     {
@@ -239,6 +267,11 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Parses ASCII PLY vertex/face data into buffers.
+     *
+     * @param {string} text - PLY body text.
+     * @param {object} header - Parsed header metadata.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parseASCII(text, header, options)
     {
@@ -422,6 +455,11 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Parses binary PLY vertex/face data into buffers.
+     *
+     * @param {ArrayBuffer} buffer - Raw PLY binary buffer.
+     * @param {object} header - Parsed header metadata.
+     * @param {object} options - Parser options.
+     * @returns {object} Standardized model payload.
      */
     parseBinary(buffer, header, options)
     {
@@ -615,6 +653,12 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Reads a typed scalar value from a DataView.
+     *
+     * @param {DataView} view - Data view of the buffer.
+     * @param {number} offset - Byte offset to read from.
+     * @param {string} type - PLY scalar type name.
+     * @param {boolean} littleEndian - Endianness flag.
+     * @returns {{value: number, size: number}} Parsed value and size.
      */
     readScalar(view, offset, type, littleEndian)
     {
@@ -631,6 +675,10 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Finds the first matching property index by name.
+     *
+     * @param {Array<object>} properties - PLY property descriptors.
+     * @param {Array<string>} names - Candidate property names.
+     * @returns {number} Index or -1 if not found.
      */
     findPropertyIndex(properties, names)
     {
@@ -647,6 +695,9 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Finds a matching pair of UV property names.
+     *
+     * @param {Array<object>} properties - PLY property descriptors.
+     * @returns {{u: number, v: number}|null} UV property indices.
      */
     findUVPair(properties)
     {
@@ -672,6 +723,9 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Chooses the list property that represents face indices.
+     *
+     * @param {Array<object>} properties - Face element properties.
+     * @returns {object|null} Selected list property descriptor.
      */
     findFaceListProperty(properties)
     {
@@ -682,6 +736,10 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Computes a normalized face normal from indexed positions.
+     *
+     * @param {Float32Array} positions - Packed vertex positions.
+     * @param {Array<number>} indices - Vertex indices for a triangle.
+     * @returns {number[]} Normalized normal vector.
      */
     computeFaceNormal(positions, indices)
     {
@@ -720,6 +778,15 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Builds a standardized model payload from PLY arrays.
+     *
+     * @param {number[]} positions - Packed positions.
+     * @param {number[]} normals - Packed normals.
+     * @param {number[]} uvs - Packed UVs.
+     * @param {number[]} boundsMin - Bounds minimum.
+     * @param {number[]} boundsMax - Bounds maximum.
+     * @param {object} options - Parser options.
+     * @param {boolean} hasUVs - Whether UVs are present.
+     * @returns {object} Standardized model payload.
      */
     buildPayload(positions, normals, uvs, boundsMin, boundsMax, options, hasUVs)
     {
@@ -745,6 +812,9 @@ export class PlyFormat extends ModelFormat
 
     /**
      * Extracts a base name from a URL for display.
+     *
+     * @param {string} url - URL string.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

@@ -1,19 +1,26 @@
 "use strict";
 
-import { DracoFormat } from "./DracoFormat.js";
+import { DracoFormat } from "./formats/DracoFormat.js";
 import { ModelCollection } from "./ModelCollection.js";
-import { PlyFormat } from "./PlyFormat.js";
-import { StlFormat } from "./StlFormat.js";
-import { VoxFormat } from "./VoxFormat.js";
-import { WavefrontObjFormat } from "./WavefrontObjFormat.js";
+import { PlyFormat } from "./formats/PlyFormat.js";
+import { StlFormat } from "./formats/StlFormat.js";
+import { VoxFormat } from "./formats/VoxFormat.js";
+import { WavefrontObjFormat } from "./formats/WavefrontObjFormat.js";
 
 /**
  * Loads model assets by delegating to format-specific parsers.
+ *
+ * This class abstracts model selection logic (collection entries vs URLs)
+ * and caches promises to avoid reloading the same model repeatedly.
+ *
+ * @example
+ * const loader = new ModelLoader();
+ * const model = await loader.load({ file: "bunny.drc", name: "Bunny" });
  */
 export class ModelLoader
 {
     /**
-     * @param {{basePath?: string, formats?: ModelFormat[]}} param0 - loader overrides.
+     * @param {{basePath?: string, formats?: ModelFormat[]}} param0 - Loader overrides.
      */
     constructor({ basePath = ModelCollection.BASE_PATH, formats = null } = {})
     {
@@ -26,6 +33,9 @@ export class ModelLoader
 
     /**
      * Resolves a model URL and name from input.
+     *
+     * @param {string|object} source - URL string or model descriptor.
+     * @returns {{url: string|null, name: string|null}} Resolved URL and name.
      */
     resolveSource(source)
     {
@@ -55,6 +65,10 @@ export class ModelLoader
 
     /**
      * Loads a model by URL or collection item.
+     *
+     * @param {string|object} source - Model descriptor or URL.
+     * @param {object} options - Loader options passed to the format parser.
+     * @returns {Promise<object|null>} Model payload or null.
      */
     async load(source, options = {})
     {
@@ -86,6 +100,10 @@ export class ModelLoader
 
     /**
      * Returns the first format that supports the given URL extension.
+     *
+     * @param {string} url - Model URL or filename.
+     * @param {string|null} name - Optional name override.
+     * @returns {ModelFormat|null} Matching format handler.
      */
     getFormatForUrl(url, name = null)
     {
@@ -99,6 +117,10 @@ export class ModelLoader
 
     /**
      * Derives a lowercase file extension from URL, hash, or name.
+     *
+     * @param {string} url - Model URL or object URL.
+     * @param {string|null} name - Optional name override.
+     * @returns {string|null} File extension without dot.
      */
     getExtension(url, name = null)
     {
@@ -160,6 +182,9 @@ export class ModelLoader
 
     /**
      * Extracts a display-friendly base name from a URL or hash.
+     *
+     * @param {string} url - URL or object URL.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {

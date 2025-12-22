@@ -2,11 +2,20 @@
 
 /**
  * Abstract base class for text-based 3D model formats.
+ *
+ * Subclasses implement {@link parse} to return a standardized payload
+ * with positions, normals, uvs, and bounds. The base implementation
+ * provides URL loading and extension matching.
+ *
+ * @example
+ * class CustomFormat extends ModelFormat {
+ *   parse(source) { return { positions: new Float32Array(), normals: new Float32Array(), uvs: null, vertexCount: 0, bounds: { min: [0,0,0], max: [0,0,0] } }; }
+ * }
  */
 export class ModelFormat
 {
     /**
-     * @param {{id?: string, extensions?: string[]}} param0 - format metadata.
+     * @param {{id?: string, extensions?: string[]}} param0 - Format metadata.
      */
     constructor({ id, extensions } = {})
     {
@@ -20,7 +29,10 @@ export class ModelFormat
     }
 
     /**
-     * @param {string} extension - file extension without leading dot.
+     * Checks whether the format supports the given extension.
+     *
+     * @param {string} extension - File extension without leading dot.
+     * @returns {boolean} True when supported.
      */
     supportsExtension(extension)
     {
@@ -33,6 +45,10 @@ export class ModelFormat
 
     /**
      * Loads and parses a model from a URL.
+     *
+     * @param {string} url - Model URL to fetch.
+     * @param {object} options - Parsing options passed to {@link parse}.
+     * @returns {Promise<object>} Standardized model payload.
      */
     async load(url, options = {})
     {
@@ -53,6 +69,10 @@ export class ModelFormat
 
     /**
      * Parses model source into a standardized data payload.
+     *
+     * @param {string|ArrayBuffer} source - Model source contents.
+     * @param {object} options - Parsing options.
+     * @returns {object} Standardized model payload.
      */
     parse()
     {

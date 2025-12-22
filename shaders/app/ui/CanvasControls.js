@@ -1,15 +1,30 @@
 "use strict";
 
-import { ModelCollection } from "./ModelCollection.js";
+import { ModelCollection } from "../models/ModelCollection.js";
 
 /**
- * Manages canvas resolution selection and fullscreen toggling.
+ * Manages canvas resolution selection, fullscreen toggling,
+ * and model selection/loading interactions.
+ *
+ * This class owns the toolbar widgets in the canvas panel and forwards
+ * changes via callbacks so the app can update render state without
+ * tightly coupling UI and rendering logic.
+ *
+ * @example
+ * const controls = new CanvasControls(canvas, {
+ *   onResolutionChange: () => renderer.handleResize(),
+ *   onModelChange: (model) => app.handleModelSelected(model)
+ * });
  */
 export class CanvasControls
 {
     /**
-     * @param {HTMLCanvasElement} canvas - target canvas.
-     * @param {{onResolutionChange?: Function, onModelChange?: Function, onModelLoad?: Function}} param1 - callbacks for toolbar controls.
+     * @param {HTMLCanvasElement} canvas - Target canvas for resolution and fullscreen actions.
+     * @param {{onResolutionChange?: Function, onModelChange?: Function, onModelLoad?: Function}} param1
+     * Callback hooks for toolbar actions.
+     * @param {Function} param1.onResolutionChange - Called after a resolution change.
+     * @param {Function} param1.onModelChange - Called when the model dropdown changes.
+     * @param {Function} param1.onModelLoad - Called when a URL or file is provided.
      */
     constructor(canvas, { onResolutionChange = null, onModelChange = null, onModelLoad = null } = {})
     {
@@ -41,6 +56,11 @@ export class CanvasControls
 
     /**
      * Sets up the resolution dropdown and applies initial resolution.
+     *
+     * The current selection is applied immediately so the renderer
+     * starts with the expected resolution.
+     *
+     * @returns {void}
      */
     initResolutionSelector()
     {
@@ -71,6 +91,11 @@ export class CanvasControls
 
     /**
      * Configures fullscreen toggle button and resolution handling.
+     *
+     * When entering fullscreen, the canvas is resized to match the screen
+     * and restored when exiting to the previous resolution.
+     *
+     * @returns {void}
      */
     initFullscreenToggle()
     {
@@ -121,6 +146,11 @@ export class CanvasControls
 
     /**
      * Sets up the model dropdown and sends selection changes.
+     *
+     * The dropdown is populated using {@link ModelCollection} and
+     * the selection is forwarded through `onModelChange`.
+     *
+     * @returns {void}
      */
     initModelSelector()
     {
@@ -168,6 +198,12 @@ export class CanvasControls
 
     /**
      * Sets up the model load button and file input handlers.
+     *
+     * Users can provide a remote URL or pick a local file.
+     * File selections are wrapped in an object URL so the loader
+     * can treat them as a normal fetch.
+     *
+     * @returns {void}
      */
     initModelLoader()
     {
@@ -233,6 +269,11 @@ export class CanvasControls
 
     /**
      * Forwards a custom model source payload to the configured handler.
+     *
+     * @param {{url: string, name?: string, revokeUrl?: string}} source - Model source metadata.
+     * @returns {void}
+     * @example
+     * controls.triggerModelLoad({ url: "https://example.com/mesh.obj", name: "mesh" });
      */
     triggerModelLoad(source)
     {
@@ -244,6 +285,9 @@ export class CanvasControls
 
     /**
      * Extracts a model name from a URL or hash-suffixed filename.
+     *
+     * @param {string} url - URL or object URL with optional `#filename`.
+     * @returns {string|null} Base name without extension.
      */
     getNameFromUrl(url)
     {
@@ -272,6 +316,11 @@ export class CanvasControls
 
     /**
      * Updates the model selector and optionally notifies listeners.
+     *
+     * @param {string} modelId - Model id to select.
+     * @param {{notify?: boolean}} options - Notification options.
+     * @param {boolean} options.notify - Whether to trigger `onModelChange`.
+     * @returns {void}
      */
     setModelSelection(modelId, { notify = true } = {})
     {
@@ -291,6 +340,12 @@ export class CanvasControls
 
     /**
      * Rebinds controls to a new canvas element.
+     *
+     * This is required after the renderer recreates the canvas
+     * to maintain correct sizing and fullscreen behavior.
+     *
+     * @param {HTMLCanvasElement} canvas - New canvas element.
+     * @returns {void}
      */
     setCanvas(canvas)
     {

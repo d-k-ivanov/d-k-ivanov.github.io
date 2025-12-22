@@ -2,7 +2,7 @@
 
 import { GLSLHighlighter } from "./GLSLHighlighter.js";
 import { ShaderCollection } from "./ShaderCollection.js";
-import { ShaderRenderer } from "./ShaderRenderer.js";
+import { ShaderRenderer } from "../rendering/ShaderRenderer.js";
 
 const SHADER_TYPES = [
     { id: "vertex", label: "Vertex", extension: "vertex", icon: "vertex", context: null, placeholder: "Vertex shader source..." },
@@ -15,11 +15,21 @@ const STORAGE_KEY_MODEL = "shaders-selected-model";
 
 /**
  * Manages shader source editing, tree navigation, tab handling, and compilation.
+ *
+ * The editor is responsible for loading shader sources from disk, presenting
+ * them in textareas with syntax highlighting, and delegating compilation to
+ * the rendering layer. It also persists the user's last selection.
+ *
+ * @example
+ * const editor = new ShaderEditor(renderer);
+ * await editor.loadShader({ folder: "basics", name: "hello_world" });
  */
 export class ShaderEditor
 {
     /**
-     * @param {ShaderRenderer} renderer - renderer facade that compiles sources.
+     * @param {ShaderRenderer} renderer - Renderer facade that compiles sources.
+     * @example
+     * const editor = new ShaderEditor(renderer);
      */
     constructor(renderer)
     {
@@ -53,6 +63,10 @@ export class ShaderEditor
 
     /**
      * Initializes editor panes and builds the shader tree.
+     *
+     * This should be called once during construction to populate the UI.
+     *
+     * @returns {void}
      */
     init()
     {
@@ -62,6 +76,11 @@ export class ShaderEditor
 
     /**
      * Creates code panes and highlights for each shader stage.
+     *
+     * Each shader stage receives its own textarea and overlayed highlight
+     * element. The method wires input handlers for syncing and formatting.
+     *
+     * @returns {void}
      */
     createEditorPanes()
     {
@@ -117,6 +136,9 @@ export class ShaderEditor
 
     /**
      * Returns shader stages relevant to the current context config.
+     *
+     * @param {string} context - Optional context override.
+     * @returns {Array<object>} Shader stage descriptors for the context.
      */
     getVisibleShaderTypes(context = this.currentContext)
     {
@@ -125,6 +147,8 @@ export class ShaderEditor
 
     /**
      * Populates the file tree UI from the shader collection.
+     *
+     * @returns {void}
      */
     buildFileTree()
     {
@@ -144,6 +168,10 @@ export class ShaderEditor
 
     /**
      * Builds a folder entry with its shader children.
+     *
+     * @param {string} folderName - Folder display name.
+     * @param {Array<object>} shaders - Shader definitions in this folder.
+     * @returns {HTMLElement} DOM element for the folder.
      */
     createFolderElement(folderName, shaders)
     {
@@ -175,6 +203,9 @@ export class ShaderEditor
 
     /**
      * Builds a clickable shader item for the tree.
+     *
+     * @param {object} shader - Shader definition from {@link ShaderCollection}.
+     * @returns {HTMLElement} DOM element for the shader entry.
      */
     createTreeItem(shader)
     {
@@ -197,6 +228,15 @@ export class ShaderEditor
 
     /**
      * Loads a shader definition, fetches sources, updates UI, and compiles.
+     *
+     * The load process switches the renderer context as needed, populates
+     * editor panes with source content, updates the file tree selection,
+     * and triggers compilation.
+     *
+     * @param {{folder: string, name: string}} shader - Shader descriptor.
+     * @returns {Promise<void>} Resolves once the shader has been compiled.
+     * @example
+     * await editor.loadShader({ folder: "basics", name: "plotter" });
      */
     async loadShader(shader)
     {
@@ -252,6 +292,10 @@ export class ShaderEditor
 
     /**
      * Retrieves all stage sources for the given shader/context pair.
+     *
+     * @param {object} shader - Shader definition.
+     * @param {string} context - Rendering context identifier.
+     * @returns {Promise<{sources: object, originals: object}>} Loaded sources and originals.
      */
     async loadSourcesForShader(shader, context)
     {
@@ -279,6 +323,14 @@ export class ShaderEditor
 
     /**
      * Picks the best-matching source file for a specific shader stage.
+     *
+     * The method tries stage-specific filenames, then falls back to shared
+     * defaults when optional sources are missing.
+     *
+     * @param {object} shader - Shader definition.
+     * @param {object} type - Stage metadata from SHADER_TYPES.
+     * @param {string} context - Rendering context identifier.
+     * @returns {Promise<string>} Shader source text.
      */
     async loadSourceForType(shader, type, context)
     {
@@ -382,6 +434,10 @@ export class ShaderEditor
 
     /**
      * Fetches shader text; returns empty string when optional and missing.
+     *
+     * @param {string} url - URL to fetch.
+     * @param {boolean} optional - When true, missing files return empty string.
+     * @returns {Promise<string>} Shader source or empty string.
      */
     async fetchShaderSource(url, optional = false)
     {
@@ -410,6 +466,9 @@ export class ShaderEditor
 
     /**
      * Persists the last selected shader to storage.
+     *
+     * @param {object} shader - Shader definition to store.
+     * @returns {void}
      */
     saveShaderSelection(shader)
     {
@@ -425,6 +484,9 @@ export class ShaderEditor
 
     /**
      * Persists the last selected model id to storage.
+     *
+     * @param {{id?: string}|null} model - Model metadata with id.
+     * @returns {void}
      */
     saveModelSelection(model)
     {
@@ -445,6 +507,8 @@ export class ShaderEditor
 
     /**
      * Restores the last saved shader if present in the collection.
+     *
+     * @returns {object|null} Saved shader definition or null.
      */
     getSavedShader()
     {
@@ -469,6 +533,8 @@ export class ShaderEditor
 
     /**
      * Restores the last saved model id if present.
+     *
+     * @returns {string|null} Saved model id or null.
      */
     getSavedModelId()
     {
@@ -486,6 +552,8 @@ export class ShaderEditor
 
     /**
      * Clears any saved shader selection.
+     *
+     * @returns {void}
      */
     clearSavedShader()
     {
@@ -501,6 +569,8 @@ export class ShaderEditor
 
     /**
      * Clears any saved model selection.
+     *
+     * @returns {void}
      */
     clearSavedModel()
     {
@@ -516,6 +586,8 @@ export class ShaderEditor
 
     /**
      * Writes loaded sources into editors and syncs highlighting.
+     *
+     * @returns {void}
      */
     populateEditors()
     {
@@ -529,6 +601,9 @@ export class ShaderEditor
 
     /**
      * Highlights the active shader in the tree.
+     *
+     * @param {{folder: string, name: string}} shader - Shader definition.
+     * @returns {void}
      */
     updateFileTreeSelection(shader)
     {
@@ -565,6 +640,8 @@ export class ShaderEditor
 
     /**
      * Builds tab buttons for visible shader stages.
+     *
+     * @returns {void}
      */
     updateTabs()
     {
@@ -608,6 +685,9 @@ export class ShaderEditor
 
     /**
      * Returns tab label for a shader stage.
+     *
+     * @param {{label: string}} type - Shader stage metadata.
+     * @returns {string} Label to display in the tab bar.
      */
     getTabLabel(type)
     {
@@ -616,6 +696,8 @@ export class ShaderEditor
 
     /**
      * Synchronizes pane visibility and tab display with current filter.
+     *
+     * @returns {void}
      */
     refreshPaneVisibility()
     {
@@ -644,6 +726,9 @@ export class ShaderEditor
 
     /**
      * Activates a tab and its corresponding editor pane.
+     *
+     * @param {string} tabName - Stage id to activate.
+     * @returns {void}
      */
     showTab(tabName)
     {
@@ -668,6 +753,9 @@ export class ShaderEditor
 
     /**
      * Handles user edits and schedules recompilation.
+     *
+     * @param {string} typeId - Shader stage id.
+     * @returns {void}
      */
     handleSourceInput(typeId)
     {
@@ -685,6 +773,9 @@ export class ShaderEditor
 
     /**
      * Refreshes syntax highlighting for a given editor.
+     *
+     * @param {string} typeId - Shader stage id.
+     * @returns {void}
      */
     updateHighlight(typeId)
     {
@@ -711,6 +802,10 @@ export class ShaderEditor
 
     /**
      * Implements Tab-to-spaces behavior inside shader editors.
+     *
+     * @param {KeyboardEvent} e - Keydown event.
+     * @param {HTMLTextAreaElement} textarea - Target editor textarea.
+     * @returns {void}
      */
     handleTabKey(e, textarea)
     {
@@ -750,6 +845,10 @@ export class ShaderEditor
 
     /**
      * Flags a tab as modified when its contents diverge from loaded sources.
+     *
+     * @param {string} tabName - Stage id.
+     * @param {boolean} isModified - True when content diverges from original.
+     * @returns {void}
      */
     markTabModified(tabName, isModified)
     {
@@ -763,6 +862,8 @@ export class ShaderEditor
 
     /**
      * Debounces shader recompilation calls.
+     *
+     * @returns {void}
      */
     scheduleRecompile()
     {
@@ -780,6 +881,8 @@ export class ShaderEditor
 
     /**
      * Gathers currently visible shader sources for compilation.
+     *
+     * @returns {object} Stage source map keyed by stage id.
      */
     collectSourcesForContext()
     {
@@ -794,6 +897,8 @@ export class ShaderEditor
 
     /**
      * Sends current sources to the renderer and updates status messages.
+     *
+     * @returns {Promise<void>} Resolves once compilation finishes.
      */
     async recompileShader()
     {
@@ -817,6 +922,8 @@ export class ShaderEditor
 
     /**
      * Chooses the tab to show after loading a shader.
+     *
+     * @returns {string|null} Stage id to activate.
      */
     resolveDefaultTab()
     {
@@ -827,6 +934,10 @@ export class ShaderEditor
 
     /**
      * Updates status bar text and error styling.
+     *
+     * @param {string} message - Message to display.
+     * @param {boolean} isError - Whether to toggle error styling.
+     * @returns {void}
      */
     setStatus(message, isError)
     {
@@ -841,7 +952,9 @@ export class ShaderEditor
     }
 
     /**
-     * @returns {boolean} true when a shader is currently loaded.
+     * Indicates whether a shader is currently loaded.
+     *
+     * @returns {boolean} True when a shader is active.
      */
     hasShaderLoaded()
     {

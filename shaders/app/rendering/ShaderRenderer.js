@@ -6,6 +6,13 @@ import { WebGPURenderer } from "./WebGPURenderer.js";
 /**
  * Facade that owns the active renderer implementation (WebGL2 or WebGPU),
  * keeps mouse state, and exposes a consistent API to the editor.
+ *
+ * This class insulates the editor from backend details and handles
+ * context switching, canvas recreation, and shared mouse uniform data.
+ *
+ * @example
+ * const renderer = new ShaderRenderer(canvas);
+ * await renderer.setContext(ShaderRenderer.CONTEXTS.WEBGL2);
  */
 export class ShaderRenderer
 {
@@ -16,6 +23,8 @@ export class ShaderRenderer
 
     /**
      * @param {HTMLCanvasElement} canvas - Target canvas for rendering.
+     * @example
+     * const renderer = new ShaderRenderer(document.getElementById("canvas"));
      */
     constructor(canvas)
     {
@@ -33,7 +42,9 @@ export class ShaderRenderer
     }
 
     /**
-     * @returns {HTMLCanvasElement} the current canvas in use.
+     * Returns the current canvas in use.
+     *
+     * @returns {HTMLCanvasElement} Current canvas reference.
      */
     getCanvas()
     {
@@ -42,6 +53,9 @@ export class ShaderRenderer
 
     /**
      * Switches the canvas instance (e.g., after recreation) and resets state.
+     *
+     * @param {HTMLCanvasElement} canvas - New canvas element.
+     * @returns {void}
      */
     setCanvas(canvas)
     {
@@ -60,6 +74,9 @@ export class ShaderRenderer
 
     /**
      * Registers a callback invoked when the renderer recreates the canvas.
+     *
+     * @param {Function} handler - Callback receiving the new canvas.
+     * @returns {void}
      */
     setCanvasChangeHandler(handler)
     {
@@ -68,6 +85,8 @@ export class ShaderRenderer
 
     /**
      * Clones and replaces the canvas element, keeping dimensions and id.
+     *
+     * @returns {HTMLCanvasElement} The new canvas instance.
      */
     recreateCanvas()
     {
@@ -95,7 +114,9 @@ export class ShaderRenderer
 
     /**
      * Initializes the requested rendering context and backend renderer.
-     * @param {string} contextType - one of ShaderRenderer.CONTEXTS values.
+     *
+     * @param {string} contextType - One of {@link ShaderRenderer.CONTEXTS}.
+     * @returns {Promise<void>} Resolves when the backend is ready.
      */
     async setContext(contextType)
     {
@@ -149,7 +170,9 @@ export class ShaderRenderer
     }
 
     /**
-     * @returns {string} current active context type.
+     * Returns the current active context type.
+     *
+     * @returns {string} Active context identifier.
      */
     getContextType()
     {
@@ -158,6 +181,9 @@ export class ShaderRenderer
 
     /**
      * Sets the active model payload for renderers that consume geometry.
+     *
+     * @param {object|null} model - Loaded model payload or null to clear.
+     * @returns {void}
      */
     setModel(model)
     {
@@ -169,7 +195,9 @@ export class ShaderRenderer
     }
 
     /**
-     * @returns {object|null} the last loaded model payload.
+     * Returns the last loaded model payload.
+     *
+     * @returns {object|null} Current model payload or null.
      */
     getModel()
     {
@@ -178,6 +206,9 @@ export class ShaderRenderer
 
     /**
      * Compiles/uploads new shader sources on the active renderer.
+     *
+     * @param {object} sources - Stage source map (vertex/fragment/compute).
+     * @returns {Promise<void>} Resolves when compilation finishes.
      */
     async updateShaders(sources)
     {
@@ -196,6 +227,8 @@ export class ShaderRenderer
 
     /**
      * Notifies the active renderer about canvas size changes.
+     *
+     * @returns {void}
      */
     handleResize()
     {
@@ -207,6 +240,8 @@ export class ShaderRenderer
 
     /**
      * Stops any active render loop.
+     *
+     * @returns {void}
      */
     stop()
     {
@@ -218,6 +253,8 @@ export class ShaderRenderer
 
     /**
      * Tracks mouse interactions over the canvas for iMouse uniform.
+     *
+     * @returns {void}
      */
     setupMouseEvents()
     {

@@ -2,11 +2,20 @@
 
 /**
  * Remembers and toggles light/dark themes for canvas and control panels.
+ *
+ * Theme state is persisted in localStorage so the editor retains the
+ * user's preference between sessions.
+ *
+ * @example
+ * const themeManager = new ThemeManager();
+ * themeManager.toggleTheme("canvas");
  */
 export class ThemeManager
 {
     /**
      * Caches panel references and applies saved themes.
+     *
+     * @returns {void}
      */
     constructor()
     {
@@ -28,6 +37,8 @@ export class ThemeManager
 
     /**
      * Loads preferences and attaches theme toggle listeners.
+     *
+     * @returns {void}
      */
     init()
     {
@@ -52,6 +63,8 @@ export class ThemeManager
 
     /**
      * Restores persisted theme choices.
+     *
+     * @returns {void}
      */
     loadPreferences()
     {
@@ -79,6 +92,8 @@ export class ThemeManager
 
     /**
      * Persists current theme selections.
+     *
+     * @returns {void}
      */
     savePreferences()
     {
@@ -97,6 +112,9 @@ export class ThemeManager
 
     /**
      * Toggles theme for a specific panel.
+     *
+     * @param {"canvas"|"control"} panelName - Target panel key.
+     * @returns {void}
      */
     toggleTheme(panelName)
     {
@@ -110,6 +128,9 @@ export class ThemeManager
 
     /**
      * Applies theme classes and button labels.
+     *
+     * @param {"canvas"|"control"} panelName - Target panel key.
+     * @returns {void}
      */
     applyTheme(panelName)
     {
@@ -131,6 +152,8 @@ export class ThemeManager
 
     /**
      * Clears stored theme preferences.
+     *
+     * @returns {void}
      */
     resetThemes()
     {

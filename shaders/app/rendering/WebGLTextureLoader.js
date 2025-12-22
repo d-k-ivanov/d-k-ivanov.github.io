@@ -36,12 +36,19 @@ const SUPPORTED_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 
 /**
  * Loads 2D and cubemap textures for shader channels with caching and fallbacks.
+ *
+ * This loader supports the `iChannel0..3` naming convention for shaders
+ * and provides small procedural fallback textures when assets are missing.
+ *
+ * @example
+ * const loader = new WebGLTextureLoader(gl);
+ * const texture = await loader.loadChannelTexture(0, "2d");
  */
 export class WebGLTextureLoader
 {
     /**
-     * @param {WebGL2RenderingContext} gl - active WebGL context.
-     * @param {string} basePath - base path for texture assets.
+     * @param {WebGL2RenderingContext} gl - Active WebGL context.
+     * @param {string} basePath - Base path for texture assets.
      */
     constructor(gl, basePath = "./assets/textures")
     {
@@ -56,6 +63,9 @@ export class WebGLTextureLoader
 
     /**
      * Returns the fallback texture for 2D or cubemap channels.
+     *
+     * @param {"2d"|"cube"} type - Texture type identifier.
+     * @returns {WebGLTexture} Fallback texture object.
      */
     getFallback(type)
     {
@@ -64,6 +74,10 @@ export class WebGLTextureLoader
 
     /**
      * Loads a channel texture (2D or cube) by index.
+     *
+     * @param {number} channelIndex - iChannel index (0-3).
+     * @param {"2d"|"cube"} type - Texture type identifier.
+     * @returns {Promise<WebGLTexture>} Loaded texture or fallback.
      */
     async loadChannelTexture(channelIndex, type)
     {
@@ -73,6 +87,9 @@ export class WebGLTextureLoader
 
     /**
      * Loads a 2D texture by base name with caching and extension probing.
+     *
+     * @param {string} name - Base texture name (without extension).
+     * @returns {Promise<WebGLTexture>} Loaded texture or fallback.
      */
     async load2D(name)
     {
@@ -115,6 +132,9 @@ export class WebGLTextureLoader
 
     /**
      * Loads a cubemap texture by base name with caching and extension probing.
+     *
+     * @param {string} name - Base cubemap name (without suffix/extension).
+     * @returns {Promise<WebGLTexture>} Loaded cubemap or fallback.
      */
     async loadCube(name)
     {
@@ -172,6 +192,9 @@ export class WebGLTextureLoader
 
     /**
      * Tries supported extensions until an image is found.
+     *
+     * @param {string} name - Base name to probe with extensions.
+     * @returns {Promise<ImageBitmap|HTMLImageElement|null>} Loaded image or null.
      */
     async loadImageWithExtensions(name)
     {
@@ -191,6 +214,9 @@ export class WebGLTextureLoader
 
     /**
      * Fetches an image and converts it to ImageBitmap or HTMLImageElement.
+     *
+     * @param {string} url - Image URL to fetch.
+     * @returns {Promise<ImageBitmap|HTMLImageElement|null>} Loaded image or null.
      */
     async loadImage(url)
     {
@@ -230,6 +256,8 @@ export class WebGLTextureLoader
 
     /**
      * Generates a checkerboard fallback 2D texture.
+     *
+     * @returns {WebGLTexture} Procedural fallback texture.
      */
     createFallback2D()
     {
@@ -254,6 +282,8 @@ export class WebGLTextureLoader
 
     /**
      * Generates a colored-face fallback cubemap.
+     *
+     * @returns {WebGLTexture} Procedural fallback cubemap.
      */
     createFallbackCube()
     {
