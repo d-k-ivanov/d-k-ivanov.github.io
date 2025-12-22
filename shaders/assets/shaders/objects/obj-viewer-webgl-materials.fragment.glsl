@@ -16,8 +16,8 @@ uniform float uModelScale;
 
 out vec4 outColor;
 
-const int BACKGROUND_STYLE = 4;
-const int MATERIAL_STYLE = 1; // 0: stylized, 1: glass, 2: diffuse
+const int BACKGROUND_STYLE = 1;
+const int MATERIAL_STYLE = 6; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal
 const float DIFFUSE_AMBIENT = 0.2;
 const float MATERIAL_IOR = 1.35;
 const float TRANSPARENT_MATERIAL = 1.0;
@@ -28,6 +28,24 @@ const float GLASS_TINT = 0.25;
 float saturate(float value)
 {
     return clamp(value, 0.0, 1.0);
+}
+
+float hash12(vec2 p)
+{
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float noise(vec2 p)
+{
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float a = hash12(i);
+    float b = hash12(i + vec2(1.0, 0.0));
+    float c = hash12(i + vec2(0.0, 1.0));
+    float d = hash12(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
 float gridLines(vec2 uv, float scale, float thickness)
@@ -43,11 +61,7 @@ vec3 backgroundColor(vec2 uv, float time)
 
     if (BACKGROUND_STYLE == 0)
     {
-        float ring = smoothstep(0.035, 0.0, abs(length(p) - 0.35));
-        float scan = 0.5 + 0.5 * sin(uv.y * 24.0 + time * 2.0);
-        vec3 base = mix(vec3(0.06, 0.07, 0.09), vec3(0.12, 0.13, 0.16), scan * 0.4);
-        vec3 glow = vec3(0.2, 0.5, 0.9) * ring;
-        color = base + glow;
+        color = vec3(0.0);
     }
     else if (BACKGROUND_STYLE == 1)
     {
@@ -94,6 +108,14 @@ vec3 backgroundColor(vec2 uv, float time)
         vec3 burst = mix(vec3(1.0, 0.2, 0.1), vec3(0.1, 0.3, 0.9), smoothstep(-0.4, 0.6, p.y));
         color = mix(dark, light, checker) * 0.8 + burst * (1.0 - radial) * 0.35;
     }
+    else if (BACKGROUND_STYLE == 5)
+    {
+        float ring = smoothstep(0.035, 0.0, abs(length(p) - 0.35));
+        float scan = 0.5 + 0.5 * sin(uv.y * 24.0 + time * 2.0);
+        vec3 base = mix(vec3(0.06, 0.07, 0.09), vec3(0.12, 0.13, 0.16), scan * 0.4);
+        vec3 glow = vec3(0.2, 0.5, 0.9) * ring;
+        color = base + glow;
+    }
 
     return color;
 }
@@ -125,6 +147,51 @@ vec3 transparentMaterial(vec3 baseColor, vec3 normal, vec3 viewDir, vec2 screenU
     return glass * tint;
 }
 
+vec3 mirrorMaterial(vec3 normal, vec3 viewDir, vec2 screenUV, float time)
+{
+    vec3 reflectDir = reflect(-viewDir, normal);
+    vec2 reflectUV = clamp(screenUV + reflectDir.xy * 0.25, 0.0, 1.0);
+    vec3 reflected = backgroundColor(reflectUV, time);
+
+    return mix(reflected, vec3(1.0), 0.02);
+}
+
+vec3 boneMaterial(vec3 albedo, vec3 localPos, float diffuse)
+{
+    float ring = length(localPos.xz) * 2.5 + noise(localPos.xz * 3.0) * 0.6;
+    float grain = smoothstep(0.2, 0.8, fract(ring));
+    vec3 woodLight = mix(albedo, vec3(0.75, 0.55, 0.3), 0.6);
+    vec3 woodDark = mix(albedo, vec3(0.3, 0.18, 0.1), 0.6);
+    vec3 wood = mix(woodDark, woodLight, grain);
+    float streak = smoothstep(0.6, 0.9, noise(localPos.xz * 12.0));
+    wood = mix(wood, woodDark, streak * 0.3);
+
+    return diffuseMaterial(wood, diffuse);
+}
+
+vec3 stoneMaterial(vec3 albedo, vec3 localPos, float diffuse)
+{
+    float n1 = noise(localPos.xz * 4.0);
+    float n2 = noise(localPos.xy * 12.0);
+    float n = n1 * 0.6 + n2 * 0.4;
+    vec3 stoneBase = mix(albedo, vec3(0.5, 0.5, 0.55), 0.7);
+    vec3 stone = mix(vec3(0.25, 0.25, 0.28), vec3(0.6, 0.6, 0.65), n);
+    stone = mix(stone, stoneBase, 0.5);
+
+    return diffuseMaterial(stone, diffuse);
+}
+
+vec3 metalMaterial(vec3 albedo, vec3 normal, vec3 viewDir, float diffuse)
+{
+    vec3 tangent = abs(normal.y) > 0.8 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 bitangent = normalize(cross(normal, tangent));
+    float stretch = pow(1.0 - abs(dot(viewDir, bitangent)), 8.0);
+    vec3 spec = vec3(0.9) * stretch;
+    vec3 base = diffuseMaterial(albedo, diffuse);
+
+    return base + spec * 0.6;
+}
+
 void main()
 {
     vec3 background = backgroundColor(vScreenUV, iTime);
@@ -152,17 +219,32 @@ void main()
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     float rim = pow(1.0 - saturate(dot(normal, viewDir)), 2.0);
     vec3 surface = base + rim * vec3(0.25, 0.4, 0.6);
-    vec3 glass = transparentMaterial(surface, normal, viewDir, vScreenUV, iTime);
-    vec3 diffuseColor = diffuseMaterial(albedo, diffuse);
     vec3 color = surface;
 
     if (MATERIAL_STYLE == 1)
     {
+        vec3 glass = transparentMaterial(surface, normal, viewDir, vScreenUV, iTime);
         color = mix(surface, glass, TRANSPARENT_MATERIAL);
     }
     else if (MATERIAL_STYLE == 2)
     {
-        color = diffuseColor;
+        color = diffuseMaterial(albedo, diffuse);
+    }
+    else if (MATERIAL_STYLE == 3)
+    {
+        color = mirrorMaterial(normal, viewDir, vScreenUV, iTime);
+    }
+    else if (MATERIAL_STYLE == 4)
+    {
+        color = boneMaterial(albedo, vLocalPos, diffuse);
+    }
+    else if (MATERIAL_STYLE == 5)
+    {
+        color = stoneMaterial(albedo, vLocalPos, diffuse);
+    }
+    else if (MATERIAL_STYLE == 6)
+    {
+        color = metalMaterial(albedo, normal, viewDir, diffuse);
     }
 
     outColor = vec4(color, 1.0);
