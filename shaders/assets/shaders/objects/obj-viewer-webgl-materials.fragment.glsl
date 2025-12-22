@@ -17,6 +17,12 @@ uniform float uModelScale;
 out vec4 outColor;
 
 const int BACKGROUND_STYLE = 4;
+const float MATERIAL_IOR = 1.35;
+const float TRANSPARENT_MATERIAL = 1.0;
+const float REFRACTION_STRENGTH = 0.12;
+const float REFLECTION_STRENGTH = 0.08;
+const float GLASS_TINT = 0.25;
+
 float saturate(float value)
 {
     return clamp(value, 0.0, 1.0);
@@ -90,6 +96,28 @@ vec3 backgroundColor(vec2 uv, float time)
     return color;
 }
 
+float fresnelTerm(float cosTheta, float ior)
+{
+    float f0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
+    return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 transparentMaterial(vec3 baseColor, vec3 normal, vec3 viewDir, vec2 screenUV, float time)
+{
+    float cosTheta = saturate(dot(normal, viewDir));
+    float fresnel = fresnelTerm(cosTheta, MATERIAL_IOR);
+    vec3 refractDir = refract(-viewDir, normal, 1.0 / MATERIAL_IOR);
+    vec3 reflectDir = reflect(-viewDir, normal);
+    vec2 refractUV = clamp(screenUV + refractDir.xy * REFRACTION_STRENGTH, 0.0, 1.0);
+    vec2 reflectUV = clamp(screenUV + reflectDir.xy * REFLECTION_STRENGTH, 0.0, 1.0);
+    vec3 refracted = backgroundColor(refractUV, time);
+    vec3 reflected = backgroundColor(reflectUV, time);
+    vec3 glass = mix(refracted, reflected, fresnel);
+    vec3 tint = mix(vec3(1.0), baseColor, GLASS_TINT);
+
+    return glass * tint;
+}
+
 void main()
 {
     vec3 background = backgroundColor(vScreenUV, iTime);
@@ -116,7 +144,9 @@ void main()
 
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     float rim = pow(1.0 - saturate(dot(normal, viewDir)), 2.0);
-    vec3 color = base + rim * vec3(0.25, 0.4, 0.6);
+    vec3 surface = base + rim * vec3(0.25, 0.4, 0.6);
+    vec3 glass = transparentMaterial(surface, normal, viewDir, vScreenUV, iTime);
+    vec3 color = mix(surface, glass, TRANSPARENT_MATERIAL);
 
     outColor = vec4(color, 1.0);
 }

@@ -29,6 +29,11 @@ struct VertexOutput
 };
 
 const BACKGROUND_STYLE : i32 = 4;
+const MATERIAL_IOR : f32 = 1.35;
+const TRANSPARENT_MATERIAL : f32 = 1.0;
+const REFRACTION_STRENGTH : f32 = 0.12;
+const REFLECTION_STRENGTH : f32 = 0.08;
+const GLASS_TINT : f32 = 0.25;
 
 fn saturate(value : f32) -> f32
 {
@@ -103,6 +108,28 @@ fn backgroundColor(uv : vec2f, time : f32) -> vec3f
     return color;
 }
 
+fn fresnelTerm(cosTheta : f32, ior : f32) -> f32
+{
+    let f0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
+    return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
+}
+
+fn transparentMaterial(baseColor : vec3f, normal : vec3f, viewDir : vec3f, screenUV : vec2f, time : f32) -> vec3f
+{
+    let cosTheta = saturate(dot(normal, viewDir));
+    let fresnel = fresnelTerm(cosTheta, MATERIAL_IOR);
+    let refractDir = refract(-viewDir, normal, 1.0 / MATERIAL_IOR);
+    let reflectDir = reflect(-viewDir, normal);
+    let refractUV = clamp(screenUV + refractDir.xy * REFRACTION_STRENGTH, vec2f(0.0), vec2f(1.0));
+    let reflectUV = clamp(screenUV + reflectDir.xy * REFLECTION_STRENGTH, vec2f(0.0), vec2f(1.0));
+    let refracted = backgroundColor(refractUV, time);
+    let reflected = backgroundColor(reflectUV, time);
+    let glass = mix(refracted, reflected, fresnel);
+    let tint = mix(vec3f(1.0), baseColor, GLASS_TINT);
+
+    return glass * tint;
+}
+
 @fragment
 fn frag(input : VertexOutput) -> @location(0) vec4f
 {
@@ -128,7 +155,9 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
 
     let viewDir = normalize(vec3f(0.0, 0.0, 1.0));
     let rim = pow(1.0 - saturate(dot(normal, viewDir)), 2.0);
-    let color = base + rim * vec3f(0.25, 0.4, 0.6);
+    let surface = base + rim * vec3f(0.25, 0.4, 0.6);
+    let glass = transparentMaterial(surface, normal, viewDir, input.screenUV, shaderUniforms.iTime);
+    let color = mix(surface, glass, TRANSPARENT_MATERIAL);
 
     return vec4f(color, 1.0);
 }
