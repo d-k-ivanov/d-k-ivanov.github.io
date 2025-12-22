@@ -373,6 +373,7 @@ export class ShaderApp
             {
                 e.preventDefault();
                 this.editor.clearSavedShader();
+                this.editor.clearSavedModel();
                 this.themeManager.resetThemes();
                 location.reload();
             }
