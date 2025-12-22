@@ -16,7 +16,7 @@ uniform float uModelScale;
 
 out vec4 outColor;
 
-const int BACKGROUND_STYLE = 0;
+const int BACKGROUND_STYLE = 4;
 float saturate(float value)
 {
     return clamp(value, 0.0, 1.0);
@@ -55,13 +55,36 @@ vec3 backgroundColor(vec2 uv, float time)
         float vignette = 1.0 - smoothstep(0.25, 1.1, length(p));
         color = (gradient + gridColor) * (0.75 + 0.25 * vignette);
     }
-    else
+    else if (BACKGROUND_STYLE == 2)
     {
         float bands = 0.5 + 0.5 * sin((uv.x * 1.2 + uv.y * 0.9) * 12.0 + time * 1.5);
         vec3 sky = mix(vec3(0.06, 0.07, 0.1), vec3(0.2, 0.12, 0.18), uv.y);
         vec3 aurora = mix(vec3(0.2, 0.45, 0.35), vec3(0.5, 0.35, 0.65), bands);
         float halo = 1.0 - smoothstep(0.2, 0.9, length(p - vec2(-0.2, 0.1)));
         color = mix(sky, aurora, 0.35) + halo * 0.15;
+    }
+    else if (BACKGROUND_STYLE == 3)
+    {
+        float bands = step(0.5, fract((uv.x * 0.9 + uv.y * 0.6 + time * 0.05) * 12.0));
+        vec3 dark = vec3(0.02, 0.02, 0.03);
+        vec3 light = vec3(0.95, 0.85, 0.2);
+        vec3 stripe = mix(dark, light, bands);
+        float horizon = smoothstep(0.0, 0.6, uv.y);
+        vec3 sky = mix(vec3(0.05, 0.05, 0.08), vec3(0.6, 0.1, 0.2), horizon);
+        float vignette = smoothstep(1.1, 0.2, length(p));
+        color = mix(sky, stripe, 0.55) * (0.7 + 0.3 * vignette);
+    }
+    else if (BACKGROUND_STYLE == 4)
+    {
+        float scale = 10.0;
+        float cx = step(0.5, fract(uv.x * scale));
+        float cy = step(0.5, fract(uv.y * scale));
+        float checker = abs(cx - cy);
+        vec3 dark = vec3(0.02, 0.02, 0.04);
+        vec3 light = vec3(0.98, 0.98, 0.98);
+        float radial = smoothstep(0.0, 1.0, length(p));
+        vec3 burst = mix(vec3(1.0, 0.2, 0.1), vec3(0.1, 0.3, 0.9), smoothstep(-0.4, 0.6, p.y));
+        color = mix(dark, light, checker) * 0.8 + burst * (1.0 - radial) * 0.35;
     }
 
     return color;

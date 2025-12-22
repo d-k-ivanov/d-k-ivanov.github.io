@@ -28,7 +28,7 @@ struct VertexOutput
     @location(4) isBackground : f32,
 };
 
-const BACKGROUND_STYLE : i32 = 0;
+const BACKGROUND_STYLE : i32 = 4;
 
 fn saturate(value : f32) -> f32
 {
@@ -68,13 +68,36 @@ fn backgroundColor(uv : vec2f, time : f32) -> vec3f
         let vignette = 1.0 - smoothstep(0.25, 1.1, length(p));
         color = (gradient + gridColor) * (0.75 + 0.25 * vignette);
     }
-    else
+    else if (BACKGROUND_STYLE == 2)
     {
         let bands = 0.5 + 0.5 * sin((uv.x * 1.2 + uv.y * 0.9) * 12.0 + time * 1.5);
         let sky = mix(vec3f(0.06, 0.07, 0.1), vec3f(0.2, 0.12, 0.18), uv.y);
         let aurora = mix(vec3f(0.2, 0.45, 0.35), vec3f(0.5, 0.35, 0.65), bands);
         let halo = 1.0 - smoothstep(0.2, 0.9, length(p - vec2f(-0.2, 0.1)));
         color = mix(sky, aurora, 0.35) + halo * 0.15;
+    }
+    else if (BACKGROUND_STYLE == 3)
+    {
+        let bands = step(0.5, fract((uv.x * 0.9 + uv.y * 0.6 + time * 0.05) * 12.0));
+        let dark = vec3f(0.02, 0.02, 0.03);
+        let light = vec3f(0.95, 0.85, 0.2);
+        let stripe = mix(dark, light, bands);
+        let horizon = smoothstep(0.0, 0.6, uv.y);
+        let sky = mix(vec3f(0.05, 0.05, 0.08), vec3f(0.6, 0.1, 0.2), horizon);
+        let vignette = smoothstep(1.1, 0.2, length(p));
+        color = mix(sky, stripe, 0.55) * (0.7 + 0.3 * vignette);
+    }
+    else if (BACKGROUND_STYLE == 4)
+    {
+        let scale = 10.0;
+        let cx = step(0.5, fract(uv.x * scale));
+        let cy = step(0.5, fract(uv.y * scale));
+        let checker = abs(cx - cy);
+        let dark = vec3f(0.02, 0.02, 0.04);
+        let light = vec3f(0.98, 0.98, 0.98);
+        let radial = smoothstep(0.0, 1.0, length(p));
+        let burst = mix(vec3f(1.0, 0.2, 0.1), vec3f(0.1, 0.3, 0.9), smoothstep(-0.4, 0.6, p.y));
+        color = mix(dark, light, checker) * 0.8 + burst * (1.0 - radial) * 0.35;
     }
 
     return color;
