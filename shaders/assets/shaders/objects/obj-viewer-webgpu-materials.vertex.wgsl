@@ -1,6 +1,7 @@
 const VERTEX_COUNT : u32 = 3u;
 
 // MODEL_GEOMETRY
+// MODEL_GEOMETRY_WITH_PADDING
 
 struct ShaderUniforms
 {

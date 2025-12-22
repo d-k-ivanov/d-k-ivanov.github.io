@@ -4,6 +4,7 @@ import { BaseRenderer } from "./BaseRenderer.js";
 import { WebGLTextureLoader } from "./WebGLTextureLoader.js";
 
 const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
+const MODEL_PADDING_MARKER = /\bMODEL_GEOMETRY_WITH_PADDING\b/;
 
 /**
  * WebGL2 renderer backend for the shader editor.
@@ -39,6 +40,7 @@ export class WebGLRenderer extends BaseRenderer
         this.modelBuffers = null;
         this.modelInfo = null;
         this.useModelGeometry = false;
+        this.modelPadding = 0;
     }
 
     /**
@@ -108,6 +110,13 @@ export class WebGLRenderer extends BaseRenderer
         const version = this.programVersion;
         this.program = newProgram;
         this.useModelGeometry = this.detectModelGeometry(vertSrc, fragSrc);
+        const nextPadding = this.useModelGeometry && this.detectModelPadding(vertSrc, fragSrc) ? 3 : 0;
+        const paddingChanged = nextPadding !== this.modelPadding;
+        this.modelPadding = nextPadding;
+        if (paddingChanged)
+        {
+            this.updateModelBuffers();
+        }
 
         this.uniforms = {
             iResolution: gl.getUniformLocation(newProgram, "iResolution"),
@@ -370,6 +379,19 @@ export class WebGLRenderer extends BaseRenderer
     }
 
     /**
+     * Detects markers that reserve padding before model vertices.
+     *
+     * @param {string} vertexSource - Vertex shader source.
+     * @param {string} fragmentSource - Fragment shader source.
+     * @returns {boolean} True when the shader expects padded model buffers.
+     */
+    detectModelPadding(vertexSource, fragmentSource)
+    {
+        const combined = `${vertexSource || ""}\n${fragmentSource || ""}`;
+        return MODEL_PADDING_MARKER.test(combined);
+    }
+
+    /**
      * Computes derived model info (center/scale/bounds).
      *
      * @param {object} model - Model payload with bounds.
@@ -419,8 +441,24 @@ export class WebGLRenderer extends BaseRenderer
 
         const positions = this.model.positions;
         const normals = this.model.normals;
-        const vertexCount = positions.length / 3;
-        const uvs = this.model.uvs || new Float32Array(vertexCount * 2);
+        const baseVertexCount = positions.length / 3;
+        const padding = this.modelPadding || 0;
+        const vertexCount = baseVertexCount + padding;
+        const uvs = this.model.uvs || new Float32Array(baseVertexCount * 2);
+        let uploadPositions = positions;
+        let uploadNormals = normals;
+        let uploadUVs = uvs;
+
+        if (padding > 0)
+        {
+            uploadPositions = new Float32Array(vertexCount * 3);
+            uploadNormals = new Float32Array(vertexCount * 3);
+            uploadUVs = new Float32Array(vertexCount * 2);
+
+            uploadPositions.set(positions, padding * 3);
+            uploadNormals.set(normals, padding * 3);
+            uploadUVs.set(uvs, padding * 2);
+        }
 
         if (!this.modelBuffers)
         {
@@ -436,17 +474,17 @@ export class WebGLRenderer extends BaseRenderer
         gl.bindVertexArray(this.modelBuffers.vao);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.position);
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, uploadPositions, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(0);
         gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.normal);
-        gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, uploadNormals, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(1);
         gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.modelBuffers.uv);
-        gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, uploadUVs, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(2);
         gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
 

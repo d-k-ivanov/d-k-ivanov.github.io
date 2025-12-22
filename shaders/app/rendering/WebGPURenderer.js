@@ -7,6 +7,7 @@ const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const DEFAULT_VERTEX_COUNT = 3;
 const DEFAULT_GRID_SIZE = 1;
 const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
+const MODEL_PADDING_MARKER = /\bMODEL_GEOMETRY_WITH_PADDING\b/;
 const MODEL_BINDINGS = {
     positions: 20,
     normals: 21,
@@ -70,6 +71,7 @@ export class WebGPURenderer extends BaseRenderer
         this.modelVertexCount = 0;
         this.modelPayload = null;
         this.useModelGeometry = false;
+        this.modelPadding = 0;
 
         // Compute target
         this.computeWidth = 0;
@@ -158,7 +160,9 @@ export class WebGPURenderer extends BaseRenderer
     {
         super.setModel(model);
         this.modelInfo = model ? this.buildModelInfo(model) : null;
-        this.modelVertexCount = model?.vertexCount || 0;
+        const baseVertexCount = model?.vertexCount || 0;
+        const padding = model ? this.modelPadding : 0;
+        this.modelVertexCount = baseVertexCount > 0 ? baseVertexCount + padding : 0;
         this.modelPayload = this.buildModelPayload(model);
 
         if (!this.device)
@@ -436,6 +440,17 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Checks WGSL sources for model padding markers.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {boolean} True when model buffers should be padded.
+     */
+    detectModelPadding(sources)
+    {
+        return sources.some((source) => MODEL_PADDING_MARKER.test(source || ""));
+    }
+
+    /**
      * Returns true when shader bindings include model buffers.
      *
      * @returns {boolean} True when model bindings are present.
@@ -487,8 +502,10 @@ export class WebGPURenderer extends BaseRenderer
      */
     buildModelPayload(model)
     {
-        const vertexCount = model?.vertexCount || 0;
-        const count = Math.max(vertexCount, DEFAULT_VERTEX_COUNT);
+        const baseVertexCount = model?.vertexCount || 0;
+        const padding = model ? this.modelPadding : 0;
+        const totalVertexCount = baseVertexCount + padding;
+        const count = Math.max(totalVertexCount, DEFAULT_VERTEX_COUNT);
         const positions = new Float32Array(count * 4);
         const normals = new Float32Array(count * 4);
         const uvs = new Float32Array(count * 4);
@@ -504,10 +521,10 @@ export class WebGPURenderer extends BaseRenderer
             const srcNorm = model.normals || [];
             const srcUv = model.uvs || [];
 
-            for (let i = 0; i < vertexCount; i++)
+            for (let i = 0; i < baseVertexCount; i++)
             {
                 const pIndex = i * 3;
-                const oIndex = i * 4;
+                const oIndex = (i + padding) * 4;
                 const uvIndex = i * 2;
 
                 positions[oIndex + 0] = readValue(srcPos, pIndex + 0, 0);
@@ -528,7 +545,7 @@ export class WebGPURenderer extends BaseRenderer
         }
 
         const info = model ? this.buildModelInfo(model) : null;
-        const hasModel = vertexCount > 0 ? 1.0 : 0.0;
+        const hasModel = baseVertexCount > 0 ? 1.0 : 0.0;
         const boundsMin = info ? info.boundsMin : [0, 0, 0];
         const boundsMax = info ? info.boundsMax : [0, 0, 0];
         const center = info ? info.center : [0, 0, 0];
@@ -967,6 +984,13 @@ export class WebGPURenderer extends BaseRenderer
         const shaderSources = [vertexSource, fragmentSource, computeSource];
 
         this.useModelGeometry = this.detectModelGeometry(shaderSources);
+        const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
+        const paddingChanged = nextPadding !== this.modelPadding;
+        this.modelPadding = nextPadding;
+        if (paddingChanged)
+        {
+            this.setModel(this.model);
+        }
         if (!this.useModelGeometry)
         {
             this.releaseDepthTexture();
