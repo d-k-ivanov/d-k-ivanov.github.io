@@ -116,7 +116,19 @@ export class StlFormat extends ModelFormat
     parseBinary(buffer, options)
     {
         const view = new DataView(buffer);
-        const faceCount = view.getUint32(80, true);
+        const declaredFaceCount = view.getUint32(80, true);
+        const maxFaces = Math.max(0, Math.floor((buffer.byteLength - 84) / 50));
+        const expectedSize = 84 + declaredFaceCount * 50;
+        let faceCount = declaredFaceCount;
+
+        if (!Number.isFinite(faceCount) || faceCount <= 0 || expectedSize > buffer.byteLength)
+        {
+            faceCount = maxFaces;
+        }
+        else if (expectedSize < buffer.byteLength && (buffer.byteLength - 84) % 50 === 0)
+        {
+            faceCount = maxFaces;
+        }
         const positions = [];
         const normals = [];
 
@@ -137,26 +149,31 @@ export class StlFormat extends ModelFormat
         for (let i = 0; i < faceCount; i++)
         {
             const base = 84 + i * 50;
-            const normal = [
+            const normal = this.transformVector(
                 view.getFloat32(base + 0, true),
                 view.getFloat32(base + 4, true),
                 view.getFloat32(base + 8, true)
-            ];
+            );
 
             const vertices = [];
             for (let v = 0; v < 3; v++)
             {
                 const offset = base + 12 + v * 12;
-                const pos = [
+                const pos = this.transformVector(
                     view.getFloat32(offset + 0, true),
                     view.getFloat32(offset + 4, true),
                     view.getFloat32(offset + 8, true)
-                ];
+                );
                 vertices.push(pos);
                 updateBounds(pos);
             }
 
+            const computedNormal = this.computeFaceNormal(vertices);
             const faceNormal = this.normalizeNormal(normal, vertices);
+            if (this.shouldFlipWinding(faceNormal, computedNormal))
+            {
+                [vertices[1], vertices[2]] = [vertices[2], vertices[1]];
+            }
             for (const vertex of vertices)
             {
                 positions.push(vertex[0], vertex[1], vertex[2]);
@@ -207,7 +224,12 @@ export class StlFormat extends ModelFormat
             for (let i = 1; i < vertices.length - 1; i++)
             {
                 const tri = [vertices[0], vertices[i], vertices[i + 1]];
+                const computedNormal = this.computeFaceNormal(tri);
                 const faceNormal = this.normalizeNormal(facetNormal || [0, 0, 0], tri);
+                if (this.shouldFlipWinding(faceNormal, computedNormal))
+                {
+                    [tri[1], tri[2]] = [tri[2], tri[1]];
+                }
                 for (const vertex of tri)
                 {
                     positions.push(vertex[0], vertex[1], vertex[2]);
@@ -230,21 +252,21 @@ export class StlFormat extends ModelFormat
             const parts = trimmed.split(/\s+/);
             if (parts[0] === "facet" && parts[1] === "normal")
             {
-                facetNormal = [
+                facetNormal = this.transformVector(
                     parseFloat(parts[2]),
                     parseFloat(parts[3]),
                     parseFloat(parts[4])
-                ];
+                );
                 continue;
             }
 
             if (parts[0] === "vertex")
             {
-                const pos = [
+                const pos = this.transformVector(
                     parseFloat(parts[1]),
                     parseFloat(parts[2]),
                     parseFloat(parts[3])
-                ];
+                );
                 if (pos.every(Number.isFinite))
                 {
                     vertices.push(pos);
@@ -281,26 +303,73 @@ export class StlFormat extends ModelFormat
         let ny = normal[1];
         let nz = normal[2];
         const length = Math.hypot(nx, ny, nz);
-        if (length < 1e-6)
+        if (!Number.isFinite(length) || length < 1e-6)
         {
-            const [a, b, c] = vertices;
-            const abx = b[0] - a[0];
-            const aby = b[1] - a[1];
-            const abz = b[2] - a[2];
-            const acx = c[0] - a[0];
-            const acy = c[1] - a[1];
-            const acz = c[2] - a[2];
-            nx = aby * acz - abz * acy;
-            ny = abz * acx - abx * acz;
-            nz = abx * acy - aby * acx;
+            return this.computeFaceNormal(vertices);
         }
 
-        const norm = Math.hypot(nx, ny, nz);
-        if (norm < 1e-6)
+        return [nx / length, ny / length, nz / length];
+    }
+
+    /**
+     * Computes a normalized face normal from triangle vertices.
+     *
+     * @param {Array<number[]>} vertices - Triangle vertices.
+     * @returns {number[]} Normalized face normal.
+     */
+    computeFaceNormal(vertices)
+    {
+        if (!vertices || vertices.length < 3)
         {
             return [0, 0, 1];
         }
-        return [nx / norm, ny / norm, nz / norm];
+
+        const [a, b, c] = vertices;
+        const abx = b[0] - a[0];
+        const aby = b[1] - a[1];
+        const abz = b[2] - a[2];
+        const acx = c[0] - a[0];
+        const acy = c[1] - a[1];
+        const acz = c[2] - a[2];
+        const nx = aby * acz - abz * acy;
+        const ny = abz * acx - abx * acz;
+        const nz = abx * acy - aby * acx;
+
+        const length = Math.hypot(nx, ny, nz);
+        if (length < 1e-6)
+        {
+            return [0, 0, 1];
+        }
+
+        return [nx / length, ny / length, nz / length];
+    }
+
+    /**
+     * Returns true when triangle winding should be flipped to match the normal.
+     *
+     * @param {number[]} expectedNormal - Normal to match.
+     * @param {number[]} computedNormal - Normal from vertex order.
+     * @returns {boolean} True when winding should be flipped.
+     */
+    shouldFlipWinding(expectedNormal, computedNormal)
+    {
+        const dot = expectedNormal[0] * computedNormal[0]
+            + expectedNormal[1] * computedNormal[1]
+            + expectedNormal[2] * computedNormal[2];
+        return Number.isFinite(dot) && dot < 0;
+    }
+
+    /**
+     * Rotates STL coordinates from Z-up into the renderer's Y-up space.
+     *
+     * @param {number} x - X component.
+     * @param {number} y - Y component.
+     * @param {number} z - Z component.
+     * @returns {number[]} Rotated vector.
+     */
+    transformVector(x, y, z)
+    {
+        return [x, z, -y];
     }
 
     /**
