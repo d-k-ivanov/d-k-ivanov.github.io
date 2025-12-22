@@ -27,6 +27,7 @@ export class ModelCollection
         { id: "menger_vox", name: "menger.vox", file: "menger.vox" },
         { id: "pig_obj", name: "pig.obj", file: "pig.obj" },
         { id: "skull_obj", name: "skull.obj", file: "skull.obj" },
+        { id: "sphere_stl", name: "sphere.stl", file: "sphere.stl" },
         { id: "spot_obj", name: "spot.obj", file: "spot.obj" },
         { id: "teapot_vox", name: "teapot.vox", file: "teapot.vox" },
     ];
