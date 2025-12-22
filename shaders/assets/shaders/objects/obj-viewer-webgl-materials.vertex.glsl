@@ -16,6 +16,8 @@ uniform float uHasModel;
 out vec3 vNormal;
 out vec3 vLocalPos;
 out vec2 vUV;
+out vec2 vScreenUV;
+out float vIsBackground;
 
 mat3 rotationX(float angle)
 {
@@ -59,6 +61,20 @@ void main()
         vNormal = vec3(0.0, 0.0, 1.0);
         vLocalPos = vec3(pos, 0.0);
         vUV = pos * 0.5 + 0.5;
+        vScreenUV = vUV;
+        vIsBackground = 1.0;
+        return;
+    }
+
+    if (gl_VertexID < 3)
+    {
+        vec2 pos = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2) * 2.0 - 1.0;
+        gl_Position = vec4(pos, 0.999, 1.0);
+        vNormal = vec3(0.0, 0.0, 1.0);
+        vLocalPos = vec3(pos, 0.0);
+        vUV = pos * 0.5 + 0.5;
+        vScreenUV = vUV;
+        vIsBackground = 1.0;
         return;
     }
 
@@ -83,4 +99,6 @@ void main()
     vNormal = normal;
     vLocalPos = localPos;
     vUV = aUV;
+    vScreenUV = clip * 0.5 + 0.5;
+    vIsBackground = 0.0;
 }

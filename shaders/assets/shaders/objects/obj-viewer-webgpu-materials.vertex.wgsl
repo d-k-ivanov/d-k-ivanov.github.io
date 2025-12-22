@@ -31,6 +31,8 @@ struct VertexOutput
     @location(0) normal : vec3f,
     @location(1) localPos : vec3f,
     @location(2) uv : vec2f,
+    @location(3) screenUV : vec2f,
+    @location(4) isBackground : f32,
 };
 
 fn rotationX(angle : f32) -> mat3x3<f32>
@@ -89,6 +91,30 @@ fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
         out.normal = vec3f(0.0, 0.0, 1.0);
         out.localPos = vec3f(positions[idx], 0.0);
         out.uv = uvs[idx];
+        out.screenUV = uvs[idx];
+        out.isBackground = 1.0;
+        return out;
+    }
+
+    if (idx < 3u)
+    {
+        let positions = array<vec2f, 3>(
+            vec2f(-1.0, -1.0),
+            vec2f(3.0, -1.0),
+            vec2f(-1.0, 3.0)
+        );
+        let uvs = array<vec2f, 3>(
+            vec2f(0.0, 0.0),
+            vec2f(2.0, 0.0),
+            vec2f(0.0, 2.0)
+        );
+
+        out.Position = vec4f(positions[idx], 0.999, 1.0);
+        out.normal = vec3f(0.0, 0.0, 1.0);
+        out.localPos = vec3f(positions[idx], 0.0);
+        out.uv = uvs[idx];
+        out.screenUV = uvs[idx];
+        out.isBackground = 1.0;
         return out;
     }
 
@@ -117,5 +143,7 @@ fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
     out.normal = normalRot;
     out.localPos = localPos;
     out.uv = uv;
+    out.screenUV = clip * 0.5 + 0.5;
+    out.isBackground = 0.0;
     return out;
 }
