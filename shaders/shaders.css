@@ -226,7 +226,7 @@
 
 /* File Tree Sidebar */
 .shaders-file-tree {
-    width: 200px;
+    width: 250px;
     min-width: 150px;
     background: var(--sh-bg-tertiary);
     border-right: 1px solid var(--sh-border);

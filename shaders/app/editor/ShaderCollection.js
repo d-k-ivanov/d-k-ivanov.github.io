@@ -42,7 +42,10 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "isometries" },
 
         // Model rendering
-        { language: "glsl", folder: "objects", name: "obj_viewer-webgl" },
+        { language: "glsl", folder: "objects", name: "obj-viewer-webgl-materials" },
+        { language: "glsl", folder: "objects", name: "obj-viewer-webgl" },
+        { language: "wgsl", folder: "objects", name: "obj-viewer-webgpu-materials" },
+        { language: "wgsl", folder: "objects", name: "obj-viewer-webgpu" },
 
         // Procedural patterns
         { language: "glsl", folder: "patterns", name: "neon_grid" },
@@ -87,7 +90,6 @@ export class ShaderCollection
         { language: "wgsl", folder: "webgpu", name: "game_of_life_01" },
         { language: "wgsl", folder: "webgpu", name: "hello_triangle" },
         { language: "wgsl", folder: "webgpu", name: "hello_world" },
-        { language: "wgsl", folder: "objects", name: "obj_viewer-webgpu" },
         { language: "wgsl", folder: "webgpu", name: "print_text" },
     ];
 
