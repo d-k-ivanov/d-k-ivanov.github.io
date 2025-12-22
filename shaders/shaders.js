@@ -11,7 +11,7 @@ import { ShaderApp } from "./app/core/ShaderApp.js";
  * @returns {void}
  * @example
  * // The module auto-runs on DOMContentLoaded, so importing the script is enough.
- * // <script type="module" src="/shaders/main.js"></script>
+ * // <script type="module" src="/shaders/shaders.js"></script>
  */
 function initShaderApp()
 {
