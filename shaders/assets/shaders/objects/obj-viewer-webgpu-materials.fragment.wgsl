@@ -29,6 +29,8 @@ struct VertexOutput
 };
 
 const BACKGROUND_STYLE : i32 = 4;
+const MATERIAL_STYLE : i32 = 1; // 0: stylized, 1: glass, 2: diffuse
+const DIFFUSE_AMBIENT : f32 = 0.2;
 const MATERIAL_IOR : f32 = 1.35;
 const TRANSPARENT_MATERIAL : f32 = 1.0;
 const REFRACTION_STRENGTH : f32 = 0.12;
@@ -108,6 +110,11 @@ fn backgroundColor(uv : vec2f, time : f32) -> vec3f
     return color;
 }
 
+fn diffuseMaterial(albedo : vec3f, diffuse : f32) -> vec3f
+{
+    return albedo * (DIFFUSE_AMBIENT + (1.0 - DIFFUSE_AMBIENT) * diffuse);
+}
+
 fn fresnelTerm(cosTheta : f32, ior : f32) -> f32
 {
     let f0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
@@ -150,14 +157,24 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
 
     let cool = vec3f(0.15, 0.3, 0.6);
     let warm = vec3f(0.85, 0.6, 0.35);
-    let gradient = mix(cool, warm, normalized.y);
-    let base = gradient * (0.25 + 0.75 * diffuse);
+    let albedo = mix(cool, warm, normalized.y);
+    let base = albedo * (0.25 + 0.75 * diffuse);
 
     let viewDir = normalize(vec3f(0.0, 0.0, 1.0));
     let rim = pow(1.0 - saturate(dot(normal, viewDir)), 2.0);
     let surface = base + rim * vec3f(0.25, 0.4, 0.6);
     let glass = transparentMaterial(surface, normal, viewDir, input.screenUV, shaderUniforms.iTime);
-    let color = mix(surface, glass, TRANSPARENT_MATERIAL);
+    let diffuseColor = diffuseMaterial(albedo, diffuse);
+    var color = surface;
+
+    if (MATERIAL_STYLE == 1)
+    {
+        color = mix(surface, glass, TRANSPARENT_MATERIAL);
+    }
+    else if (MATERIAL_STYLE == 2)
+    {
+        color = diffuseColor;
+    }
 
     return vec4f(color, 1.0);
 }

@@ -17,6 +17,8 @@ uniform float uModelScale;
 out vec4 outColor;
 
 const int BACKGROUND_STYLE = 4;
+const int MATERIAL_STYLE = 1; // 0: stylized, 1: glass, 2: diffuse
+const float DIFFUSE_AMBIENT = 0.2;
 const float MATERIAL_IOR = 1.35;
 const float TRANSPARENT_MATERIAL = 1.0;
 const float REFRACTION_STRENGTH = 0.12;
@@ -96,6 +98,11 @@ vec3 backgroundColor(vec2 uv, float time)
     return color;
 }
 
+vec3 diffuseMaterial(vec3 albedo, float diffuse)
+{
+    return albedo * (DIFFUSE_AMBIENT + (1.0 - DIFFUSE_AMBIENT) * diffuse);
+}
+
 float fresnelTerm(float cosTheta, float ior)
 {
     float f0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
@@ -139,14 +146,24 @@ void main()
 
     vec3 cool = vec3(0.15, 0.3, 0.6);
     vec3 warm = vec3(0.85, 0.6, 0.35);
-    vec3 gradient = mix(cool, warm, normalized.y);
-    vec3 base = gradient * (0.25 + 0.75 * diffuse);
+    vec3 albedo = mix(cool, warm, normalized.y);
+    vec3 base = albedo * (0.25 + 0.75 * diffuse);
 
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     float rim = pow(1.0 - saturate(dot(normal, viewDir)), 2.0);
     vec3 surface = base + rim * vec3(0.25, 0.4, 0.6);
     vec3 glass = transparentMaterial(surface, normal, viewDir, vScreenUV, iTime);
-    vec3 color = mix(surface, glass, TRANSPARENT_MATERIAL);
+    vec3 diffuseColor = diffuseMaterial(albedo, diffuse);
+    vec3 color = surface;
+
+    if (MATERIAL_STYLE == 1)
+    {
+        color = mix(surface, glass, TRANSPARENT_MATERIAL);
+    }
+    else if (MATERIAL_STYLE == 2)
+    {
+        color = diffuseColor;
+    }
 
     outColor = vec4(color, 1.0);
 }
