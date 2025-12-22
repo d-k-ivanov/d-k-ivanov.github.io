@@ -144,7 +144,7 @@ void DrawTree(in vec2 uv, in float time, inout vec3 outColor)
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     vec2 uv = (fragCoord - iResolution.xy * 0.5f) / iResolution.y; // [-0.5, 0.5] adjusted for aspect ratio
-    vec3 outColor = vec3(0.005f, 0.01f, 0.03f); // Background color
+    vec3 outColor = vec3(0.0f); // Background color
     vec4 m = iMouse / iResolution.yyyy;
     float t = 0.0f;
 
