@@ -232,6 +232,7 @@ export class VoxFormat extends ModelFormat
 
                 const quad = face.corners;
                 const triIndices = [0, 1, 2, 0, 2, 3];
+                const normal = this.transformDirection(face.dir);
                 for (let i = 0; i < triIndices.length; i++)
                 {
                     const idx = triIndices[i];
@@ -239,23 +240,40 @@ export class VoxFormat extends ModelFormat
                     const px = vx + corner[0];
                     const py = vy + corner[1];
                     const pz = vz + corner[2];
+                    const worldPos = this.transformPosition(px, py, pz);
 
-                    positions.push(px, py, pz);
-                    normals.push(face.dir[0], face.dir[1], face.dir[2]);
+                    positions.push(worldPos[0], worldPos[1], worldPos[2]);
+                    normals.push(normal[0], normal[1], normal[2]);
                     const uv = UVS[idx];
                     uvs.push(uv[0], uv[1]);
 
-                    boundsMin[0] = Math.min(boundsMin[0], px);
-                    boundsMin[1] = Math.min(boundsMin[1], py);
-                    boundsMin[2] = Math.min(boundsMin[2], pz);
-                    boundsMax[0] = Math.max(boundsMax[0], px);
-                    boundsMax[1] = Math.max(boundsMax[1], py);
-                    boundsMax[2] = Math.max(boundsMax[2], pz);
+                    boundsMin[0] = Math.min(boundsMin[0], worldPos[0]);
+                    boundsMin[1] = Math.min(boundsMin[1], worldPos[1]);
+                    boundsMin[2] = Math.min(boundsMin[2], worldPos[2]);
+                    boundsMax[0] = Math.max(boundsMax[0], worldPos[0]);
+                    boundsMax[1] = Math.max(boundsMax[1], worldPos[1]);
+                    boundsMax[2] = Math.max(boundsMax[2], worldPos[2]);
                 }
             }
         }
 
         return { positions, normals, uvs, boundsMin, boundsMax };
+    }
+
+    /**
+     * Transforms voxel-space positions into Y-up coordinates.
+     */
+    transformPosition(x, y, z)
+    {
+        return [x, z, -y];
+    }
+
+    /**
+     * Transforms voxel-space directions into Y-up coordinates.
+     */
+    transformDirection(dir)
+    {
+        return [dir[0], dir[2], -dir[1]];
     }
 
     /**
