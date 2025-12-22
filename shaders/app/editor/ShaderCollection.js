@@ -39,6 +39,7 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "curena_alhambra" },
         { language: "glsl", folder: "misc", name: "curena_p6mm" },
         { language: "glsl", folder: "misc", name: "iq_primitives" },
+        { language: "glsl", folder: "misc", name: "isometries" },
 
         // Model rendering
         { language: "glsl", folder: "objects", name: "obj_viewer-webgl" },
