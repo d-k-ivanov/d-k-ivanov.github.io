@@ -35,6 +35,7 @@ export class ShaderCollection
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
         { language: "glsl", folder: "misc", name: "bµg_moonlight" },
+        { language: "glsl", folder: "misc", name: "christmas_tree_01" },
         { language: "glsl", folder: "misc", name: "curena_alhambra" },
         { language: "glsl", folder: "misc", name: "curena_p6mm" },
         { language: "glsl", folder: "misc", name: "iq_primitives" },
