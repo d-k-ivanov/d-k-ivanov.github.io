@@ -57,6 +57,7 @@ export class ShaderCollection
 
         // Signed Distance Field (SDF) Examples
         { language: "glsl", folder: "sdf", name: "2d_distances" },
+        { language: "wgsl", folder: "sdf", name: "3d-sdf-primitives-webgpu" },
 
         // Shader Art Examples
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_01" },
