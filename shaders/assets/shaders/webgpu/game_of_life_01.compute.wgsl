@@ -65,14 +65,15 @@ fn randomCellValue4(x: u32, y: u32) -> u32
 
 fn randomCellValue5(x: u32, y: u32) -> u32
 {
-    const COMPILE_SEED: f32 = 9999; // Change this value to get different patterns
+    const COMPILE_SEED: f32 = 3; // Change this value to get different patterns
 
     let px = f32(x);
     let py = f32(y);
-    let seed = px * 12.9898 + py * 78.233 + COMPILE_SEED * 31.4159;
+    let seed = px * px / 99999 + py * py / 99999 + COMPILE_SEED;
     let randomValue = fract(sin(seed) * 43758.5453123);
-    return u32(floor(randomValue * 2.0));
+    return u32(floor(randomValue * 1.2));
 }
+
 
 // Generate circle pattern
 fn randomCellValue6(x: u32, y: u32) -> u32
