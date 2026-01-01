@@ -101,6 +101,9 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
         return;
     }
 
+    // References for Conway's Game of Life rules:
+    // https://www.ibiblio.org/lifepatterns/october1970.html
+
     // Determine how many active neighbors this cell has.
     let activeNeighbors = cellActive(cell.x + 1u, cell.y + 1u)
                         + cellActive(cell.x + 1u, cell.y     )
@@ -123,6 +126,7 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
     switch activeNeighbors
     {
         // Cells with 2 neighbors preserve their state.
+        // Original: Survivals. Every counter with two or three neighboring counters survives for the next generation.
         case 2:
         {
             cellState[i] = cellState[i];
@@ -130,6 +134,8 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
         }
 
         // Cells with 3 neighbors become or stay active.
+        // Original: Survivals. Every counter with two or three neighboring counters survives for the next generation.
+        // Original: Births. Each empty cell adjacent to exactly three live neighbors becomes a live cell.
         case 3:
         {
             cellState[i] = 1;
@@ -137,6 +143,7 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
         }
 
         // Cells with less than 2 or more then 3 neighbors become inactive.
+        // Original: Deaths. Any live cell with fewer than two live neighbors dies, as if caused by under-population.
         default:
         {
             cellState[i] = 0;
