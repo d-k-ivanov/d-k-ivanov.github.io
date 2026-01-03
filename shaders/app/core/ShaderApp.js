@@ -200,7 +200,7 @@ export class ShaderApp
         this.modelLoadToken = 0;
 
         this.canvasControls = new CanvasControls(this.canvas, {
-            onResolutionChange: () => this.renderer.handleResize(),
+            onResolutionChange: () => this.handleResolutionChange(),
             onModelChange: (model) => this.handleModelSelected(model),
             onModelLoad: (source) => this.handleCustomModelLoad(source)
         });
@@ -209,6 +209,27 @@ export class ShaderApp
 
         this.bindHotkeys();
         this.bindNoteToggle();
+    }
+
+    /**
+     * Handles canvas resolution changes by updating renderer and recompiling shaders.
+     *
+     * When the user changes the canvas resolution from the dropdown, this method
+     * ensures that the renderer viewport is updated and shaders are recompiled
+     * to reflect the new resolution (e.g., for shaders using iResolution uniform).
+     *
+     * @returns {void}
+     * @example
+     * // Called automatically when resolution dropdown changes
+     * this.handleResolutionChange();
+     */
+    handleResolutionChange()
+    {
+        // Update renderer viewport dimensions
+        this.renderer.handleResize();
+
+        // Recompile shaders to ensure iResolution and other uniforms reflect new dimensions
+        this.editor.recompileShader();
     }
 
     /**

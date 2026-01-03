@@ -89,6 +89,7 @@ export class ShaderCollection
         { language: "wgsl", folder: "webgpu", name: "atomic_pulse" },
         { language: "wgsl", folder: "webgpu", name: "compute_waves" },
         { language: "wgsl", folder: "webgpu", name: "game_of_life_01" },
+        { language: "wgsl", folder: "webgpu", name: "game_of_life_02" },
         { language: "wgsl", folder: "webgpu", name: "hello_triangle" },
         { language: "wgsl", folder: "webgpu", name: "hello_world" },
         { language: "wgsl", folder: "webgpu", name: "print_text" },
