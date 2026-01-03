@@ -32,6 +32,10 @@ export class ShaderCollection
         { language: "glsl", folder: "basics", name: "print_text" },
         { language: "glsl", folder: "basics", name: "shadertoy" },
 
+        // Cellular Automata
+        { language: "wgsl", folder: "celular", name: "game_of_life_01" },
+        { language: "wgsl", folder: "celular", name: "game_of_life_02" },
+
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
         { language: "glsl", folder: "misc", name: "bµg_moonlight" },
@@ -88,8 +92,6 @@ export class ShaderCollection
         // WebGPU WGSL Examples
         { language: "wgsl", folder: "webgpu", name: "atomic_pulse" },
         { language: "wgsl", folder: "webgpu", name: "compute_waves" },
-        { language: "wgsl", folder: "webgpu", name: "game_of_life_01" },
-        { language: "wgsl", folder: "webgpu", name: "game_of_life_02" },
         { language: "wgsl", folder: "webgpu", name: "hello_triangle" },
         { language: "wgsl", folder: "webgpu", name: "hello_world" },
         { language: "wgsl", folder: "webgpu", name: "print_text" },
