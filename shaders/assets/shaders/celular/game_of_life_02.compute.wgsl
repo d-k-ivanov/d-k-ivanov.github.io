@@ -17,8 +17,8 @@ struct ShaderUniforms
 
 fn cellIndex(cell: vec2u) -> u32
 {
-    // Grid side sizes taken from iResolution
-    return cell.y * u32(shaderUniforms.iResolution.x) + cell.x;
+    // Grid side sizes taken from iGridSize
+    return cell.y * shaderUniforms.iGridSize.x + cell.x;
 }
 
 fn cellActive(x: u32, y: u32) -> u32
@@ -44,11 +44,11 @@ fn randomCellValue1(x: u32, y: u32) -> u32
     return u32(floor(randomValue * 2.0));
 }
 
-// Returns the random 0 or 1 value for the given cell index, influenced by iResolution, iTime, and iMouse.
+// Returns the random 0 or 1 value for the given cell index, influenced by iGridSize, iTime, and iMouse.
 fn randomCellValue2(x: u32, y: u32) -> u32
 {
-    let px = f32(x) / shaderUniforms.iResolution.x;
-    let py = f32(y) / shaderUniforms.iResolution.y;
+    let px = f32(x) / f32(shaderUniforms.iGridSize.x);
+    let py = f32(y) / f32(shaderUniforms.iGridSize.y);
     let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
     let timeInfluence = shaderUniforms.iTime * 0.1234;
     let seed = px * 12.9898 + py * 78.233 + mouseInfluence * 31.4159 + timeInfluence;
@@ -56,11 +56,11 @@ fn randomCellValue2(x: u32, y: u32) -> u32
     return u32(floor(randomValue * 2.0));
 }
 
-// Returns the random 0 or 1 value for the given cell index, influenced by iResolution
+// Returns the random 0 or 1 value for the given cell index, influenced by iGridSize
 fn randomCellValue3(x: u32, y: u32) -> u32
 {
-    let px = f32(x) / shaderUniforms.iResolution.x;
-    let py = f32(y) / shaderUniforms.iResolution.y;
+    let px = f32(x) / f32(shaderUniforms.iGridSize.x);
+    let py = f32(y) / f32(shaderUniforms.iGridSize.y);
     let seed = px * 12.9898 + py * 78.233 + 31.4159;
     let randomValue = fract(sin(seed) * 43758.5453123);
     return u32(floor(randomValue * 2.0));
@@ -69,8 +69,8 @@ fn randomCellValue3(x: u32, y: u32) -> u32
 // Returns the random 0 or 1 value for the given cell index, influenced by iMouse.
 fn randomCellValue4(x: u32, y: u32) -> u32
 {
-    let px = f32(x) / shaderUniforms.iResolution.x;
-    let py = f32(y) / shaderUniforms.iResolution.y;
+    let px = f32(x) / f32(shaderUniforms.iGridSize.x);
+    let py = f32(y) / f32(shaderUniforms.iGridSize.y);
     let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
     let seed = mouseInfluence * 12.9898 + mouseInfluence * 78.233 + mouseInfluence * 31.4159;
     let randomValue = fract(sin(seed) * 43758.5453123);
@@ -92,11 +92,11 @@ fn randomCellValue5(x: u32, y: u32) -> u32
 // Generate circle pattern
 fn randomCellValue6(x: u32, y: u32) -> u32
 {
-    let centerX = shaderUniforms.iResolution.x / 2.0;
-    let centerY = shaderUniforms.iResolution.y / 2.0;
+    let centerX = shaderUniforms.iGridSize.x / 2u;
+    let centerY = shaderUniforms.iGridSize.y / 2u;
     let distX = abs(i32(x) - i32(centerX));
     let distY = abs(i32(y) - i32(centerY));
-    let radius = min(shaderUniforms.iResolution.x, shaderUniforms.iResolution.y) / 4.0;
+    let radius = min(shaderUniforms.iGridSize.x, shaderUniforms.iGridSize.y) / 4u;
 
     if (distX * distX + distY * distY < i32(radius * radius))
     {
