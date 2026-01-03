@@ -1,3 +1,5 @@
+const COMPUTE_FRAME_INTERVAL : u32 = 5u;
+
 struct ShaderUniforms
 {
     iResolution : vec3f,
@@ -211,7 +213,7 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
     }
 
     // Computation speed control: update every Nth frame
-    if (shaderUniforms.iFrame % 5u != 0u)
+    if (shaderUniforms.iFrame % COMPUTE_FRAME_INTERVAL != 0u)
     {
         return;
     }

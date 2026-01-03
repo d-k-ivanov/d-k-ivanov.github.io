@@ -26,9 +26,38 @@ const SHADER_UI_TEMPLATE = `
                     <option value="128x128">128×128 (1:1)</option>
                     <option value="256x256">256×256 (1:1)</option>
                     <option value="512x512">512×512 (1:1)</option>
-                    <option value="1024x1024" selected>1024×1024 (1:1)</option>
+                    <option value="1024x1024">1024×1024 (1:1)</option>
                     <option value="2048x2048">2048×2048 (1:1)</option>
                     <option value="4096x4096">4096×4096 (1:1)</option>
+
+                    <option value="320x200">320×200 (16:10)</option>
+                    <option value="480x300">480×300 (16:10)</option>
+                    <option value="640x400">640×400 (16:10)</option>
+                    <option value="800x500">800×500 (16:10)</option>
+                    <option value="960x600">960×600 (16:10)</option>
+                    <option value="1024x640" selected>1024×640 (16:10)</option>
+                    <option value="1280x800">1280×800 (16:10)</option>
+                    <option value="1440x900">1440×900 (16:10)</option>
+                    <option value="1680x1050">1680×1050 (16:10)</option>
+                    <option value="1920x1200">1920×1200 (16:10)</option>
+                    <option value="2560x1600">2560×1600 (16:10)</option>
+                    <option value="3840x2400">3840×2400 (16:10)</option>
+                    <option value="4096x2560">4096×2560 (16:10)</option>
+
+                    <option value="320x180">320×180 (16:9)</option>
+                    <option value="426x240">426×240 (16:9)</option>
+                    <option value="480x270">480×270 (16:9)</option>
+                    <option value="640x360">640×360 (16:9)</option>
+                    <option value="854x480">854×480 (16:9)</option>
+                    <option value="960x540">960×540 (16:9)</option>
+                    <option value="1024x576">1024×576 (16:9)</option>
+                    <option value="1280x720">1280×720 (16:9)</option>
+                    <option value="1366x768">1366×768 (16:9)</option>
+                    <option value="1600x900">1600×900 (16:9)</option>
+                    <option value="1920x1080">1920×1080 (16:9)</option>
+                    <option value="2560x1440">2560×1440 (16:9)</option>
+                    <option value="3840x2160">3840×2160 (16:9)</option>
+                    <option value="5120x2880">5120×2880 (16:9)</option>
 
                     <option value="160x120">160×120 (4:3)</option>
                     <option value="320x240">320×240 (4:3)</option>
@@ -45,30 +74,6 @@ const SHADER_UI_TEMPLATE = `
                     <option value="3200x2400">3200×2400 (4:3)</option>
                     <option value="3840x2880">3840×2880 (4:3)</option>
                     <option value="4096x3072">4096×3072 (4:3)</option>
-
-                    <option value="320x180">320×180 (16:9)</option>
-                    <option value="640x360">640×360 (16:9)</option>
-                    <option value="854x480">854×480 (16:9)</option>
-                    <option value="960x540">960×540 (16:9)</option>
-                    <option value="1280x720">1280×720 (16:9)</option>
-                    <option value="1366x768">1366×768 (16:9)</option>
-                    <option value="1600x900">1600×900 (16:9)</option>
-                    <option value="1920x1080">1920×1080 (16:9)</option>
-                    <option value="2560x1440">2560×1440 (16:9)</option>
-                    <option value="3840x2160">3840×2160 (16:9)</option>
-                    <option value="5120x2880">5120×2880 (16:9)</option>
-
-                    <option value="320x200">320×200 (16:10)</option>
-                    <option value="640x400">640×400 (16:10)</option>
-                    <option value="800x500">800×500 (16:10)</option>
-                    <option value="960x600">960×600 (16:10)</option>
-                    <option value="1280x800">1280×800 (16:10)</option>
-                    <option value="1440x900">1440×900 (16:10)</option>
-                    <option value="1680x1050">1680×1050 (16:10)</option>
-                    <option value="1920x1200">1920×1200 (16:10)</option>
-                    <option value="2560x1600">2560×1600 (16:10)</option>
-                    <option value="3840x2400">3840×2400 (16:10)</option>
-                    <option value="4096x2560">4096×2560 (16:10)</option>
                 </select>
             </div>
             <div class="shaders-toolbar-group">
