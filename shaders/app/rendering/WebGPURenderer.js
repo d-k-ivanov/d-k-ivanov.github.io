@@ -45,7 +45,8 @@ export class WebGPURenderer extends BaseRenderer
 
         // Grid size extracted from GRID_SIZE constant in WGSL.
         // Used for allocating storage buffers.
-        this.gridSize = DEFAULT_GRID_SIZE;
+        this.gridSizeX = DEFAULT_GRID_SIZE;
+        this.gridSizeY = DEFAULT_GRID_SIZE;
 
         // Bindings. Extracted from @binding() attributes in WGSL.
         this.bindingsRender = new Set();
@@ -410,14 +411,14 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Extracts GRID_SIZE constant from any provided WGSL sources.
+     * Extracts GRID_SIZE_X constant from any provided WGSL sources.
      *
      * @param {Array<string>} sources - Shader sources to scan.
      * @returns {number} Grid size used for compute dispatches.
      */
-    extractGridSize(sources)
+    extractGridSizeX(sources)
     {
-        const regex = /const\s+GRID_SIZE[^=]*=\s*([0-9]+)\s*u?/i;
+        const regex = /const\s+GRID_SIZE_X[^=]*=\s*([0-9]+)\s*u?/i;
         for (const source of sources)
         {
             if (!source)
@@ -436,7 +437,37 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
-        return DEFAULT_GRID_SIZE;
+        return Math.max(1, Math.floor(this.canvas.width));
+    }
+
+    /**
+     * Extracts GRID_SIZE_Y constant from any provided WGSL sources.
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {number} Grid size used for compute dispatches.
+     */
+    extractGridSizeY(sources)
+    {
+        const regex = /const\s+GRID_SIZE_Y[^=]*=\s*([0-9]+)\s*u?/i;
+        for (const source of sources)
+        {
+            if (!source)
+            {
+                continue;
+            }
+
+            const match = regex.exec(source);
+            if (match)
+            {
+                const parsed = parseInt(match[1], 10);
+                if (!Number.isNaN(parsed) && parsed > 0)
+                {
+                    return parsed;
+                }
+            }
+        }
+
+        return Math.max(1, Math.floor(this.canvas.height));
     }
 
     /**
@@ -748,10 +779,10 @@ export class WebGPURenderer extends BaseRenderer
             });
         }
 
-        // Binding 1 and 2: Storage Ping-Pong Buffers Uint32Array(this.gridSize * this.gridSize)
+        // Binding 1 and 2: Storage Ping-Pong Buffers Uint32Array(this.gridSizeX * this.gridSizeY)
         if (this.bindingsRender.has(1) || this.bindingsCompute.has(1) || this.bindingsRender.has(2) || this.bindingsCompute.has(2))
         {
-            const bufferArray = new Uint32Array(this.gridSize * this.gridSize);
+            const bufferArray = new Uint32Array(this.gridSizeX * this.gridSizeY);
             const bufferSize = bufferArray.byteLength;
 
             // Interestiing Buffer initialization pattern for game_of_life_01
@@ -848,10 +879,10 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
-        // Binding 3 and 4: Storage Ping-Pong Buffers Float32Array(this.gridSize * this.gridSize)
+        // Binding 3 and 4: Storage Ping-Pong Buffers Float32Array(this.gridSizeX * this.gridSizeY)
         if (this.bindingsRender.has(3) || this.bindingsCompute.has(3) || this.bindingsRender.has(4) || this.bindingsCompute.has(4))
         {
-            const bufferArray = new Float32Array(this.gridSize * this.gridSize);
+            const bufferArray = new Float32Array(this.gridSizeX * this.gridSizeY);
             const bufferSize = bufferArray.byteLength;
 
             // Create or reuse buffers
@@ -1277,7 +1308,8 @@ export class WebGPURenderer extends BaseRenderer
         {
             this.vertexCount = this.modelVertexCount;
         }
-        this.gridSize = this.extractGridSize(shaderSources);
+        this.gridSizeX = this.extractGridSizeX(shaderSources);
+        this.gridSizeY = this.extractGridSizeY(shaderSources);
 
         this.buildBindGroups();
         this.resetFrameState();
@@ -1327,9 +1359,9 @@ export class WebGPURenderer extends BaseRenderer
                 const computePass = encoder.beginComputePass();
                 computePass.setPipeline(this.computePipeline);
                 computePass.setBindGroup(0, this.computeBindGroup);
-                if (this.gridSize > 1)
+                if (Math.max(this.gridSizeX, this.gridSizeY) > 1)
                 {
-                    const gridWorkgroupCount = Math.max(1, Math.ceil(this.gridSize / this.workgroupSize.x));
+                    const gridWorkgroupCount = Math.max(1, Math.ceil(Math.max(this.gridSizeX, this.gridSizeY) / this.workgroupSize.x));
                     computePass.dispatchWorkgroups(gridWorkgroupCount, gridWorkgroupCount, this.workgroupSize.z || 1);
                 }
                 else
@@ -1381,8 +1413,8 @@ export class WebGPURenderer extends BaseRenderer
             // For a full-screen quad, use 6 vertices
             // Adjust as needed based on the vertex shader implementation
             // Shaders like game_of_life_01 may require 6 vertices
-            const instances = Math.max(1, this.gridSize || DEFAULT_GRID_SIZE);
-            pass.draw(this.vertexCount, instances * instances, 0, 0);
+            const instances = Math.max(1, this.gridSizeX * this.gridSizeY || DEFAULT_GRID_SIZE);
+            pass.draw(this.vertexCount, instances, 0, 0);
             pass.end();
 
             this.device.queue.submit([encoder.finish()]);
