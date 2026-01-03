@@ -46,6 +46,8 @@ export class ShaderEditor
         this.editors = new Map();
         this.loadToken = 0;
         this.highlightQueue = new Map();
+        this.isLoadingShader = false;
+        this.pendingRecompile = false;
 
         this.elements = {
             fileTree: document.getElementById("file-tree"),
@@ -246,6 +248,8 @@ export class ShaderEditor
         }
 
         const token = ++this.loadToken;
+        this.isLoadingShader = true;
+        this.pendingRecompile = false;
 
         try
         {
@@ -271,7 +275,7 @@ export class ShaderEditor
             this.updateTabs();
             this.showTab(this.resolveDefaultTab());
 
-            await this.recompileShader();
+            await this.recompileShader({ allowWhileLoading: true });
 
             if (token === this.loadToken && this.elements.statusShader)
             {
@@ -287,6 +291,18 @@ export class ShaderEditor
             }
             this.setStatus(`Error: ${error.message}`, true);
             console.error("Failed to load shader:", error);
+        }
+        finally
+        {
+            if (token === this.loadToken)
+            {
+                this.isLoadingShader = false;
+                if (this.pendingRecompile)
+                {
+                    this.pendingRecompile = false;
+                    this.scheduleRecompile();
+                }
+            }
         }
     }
 
@@ -867,6 +883,12 @@ export class ShaderEditor
      */
     scheduleRecompile()
     {
+        if (this.isLoadingShader)
+        {
+            this.pendingRecompile = true;
+            return;
+        }
+
         if (this.compileTimeout)
         {
             clearTimeout(this.compileTimeout);
@@ -900,15 +922,30 @@ export class ShaderEditor
      *
      * @returns {Promise<void>} Resolves once compilation finishes.
      */
-    async recompileShader()
+    async recompileShader({ allowWhileLoading = false } = {})
     {
         if (!this.currentShader)
         {
             return;
         }
 
+        if (this.isLoadingShader && !allowWhileLoading)
+        {
+            this.pendingRecompile = true;
+            return;
+        }
+
         try
         {
+            if (this.renderer && typeof this.renderer.getContextType === "function")
+            {
+                const rendererContext = this.renderer.getContextType();
+                if (rendererContext && rendererContext !== this.currentContext && typeof this.renderer.setContext === "function")
+                {
+                    await this.renderer.setContext(this.currentContext);
+                }
+            }
+
             this.setStatus("Compiling...", false);
             await this.renderer.updateShaders(this.collectSourcesForContext());
             this.setStatus("Compiled successfully", false);
@@ -959,5 +996,15 @@ export class ShaderEditor
     hasShaderLoaded()
     {
         return !!this.currentShader;
+    }
+
+    /**
+     * Returns the renderer context expected by the current shader.
+     *
+     * @returns {string} Context identifier.
+     */
+    getCurrentContext()
+    {
+        return this.currentContext;
     }
 }
