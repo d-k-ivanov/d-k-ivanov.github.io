@@ -62,6 +62,15 @@ export class WebGPURenderer extends BaseRenderer
         this.uniformBufferSize = ShaderUniformState.BUFFER_SIZE;
         this.uniformViews = this.uniformState.getViews();
 
+        // Storage buffers
+        this.storageBuffers = {
+            buffer1: null,
+            buffer2: null,
+            currentIndex: 0,  // 0 or 1, determines which buffer is input vs output
+            bindGroupA: null, // Bind group when buffer1=input, buffer2=output
+            bindGroupB: null  // Bind group when buffer2=input, buffer1=output
+        };
+
         // Channels. Extracted from iChannelURL comments in WGSL.
         this.channelUrls = [null, null, null, null];
 
@@ -706,8 +715,16 @@ export class WebGPURenderer extends BaseRenderer
      */
     async buildBindGroups()
     {
+        this.storageBuffers.buffer1 = null;
+        this.storageBuffers.buffer2 = null;
+        this.storageBuffers.currentIndex = 0;
+        this.storageBuffers.bindGroupA = null;
+        this.storageBuffers.bindGroupB = null;
+
         const bindingEntriesRendering = [];
         const bindingEntriesCompute = [];
+
+        // Binding 0: Uniform Buffer
         if (this.bindingsRender.has(0))
         {
             bindingEntriesRendering.push({
@@ -726,109 +743,102 @@ export class WebGPURenderer extends BaseRenderer
             });
         }
 
-        // Uint32Array(this.gridSize * this.gridSize) buffers (1, 2)
-        for (const index of [1, 2])
+        // Binding 1 and 2: Storage Ping-Pong Buffers Uint32Array(this.gridSize * this.gridSize)
+        if (this.bindingsRender.has(1) || this.bindingsCompute.has(1) || this.bindingsRender.has(2) || this.bindingsCompute.has(2))
         {
-            if (this.bindingsRender.has(index))
+            const bufferArray = new Uint32Array(this.gridSize * this.gridSize);
+            const bufferSize = bufferArray.byteLength;
+
+            // Interestiing Buffer initialization pattern for game_of_life_01
+            // Each even cell is active:
+            // for (let i = 0; i < bufferArray.length; i++)
+            // {
+            //     bufferArray[i] = i % 2;
+            // }
+
+            // Each 3rd cell is active:
+            // for (let i = 0; i < bufferArray.length; i += 3)
+            // {
+            //     bufferArray[i] = 1;
+            // }
+
+            // Each 7th cell is active: Only 512x512 grid looks good
+            // for (let i = 0; i < bufferArray.length; i += 7)
+            // {
+            //     bufferArray[i] = 1;
+            // }
+
+            // Each 5th cell is active: Only 512x512 grid looks good
+            // for (let i = 0; i < bufferArray.length; i += 5)
+            // {
+            //     bufferArray[i] = 1;
+            // }
+
+            // Random initialization:
+            // for (let i = 0; i < bufferArray.length; ++i)
+            // {
+            //     bufferArray[i] = Math.random() > 0.6 ? 1 : 0;
+            // }
+
+            // Create or reuse buffers
+            if ((this.bindingsRender.has(1) || this.bindingsCompute.has(1)))
             {
-                const bufferArray = new Uint32Array(this.gridSize * this.gridSize);
-                const buffer = this.device.createBuffer({
-                    label: `Storage Buffer Binding ${index}`,
-                    size: bufferArray.byteLength,
-                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-                    mappedAtCreation: true
+                this.storageBuffers.buffer1 = this.device.createBuffer({
+                    label: "Storage Buffer 1 (Double Buffer)",
+                    size: bufferSize,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
                 });
 
-                // Interestiing Buffer initialization pattern for game_of_life_01
-                // Each even cell is active:
-                // for (let i = 0; i < bufferArray.length; i++)
-                // {
-                //     bufferArray[i] = i % 2;
-                // }
-
-                // Each 3rd cell is active:
-                // for (let i = 0; i < bufferArray.length; i += 3)
-                // {
-                //     bufferArray[i] = 1;
-                // }
-
-                // Each 7th cell is active: Only 512x512 grid looks good
-                // for (let i = 0; i < bufferArray.length; i += 7)
-                // {
-                //     bufferArray[i] = 1;
-                // }
-
-                // Each 5th cell is active: Only 512x512 grid looks good
-                // for (let i = 0; i < bufferArray.length; i += 5)
-                // {
-                //     bufferArray[i] = 1;
-                // }
-
-                // Random initialization:
-                // for (let i = 0; i < bufferArray.length; ++i)
-                // {
-                //     bufferArray[i] = Math.random() > 0.6 ? 1 : 0;
-                // }
-
-                new Uint32Array(buffer.getMappedRange()).set(bufferArray);
-                buffer.unmap();
-
-                this.device.queue.writeBuffer(buffer, 0, bufferArray);
-
-                bindingEntriesRendering.push({
-                    label: `Storage Buffer Binding ${index}`,
-                    binding: index,
-                    resource: { buffer }
-                });
-
-                if (this.bindingsCompute.has(index))
-                {
-                    bindingEntriesCompute.push({
-                        label: `Storage Buffer Binding ${index}`,
-                        binding: index,
-                        resource: { buffer }
-                    });
-                }
+                this.device.queue.writeBuffer(this.storageBuffers.buffer1, 0, bufferArray);
             }
-        }
 
-        if (this.usesModelBindings())
-        {
-            this.updateModelBuffers();
+            if ((this.bindingsRender.has(2) || this.bindingsCompute.has(2)))
+            {
 
-            if (this.bindingsRender.has(MODEL_BINDINGS.positions))
+                this.storageBuffers.buffer2 = this.device.createBuffer({
+                    label: "Storage Buffer 2 (Double Buffer)",
+                    size: bufferSize,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+                });
+
+                this.device.queue.writeBuffer(this.storageBuffers.buffer2, 0, bufferArray);
+            }
+
+            // Binding 1: Input buffer
+            if (this.bindingsRender.has(1) && this.storageBuffers.buffer1)
             {
                 bindingEntriesRendering.push({
-                    label: "Model Positions",
-                    binding: MODEL_BINDINGS.positions,
-                    resource: { buffer: this.modelBuffers.positions.buffer }
+                    label: "Storage Buffer Binding 1 (Input)",
+                    binding: 1,
+                    resource: { buffer: this.storageBuffers.buffer1 }
                 });
             }
 
-            if (this.bindingsRender.has(MODEL_BINDINGS.normals))
+            if (this.bindingsCompute.has(1) && this.storageBuffers.buffer1)
             {
-                bindingEntriesRendering.push({
-                    label: "Model Normals",
-                    binding: MODEL_BINDINGS.normals,
-                    resource: { buffer: this.modelBuffers.normals.buffer }
+                bindingEntriesCompute.push({
+                    label: "Storage Buffer Binding 1 (Input)",
+                    binding: 1,
+                    resource: { buffer: this.storageBuffers.buffer1 }
                 });
             }
 
-            if (this.bindingsRender.has(MODEL_BINDINGS.uvs))
+            // Binding 2: Output buffer
+            if (this.bindingsRender.has(2) && this.storageBuffers.buffer2)
             {
                 bindingEntriesRendering.push({
-                    label: "Model UVs",
-                    binding: MODEL_BINDINGS.uvs,
-                    resource: { buffer: this.modelBuffers.uvs.buffer }
+                    label: "Storage Buffer Binding 2 (Output)",
+                    binding: 2,
+                    resource: { buffer: this.storageBuffers.buffer2 }
                 });
             }
 
-            if (this.bindingsRender.has(MODEL_BINDINGS.info))
+            if (this.bindingsCompute.has(2) && this.storageBuffers.buffer2)
             {
-                bindingEntriesRendering.push({
-                    label: "Model Info",
-                    binding: MODEL_BINDINGS.info,
-                    resource: { buffer: this.modelBuffers.info.buffer }
+                bindingEntriesCompute.push({
+                    label: "Storage Buffer Binding 2 (Output)",
+                    binding: 2,
+                    resource: { buffer: this.storageBuffers.buffer2 }
                 });
             }
         }
@@ -878,6 +888,48 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
+        // Model Buffers (20, 21, 22, 23)
+        if (this.usesModelBindings())
+        {
+            this.updateModelBuffers();
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.positions))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Positions",
+                    binding: MODEL_BINDINGS.positions,
+                    resource: { buffer: this.modelBuffers.positions.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.normals))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Normals",
+                    binding: MODEL_BINDINGS.normals,
+                    resource: { buffer: this.modelBuffers.normals.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.uvs))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model UVs",
+                    binding: MODEL_BINDINGS.uvs,
+                    resource: { buffer: this.modelBuffers.uvs.buffer }
+                });
+            }
+
+            if (this.bindingsRender.has(MODEL_BINDINGS.info))
+            {
+                bindingEntriesRendering.push({
+                    label: "Model Info",
+                    binding: MODEL_BINDINGS.info,
+                    resource: { buffer: this.modelBuffers.info.buffer }
+                });
+            }
+        }
+
         try
         {
             this.renderBindGroup = this.device.createBindGroup({
@@ -903,6 +955,53 @@ export class WebGPURenderer extends BaseRenderer
         {
             this.computeBindGroup = null;
         }
+
+        // If we have double buffering, create a second set of bind groups for ping-pong swap
+        if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
+        {
+            // Create alternate bind groups with swapped buffers
+            const bindingEntriesRenderingAlt = bindingEntriesRendering.map(entry =>
+            {
+                if (entry.binding === 1 && entry.resource.buffer)
+                {
+                    // Swap: buffer1 -> buffer2
+                    const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
+                    return { ...entry, resource: { buffer: swappedBuffer } };
+                }
+                return entry;
+            });
+
+            const bindingEntriesComputeAlt = this.computeBindGroup ? bindingEntriesCompute.map(entry =>
+            {
+                if ((entry.binding === 1 || entry.binding === 2) && entry.resource.buffer)
+                {
+                    // Swap: buffer1 <-> buffer2
+                    const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
+                    return { ...entry, resource: { buffer: swappedBuffer } };
+                }
+                return entry;
+            }) : null;
+
+            this.storageBuffers.bindGroupA = {
+                render: this.renderBindGroup,
+                compute: this.computeBindGroup
+            };
+
+            this.storageBuffers.bindGroupB = {
+                render: this.device.createBindGroup({
+                    label: "Render Bind Group (Swapped)",
+                    layout: this.renderPipeline.getBindGroupLayout(0),
+                    entries: bindingEntriesRenderingAlt
+                }),
+
+                compute: !bindingEntriesComputeAlt ? bindingEntriesComputeAlt : this.device.createBindGroup({
+                    label: "Compute Bind Group (Swapped)",
+                    layout: this.computePipeline.getBindGroupLayout(0),
+                    entries: bindingEntriesComputeAlt
+                })
+            };
+        }
+
     }
 
     /**
@@ -1108,6 +1207,15 @@ export class WebGPURenderer extends BaseRenderer
 
             this.uniformState.nextFrame(time);
             this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformViews.buffer);
+
+            // Ping-Pong storage buffers:
+            if (this.storageBuffers.bindGroupA && this.storageBuffers.bindGroupB)
+            {
+                this.storageBuffers.currentIndex = 1 - this.storageBuffers.currentIndex;
+                const currentBindGroups = this.storageBuffers.currentIndex === 0 ? this.storageBuffers.bindGroupA : this.storageBuffers.bindGroupB;
+                this.renderBindGroup = currentBindGroups.render;
+                this.computeBindGroup = currentBindGroups.compute;
+            }
 
             const encoder = this.device.createCommandEncoder();
 

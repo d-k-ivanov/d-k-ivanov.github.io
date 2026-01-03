@@ -28,7 +28,7 @@ export class ModelCollection
         { id: "menger_vox", name: "menger.vox", file: "menger.vox" },
         { id: "pig_obj", name: "pig.obj", file: "pig.obj" },
         { id: "skull_obj", name: "skull.obj", file: "skull.obj" },
-        { id: "sphere_ascii_stl", name: "sphere-ascii.stl", file: "sphere-ascii.stl" },
+        { id: "sphere_ascii_32_stl", name: "sphere-ascii-32.stl", file: "sphere-ascii-32.stl" },
         { id: "sphere_bin_4_stl", name: "sphere-bin-4.stl", file: "sphere-bin-4.stl" },
         { id: "sphere_bin_5_stl", name: "sphere-bin-5.stl", file: "sphere-bin-5.stl" },
         { id: "sphere_bin_8_stl", name: "sphere-bin-8.stl", file: "sphere-bin-8.stl" },

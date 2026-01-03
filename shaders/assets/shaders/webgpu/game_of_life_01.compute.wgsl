@@ -10,7 +10,8 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(1) var<storage, read_write> cellState: array<u32>;
+@group(0) @binding(1) var<storage, read_write> cellStateIn: array<u32>;
+@group(0) @binding(2) var<storage, read_write> cellStateOut: array<u32>;
 
 fn cellIndex(cell: vec2u) -> u32
 {
@@ -19,7 +20,17 @@ fn cellIndex(cell: vec2u) -> u32
 
 fn cellActive(x: u32, y: u32) -> u32
 {
-    return cellState[cellIndex(vec2(x, y))];
+    return cellStateIn[cellIndex(vec2(x, y))];
+}
+
+fn getCellState(x: u32, y: u32) -> u32
+{
+    return cellStateIn[cellIndex(vec2(x, y))];
+}
+
+fn setCellState(x: u32, y: u32, state: u32)
+{
+    cellStateOut[cellIndex(vec2(x, y))] = state;
 }
 
 // Returns the random 0 or 1 value for the given cell index.
@@ -132,87 +143,79 @@ fn randomCellValue8(x: u32, y: u32) -> u32
 // Initialize cellState with random values
 fn initCellState1(x: u32, y: u32)
 {
-    let i = cellIndex(vec2(x, y));
-    cellState[i] = randomCellValue8(x, y);
+    let state = randomCellValue2(x, y);
+    setCellState(x, y, state);
 }
 
-// Initi every Z cell to 1, others to 0
+// Init every Z cell to 1, others to 0
 fn initCellState2(x: u32, y: u32, z: u32)
 {
     let i = cellIndex(vec2(x, y));
-    if (i % z == 0u)
+    let state = select(0u, 1u, i % z == 0u);
+    setCellState(x, y, state);
+}
+
+fn countActiveNeighbors(cell: vec2u) -> u32
+{
+    return cellActive(cell.x + 1u, cell.y + 1u)
+         + cellActive(cell.x + 1u, cell.y     )
+         + cellActive(cell.x + 1u, cell.y - 1u)
+         + cellActive(cell.x     , cell.y - 1u)
+         + cellActive(cell.x - 1u, cell.y - 1u)
+         + cellActive(cell.x - 1u, cell.y     )
+         + cellActive(cell.x - 1u, cell.y + 1u)
+         + cellActive(cell.x     , cell.y + 1u);
+}
+
+fn applyGameOfLifeRules(cell: vec2u, activeNeighbors: u32)
+{
+    let currentState = getCellState(cell.x, cell.y);
+    var nextState: u32;
+
+    if (activeNeighbors == 3u)
     {
-        cellState[i] = 1u;
+        // Rule 1: Survivals. Every counter with two or three neighboring counters survives for the next generation.
+        // Rule 3: Births. Each empty cell adjacent to exactly three live neighbors becomes a live cell.
+        // Cells with 3 neighbors become or stay active.
+        nextState = 1u;
+    }
+    else if (activeNeighbors == 2u)
+    {
+        // Rule 1: Survivals. Every counter with two or three neighboring counters survives for the next generation.
+        // Cells with 2 neighbors preserve their state.
+        nextState = currentState;
     }
     else
     {
-        cellState[i] = 0u;
+        // Rule 2: Deaths. Any live cell with fewer than two live neighbors dies, as if caused by under-population.
+        // Cells with less than 2 or more then 3 neighbors become inactive.
+        nextState = 0u;
     }
+
+    setCellState(cell.x, cell.y, nextState);
 }
 
 @compute @workgroup_size(16, 16)
 fn main(@builtin(global_invocation_id) cell : vec3u)
 {
+    // Initialize cell state on the first frame with delay:
     // if (shaderUniforms.iFrame == 0u)
-    if (shaderUniforms.iFrame < 512u) // Delay animation start with the first 512 frames
+    if (shaderUniforms.iFrame < 512u)
     {
         initCellState1(cell.x, cell.y);
         // initCellState2(cell.x, cell.y, 2u);
         // initCellState2(cell.x, cell.y, 3u);
         // initCellState2(cell.x, cell.y, 5u);  // cool square (256x256)
         // initCellState2(cell.x, cell.y, 15u); // cool square (256x256)
-        // initCellState2(cell.x, cell.y, 8u);  // cool face (128x128)
-        // initCellState2(cell.x, cell.y, 16u); // cool face (128x128)
         return;
     }
 
-    // References for Conway's Game of Life rules:
-    // https://www.ibiblio.org/lifepatterns/october1970.html
-
-    // Determine how many active neighbors this cell has.
-    let activeNeighbors = cellActive(cell.x + 1u, cell.y + 1u)
-                        + cellActive(cell.x + 1u, cell.y     )
-                        + cellActive(cell.x + 1u, cell.y - 1u)
-                        + cellActive(cell.x     , cell.y - 1u)
-                        + cellActive(cell.x - 1u, cell.y - 1u)
-                        + cellActive(cell.x - 1u, cell.y     )
-                        + cellActive(cell.x - 1u, cell.y + 1u)
-                        + cellActive(cell.x     , cell.y + 1u);
-
-    let i = cellIndex(cell.xy);
-
-    // Delay computation:
+    // Computation speed control: update every Nth frame
     if (shaderUniforms.iFrame % 5u != 0u)
     {
         return;
     }
 
-    // Conway's game of life rules:
-    switch activeNeighbors
-    {
-        // Cells with 2 neighbors preserve their state.
-        // Original: Survivals. Every counter with two or three neighboring counters survives for the next generation.
-        case 2:
-        {
-            cellState[i] = cellState[i];
-            break;
-        }
-
-        // Cells with 3 neighbors become or stay active.
-        // Original: Survivals. Every counter with two or three neighboring counters survives for the next generation.
-        // Original: Births. Each empty cell adjacent to exactly three live neighbors becomes a live cell.
-        case 3:
-        {
-            cellState[i] = 1;
-            break;
-        }
-
-        // Cells with less than 2 or more then 3 neighbors become inactive.
-        // Original: Deaths. Any live cell with fewer than two live neighbors dies, as if caused by under-population.
-        default:
-        {
-            cellState[i] = 0;
-            break;
-        }
-    }
+    let activeNeighbors = countActiveNeighbors(cell.xy);
+    applyGameOfLifeRules(cell.xy, activeNeighbors);
 }
