@@ -227,9 +227,6 @@ export class ShaderApp
     {
         // Update renderer viewport dimensions
         this.renderer.handleResize();
-
-        // Recompile shaders to ensure iResolution and other uniforms reflect new dimensions
-        this.editor.recompileShader();
     }
 
     /**

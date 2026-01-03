@@ -4,6 +4,7 @@ import { BaseRenderer } from "./BaseRenderer.js";
 import { ShaderUniformState } from "./ShaderUniformState.js";
 
 const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
+const DEFAULT_WORKGROUPS = { x: 1, y: 1, z: 1 };
 const DEFAULT_VERTEX_COUNT = 3;
 const DEFAULT_GRID_SIZE = 1;
 const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
@@ -82,13 +83,14 @@ export class WebGPURenderer extends BaseRenderer
 
         // Compute target
 
-        // Grid size extracted from GRID_SIZE_N constants, canvas or texture resolution.
+        // Grid size extracted from GRID_SIZE_N constants or canvas resolution.
         // Used for allocating storage buffers and compute workgroups.
         this.gridSize = {
             x: DEFAULT_GRID_SIZE,
             y: DEFAULT_GRID_SIZE,
             z: DEFAULT_GRID_SIZE
         };
+        this.workgroups = { ...DEFAULT_WORKGROUPS };
         this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
 
         // Depth target for model rendering.
@@ -908,6 +910,13 @@ export class WebGPURenderer extends BaseRenderer
                     resource: { buffer: this.storageBuffers.buffer2 }
                 });
             }
+
+            if (this.bindingsCompute.has(1) || this.bindingsRender.has(2))
+            {
+                this.workgroups.x = this.gridSize.x;
+                this.workgroups.y = this.gridSize.y;
+                this.workgroups.z = this.gridSize.z;
+            }
         }
 
         // Binding 3 and 4: Storage Ping-Pong Buffers Float32Array
@@ -977,6 +986,13 @@ export class WebGPURenderer extends BaseRenderer
                     resource: { buffer: this.storageBuffers.buffer4 }
                 });
             }
+
+            if (this.bindingsCompute.has(3) || this.bindingsRender.has(4))
+            {
+                this.workgroups.x = this.gridSize.x;
+                this.workgroups.y = this.gridSize.y;
+                this.workgroups.z = this.gridSize.z;
+            }
         }
 
         // Channels (10, 11, 12, 14)
@@ -1001,8 +1017,9 @@ export class WebGPURenderer extends BaseRenderer
                     resource: texture.createView()
                 });
 
-                this.gridSize.x = texture.width;
-                this.gridSize.y = texture.height;
+                this.workgroups.x = texture.width;
+                this.workgroups.y = texture.height;
+                this.workgroups.z = 1;
             }
         }
 
@@ -1342,7 +1359,7 @@ export class WebGPURenderer extends BaseRenderer
 
         this.gridSize.x = this.extractGridSizeX(shaderSources);
         this.gridSize.y = this.extractGridSizeY(shaderSources);
-        this.gridSize.z = 1;
+        this.gridSize.z = this.extractGridSizeZ(shaderSources);
 
         this.buildBindGroups();
         this.resetFrameState();
@@ -1392,9 +1409,9 @@ export class WebGPURenderer extends BaseRenderer
                 const computePass = encoder.beginComputePass();
                 computePass.setPipeline(this.computePipeline);
                 computePass.setBindGroup(0, this.computeBindGroup);
-                const groupsX = Math.max(1, Math.ceil(this.gridSize.x / this.workgroupSize.x));
-                const groupsY = Math.max(1, Math.ceil(this.gridSize.y / this.workgroupSize.y));
-                const groupsZ = Math.max(1, Math.ceil(this.gridSize.z / this.workgroupSize.z));
+                const groupsX = Math.max(1, Math.ceil(this.workgroups.x / this.workgroupSize.x));
+                const groupsY = Math.max(1, Math.ceil(this.workgroups.y / this.workgroupSize.y));
+                const groupsZ = Math.max(1, Math.ceil(this.workgroups.z / this.workgroupSize.z));
                 computePass.dispatchWorkgroups(groupsX, groupsY, groupsZ);
                 computePass.end();
             }
