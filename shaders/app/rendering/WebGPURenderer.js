@@ -66,9 +66,11 @@ export class WebGPURenderer extends BaseRenderer
         this.storageBuffers = {
             buffer1: null,
             buffer2: null,
+            buffer3: null,
+            buffer4: null,
             currentIndex: 0,  // 0 or 1, determines which buffer is input vs output
-            bindGroupA: null, // Bind group when buffer1=input, buffer2=output
-            bindGroupB: null  // Bind group when buffer2=input, buffer1=output
+            bindGroupA: null, // Bind group when buffer1=input, buffer2=output, buffer3=input, buffer4=output
+            bindGroupB: null  // Bind group when buffer2=input, buffer1=output, buffer4=input, buffer3=output
         };
 
         // Channels. Extracted from iChannelURL comments in WGSL.
@@ -715,8 +717,11 @@ export class WebGPURenderer extends BaseRenderer
      */
     async buildBindGroups()
     {
+        // Reset storage buffers
         this.storageBuffers.buffer1 = null;
         this.storageBuffers.buffer2 = null;
+        this.storageBuffers.buffer3 = null;
+        this.storageBuffers.buffer4 = null;
         this.storageBuffers.currentIndex = 0;
         this.storageBuffers.bindGroupA = null;
         this.storageBuffers.bindGroupB = null;
@@ -784,7 +789,7 @@ export class WebGPURenderer extends BaseRenderer
             if ((this.bindingsRender.has(1) || this.bindingsCompute.has(1)))
             {
                 this.storageBuffers.buffer1 = this.device.createBuffer({
-                    label: "Storage Buffer 1 (Double Buffer)",
+                    label: "Storage Buffer 1 (Uint32Array)",
                     size: bufferSize,
                     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
                 });
@@ -796,7 +801,7 @@ export class WebGPURenderer extends BaseRenderer
             {
 
                 this.storageBuffers.buffer2 = this.device.createBuffer({
-                    label: "Storage Buffer 2 (Double Buffer)",
+                    label: "Storage Buffer 2 (Uint32Array)",
                     size: bufferSize,
                     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
                 });
@@ -839,6 +844,75 @@ export class WebGPURenderer extends BaseRenderer
                     label: "Storage Buffer Binding 2 (Output)",
                     binding: 2,
                     resource: { buffer: this.storageBuffers.buffer2 }
+                });
+            }
+        }
+
+        // Binding 3 and 4: Storage Ping-Pong Buffers Float32Array(this.gridSize * this.gridSize)
+        if (this.bindingsRender.has(3) || this.bindingsCompute.has(3) || this.bindingsRender.has(4) || this.bindingsCompute.has(4))
+        {
+            const bufferArray = new Float32Array(this.gridSize * this.gridSize);
+            const bufferSize = bufferArray.byteLength;
+
+            // Create or reuse buffers
+            if ((this.bindingsRender.has(3) || this.bindingsCompute.has(3)))
+            {
+                this.storageBuffers.buffer3 = this.device.createBuffer({
+                    label: "Storage Buffer 1 (Float32Array)",
+                    size: bufferSize,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+                });
+
+                this.device.queue.writeBuffer(this.storageBuffers.buffer3, 0, bufferArray);
+            }
+
+            if ((this.bindingsRender.has(4) || this.bindingsCompute.has(4)))
+            {
+
+                this.storageBuffers.buffer4 = this.device.createBuffer({
+                    label: "Storage Buffer 2 (Float32Array)",
+                    size: bufferSize,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+                });
+
+                this.device.queue.writeBuffer(this.storageBuffers.buffer4, 0, bufferArray);
+            }
+
+            // Binding 3: Input buffer
+            if (this.bindingsRender.has(3) && this.storageBuffers.buffer3)
+            {
+                bindingEntriesRendering.push({
+                    label: "Storage Buffer Binding 3 (Input)",
+                    binding: 3,
+                    resource: { buffer: this.storageBuffers.buffer3 }
+                });
+            }
+
+            if (this.bindingsCompute.has(3) && this.storageBuffers.buffer3)
+            {
+                bindingEntriesCompute.push({
+                    label: "Storage Buffer Binding 3 (Input)",
+                    binding: 3,
+                    resource: { buffer: this.storageBuffers.buffer3 }
+                });
+            }
+
+            // Binding 4: Output buffer
+            if (this.bindingsRender.has(4) && this.storageBuffers.buffer4)
+            {
+                bindingEntriesRendering.push({
+                    label: "Storage Buffer Binding 4 (Output)",
+                    binding: 4,
+                    resource: { buffer: this.storageBuffers.buffer4 }
+                });
+            }
+
+            if (this.bindingsCompute.has(4) && this.storageBuffers.buffer4)
+            {
+                bindingEntriesCompute.push({
+                    label: "Storage Buffer Binding 4 (Output)",
+                    binding: 4,
+                    resource: { buffer: this.storageBuffers.buffer4 }
                 });
             }
         }
@@ -957,28 +1031,57 @@ export class WebGPURenderer extends BaseRenderer
         }
 
         // If we have double buffering, create a second set of bind groups for ping-pong swap
-        if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
+        if ((this.storageBuffers.buffer1 && this.storageBuffers.buffer2) || (this.storageBuffers.buffer3 && this.storageBuffers.buffer4))
         {
             // Create alternate bind groups with swapped buffers
             const bindingEntriesRenderingAlt = bindingEntriesRendering.map(entry =>
             {
-                if (entry.binding === 1 && entry.resource.buffer)
+                if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
                 {
-                    // Swap: buffer1 -> buffer2
-                    const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
-                    return { ...entry, resource: { buffer: swappedBuffer } };
+                    if ((entry.binding === 1 || entry.binding === 2) && entry.resource.buffer)
+                    {
+                        // Swap: buffer1 -> buffer2
+                        const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
+                        return { ...entry, resource: { buffer: swappedBuffer } };
+                    }
                 }
+
+                if (this.storageBuffers.buffer3 && this.storageBuffers.buffer4)
+                {
+                    if ((entry.binding === 3 || entry.binding === 4) && entry.resource.buffer)
+                    {
+                        // Swap: buffer3 -> buffer4
+                        const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer3 ? this.storageBuffers.buffer4 : this.storageBuffers.buffer3;
+                        return { ...entry, resource: { buffer: swappedBuffer } };
+                    }
+                }
+
                 return entry;
             });
 
             const bindingEntriesComputeAlt = this.computeBindGroup ? bindingEntriesCompute.map(entry =>
             {
-                if ((entry.binding === 1 || entry.binding === 2) && entry.resource.buffer)
+
+                if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
                 {
-                    // Swap: buffer1 <-> buffer2
-                    const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
-                    return { ...entry, resource: { buffer: swappedBuffer } };
+                    if ((entry.binding === 1 || entry.binding === 2) && entry.resource.buffer)
+                    {
+                        // Swap: buffer1 <-> buffer2
+                        const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer1 ? this.storageBuffers.buffer2 : this.storageBuffers.buffer1;
+                        return { ...entry, resource: { buffer: swappedBuffer } };
+                    }
                 }
+
+                if (this.storageBuffers.buffer3 && this.storageBuffers.buffer4)
+                {
+                    if ((entry.binding === 3 || entry.binding === 4) && entry.resource.buffer)
+                    {
+                        // Swap: buffer3 <-> buffer4
+                        const swappedBuffer = entry.resource.buffer === this.storageBuffers.buffer3 ? this.storageBuffers.buffer4 : this.storageBuffers.buffer3;
+                        return { ...entry, resource: { buffer: swappedBuffer } };
+                    }
+                }
+
                 return entry;
             }) : null;
 
@@ -994,11 +1097,11 @@ export class WebGPURenderer extends BaseRenderer
                     entries: bindingEntriesRenderingAlt
                 }),
 
-                compute: !bindingEntriesComputeAlt ? bindingEntriesComputeAlt : this.device.createBindGroup({
+                compute: bindingEntriesComputeAlt ? this.device.createBindGroup({
                     label: "Compute Bind Group (Swapped)",
                     layout: this.computePipeline.getBindGroupLayout(0),
                     entries: bindingEntriesComputeAlt
-                })
+                }) : null
             };
         }
 
