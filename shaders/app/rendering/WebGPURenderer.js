@@ -1506,6 +1506,7 @@ export class WebGPURenderer extends BaseRenderer
             const useResolutionGrid = this.extractGridSizeResolution(shaderSources);
             const gridSize = useResolutionGrid ? this.getCanvasGridSize() : this.extractGridSize(shaderSources);
             this.gridSize = { ...gridSize };
+            this.uniformState.setGridSize(this.gridSize);
 
             await this.buildBindGroups();
             this.resetFrameState();

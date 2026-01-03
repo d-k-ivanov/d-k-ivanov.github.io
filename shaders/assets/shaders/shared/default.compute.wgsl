@@ -6,6 +6,7 @@ struct ShaderUniforms
     iFrame : u32,
     iFrameRate : f32,
     iMouse : vec4f,
+    iGridSize : vec3u,
 };
 
 // Default compute shader used when specific compute shader is not provided.

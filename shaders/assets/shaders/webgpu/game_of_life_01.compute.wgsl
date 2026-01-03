@@ -1,4 +1,3 @@
-const GRID_SIZE : vec3u = vec3u(320u, 200u, 1u);
 const COMPUTE_FRAME_INTERVAL : u32 = 5u;
 
 struct ShaderUniforms
@@ -9,6 +8,7 @@ struct ShaderUniforms
     iFrame : u32,
     iFrameRate : f32,
     iMouse : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -17,7 +17,7 @@ struct ShaderUniforms
 
 fn cellIndex(cell: vec2u) -> u32
 {
-    return cell.y * GRID_SIZE.x + cell.x;
+    return cell.y * shaderUniforms.iGridSize.x + cell.x;
 }
 
 fn cellActive(x: u32, y: u32) -> u32
@@ -91,11 +91,11 @@ fn randomCellValue5(x: u32, y: u32) -> u32
 // Generate circle pattern
 fn randomCellValue6(x: u32, y: u32) -> u32
 {
-    let centerX = GRID_SIZE.x / 2u;
-    let centerY = GRID_SIZE.y / 2u;
+    let centerX = shaderUniforms.iGridSize.x / 2u;
+    let centerY = shaderUniforms.iGridSize.y / 2u;
     let distX = abs(i32(x) - i32(centerX));
     let distY = abs(i32(y) - i32(centerY));
-    let radius = min(GRID_SIZE.x, GRID_SIZE.y) / 4u;
+    let radius = min(shaderUniforms.iGridSize.x, shaderUniforms.iGridSize.y) / 4u;
 
     if (distX * distX + distY * distY < i32(radius * radius))
     {

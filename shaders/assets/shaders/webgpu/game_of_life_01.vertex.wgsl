@@ -11,6 +11,7 @@ struct ShaderUniforms
     iFrame : u32,
     iFrameRate : f32,
     iMouse : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -56,7 +57,7 @@ fn vert(input : VertexInput) -> VertexOutput
     // out.Position = vec4f(positions[input.vertex_index], 0.0, 1.0);
 
     // 5: Draw grid
-    let grid = vec2f(f32(GRID_SIZE.x), f32(GRID_SIZE.y));
+    let grid = vec2f(f32(shaderUniforms.iGridSize.x), f32(shaderUniforms.iGridSize.y));
     // out.Position = vec4f(positions[input.vertex_index] / grid, 0.0, 1.0);
 
     // Add 1 to the position before dividing by the grid size.

@@ -20,7 +20,8 @@ export class ShaderUniformState
         timeDelta: 4,
         frame: 5,
         frameRate: 6,
-        mouse: 7
+        mouse: 7,
+        gridSize: 12
     };
 
     /**
@@ -31,6 +32,7 @@ export class ShaderUniformState
     {
         this.canvas = canvas;
         this.mouse = mouse;
+        this.gridSize = { x: 1, y: 1, z: 1 };
         this.buffer = new ArrayBuffer(ShaderUniformState.BUFFER_SIZE);
         this.floatView = new Float32Array(this.buffer);
         this.uintView = new Uint32Array(this.buffer);
@@ -46,6 +48,26 @@ export class ShaderUniformState
     setCanvas(canvas)
     {
         this.canvas = canvas;
+    }
+
+    /**
+     * Updates the grid size sent to the uniform buffer.
+     *
+     * @param {{x: number, y: number, z: number}} gridSize - Grid size for shader use.
+     * @returns {void}
+     */
+    setGridSize(gridSize)
+    {
+        if (!gridSize)
+        {
+            return;
+        }
+
+        this.gridSize = {
+            x: Math.max(1, Math.floor(gridSize.x || 1)),
+            y: Math.max(1, Math.floor(gridSize.y || 1)),
+            z: Math.max(1, Math.floor(gridSize.z || 1))
+        };
     }
 
     /**
@@ -122,7 +144,8 @@ export class ShaderUniformState
             deltaSeconds,
             frame,
             frameRate,
-            mouse: mouseState
+            mouse: mouseState,
+            gridSize: this.gridSize
         };
     }
 
@@ -156,6 +179,10 @@ export class ShaderUniformState
         f[offsets.mouse + 1] = data.mouse.y;
         f[offsets.mouse + 2] = data.mouse.clickX * data.mouse.zSign;
         f[offsets.mouse + 3] = data.mouse.clickY;
+
+        u[offsets.gridSize + 0] = data.gridSize.x;
+        u[offsets.gridSize + 1] = data.gridSize.y;
+        u[offsets.gridSize + 2] = data.gridSize.z;
     }
 
     /**
