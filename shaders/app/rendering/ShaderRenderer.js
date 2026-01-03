@@ -35,6 +35,7 @@ export class ShaderRenderer
         this.webgpuRenderer = null;
         this.canvasChangeHandler = null;
         this.model = null;
+        this.updateQueue = Promise.resolve();
 
         this.mouse = { x: 0, y: 0, clickX: 0, clickY: 0, isDown: false };
         this.removeMouseListeners = null;
@@ -59,7 +60,14 @@ export class ShaderRenderer
      */
     setCanvas(canvas)
     {
-        this.stop();
+        if (this.activeRenderer && typeof this.activeRenderer.dispose === "function")
+        {
+            this.activeRenderer.dispose();
+        }
+        else
+        {
+            this.stop();
+        }
         this.canvas = canvas;
         this.mouse.isDown = false;
         this.mouse.x = 0;
@@ -212,17 +220,24 @@ export class ShaderRenderer
      */
     async updateShaders(sources)
     {
-        if (!this.activeRenderer)
+        const runUpdate = async () =>
         {
-            await this.setContext(this.contextType);
-        }
+            if (!this.activeRenderer)
+            {
+                await this.setContext(this.contextType);
+            }
 
-        if (!this.activeRenderer)
-        {
-            throw new Error("Renderer not ready");
-        }
+            if (!this.activeRenderer)
+            {
+                throw new Error("Renderer not ready");
+            }
 
-        await this.activeRenderer.updateShaders(sources);
+            await this.activeRenderer.updateShaders(sources);
+        };
+
+        const next = this.updateQueue.then(runUpdate, runUpdate);
+        this.updateQueue = next.catch(() => { });
+        return next;
     }
 
     /**

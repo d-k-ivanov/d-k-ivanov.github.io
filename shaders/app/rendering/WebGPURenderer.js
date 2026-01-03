@@ -72,6 +72,7 @@ export class WebGPURenderer extends BaseRenderer
 
         // Channels. Extracted from iChannelURL comments in WGSL.
         this.channelUrls = [null, null, null, null];
+        this.channelTextures = [null, null, null, null];
 
         // Model data buffers.
         this.modelBuffers = null;
@@ -97,6 +98,7 @@ export class WebGPURenderer extends BaseRenderer
         this.depthTexture = null;
         this.depthTextureSize = { width: 0, height: 0 };
         this.depthFormat = "depth24plus";
+        this.isUpdating = false;
     }
 
     /**
@@ -191,9 +193,16 @@ export class WebGPURenderer extends BaseRenderer
             this.vertexCount = this.modelVertexCount > 0 ? this.modelVertexCount : DEFAULT_VERTEX_COUNT;
         }
 
-        if (needsRebind && this.renderPipeline)
+        if (needsRebind && this.renderPipeline && !this.isUpdating)
         {
-            this.buildBindGroups().catch((error) =>
+            this.stop();
+            this.buildBindGroups().then(() =>
+            {
+                if (!this.animationId)
+                {
+                    this.startRenderLoop();
+                }
+            }).catch((error) =>
             {
                 console.error("Failed to rebuild model bind group:", error);
             });
@@ -440,7 +449,8 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
-        return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.width));
+        // return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.width));
+        return DEFAULT_GRID_SIZE;
     }
 
     /**
@@ -470,7 +480,8 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
-        return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.height));
+        // return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.height));
+        return DEFAULT_GRID_SIZE;
     }
 
     /**
@@ -697,6 +708,10 @@ export class WebGPURenderer extends BaseRenderer
         const existing = this.modelBuffers[key];
         if (!existing || existing.size < size)
         {
+            if (existing && existing.buffer)
+            {
+                existing.buffer.destroy();
+            }
             this.modelBuffers[key] = {
                 buffer: this.device.createBuffer({
                     label,
@@ -727,6 +742,111 @@ export class WebGPURenderer extends BaseRenderer
         this.computeTextureStorageView = null;
         this.computeSampler = null;
         this.computeTextureSize = { width: 0, height: 0 };
+    }
+
+    /**
+     * Clears cached bind group references.
+     *
+     * @returns {void}
+     */
+    resetBindGroups()
+    {
+        this.renderBindGroup = null;
+        this.computeBindGroup = null;
+        this.storageBuffers.bindGroupA = null;
+        this.storageBuffers.bindGroupB = null;
+        this.storageBuffers.currentIndex = 0;
+    }
+
+    /**
+     * Destroys storage buffers to reclaim GPU memory.
+     *
+     * @returns {void}
+     */
+    destroyStorageBuffers()
+    {
+        const buffers = [
+            this.storageBuffers.buffer1,
+            this.storageBuffers.buffer2,
+            this.storageBuffers.buffer3,
+            this.storageBuffers.buffer4
+        ];
+
+        for (const buffer of buffers)
+        {
+            if (buffer)
+            {
+                buffer.destroy();
+            }
+        }
+
+        this.storageBuffers.buffer1 = null;
+        this.storageBuffers.buffer2 = null;
+        this.storageBuffers.buffer3 = null;
+        this.storageBuffers.buffer4 = null;
+        this.resetBindGroups();
+    }
+
+    /**
+     * Releases a channel texture by index.
+     *
+     * @param {number} index - Channel index (0-3).
+     * @returns {void}
+     */
+    releaseChannelTexture(index)
+    {
+        const texture = this.channelTextures[index];
+        if (texture)
+        {
+            texture.destroy();
+        }
+        this.channelTextures[index] = null;
+    }
+
+    /**
+     * Releases all channel textures.
+     *
+     * @returns {void}
+     */
+    releaseChannelTextures()
+    {
+        for (let i = 0; i < this.channelTextures.length; i++)
+        {
+            this.releaseChannelTexture(i);
+        }
+    }
+
+    /**
+     * Destroys model buffers to reclaim GPU memory.
+     *
+     * @returns {void}
+     */
+    destroyModelBuffers()
+    {
+        if (!this.modelBuffers)
+        {
+            return;
+        }
+
+        const buffers = [
+            this.modelBuffers.positions?.buffer,
+            this.modelBuffers.normals?.buffer,
+            this.modelBuffers.uvs?.buffer,
+            this.modelBuffers.info?.buffer
+        ];
+
+        for (const buffer of buffers)
+        {
+            if (buffer)
+            {
+                buffer.destroy();
+            }
+        }
+
+        this.modelBuffers = null;
+        this.modelPayload = null;
+        this.modelVertexCount = 0;
+        this.modelInfo = null;
     }
 
     /**
@@ -781,14 +901,8 @@ export class WebGPURenderer extends BaseRenderer
      */
     async buildBindGroups()
     {
-        // Reset storage buffers
-        this.storageBuffers.buffer1 = null;
-        this.storageBuffers.buffer2 = null;
-        this.storageBuffers.buffer3 = null;
-        this.storageBuffers.buffer4 = null;
-        this.storageBuffers.currentIndex = 0;
-        this.storageBuffers.bindGroupA = null;
-        this.storageBuffers.bindGroupB = null;
+        this.destroyStorageBuffers();
+        this.releaseChannelTextures();
 
         const bindingEntriesRendering = [];
         const bindingEntriesCompute = [];
@@ -999,7 +1113,14 @@ export class WebGPURenderer extends BaseRenderer
         for (const index of [10, 11, 12, 13])
         {
             const channelIndex = index - 10;
-            const texture = await this.createTexture(this.channelUrls[channelIndex])
+            const needsTexture = this.bindingsRender.has(index) || this.bindingsCompute.has(index);
+            if (!needsTexture)
+            {
+                continue;
+            }
+
+            const texture = await this.createTexture(this.channelUrls[channelIndex]);
+            this.channelTextures[channelIndex] = texture;
 
             if (this.bindingsRender.has(index))
             {
@@ -1187,6 +1308,20 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Releases ImageBitmap resources once uploaded to the GPU.
+     *
+     * @param {ImageBitmap|HTMLImageElement|null} image - Loaded image.
+     * @returns {void}
+     */
+    releaseImageBitmap(image)
+    {
+        if (image && typeof image.close === "function")
+        {
+            image.close();
+        }
+    }
+
+    /**
      * Loads and uploads the font atlas texture/sampler.
      *
      * When no URL is provided, a storage texture matching the canvas size is created.
@@ -1206,26 +1341,34 @@ export class WebGPURenderer extends BaseRenderer
 
             const blob = await response.blob();
             const image = await createImageBitmap(blob);
+            let texture = null;
 
-            const texture = this.device.createTexture({
-                label: `Texture: ${url}`,
-                size: { width: image.width, height: image.height },
-                format: "rgba8unorm",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
-            });
-
-            if (!texture)
+            try
             {
-                throw new Error("Unable to allocate image texture");
+                texture = this.device.createTexture({
+                    label: `Texture: ${url}`,
+                    size: { width: image.width, height: image.height },
+                    format: "rgba8unorm",
+                    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE_BINDING
+                });
+
+                if (!texture)
+                {
+                    throw new Error("Unable to allocate image texture");
+                }
+
+                this.device.queue.copyExternalImageToTexture(
+                    { source: image },
+                    { texture },
+                    { width: image.width, height: image.height }
+                );
+
+                return texture;
             }
-
-            this.device.queue.copyExternalImageToTexture(
-                { source: image },
-                { texture },
-                { width: image.width, height: image.height }
-            );
-
-            return texture;
+            finally
+            {
+                this.releaseImageBitmap(image);
+            }
         }
         else
         {
@@ -1258,115 +1401,128 @@ export class WebGPURenderer extends BaseRenderer
     {
         await this.init();
         this.stop();
+        this.isUpdating = true;
 
-        const vertexSource = (sources.vertex || "").trim();
-        const fragmentSource = (sources.fragment || "").trim();
-        const computeSource = (sources.compute || "").trim();
-        const shaderSources = [vertexSource, fragmentSource, computeSource];
-
-        this.useModelGeometry = this.detectModelGeometry(shaderSources);
-        const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
-        const paddingChanged = nextPadding !== this.modelPadding;
-        this.modelPadding = nextPadding;
-        if (paddingChanged)
+        try
         {
-            this.setModel(this.model);
-        }
-        if (!this.useModelGeometry)
-        {
-            this.releaseDepthTexture();
-        }
+            const vertexSource = (sources.vertex || "").trim();
+            const fragmentSource = (sources.fragment || "").trim();
+            const computeSource = (sources.compute || "").trim();
+            const shaderSources = [vertexSource, fragmentSource, computeSource];
 
-        if (!vertexSource || !fragmentSource)
-        {
-            throw new Error("WebGPU requires WGSL vertex and fragment shaders");
-        }
+            this.useModelGeometry = this.detectModelGeometry(shaderSources);
+            const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
+            const paddingChanged = nextPadding !== this.modelPadding;
+            this.modelPadding = nextPadding;
+            if (paddingChanged)
+            {
+                this.setModel(this.model);
+            }
+            if (!this.useModelGeometry)
+            {
+                this.releaseDepthTexture();
+            }
 
-        this.validateWGSLSource(vertexSource, "Vertex shader");
-        this.validateWGSLSource(fragmentSource, "Fragment shader");
-        this.validateWGSLSource(computeSource, "Compute shader");
+            if (!vertexSource || !fragmentSource)
+            {
+                throw new Error("WebGPU requires WGSL vertex and fragment shaders");
+            }
 
-        const [vertexModule, fragmentModule, computeModule] = await Promise.all([
-            this.createShaderModule(vertexSource, "Vertex shader"),
-            this.createShaderModule(fragmentSource, "Fragment shader"),
-            this.createShaderModule(computeSource, "Compute shader")
-        ]);
+            this.validateWGSLSource(vertexSource, "Vertex shader");
+            this.validateWGSLSource(fragmentSource, "Fragment shader");
+            this.validateWGSLSource(computeSource, "Compute shader");
 
-        const vertexEntry = this.getEntryPoint(vertexSource, "vertex");
-        const fragmentEntry = this.getEntryPoint(fragmentSource, "fragment");
-        const computeEntry = this.getEntryPoint(computeSource, "compute");
-        if (!vertexEntry || !fragmentEntry)
-        {
-            throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
-        }
+            const [vertexModule, fragmentModule, computeModule] = await Promise.all([
+                this.createShaderModule(vertexSource, "Vertex shader"),
+                this.createShaderModule(fragmentSource, "Fragment shader"),
+                this.createShaderModule(computeSource, "Compute shader")
+            ]);
 
-        const pipelineDescriptor = {
-            label: "Render Pipeline",
-            layout: "auto",
-            vertex: {
-                module: vertexModule,
-                entryPoint: vertexEntry
-            },
-            fragment: {
-                module: fragmentModule,
-                entryPoint: fragmentEntry,
-                targets: [{
-                    format: this.format
-                }]
-            },
-            primitive: { topology: "triangle-list" }
-        };
+            const vertexEntry = this.getEntryPoint(vertexSource, "vertex");
+            const fragmentEntry = this.getEntryPoint(fragmentSource, "fragment");
+            const computeEntry = this.getEntryPoint(computeSource, "compute");
+            if (!vertexEntry || !fragmentEntry)
+            {
+                throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
+            }
 
-        if (this.useModelGeometry)
-        {
-            pipelineDescriptor.depthStencil = {
-                format: this.depthFormat,
-                depthWriteEnabled: true,
-                depthCompare: "less"
-            };
-        }
-
-        this.renderPipeline = this.device.createRenderPipeline(pipelineDescriptor);
-
-        if (computeModule && computeEntry)
-        {
-            this.computePipeline = this.device.createComputePipeline({
-                label: "Compute Pipeline",
+            const pipelineDescriptor = {
+                label: "Render Pipeline",
                 layout: "auto",
-                compute: {
-                    module: computeModule,
-                    entryPoint: computeEntry
-                }
-            });
-            this.workgroupSize = this.extractWorkgroupSize(computeSource);
+                vertex: {
+                    module: vertexModule,
+                    entryPoint: vertexEntry
+                },
+                fragment: {
+                    module: fragmentModule,
+                    entryPoint: fragmentEntry,
+                    targets: [{
+                        format: this.format
+                    }]
+                },
+                primitive: { topology: "triangle-list" }
+            };
+
+            if (this.useModelGeometry)
+            {
+                pipelineDescriptor.depthStencil = {
+                    format: this.depthFormat,
+                    depthWriteEnabled: true,
+                    depthCompare: "less"
+                };
+            }
+
+            this.renderPipeline = this.device.createRenderPipeline(pipelineDescriptor);
+
+            if (computeModule && computeEntry)
+            {
+                this.computePipeline = this.device.createComputePipeline({
+                    label: "Compute Pipeline",
+                    layout: "auto",
+                    compute: {
+                        module: computeModule,
+                        entryPoint: computeEntry
+                    }
+                });
+                this.workgroupSize = this.extractWorkgroupSize(computeSource);
+            }
+            else
+            {
+                this.computePipeline = null;
+                this.destroyComputeTarget();
+                this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
+            }
+
+            this.extractBindingsRender([vertexSource, fragmentSource]);
+            this.extractBindingsCompute([computeSource]);
+            this.extractTextureURLs(shaderSources);
+
+            if (!this.usesModelBindings())
+            {
+                this.destroyModelBuffers();
+            }
+
+            this.vertexCount = this.extractVertexCount(shaderSources);
+            if (this.useModelGeometry && this.modelVertexCount > 0)
+            {
+                this.vertexCount = this.modelVertexCount;
+            }
+
+            this.gridSize.x = this.extractGridSizeX(shaderSources);
+            this.gridSize.y = this.extractGridSizeY(shaderSources);
+            this.gridSize.z = this.extractGridSizeZ(shaderSources);
+
+            await this.buildBindGroups();
+            this.resetFrameState();
+
+            if (!this.animationId)
+            {
+                this.startRenderLoop();
+            }
         }
-        else
+        finally
         {
-            this.computePipeline = null;
-            this.destroyComputeTarget();
-            this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
-        }
-
-        this.extractBindingsRender([vertexSource, fragmentSource]);
-        this.extractBindingsCompute([computeSource]);
-        this.extractTextureURLs(shaderSources);
-
-        this.vertexCount = this.extractVertexCount(shaderSources);
-        if (this.useModelGeometry && this.modelVertexCount > 0)
-        {
-            this.vertexCount = this.modelVertexCount;
-        }
-
-        this.gridSize.x = this.extractGridSizeX(shaderSources);
-        this.gridSize.y = this.extractGridSizeY(shaderSources);
-        this.gridSize.z = this.extractGridSizeZ(shaderSources);
-
-        this.buildBindGroups();
-        this.resetFrameState();
-
-        if (!this.animationId)
-        {
-            this.startRenderLoop();
+            this.isUpdating = false;
         }
     }
 
@@ -1464,5 +1620,38 @@ export class WebGPURenderer extends BaseRenderer
         };
 
         this.requestFrame(render);
+    }
+
+    /**
+     * Releases GPU resources and stops rendering.
+     *
+     * @returns {void}
+     */
+    dispose()
+    {
+        this.stop();
+        this.releaseChannelTextures();
+        this.destroyStorageBuffers();
+        this.destroyModelBuffers();
+        this.destroyComputeTarget();
+        this.releaseDepthTexture();
+
+        if (this.uniformBuffer)
+        {
+            this.uniformBuffer.destroy();
+            this.uniformBuffer = null;
+        }
+
+        if (this.device && typeof this.device.destroy === "function")
+        {
+            this.device.destroy();
+        }
+
+        this.device = null;
+        this.adapter = null;
+        this.context = null;
+        this.renderPipeline = null;
+        this.computePipeline = null;
+        this.format = null;
     }
 }

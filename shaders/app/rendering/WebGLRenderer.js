@@ -551,4 +551,31 @@ export class WebGLRenderer extends BaseRenderer
             gl.uniform3f(u.uModelBoundsMax, max[0], max[1], max[2]);
         }
     }
+
+    /**
+     * Releases GPU resources and stops rendering.
+     *
+     * @returns {void}
+     */
+    dispose()
+    {
+        this.stop();
+
+        if (this.program)
+        {
+            this.gl.deleteProgram(this.program);
+            this.program = null;
+        }
+
+        this.disposeModelBuffers();
+
+        if (this.textureLoader)
+        {
+            this.textureLoader.dispose();
+            this.textureLoader = null;
+        }
+
+        this.channels = [];
+        this.uniforms = {};
+    }
 }

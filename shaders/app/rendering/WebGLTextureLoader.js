@@ -56,6 +56,7 @@ export class WebGLTextureLoader
         this.basePath = basePath.replace(/\/$/, "");
         this.cache2D = new Map();
         this.cacheCube = new Map();
+        this.textures = new Set();
 
         this.fallback2D = this.createFallback2D();
         this.fallbackCube = this.createFallbackCube();
@@ -70,6 +71,21 @@ export class WebGLTextureLoader
     getFallback(type)
     {
         return type === "cube" ? this.fallbackCube : this.fallback2D;
+    }
+
+    /**
+     * Tracks a texture for later cleanup.
+     *
+     * @param {WebGLTexture|null} texture - Texture to track.
+     * @returns {WebGLTexture|null} The same texture instance.
+     */
+    trackTexture(texture)
+    {
+        if (texture)
+        {
+            this.textures.add(texture);
+        }
+        return texture;
     }
 
     /**
@@ -118,8 +134,9 @@ export class WebGLTextureLoader
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             gl.generateMipmap(gl.TEXTURE_2D);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            this.releaseImage(image);
 
-            return texture;
+            return this.trackTexture(texture);
         })().catch((err) =>
         {
             console.warn(`Failed to load 2D texture ${name}:`, err);
@@ -178,8 +195,9 @@ export class WebGLTextureLoader
                 gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
             }
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            images.forEach((image) => this.releaseImage(image));
 
-            return texture;
+            return this.trackTexture(texture);
         })().catch((err) =>
         {
             console.warn(`Failed to load cubemap ${name}:`, err);
@@ -255,6 +273,20 @@ export class WebGLTextureLoader
     }
 
     /**
+     * Releases ImageBitmap resources once uploaded to the GPU.
+     *
+     * @param {ImageBitmap|HTMLImageElement|null} image - Loaded image.
+     * @returns {void}
+     */
+    releaseImage(image)
+    {
+        if (image && typeof image.close === "function")
+        {
+            image.close();
+        }
+    }
+
+    /**
      * Generates a checkerboard fallback 2D texture.
      *
      * @returns {WebGLTexture} Procedural fallback texture.
@@ -267,8 +299,8 @@ export class WebGLTextureLoader
 
         // Simple 2x2 checker pattern to highlight missing textures
         const data = new Uint8Array([
-            255, 0, 255, 255,     0, 0, 0, 255,
-            0, 0, 0, 255,         255, 255, 0, 255
+            255, 0, 255, 255, 0, 0, 0, 255,
+            0, 0, 0, 255, 255, 255, 0, 255
         ]);
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 2, 2, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
@@ -277,7 +309,7 @@ export class WebGLTextureLoader
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
-        return texture;
+        return this.trackTexture(texture);
     }
 
     /**
@@ -311,6 +343,24 @@ export class WebGLTextureLoader
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        return texture;
+        return this.trackTexture(texture);
+    }
+
+    /**
+     * Releases cached textures and clears loader caches.
+     *
+     * @returns {void}
+     */
+    dispose()
+    {
+        for (const texture of this.textures)
+        {
+            this.gl.deleteTexture(texture);
+        }
+        this.textures.clear();
+        this.cache2D.clear();
+        this.cacheCube.clear();
+        this.fallback2D = null;
+        this.fallbackCube = null;
     }
 }

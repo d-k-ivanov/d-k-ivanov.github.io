@@ -78,7 +78,8 @@ export class ModelLoader
             return null;
         }
 
-        if (this.cache.has(url))
+        const shouldCache = options.cache !== false && !this.isEphemeralUrl(url);
+        if (shouldCache && this.cache.has(url))
         {
             return this.cache.get(url);
         }
@@ -91,10 +92,16 @@ export class ModelLoader
 
         const loadPromise = format.load(url, { ...options, name }).catch((error) =>
         {
-            this.cache.delete(url);
+            if (shouldCache)
+            {
+                this.cache.delete(url);
+            }
             throw error;
         });
-        this.cache.set(url, loadPromise);
+        if (shouldCache)
+        {
+            this.cache.set(url, loadPromise);
+        }
         return loadPromise;
     }
 
@@ -178,6 +185,22 @@ export class ModelLoader
         }
 
         return extensionFromValue(name);
+    }
+
+    /**
+     * Returns true for URLs that should not be cached long-term.
+     *
+     * @param {string} url - URL to inspect.
+     * @returns {boolean} True for blob/data URLs.
+     */
+    isEphemeralUrl(url)
+    {
+        if (!url)
+        {
+            return false;
+        }
+        const trimmed = url.trim().toLowerCase();
+        return trimmed.startsWith("blob:") || trimmed.startsWith("data:");
     }
 
     /**
