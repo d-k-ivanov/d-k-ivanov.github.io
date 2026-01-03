@@ -1,5 +1,4 @@
-const GRID_SIZE_X : u32 = 256u;
-const GRID_SIZE_Y : u32 = 256u;
+const GRID_SIZE : vec3u = vec3u(256u, 256u, 1u);
 struct ShaderUniforms
 {
     iResolution : vec3f,
@@ -16,7 +15,7 @@ struct ShaderUniforms
 
 fn cellIndex(cell: vec2u) -> u32
 {
-    return cell.y * GRID_SIZE_X + cell.x;
+    return cell.y * GRID_SIZE.x + cell.x;
 }
 
 fn cellActive(x: u32, y: u32) -> u32
@@ -90,11 +89,11 @@ fn randomCellValue5(x: u32, y: u32) -> u32
 // Generate circle pattern
 fn randomCellValue6(x: u32, y: u32) -> u32
 {
-    let centerX = GRID_SIZE_X / 2u;
-    let centerY = GRID_SIZE_Y / 2u;
+    let centerX = GRID_SIZE.x / 2u;
+    let centerY = GRID_SIZE.y / 2u;
     let distX = abs(i32(x) - i32(centerX));
     let distY = abs(i32(y) - i32(centerY));
-    let radius = min(GRID_SIZE_X, GRID_SIZE_Y) / 4u;
+    let radius = min(GRID_SIZE.x, GRID_SIZE.y) / 4u;
 
     if (distX * distX + distY * distY < i32(radius * radius))
     {

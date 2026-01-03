@@ -84,7 +84,7 @@ export class WebGPURenderer extends BaseRenderer
 
         // Compute target
 
-        // Grid size extracted from GRID_SIZE_N constants or canvas resolution.
+        // Grid size extracted from GRID_SIZE constant or defaults.
         // Used for allocating storage buffers and compute workgroups.
         this.gridSize = {
             x: DEFAULT_GRID_SIZE,
@@ -423,14 +423,22 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Extracts GRID_SIZE_X constant from any provided WGSL sources.
+     * Extracts GRID_SIZE constant from any provided WGSL sources.
+     *
+     * Expected format: const GRID_SIZE : vec3u = vec3u(256u, 256u, 1u);
      *
      * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {number} Grid size used for compute dispatches.
+     * @returns {{x: number, y: number, z: number}} Grid size used for dispatches.
      */
-    extractGridSizeX(sources)
+    extractGridSize(sources)
     {
-        const regex = /const\s+GRID_SIZE_X[^=]*=\s*([0-9]+)\s*u?/i;
+        const fallback = {
+            x: DEFAULT_GRID_SIZE,
+            y: DEFAULT_GRID_SIZE,
+            z: DEFAULT_GRID_SIZE
+        };
+        const regex = /const\s+GRID_SIZE\b[^=]*=\s*vec3u?\s*\(\s*([0-9]+)\s*u?\s*,\s*([0-9]+)\s*u?\s*,\s*([0-9]+)\s*u?\s*\)/i;
+
         for (const source of sources)
         {
             if (!source)
@@ -439,79 +447,21 @@ export class WebGPURenderer extends BaseRenderer
             }
 
             const match = regex.exec(source);
-            if (match)
-            {
-                const parsed = parseInt(match[1], 10);
-                if (!Number.isNaN(parsed) && parsed > 0)
-                {
-                    return parsed;
-                }
-            }
-        }
-
-        // return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.width));
-        return DEFAULT_GRID_SIZE;
-    }
-
-    /**
-     * Extracts GRID_SIZE_Y constant from any provided WGSL sources.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {number} Grid size used for compute dispatches.
-     */
-    extractGridSizeY(sources)
-    {
-        const regex = /const\s+GRID_SIZE_Y[^=]*=\s*([0-9]+)\s*u?/i;
-        for (const source of sources)
-        {
-            if (!source)
+            if (!match)
             {
                 continue;
             }
 
-            const match = regex.exec(source);
-            if (match)
+            const x = parseInt(match[1], 10);
+            const y = parseInt(match[2], 10);
+            const z = parseInt(match[3], 10);
+            if ([x, y, z].every(value => Number.isFinite(value) && value > 0))
             {
-                const parsed = parseInt(match[1], 10);
-                if (!Number.isNaN(parsed) && parsed > 0)
-                {
-                    return parsed;
-                }
+                return { x, y, z };
             }
         }
 
-        // return Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas.height));
-        return DEFAULT_GRID_SIZE;
-    }
-
-    /**
-     * Extracts GRID_SIZE_Z constant from any provided WGSL sources.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {number} Grid size used for compute dispatches.
-     */
-    extractGridSizeZ(sources)
-    {
-        const regex = /const\s+GRID_SIZE_Z[^=]*=\s*([0-9]+)\s*u?/i;
-        for (const source of sources)
-        {
-            if (!source)
-            {
-                continue;
-            }
-
-            const match = regex.exec(source);
-            if (match)
-            {
-                const parsed = parseInt(match[1], 10);
-                if (!Number.isNaN(parsed) && parsed > 0)
-                {
-                    return parsed;
-                }
-            }
-        }
-
-        return DEFAULT_GRID_SIZE;
+        return fallback;
     }
 
     /**
@@ -1508,9 +1458,7 @@ export class WebGPURenderer extends BaseRenderer
                 this.vertexCount = this.modelVertexCount;
             }
 
-            this.gridSize.x = this.extractGridSizeX(shaderSources);
-            this.gridSize.y = this.extractGridSizeY(shaderSources);
-            this.gridSize.z = this.extractGridSizeZ(shaderSources);
+            this.gridSize = { ...this.extractGridSize(shaderSources) };
 
             await this.buildBindGroups();
             this.resetFrameState();

@@ -1,8 +1,7 @@
-// This variables also controls the number of instances drawn in the WebGPURenderer.
-// Use unsinged integer to allow WebGPURenderer to extract it.
+// This variable also controls the number of instances drawn in the WebGPURenderer.
+// Use vec3u to allow WebGPURenderer to extract it.
 const VERTEX_COUNT : u32 = 6u;
-const GRID_SIZE_X : u32 = 256u;
-const GRID_SIZE_Y : u32 = 256u;
+const GRID_SIZE : vec3u = vec3u(256u, 256u, 1u);
 
 struct ShaderUniforms
 {
@@ -57,7 +56,7 @@ fn vert(input : VertexInput) -> VertexOutput
     // out.Position = vec4f(positions[input.vertex_index], 0.0, 1.0);
 
     // 5: Draw grid
-    let grid = vec2f(f32(GRID_SIZE_X), f32(GRID_SIZE_Y));
+    let grid = vec2f(f32(GRID_SIZE.x), f32(GRID_SIZE.y));
     // out.Position = vec4f(positions[input.vertex_index] / grid, 0.0, 1.0);
 
     // Add 1 to the position before dividing by the grid size.
