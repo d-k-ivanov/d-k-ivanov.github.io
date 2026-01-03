@@ -465,6 +465,51 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Extracts GRID_SIZE_RESOLUTION flag from any provided WGSL sources.
+     *
+     * Expected format: const GRID_SIZE_RESOLUTION : bool = true;
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {boolean} True when grid size should follow canvas resolution.
+     */
+    extractGridSizeResolution(sources)
+    {
+        const regex = /const\s+GRID_SIZE_RESOLUTION\b[^=]*=\s*(true|false)\b/i;
+        for (const source of sources)
+        {
+            if (!source)
+            {
+                continue;
+            }
+
+            const match = regex.exec(source);
+            if (match)
+            {
+                return match[1].toLowerCase() === "true";
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns grid dimensions derived from the current canvas resolution.
+     *
+     * @returns {{x: number, y: number, z: number}} Resolution-backed grid size.
+     */
+    getCanvasGridSize()
+    {
+        const width = Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas?.width || 0));
+        const height = Math.max(DEFAULT_GRID_SIZE, Math.floor(this.canvas?.height || 0));
+
+        return {
+            x: width,
+            y: height,
+            z: DEFAULT_GRID_SIZE
+        };
+    }
+
+    /**
      * Checks WGSL sources for model-geometry markers.
      *
      * @param {Array<string>} sources - Shader sources to scan.
@@ -1458,7 +1503,9 @@ export class WebGPURenderer extends BaseRenderer
                 this.vertexCount = this.modelVertexCount;
             }
 
-            this.gridSize = { ...this.extractGridSize(shaderSources) };
+            const useResolutionGrid = this.extractGridSizeResolution(shaderSources);
+            const gridSize = useResolutionGrid ? this.getCanvasGridSize() : this.extractGridSize(shaderSources);
+            this.gridSize = { ...gridSize };
 
             await this.buildBindGroups();
             this.resetFrameState();

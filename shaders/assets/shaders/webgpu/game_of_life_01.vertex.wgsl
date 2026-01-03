@@ -1,5 +1,5 @@
-// This variable also controls the number of instances drawn in the WebGPURenderer.
-// Use vec3u to allow WebGPURenderer to extract it.
+// These variables also controls the number of instances drawn in the WebGPURenderer.
+// Use data type notation to allow WebGPURenderer to extract it.
 const VERTEX_COUNT : u32 = 6u;
 const GRID_SIZE : vec3u = vec3u(256u, 256u, 1u);
 

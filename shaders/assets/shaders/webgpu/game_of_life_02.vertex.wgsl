@@ -1,6 +1,7 @@
-// This variables also controls the number of instances drawn in the WebGPURenderer.
-// Use unsinged integer to allow WebGPURenderer to extract it.
+// These variables also controls the number of instances drawn in the WebGPURenderer.
+// Use data type notation to allow WebGPURenderer to extract it.
 const VERTEX_COUNT : u32 = 6u;
+const GRID_SIZE_RESOLUTION : bool = true;
 
 struct ShaderUniforms
 {
