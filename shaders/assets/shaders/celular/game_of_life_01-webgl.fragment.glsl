@@ -17,6 +17,7 @@ out vec4 fragColor;
 
 const ivec2 GRID_SIZE = ivec2(320, 200);
 const int UPDATE_INTERVAL = 5;
+const float CELL_PADDING = 0.08f;
 
 float hash(vec2 p)
 {
@@ -102,6 +103,11 @@ void main()
 
     float alive = float(state);
     vec2 cellUv = vec2(cell) / grid;
+    vec2 localUv = fract(gl_FragCoord.xy / cellSize);
+    float cellMask = step(CELL_PADDING, localUv.x)
+        * step(CELL_PADDING, localUv.y)
+        * step(localUv.x, 1.0f - CELL_PADDING)
+        * step(localUv.y, 1.0f - CELL_PADDING);
     vec3 gradient = vec3(cellUv.x, cellUv.y, 1.0f - cellUv.x);
-    fragColor = vec4(gradient * alive, alive);
+    fragColor = vec4(gradient * alive * cellMask, alive);
 }
