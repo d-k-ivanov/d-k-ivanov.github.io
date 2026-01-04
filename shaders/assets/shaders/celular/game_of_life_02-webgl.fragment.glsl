@@ -16,7 +16,7 @@ uniform sampler2D uBackbuffer;
 out vec4 fragColor;
 
 const int UPDATE_INTERVAL = 5;
-const float CELL_PADDING = 0.08f;
+const float CELL_PADDING = 0.1f;
 
 float hash(vec2 p)
 {

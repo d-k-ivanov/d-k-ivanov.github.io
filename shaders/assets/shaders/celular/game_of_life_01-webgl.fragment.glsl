@@ -17,7 +17,7 @@ out vec4 fragColor;
 
 const ivec2 GRID_SIZE = ivec2(320, 200);
 const int UPDATE_INTERVAL = 5;
-const float CELL_PADDING = 0.08f;
+const float CELL_PADDING = 0.1f;
 
 float hash(vec2 p)
 {
