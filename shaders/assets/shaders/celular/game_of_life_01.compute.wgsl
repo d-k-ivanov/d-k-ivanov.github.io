@@ -157,6 +157,29 @@ fn initCellState2(x: u32, y: u32, z: u32)
     setCellState(x, y, state);
 }
 
+fn applyMouseOverride(cell: vec2u) -> bool
+{
+    if (shaderUniforms.iMouse.z <= 0.0)
+    {
+        return false;
+    }
+
+    let grid = vec2f(f32(shaderUniforms.iGridSize.x), f32(shaderUniforms.iGridSize.y));
+    let cellSize = shaderUniforms.iResolution.xy / grid;
+    let mousePos = clamp(shaderUniforms.iMouse.xy, vec2f(0.0), shaderUniforms.iResolution.xy - vec2f(1.0));
+    let mouseCell = vec2u(mousePos / cellSize);
+    let dx = abs(i32(cell.x) - i32(mouseCell.x));
+    let dy = abs(i32(cell.y) - i32(mouseCell.y));
+
+    if (max(dx, dy) <= 2)
+    {
+        setCellState(cell.x, cell.y, 1u);
+        return true;
+    }
+
+    return false;
+}
+
 fn countActiveNeighbors(cell: vec2u) -> u32
 {
     return cellActive(cell.x + 1u, cell.y + 1u)
@@ -214,6 +237,11 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
 
     // Computation speed control: update every Nth frame
     if (shaderUniforms.iFrame % COMPUTE_FRAME_INTERVAL != 0u)
+    {
+        return;
+    }
+
+    if (applyMouseOverride(cell.xy))
     {
         return;
     }

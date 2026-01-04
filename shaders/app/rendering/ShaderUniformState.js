@@ -20,7 +20,7 @@ export class ShaderUniformState
         timeDelta: 4,
         frame: 5,
         frameRate: 6,
-        mouse: 7,
+        mouse: 8,
         gridSize: 12
     };
 
