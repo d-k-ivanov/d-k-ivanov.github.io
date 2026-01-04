@@ -41,6 +41,11 @@ export class WebGLRenderer extends BaseRenderer
         this.modelInfo = null;
         this.useModelGeometry = false;
         this.modelPadding = 0;
+        this.backbuffer = null;
+        this.backbufferSize = { width: 0, height: 0 };
+        this.backbufferUnit = 4;
+        this.backbufferUniform = null;
+        this.useBackbuffer = false;
     }
 
     /**
@@ -129,12 +134,21 @@ export class WebGLRenderer extends BaseRenderer
             uModelCenter: gl.getUniformLocation(newProgram, "uModelCenter"),
             uModelScale: gl.getUniformLocation(newProgram, "uModelScale"),
             uModelBoundsMin: gl.getUniformLocation(newProgram, "uModelBoundsMin"),
-            uModelBoundsMax: gl.getUniformLocation(newProgram, "uModelBoundsMax")
+            uModelBoundsMax: gl.getUniformLocation(newProgram, "uModelBoundsMax"),
+            uBackbuffer: gl.getUniformLocation(newProgram, "uBackbuffer")
         };
+
+        this.backbufferUniform = this.uniforms.uBackbuffer;
+        this.useBackbuffer = Boolean(this.backbufferUniform);
+        if (!this.useBackbuffer)
+        {
+            this.disposeBackbuffer();
+        }
 
         this.detectChannels(newProgram);
         await this.prepareChannelTextures(version);
         this.resetFrameState();
+        this.ensureBackbuffer();
 
         if (!this.animationId)
         {
@@ -183,6 +197,8 @@ export class WebGLRenderer extends BaseRenderer
 
             this.applyUniforms(frameData);
             this.bindChannelTextures();
+            this.ensureBackbuffer();
+            this.bindBackbuffer();
 
             if (this.useModelGeometry)
             {
@@ -201,10 +217,21 @@ export class WebGLRenderer extends BaseRenderer
             {
                 gl.drawArrays(gl.TRIANGLES, 0, 3);
             }
+            this.updateBackbuffer();
             this.requestFrame(render);
         };
 
         this.requestFrame(render);
+    }
+
+    /**
+     * Handles canvas resize events for backbuffer shaders.
+     *
+     * @returns {void}
+     */
+    handleResize()
+    {
+        this.ensureBackbuffer();
     }
 
     /**
@@ -350,6 +377,101 @@ export class WebGLRenderer extends BaseRenderer
             gl.bindTexture(target, texture);
             gl.uniform1i(channel.location, textureUnit);
         }
+    }
+
+    /**
+     * Ensures the backbuffer texture matches the current canvas size.
+     *
+     * @returns {void}
+     */
+    ensureBackbuffer()
+    {
+        if (!this.useBackbuffer)
+        {
+            return;
+        }
+
+        const gl = this.gl;
+        const width = Math.max(1, Math.floor(this.canvas?.width || 0));
+        const height = Math.max(1, Math.floor(this.canvas?.height || 0));
+        if (this.backbuffer && this.backbufferSize.width === width && this.backbufferSize.height === height)
+        {
+            return;
+        }
+
+        this.disposeBackbuffer();
+
+        const texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0 + this.backbufferUnit);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+        this.backbuffer = texture;
+        this.backbufferSize = { width, height };
+    }
+
+    /**
+     * Binds the backbuffer texture to the shader uniform.
+     *
+     * @returns {void}
+     */
+    bindBackbuffer()
+    {
+        if (!this.useBackbuffer || !this.backbuffer || !this.backbufferUniform)
+        {
+            return;
+        }
+
+        const gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0 + this.backbufferUnit);
+        gl.bindTexture(gl.TEXTURE_2D, this.backbuffer);
+        gl.uniform1i(this.backbufferUniform, this.backbufferUnit);
+    }
+
+    /**
+     * Updates the backbuffer by copying the current frame.
+     *
+     * @returns {void}
+     */
+    updateBackbuffer()
+    {
+        if (!this.useBackbuffer || !this.backbuffer)
+        {
+            return;
+        }
+
+        const gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0 + this.backbufferUnit);
+        gl.bindTexture(gl.TEXTURE_2D, this.backbuffer);
+        gl.copyTexSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            0,
+            0,
+            0,
+            0,
+            this.backbufferSize.width,
+            this.backbufferSize.height
+        );
+    }
+
+    /**
+     * Releases the backbuffer texture.
+     *
+     * @returns {void}
+     */
+    disposeBackbuffer()
+    {
+        if (this.backbuffer)
+        {
+            this.gl.deleteTexture(this.backbuffer);
+        }
+        this.backbuffer = null;
+        this.backbufferSize = { width: 0, height: 0 };
     }
 
     /**

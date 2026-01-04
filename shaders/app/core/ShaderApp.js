@@ -119,6 +119,7 @@ const SHADER_UI_TEMPLATE = `
                     sampler{2D,Cube} iChannel1<br>
                     sampler{2D,Cube} iChannel2<br>
                     sampler{2D,Cube} iChannel3<br>
+                    sampler2D uBackbuffer<br>
                     float uHasModel<br>
                     vec3 uModelCenter<br>
                     float uModelScale<br>
@@ -128,10 +129,10 @@ const SHADER_UI_TEMPLATE = `
                 <b>WebGPU bindings:</b>
                 <p>
                     00: Uniforms<br>
-                    01: storage u32[2xGRID_SIZE]<br>
-                    02: storage u32[2xGRID_SIZE]<br>
-                    05: storage f32[2xGRID_SIZE]<br>
-                    06: storage f32[2xGRID_SIZE]<br>
+                    01: storage in  u32[2xGRID_SIZE]<br>
+                    02: storage out u32[2xGRID_SIZE]<br>
+                    03: storage in  f32[2xGRID_SIZE]<br>
+                    04: storage out f32[2xGRID_SIZE]<br>
                     10: texture_2d f32<br>
                     11: texture_2d f32<br>
                     12: texture_2d f32<br>

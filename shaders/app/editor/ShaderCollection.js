@@ -33,6 +33,8 @@ export class ShaderCollection
         { language: "glsl", folder: "basics", name: "shadertoy" },
 
         // Cellular Automata
+        { language: "glsl", folder: "celular", name: "game_of_life_01-webgl" },
+        { language: "glsl", folder: "celular", name: "game_of_life_02-webgl" },
         { language: "wgsl", folder: "celular", name: "game_of_life_01" },
         { language: "wgsl", folder: "celular", name: "game_of_life_02" },
 

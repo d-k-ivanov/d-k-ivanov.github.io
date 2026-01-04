@@ -145,7 +145,7 @@ fn randomCellValue8(x: u32, y: u32) -> u32
 // Initialize cellState with random values
 fn initCellState1(x: u32, y: u32)
 {
-    let state = randomCellValue2(x, y);
+    let state = randomCellValue1(x, y);
     setCellState(x, y, state);
 }
 
