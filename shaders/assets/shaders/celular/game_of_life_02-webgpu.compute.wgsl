@@ -172,7 +172,8 @@ fn applyMouseOverride(cell: vec2u) -> bool
     let dx = abs(i32(cell.x) - i32(mouseCell.x));
     let dy = abs(i32(cell.y) - i32(mouseCell.y));
 
-    if (max(dx, dy) <= 2)
+    // if (max(dx, dy) <= 2)    // 5x5 brush
+    if (dx == 0 && dy == 0)     // 1x1 brush
     {
         setCellState(cell.x, cell.y, 1u);
         return true;

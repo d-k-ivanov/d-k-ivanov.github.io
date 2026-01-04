@@ -95,7 +95,8 @@ void main()
     {
         ivec2 mouseCell = ivec2(floor(iMouse.xy / cellSize));
         ivec2 delta = cell - mouseCell;
-        if(max(abs(delta.x), abs(delta.y)) <= 2)
+        // if(max(abs(delta.x), abs(delta.y)) <= 2) // 5x5 brush
+        if(max(abs(delta.x), abs(delta.y)) == 0)    // 1x1 brush
         {
             state = 1;
         }
