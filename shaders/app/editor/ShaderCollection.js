@@ -35,8 +35,8 @@ export class ShaderCollection
         // Cellular Automata
         { language: "glsl", folder: "celular", name: "game_of_life_01-webgl" },
         { language: "glsl", folder: "celular", name: "game_of_life_02-webgl" },
-        { language: "wgsl", folder: "celular", name: "game_of_life_01" },
-        { language: "wgsl", folder: "celular", name: "game_of_life_02" },
+        { language: "wgsl", folder: "celular", name: "game_of_life_01-webgpu" },
+        { language: "wgsl", folder: "celular", name: "game_of_life_02-webgpu" },
 
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
