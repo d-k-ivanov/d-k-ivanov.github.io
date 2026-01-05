@@ -122,13 +122,6 @@ export class CanvasControls
         const btn = this.elements.fullscreenBtn;
         if (!btn) return;
 
-        const updateIcon = () =>
-        {
-            const isFullscreen = !!document.fullscreenElement;
-            btn.textContent = isFullscreen ? "⛶" : "⛶";
-            btn.title = isFullscreen ? "Exit fullscreen" : "Toggle fullscreen";
-        };
-
         btn.addEventListener("click", () =>
         {
             if (document.fullscreenElement)
@@ -140,9 +133,6 @@ export class CanvasControls
                 this.canvas.requestFullscreen();
             }
         });
-
-        document.addEventListener("fullscreenchange", updateIcon);
-        updateIcon();
     }
 
     /**
