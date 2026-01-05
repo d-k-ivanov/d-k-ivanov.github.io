@@ -146,7 +146,7 @@ fn randomCellValue8(x: u32, y: u32) -> u32
 // Initialize cellState with random values
 fn initCellState1(x: u32, y: u32)
 {
-    let state = randomCellValue1(x, y);
+    let state = randomCellValue6(x, y);
     setCellState(x, y, state);
 }
 
@@ -225,6 +225,11 @@ fn applyGameOfLifeRules(cell: vec2u, activeNeighbors: u32)
 @compute @workgroup_size(16, 16)
 fn main(@builtin(global_invocation_id) cell : vec3u)
 {
+    if (applyMouseOverride(cell.xy))
+    {
+        return;
+    }
+
     // Initialize cell state on the first frame with delay:
     // if (shaderUniforms.iFrame == 0u)
     if (shaderUniforms.iFrame < 512u)
@@ -239,11 +244,6 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
 
     // Computation speed control: update every Nth frame
     if (shaderUniforms.iFrame % COMPUTE_FRAME_INTERVAL != 0u)
-    {
-        return;
-    }
-
-    if (applyMouseOverride(cell.xy))
     {
         return;
     }

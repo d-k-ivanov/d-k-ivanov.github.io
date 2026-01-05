@@ -33,6 +33,10 @@ export class ShaderUniformState
         this.canvas = canvas;
         this.mouse = mouse;
         this.gridSize = { x: 1, y: 1, z: 1 };
+        this.frameOverride = null;
+        this.timeOverride = null;
+        this.timeOriginMs = null;
+        this.lastTimeMs = null;
         this.buffer = new ArrayBuffer(ShaderUniformState.BUFFER_SIZE);
         this.floatView = new Float32Array(this.buffer);
         this.uintView = new Uint32Array(this.buffer);
@@ -79,8 +83,93 @@ export class ShaderUniformState
     {
         this.frameCount = 0;
         this.lastTime = null;
+        this.timeOriginMs = null;
+        this.lastTimeMs = null;
         this.current = null;
         this.clearViews();
+    }
+
+    /**
+     * Overrides the frame counter with a fixed value.
+     *
+     * @param {number|null} frame - Frame value to lock, or null to clear.
+     * @returns {void}
+     */
+    setFrameOverride(frame)
+    {
+        if (frame === null || frame === undefined)
+        {
+            this.frameOverride = null;
+            return;
+        }
+
+        const nextFrame = Math.max(0, Math.floor(frame));
+        this.frameOverride = nextFrame;
+        this.frameCount = nextFrame;
+    }
+
+    /**
+     * Clears the frame override.
+     *
+     * @returns {void}
+     */
+    clearFrameOverride()
+    {
+        this.frameOverride = null;
+    }
+
+    /**
+     * Overrides the time counter with a fixed value.
+     *
+     * @param {number|null} timeSeconds - Time value to lock, or null to clear.
+     * @returns {void}
+     */
+    setTimeOverride(timeSeconds)
+    {
+        if (timeSeconds === null || timeSeconds === undefined)
+        {
+            this.timeOverride = null;
+            return;
+        }
+
+        const nextTime = Math.max(0, Number(timeSeconds));
+        this.timeOverride = Number.isFinite(nextTime) ? nextTime : 0;
+        this.lastTime = this.timeOverride;
+    }
+
+    /**
+     * Clears the time override.
+     *
+     * @returns {void}
+     */
+    clearTimeOverride()
+    {
+        if (Number.isFinite(this.timeOverride) && Number.isFinite(this.lastTimeMs))
+        {
+            this.timeOriginMs = this.lastTimeMs - (this.timeOverride * 1000);
+        }
+        this.timeOverride = null;
+        this.lastTime = null;
+    }
+
+    /**
+     * Returns the next frame count value.
+     *
+     * @returns {number} Current frame counter.
+     */
+    getFrameCount()
+    {
+        return this.frameCount;
+    }
+
+    /**
+     * Returns the last computed time in seconds.
+     *
+     * @returns {number} Current time in seconds.
+     */
+    getTimeSeconds()
+    {
+        return this.current?.timeSeconds ?? 0;
     }
 
     /**
@@ -116,9 +205,19 @@ export class ShaderUniformState
      */
     buildFrameData(timeMs)
     {
-        const timeSeconds = timeMs * 0.001;
-        const deltaSeconds = this.lastTime === null ? 0.0 : timeSeconds - this.lastTime;
-        this.lastTime = timeSeconds;
+        this.lastTimeMs = timeMs;
+        if (!Number.isFinite(this.timeOriginMs))
+        {
+            this.timeOriginMs = timeMs;
+        }
+        const rawTimeSeconds = (timeMs - this.timeOriginMs) * 0.001;
+        const usingTimeOverride = Number.isFinite(this.timeOverride);
+        const timeSeconds = usingTimeOverride ? this.timeOverride : rawTimeSeconds;
+        const deltaSeconds = usingTimeOverride ? 0.0 : (this.lastTime === null ? 0.0 : timeSeconds - this.lastTime);
+        if (!usingTimeOverride)
+        {
+            this.lastTime = timeSeconds;
+        }
 
         const resolution = {
             x: this.canvas?.width || 0,
@@ -135,7 +234,7 @@ export class ShaderUniformState
             zSign: mouse.isDown ? 1 : -1
         };
 
-        const frame = this.frameCount++;
+        const frame = Number.isFinite(this.frameOverride) ? this.frameOverride : this.frameCount++;
         const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
 
         return {

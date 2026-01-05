@@ -62,6 +62,68 @@ export class BaseRenderer
     }
 
     /**
+     * Locks the frame counter to a fixed value.
+     *
+     * @param {number|null} frame - Frame value to lock, or null to clear.
+     * @returns {void}
+     */
+    setFrameOverride(frame)
+    {
+        this.uniformState.setFrameOverride(frame);
+    }
+
+    /**
+     * Clears the frame override.
+     *
+     * @returns {void}
+     */
+    clearFrameOverride()
+    {
+        this.uniformState.clearFrameOverride();
+    }
+
+    /**
+     * Locks the time counter to a fixed value.
+     *
+     * @param {number|null} timeSeconds - Time value to lock, or null to clear.
+     * @returns {void}
+     */
+    setTimeOverride(timeSeconds)
+    {
+        this.uniformState.setTimeOverride(timeSeconds);
+    }
+
+    /**
+     * Clears the time override.
+     *
+     * @returns {void}
+     */
+    clearTimeOverride()
+    {
+        this.uniformState.clearTimeOverride();
+    }
+
+    /**
+     * Returns the current frame counter value.
+     *
+     * @returns {number} Frame counter.
+     */
+    getFrameCount()
+    {
+        return this.uniformState.getFrameCount();
+    }
+
+    /**
+     * Returns the last computed time in seconds.
+     *
+     * @returns {number} Current time in seconds.
+     */
+    getTimeSeconds()
+    {
+        return this.uniformState.getTimeSeconds();
+    }
+
+    /**
      * Handles canvas resize events (optional override in subclasses).
      *
      * @returns {void}

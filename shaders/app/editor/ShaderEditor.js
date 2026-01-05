@@ -48,6 +48,7 @@ export class ShaderEditor
         this.highlightQueue = new Map();
         this.isLoadingShader = false;
         this.pendingRecompile = false;
+        this.onShaderLoaded = null;
 
         this.elements = {
             fileTree: document.getElementById("file-tree"),
@@ -74,6 +75,17 @@ export class ShaderEditor
     {
         this.createEditorPanes();
         this.buildFileTree();
+    }
+
+    /**
+     * Registers a callback invoked after a shader loads successfully.
+     *
+     * @param {Function} handler - Callback receiving the shader definition.
+     * @returns {void}
+     */
+    setShaderLoadedHandler(handler)
+    {
+        this.onShaderLoaded = handler;
     }
 
     /**
@@ -282,6 +294,10 @@ export class ShaderEditor
                 this.elements.statusShader.textContent = `${shader.folder}/${ShaderCollection.getDisplayName(shader)}`;
             }
             this.setStatus("Ready", false);
+            if (typeof this.onShaderLoaded === "function")
+            {
+                this.onShaderLoaded(shader);
+            }
         }
         catch (error)
         {

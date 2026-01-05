@@ -88,6 +88,14 @@ const SHADER_UI_TEMPLATE = `
                 </button>
                 <input class="shaders-file-input" id="model-file-input" type="file" accept=".obj,.stl,.ply,.drc,.vox">
             </div>
+            <div class="shaders-toolbar-group shaders-sim-controls" id="simulation-controls">
+                <button class="shaders-toolbar-action shaders-toolbar-icon" id="simulation-restart" type="button" title="Restart shader" aria-label="Restart shader">
+                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                </button>
+                <button class="shaders-toolbar-action shaders-toolbar-icon" id="simulation-pause" type="button" title="Pause shader animation" aria-label="Pause shader animation">
+                    <i class="fa-solid fa-pause" aria-hidden="true"></i>
+                </button>
+            </div>
             <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
@@ -204,14 +212,19 @@ export class ShaderApp
         this.themeManager = new ThemeManager();
         this.modelLoader = new ModelLoader();
         this.modelLoadToken = 0;
+        this.simulationPaused = false;
 
         this.canvasControls = new CanvasControls(this.canvas, {
             onResolutionChange: () => this.handleResolutionChange(),
             onModelChange: (model) => this.handleModelSelected(model),
-            onModelLoad: (source) => this.handleCustomModelLoad(source)
+            onModelLoad: (source) => this.handleCustomModelLoad(source),
+            onSimulationRestart: () => this.handleSimulationRestart(),
+            onSimulationPause: () => this.handleSimulationPause()
         });
 
         this.renderer.setCanvasChangeHandler((newCanvas) => this.handleCanvasChanged(newCanvas));
+
+        this.editor.setShaderLoadedHandler((shader) => this.handleShaderLoaded(shader));
 
         this.bindHotkeys();
         this.bindNoteToggle();
@@ -240,6 +253,112 @@ export class ShaderApp
         }
 
         this.editor.scheduleRecompile();
+    }
+
+    /**
+     * Handles shader selection changes for simulation controls.
+     *
+     * @param {object} shader - Current shader descriptor.
+     * @returns {void}
+     */
+    handleShaderLoaded(shader)
+    {
+        this.simulationPaused = false;
+        this.renderer.clearFrameOverride();
+        this.renderer.clearTimeOverride();
+        this.canvasControls.setSimulationControlsVisible(true);
+        this.canvasControls.setSimulationPaused(false);
+    }
+
+    /**
+     * Reloads the current shader sources to restart the simulation.
+     *
+     * @returns {void}
+     */
+    handleSimulationRestart()
+    {
+        this.setSimulationPaused(false);
+
+        if (this.editor)
+        {
+            this.editor.recompileShader({ allowWhileLoading: true });
+        }
+    }
+
+    /**
+     * Pauses shader animation and counters.
+     *
+     * @returns {void}
+     */
+    handleSimulationPause()
+    {
+        this.setSimulationPaused(!this.simulationPaused);
+    }
+
+    /**
+     * Toggles simulation pause state.
+     *
+     * @param {boolean} isPaused - True when paused.
+     * @returns {void}
+     */
+    setSimulationPaused(isPaused)
+    {
+        this.simulationPaused = isPaused;
+
+        if (isPaused)
+        {
+            const currentFrame = this.renderer.getFrameCount();
+            const currentTime = this.renderer.getTimeSeconds();
+            const pauseFrame = this.getSimulationPauseFrame(currentFrame);
+            this.renderer.setFrameOverride(pauseFrame);
+            this.renderer.setTimeOverride(currentTime);
+        }
+        else
+        {
+            this.renderer.clearFrameOverride();
+            this.renderer.clearTimeOverride();
+        }
+
+        this.canvasControls.setSimulationPaused(isPaused);
+    }
+
+    /**
+     * Computes a safe frame index for paused simulations.
+     *
+     * @returns {number} Frame value used while paused.
+     */
+    getSimulationPauseFrame(currentFrame)
+    {
+        let frame = Math.max(0, currentFrame);
+
+        if (this.isGameOfLifeShader())
+        {
+            const MIN_FRAME = 513;
+            const FRAME_INTERVAL = 5;
+            frame = Math.max(MIN_FRAME, frame);
+            if (frame % FRAME_INTERVAL === 0)
+            {
+                frame += 1;
+            }
+        }
+
+        return frame;
+    }
+
+    /**
+     * Checks if the shader is a Game of Life variant.
+     *
+     * @param {object} shader - Shader descriptor to inspect.
+     * @returns {boolean} True when shader matches Game of Life.
+     */
+    isGameOfLifeShader(shader = this.editor?.currentShader)
+    {
+        if (!shader)
+        {
+            return false;
+        }
+
+        return shader.folder === "celular" && String(shader.name || "").startsWith("game_of_life");
     }
 
     /**

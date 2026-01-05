@@ -20,38 +20,59 @@ export class CanvasControls
 {
     /**
      * @param {HTMLCanvasElement} canvas - Target canvas for resolution and fullscreen actions.
-     * @param {{onResolutionChange?: Function, onModelChange?: Function, onModelLoad?: Function}} param1
+     * @param {{
+     *      onResolutionChange?: Function,
+     *      onModelChange?: Function,
+     *      onModelLoad?: Function,
+     *      onSimulationRestart?: Function,
+     *      onSimulationPause?: Function }} param1
      * Callback hooks for toolbar actions.
      * @param {Function} param1.onResolutionChange - Called after a resolution change.
      * @param {Function} param1.onModelChange - Called when the model dropdown changes.
      * @param {Function} param1.onModelLoad - Called when a URL or file is provided.
+     * @param {Function} param1.onSimulationRestart - Called when restart is clicked.
+     * @param {Function} param1.onSimulationPause - Called when pause is clicked.
      */
-    constructor(canvas, { onResolutionChange = null, onModelChange = null, onModelLoad = null } = {})
+    constructor(canvas, {
+        onResolutionChange = null,
+        onModelChange = null,
+        onModelLoad = null,
+        onSimulationRestart = null,
+        onSimulationPause = null
+    } = {})
     {
         this.canvas = canvas;
         this.savedResolution = null;
         this.onResolutionChange = onResolutionChange;
         this.onModelChange = onModelChange;
         this.onModelLoad = onModelLoad;
+        this.onSimulationRestart = onSimulationRestart;
+        this.onSimulationPause = onSimulationPause;
         this.currentResolutionValue = null;
         this.currentModelId = "";
         this.boundResolutionHandler = null;
         this.boundModelHandler = null;
         this.boundModelLoadHandler = null;
         this.boundModelFileHandler = null;
+        this.boundSimulationRestartHandler = null;
+        this.boundSimulationPauseHandler = null;
 
         this.elements = {
             resolutionSelect: document.getElementById("resolution-select"),
             fullscreenBtn: document.getElementById("fullscreen-toggle"),
             modelSelect: document.getElementById("model-select"),
             modelLoadBtn: document.getElementById("model-load-btn"),
-            modelFileInput: document.getElementById("model-file-input")
+            modelFileInput: document.getElementById("model-file-input"),
+            simulationGroup: document.getElementById("simulation-controls"),
+            simulationRestart: document.getElementById("simulation-restart"),
+            simulationPause: document.getElementById("simulation-pause")
         };
 
         this.initResolutionSelector();
         this.initFullscreenToggle();
         this.initModelSelector();
         this.initModelLoader();
+        this.initSimulationControls();
     }
 
     /**
@@ -264,6 +285,89 @@ export class CanvasControls
 
             input.addEventListener("change", handleFile);
             this.boundModelFileHandler = handleFile;
+        }
+    }
+
+    /**
+     * Sets up simulation control buttons.
+     *
+     * @returns {void}
+     */
+    initSimulationControls()
+    {
+        const restartBtn = this.elements.simulationRestart;
+        const pauseBtn = this.elements.simulationPause;
+
+        if (restartBtn)
+        {
+            if (this.boundSimulationRestartHandler)
+            {
+                restartBtn.removeEventListener("click", this.boundSimulationRestartHandler);
+            }
+            this.boundSimulationRestartHandler = () =>
+            {
+                if (this.onSimulationRestart)
+                {
+                    this.onSimulationRestart();
+                }
+            };
+            restartBtn.addEventListener("click", this.boundSimulationRestartHandler);
+        }
+
+        if (pauseBtn)
+        {
+            if (this.boundSimulationPauseHandler)
+            {
+                pauseBtn.removeEventListener("click", this.boundSimulationPauseHandler);
+            }
+            this.boundSimulationPauseHandler = () =>
+            {
+                if (this.onSimulationPause)
+                {
+                    this.onSimulationPause();
+                }
+            };
+            pauseBtn.addEventListener("click", this.boundSimulationPauseHandler);
+        }
+    }
+
+    /**
+     * Shows or hides the simulation control group.
+     *
+     * @param {boolean} visible - True to show controls.
+     * @returns {void}
+     */
+    setSimulationControlsVisible(visible)
+    {
+        if (this.elements.simulationGroup)
+        {
+            this.elements.simulationGroup.hidden = !visible;
+        }
+    }
+
+    /**
+     * Updates simulation button states.
+     *
+     * @param {boolean} isPaused - True when simulation is paused.
+     * @returns {void}
+     */
+    setSimulationPaused(isPaused)
+    {
+        const pauseBtn = this.elements.simulationPause;
+        if (pauseBtn)
+        {
+            pauseBtn.disabled = false;
+            pauseBtn.classList.toggle("is-paused", isPaused);
+            pauseBtn.setAttribute("aria-pressed", isPaused ? "true" : "false");
+            const label = isPaused ? "Resume shader animation" : "Pause shader animation";
+            pauseBtn.title = label;
+            pauseBtn.setAttribute("aria-label", label);
+            const icon = pauseBtn.querySelector("i");
+            if (icon)
+            {
+                icon.classList.toggle("fa-play", isPaused);
+                icon.classList.toggle("fa-pause", !isPaused);
+            }
         }
     }
 

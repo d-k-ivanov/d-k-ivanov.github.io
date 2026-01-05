@@ -267,6 +267,88 @@ export class ShaderRenderer
     }
 
     /**
+     * Locks the frame counter to a fixed value.
+     *
+     * @param {number|null} frame - Frame value to lock, or null to clear.
+     * @returns {void}
+     */
+    setFrameOverride(frame)
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.setFrameOverride === "function")
+        {
+            this.activeRenderer.setFrameOverride(frame);
+        }
+    }
+
+    /**
+     * Clears the frame override on the active renderer.
+     *
+     * @returns {void}
+     */
+    clearFrameOverride()
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.clearFrameOverride === "function")
+        {
+            this.activeRenderer.clearFrameOverride();
+        }
+    }
+
+    /**
+     * Locks the time counter to a fixed value.
+     *
+     * @param {number|null} timeSeconds - Time value to lock, or null to clear.
+     * @returns {void}
+     */
+    setTimeOverride(timeSeconds)
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.setTimeOverride === "function")
+        {
+            this.activeRenderer.setTimeOverride(timeSeconds);
+        }
+    }
+
+    /**
+     * Clears the time override on the active renderer.
+     *
+     * @returns {void}
+     */
+    clearTimeOverride()
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.clearTimeOverride === "function")
+        {
+            this.activeRenderer.clearTimeOverride();
+        }
+    }
+
+    /**
+     * Returns the current frame counter from the active renderer.
+     *
+     * @returns {number} Frame count or 0 when unavailable.
+     */
+    getFrameCount()
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.getFrameCount === "function")
+        {
+            return this.activeRenderer.getFrameCount();
+        }
+        return 0;
+    }
+
+    /**
+     * Returns the last computed time in seconds.
+     *
+     * @returns {number} Current time in seconds.
+     */
+    getTimeSeconds()
+    {
+        if (this.activeRenderer && typeof this.activeRenderer.getTimeSeconds === "function")
+        {
+            return this.activeRenderer.getTimeSeconds();
+        }
+        return 0;
+    }
+
+    /**
      * Tracks mouse interactions over the canvas for iMouse uniform.
      *
      * @returns {void}

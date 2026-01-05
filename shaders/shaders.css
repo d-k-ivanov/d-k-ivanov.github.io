@@ -130,6 +130,30 @@
     box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.3);
 }
 
+.shaders-toolbar-action.is-paused {
+    border-color: var(--sh-accent);
+    background: var(--sh-bg-hover);
+}
+
+.shaders-toolbar-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.shaders-toolbar-icon {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+}
+
+.shaders-toolbar-icon i {
+    font-size: 13px;
+}
+.shaders-toolbar-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .shaders-file-input {
     display: none;
 }
