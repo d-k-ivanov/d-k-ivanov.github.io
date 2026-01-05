@@ -269,6 +269,11 @@ export class ShaderApp
     {
         // Update renderer viewport dimensions
         this.renderer.handleResize();
+
+        if (this.editor && this.editor.hasShaderLoaded())
+        {
+            this.editor.recompileShader();
+        }
     }
 
     /**

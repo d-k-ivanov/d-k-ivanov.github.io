@@ -231,7 +231,7 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
 
     // Initialize cell state on the first frame with delay:
     // if (shaderUniforms.iFrame == 0u)
-    if (shaderUniforms.iFrame < 512u)
+    if (shaderUniforms.iFrame < 200u)
     {
         initCellState1(cell.x, cell.y);
         // initCellState2(cell.x, cell.y, 2u);

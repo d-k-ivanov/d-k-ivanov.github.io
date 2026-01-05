@@ -73,7 +73,7 @@ void main()
     cell = clamp(cell, ivec2(0), GRID_SIZE - 1);
 
     int state = 0;
-    if(iFrame < 512)
+    if(iFrame < 200)
     {
         state = initState(cell, grid);
     }
