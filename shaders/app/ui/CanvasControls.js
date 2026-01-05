@@ -24,20 +24,20 @@ export class CanvasControls
      *      onResolutionChange?: Function,
      *      onModelChange?: Function,
      *      onModelLoad?: Function,
-     *      onSimulationRestart?: Function,
+     *      onShaderCompile?: Function,
      *      onSimulationPause?: Function }} param1
      * Callback hooks for toolbar actions.
      * @param {Function} param1.onResolutionChange - Called after a resolution change.
      * @param {Function} param1.onModelChange - Called when the model dropdown changes.
      * @param {Function} param1.onModelLoad - Called when a URL or file is provided.
-     * @param {Function} param1.onSimulationRestart - Called when restart is clicked.
+     * @param {Function} param1.onShaderCompile - Called when compile is clicked.
      * @param {Function} param1.onSimulationPause - Called when pause is clicked.
      */
     constructor(canvas, {
         onResolutionChange = null,
         onModelChange = null,
         onModelLoad = null,
-        onSimulationRestart = null,
+        onShaderCompile = null,
         onSimulationPause = null
     } = {})
     {
@@ -46,7 +46,7 @@ export class CanvasControls
         this.onResolutionChange = onResolutionChange;
         this.onModelChange = onModelChange;
         this.onModelLoad = onModelLoad;
-        this.onSimulationRestart = onSimulationRestart;
+        this.onShaderCompile = onShaderCompile;
         this.onSimulationPause = onSimulationPause;
         this.currentResolutionValue = null;
         this.currentModelId = "";
@@ -54,7 +54,7 @@ export class CanvasControls
         this.boundModelHandler = null;
         this.boundModelLoadHandler = null;
         this.boundModelFileHandler = null;
-        this.boundSimulationRestartHandler = null;
+        this.boundShaderCompileHandler = null;
         this.boundSimulationPauseHandler = null;
 
         this.elements = {
@@ -64,7 +64,7 @@ export class CanvasControls
             modelLoadBtn: document.getElementById("model-load-btn"),
             modelFileInput: document.getElementById("model-file-input"),
             simulationGroup: document.getElementById("simulation-controls"),
-            simulationRestart: document.getElementById("simulation-restart"),
+            shaderCompile: document.getElementById("shader-compile"),
             simulationPause: document.getElementById("simulation-pause")
         };
 
@@ -295,23 +295,23 @@ export class CanvasControls
      */
     initSimulationControls()
     {
-        const restartBtn = this.elements.simulationRestart;
+        const compileBtn = this.elements.shaderCompile;
         const pauseBtn = this.elements.simulationPause;
 
-        if (restartBtn)
+        if (compileBtn)
         {
-            if (this.boundSimulationRestartHandler)
+            if (this.boundShaderCompileHandler)
             {
-                restartBtn.removeEventListener("click", this.boundSimulationRestartHandler);
+                compileBtn.removeEventListener("click", this.boundShaderCompileHandler);
             }
-            this.boundSimulationRestartHandler = () =>
+            this.boundShaderCompileHandler = () =>
             {
-                if (this.onSimulationRestart)
+                if (this.onShaderCompile)
                 {
-                    this.onSimulationRestart();
+                    this.onShaderCompile();
                 }
             };
-            restartBtn.addEventListener("click", this.boundSimulationRestartHandler);
+            compileBtn.addEventListener("click", this.boundShaderCompileHandler);
         }
 
         if (pauseBtn)

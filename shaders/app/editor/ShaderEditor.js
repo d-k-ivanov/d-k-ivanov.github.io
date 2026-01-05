@@ -41,13 +41,10 @@ export class ShaderEditor
         this.sources = {};
         this.originalSources = {};
         this.activeTab = null;
-        this.compileTimeout = null;
-        this.compileDelay = 100;
         this.editors = new Map();
         this.loadToken = 0;
         this.highlightQueue = new Map();
         this.isLoadingShader = false;
-        this.pendingRecompile = false;
         this.onShaderLoaded = null;
 
         this.elements = {
@@ -261,7 +258,6 @@ export class ShaderEditor
 
         const token = ++this.loadToken;
         this.isLoadingShader = true;
-        this.pendingRecompile = false;
 
         try
         {
@@ -313,11 +309,6 @@ export class ShaderEditor
             if (token === this.loadToken)
             {
                 this.isLoadingShader = false;
-                if (this.pendingRecompile)
-                {
-                    this.pendingRecompile = false;
-                    this.scheduleRecompile();
-                }
             }
         }
     }
@@ -784,7 +775,7 @@ export class ShaderEditor
     }
 
     /**
-     * Handles user edits and schedules recompilation.
+     * Handles user edits and refreshes editor state.
      *
      * @param {string} typeId - Shader stage id.
      * @returns {void}
@@ -800,7 +791,6 @@ export class ShaderEditor
         this.sources[typeId] = editor.textarea.value;
         this.updateHighlight(typeId);
         this.markTabModified(typeId, this.sources[typeId] !== this.originalSources[typeId]);
-        this.scheduleRecompile();
     }
 
     /**
@@ -893,31 +883,6 @@ export class ShaderEditor
     }
 
     /**
-     * Debounces shader recompilation calls.
-     *
-     * @returns {void}
-     */
-    scheduleRecompile()
-    {
-        if (this.isLoadingShader)
-        {
-            this.pendingRecompile = true;
-            return;
-        }
-
-        if (this.compileTimeout)
-        {
-            clearTimeout(this.compileTimeout);
-        }
-
-        this.compileTimeout = setTimeout(() =>
-        {
-            this.compileTimeout = null;
-            this.recompileShader();
-        }, this.compileDelay);
-    }
-
-    /**
      * Gathers currently visible shader sources for compilation.
      *
      * @returns {object} Stage source map keyed by stage id.
@@ -947,7 +912,6 @@ export class ShaderEditor
 
         if (this.isLoadingShader && !allowWhileLoading)
         {
-            this.pendingRecompile = true;
             return;
         }
 

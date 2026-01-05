@@ -89,8 +89,8 @@ const SHADER_UI_TEMPLATE = `
                 <input class="shaders-file-input" id="model-file-input" type="file" accept=".obj,.stl,.ply,.drc,.vox">
             </div>
             <div class="shaders-toolbar-group shaders-sim-controls" id="simulation-controls">
-                <button class="shaders-toolbar-action shaders-toolbar-icon" id="simulation-restart" type="button" title="Restart shader" aria-label="Restart shader">
-                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                <button class="shaders-toolbar-action shaders-toolbar-icon" id="shader-compile" type="button" title="Compile shader" aria-label="Compile shader">
+                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
                 </button>
                 <button class="shaders-toolbar-action shaders-toolbar-icon" id="simulation-pause" type="button" title="Pause shader animation" aria-label="Pause shader animation">
                     <i class="fa-solid fa-pause" aria-hidden="true"></i>
@@ -218,7 +218,7 @@ export class ShaderApp
             onResolutionChange: () => this.handleResolutionChange(),
             onModelChange: (model) => this.handleModelSelected(model),
             onModelLoad: (source) => this.handleCustomModelLoad(source),
-            onSimulationRestart: () => this.handleSimulationRestart(),
+            onShaderCompile: () => this.handleShaderCompile(),
             onSimulationPause: () => this.handleSimulationPause()
         });
 
@@ -231,11 +231,10 @@ export class ShaderApp
     }
 
     /**
-     * Handles canvas resolution changes by updating renderer and recompiling shaders.
+     * Handles canvas resolution changes by updating renderer dimensions.
      *
      * When the user changes the canvas resolution from the dropdown, this method
-     * ensures that the renderer viewport is updated and shaders are recompiled
-     * to reflect the new resolution (e.g., for shaders using iResolution uniform).
+     * ensures that the renderer viewport is updated to reflect the new resolution.
      *
      * @returns {void}
      * @example
@@ -246,13 +245,6 @@ export class ShaderApp
     {
         // Update renderer viewport dimensions
         this.renderer.handleResize();
-
-        if (!this.editor || !this.editor.hasShaderLoaded())
-        {
-            return;
-        }
-
-        this.editor.scheduleRecompile();
     }
 
     /**
@@ -270,17 +262,15 @@ export class ShaderApp
     }
 
     /**
-     * Reloads the current shader sources to restart the simulation.
+     * Recompiles the current shader sources on demand.
      *
      * @returns {void}
      */
-    handleSimulationRestart()
+    handleShaderCompile()
     {
-        this.setSimulationPaused(false);
-
         if (this.editor)
         {
-            this.editor.recompileShader({ allowWhileLoading: true });
+            this.editor.recompileShader();
         }
     }
 
@@ -500,6 +490,8 @@ export class ShaderApp
      * Binds application-wide hotkeys (reset and reload).
      *
      * Supported shortcuts:
+     * - Ctrl + S: Compile shader.
+     * - Ctrl + Shift + B: Compile shader.
      * - Ctrl + F5: Clear shader state and reload.
      * - Ctrl + Shift + R: Clear shader state and reload.
      *
@@ -509,6 +501,13 @@ export class ShaderApp
     {
         document.addEventListener("keydown", (e) =>
         {
+            if (this.isCompileShortcut(e))
+            {
+                e.preventDefault();
+                this.handleShaderCompile();
+                return;
+            }
+
             if (this.shouldIgnoreHotkeyEvent(e))
             {
                 return;
@@ -530,6 +529,27 @@ export class ShaderApp
                 location.reload();
             }
         });
+    }
+
+    /**
+     * Checks if the keyboard event triggers a shader compile shortcut.
+     *
+     * @param {KeyboardEvent} event - The keyboard event.
+     * @returns {boolean} True when a compile shortcut is pressed.
+     */
+    isCompileShortcut(event)
+    {
+        if (!event.ctrlKey || event.altKey)
+        {
+            return false;
+        }
+
+        const key = (event.key || "").toLowerCase();
+        if (event.shiftKey)
+        {
+            return key === "b";
+        }
+        return key === "s";
     }
 
     /**
