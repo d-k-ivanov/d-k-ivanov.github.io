@@ -42,7 +42,6 @@ export class CanvasControls
     } = {})
     {
         this.canvas = canvas;
-        this.savedResolution = null;
         this.onResolutionChange = onResolutionChange;
         this.onModelChange = onModelChange;
         this.onModelLoad = onModelLoad;
@@ -113,8 +112,8 @@ export class CanvasControls
     /**
      * Configures fullscreen toggle button and resolution handling.
      *
-     * When entering fullscreen, the canvas is resized to match the screen
-     * and restored when exiting to the previous resolution.
+     * When entering fullscreen, the canvas is scaled to fill the display
+     * without changing the underlying render resolution.
      *
      * @returns {void}
      */
@@ -128,26 +127,6 @@ export class CanvasControls
             const isFullscreen = !!document.fullscreenElement;
             btn.textContent = isFullscreen ? "⛶" : "⛶";
             btn.title = isFullscreen ? "Exit fullscreen" : "Toggle fullscreen";
-
-            if (isFullscreen)
-            {
-                // Save current resolution and apply screen resolution
-                this.savedResolution = { width: this.canvas.width, height: this.canvas.height };
-                this.canvas.width = screen.width * window.devicePixelRatio;
-                this.canvas.height = screen.height * window.devicePixelRatio;
-            }
-            else if (this.savedResolution)
-            {
-                // Restore previous resolution
-                this.canvas.width = this.savedResolution.width;
-                this.canvas.height = this.savedResolution.height;
-                this.savedResolution = null;
-            }
-
-            if (this.onResolutionChange)
-            {
-                this.onResolutionChange(this.canvas.width, this.canvas.height);
-            }
         };
 
         btn.addEventListener("click", () =>
@@ -163,6 +142,7 @@ export class CanvasControls
         });
 
         document.addEventListener("fullscreenchange", updateIcon);
+        updateIcon();
     }
 
     /**
