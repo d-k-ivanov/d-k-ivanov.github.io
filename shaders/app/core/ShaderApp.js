@@ -113,6 +113,29 @@ const SHADER_UI_TEMPLATE = `
             <div class="shaders-file-tree-content" id="file-tree">
                 <!-- File tree items will be populated by JS -->
             </div>
+            <div class="shaders-shortcuts">
+                <div class="shaders-shortcuts-title">Shortcuts</div>
+                <div class="shaders-shortcuts-list">
+                    <div class="shaders-shortcut">
+                        <span>Compile shader</span>
+                        <span class="shaders-shortcut-keys">
+                            <span class="shaders-shortcut-keys-line"><span class="shaders-shortcut-key">Ctrl</span>+<span class="shaders-shortcut-key">S</span></span>
+                            <span class="shaders-shortcut-keys-line"><span class="shaders-shortcut-key">Ctrl</span>+<span class="shaders-shortcut-key">Shift</span>+<span class="shaders-shortcut-key">B</span></span>
+                        </span>
+                    </div>
+                    <div class="shaders-shortcut">
+                        <span>Play/Pause</span>
+                        <span class="shaders-shortcut-keys"><span class="shaders-shortcut-key">Space</span></span>
+                    </div>
+                    <div class="shaders-shortcut">
+                        <span>Reload app</span>
+                        <span class="shaders-shortcut-keys">
+                            <span class="shaders-shortcut-keys-line"><span class="shaders-shortcut-key">Ctrl</span>+<span class="shaders-shortcut-key">F5</span></span>
+                            <span class="shaders-shortcut-keys-line"><span class="shaders-shortcut-key">Ctrl</span>+<span class="shaders-shortcut-key">Shift</span>+<span class="shaders-shortcut-key">R</span></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div class="shaders-note">
                 <div class="shaders-note-title">Inputs:</div>
                 <b>GLSL:</b>
@@ -228,6 +251,7 @@ export class ShaderApp
 
         this.bindHotkeys();
         this.bindNoteToggle();
+        this.bindShortcutsToggle();
     }
 
     /**
@@ -615,6 +639,42 @@ export class ShaderApp
         note.addEventListener("click", (e) =>
         {
             if (e.target === note)
+            {
+                toggle();
+            }
+        });
+    }
+
+    /**
+     * Makes the shortcuts panel collapsible.
+     *
+     * @returns {void}
+     */
+    bindShortcutsToggle()
+    {
+        const shortcuts = document.querySelector(".shaders-shortcuts");
+        if (!shortcuts)
+        {
+            return;
+        }
+
+        shortcuts.classList.add("collapsed");
+
+        const toggle = () => shortcuts.classList.toggle("collapsed");
+        const title = shortcuts.querySelector(".shaders-shortcuts-title");
+        if (title)
+        {
+            title.style.cursor = "pointer";
+            title.addEventListener("click", (e) =>
+            {
+                e.stopPropagation();
+                toggle();
+            });
+        }
+
+        shortcuts.addEventListener("click", (e) =>
+        {
+            if (e.target === shortcuts)
             {
                 toggle();
             }

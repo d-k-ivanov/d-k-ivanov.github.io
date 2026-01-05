@@ -324,6 +324,81 @@
     border: 1px solid var(--sh-border-light);
 }
 
+.shaders-shortcuts {
+    padding: 10px 12px;
+    background: var(--sh-bg-secondary);
+    border-top: 1px solid var(--sh-border);
+    border-bottom: 1px solid var(--sh-border);
+    color: var(--sh-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.shaders-shortcuts.collapsed {
+    padding-bottom: 6px;
+    cursor: pointer;
+}
+
+.shaders-shortcuts.collapsed > :not(.shaders-shortcuts-title) {
+    display: none;
+}
+
+.shaders-shortcuts-title {
+    color: var(--sh-text-primary);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.shaders-shortcuts.collapsed .shaders-shortcuts-title::after {
+    content: " (show)";
+    font-weight: 400;
+    color: var(--sh-text-muted);
+}
+
+.shaders-shortcuts:not(.collapsed) .shaders-shortcuts-title::after {
+    content: " (hide)";
+    font-weight: 400;
+    color: var(--sh-text-muted);
+}
+
+.shaders-shortcuts-list {
+    display: grid;
+    gap: 6px;
+}
+
+.shaders-shortcut {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.shaders-shortcut-keys {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+}
+
+.shaders-shortcut-keys-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.shaders-shortcut-key {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: 1px solid var(--sh-border-light);
+    background: var(--sh-bg-input);
+    color: var(--sh-text-primary);
+}
+
 .shaders-file-tree-content {
     flex: 1;
     overflow-y: auto;
