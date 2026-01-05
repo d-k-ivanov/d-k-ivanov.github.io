@@ -224,7 +224,7 @@ export class ShaderApp
 
         this.renderer.setCanvasChangeHandler((newCanvas) => this.handleCanvasChanged(newCanvas));
 
-        this.editor.setShaderLoadedHandler((shader) => this.handleShaderLoaded(shader));
+        this.editor.setShaderLoadedHandler(() => this.handleShaderLoaded());
 
         this.bindHotkeys();
         this.bindNoteToggle();
@@ -258,10 +258,9 @@ export class ShaderApp
     /**
      * Handles shader selection changes for simulation controls.
      *
-     * @param {object} shader - Current shader descriptor.
      * @returns {void}
      */
-    handleShaderLoaded(shader)
+    handleShaderLoaded()
     {
         this.simulationPaused = false;
         this.renderer.clearFrameOverride();
@@ -309,8 +308,7 @@ export class ShaderApp
         {
             const currentFrame = this.renderer.getFrameCount();
             const currentTime = this.renderer.getTimeSeconds();
-            const pauseFrame = this.getSimulationPauseFrame(currentFrame);
-            this.renderer.setFrameOverride(pauseFrame);
+            this.renderer.setFrameOverride(currentFrame);
             this.renderer.setTimeOverride(currentTime);
         }
         else
@@ -320,45 +318,6 @@ export class ShaderApp
         }
 
         this.canvasControls.setSimulationPaused(isPaused);
-    }
-
-    /**
-     * Computes a safe frame index for paused simulations.
-     *
-     * @returns {number} Frame value used while paused.
-     */
-    getSimulationPauseFrame(currentFrame)
-    {
-        let frame = Math.max(0, currentFrame);
-
-        if (this.isGameOfLifeShader())
-        {
-            const MIN_FRAME = 513;
-            const FRAME_INTERVAL = 5;
-            frame = Math.max(MIN_FRAME, frame);
-            if (frame % FRAME_INTERVAL === 0)
-            {
-                frame += 1;
-            }
-        }
-
-        return frame;
-    }
-
-    /**
-     * Checks if the shader is a Game of Life variant.
-     *
-     * @param {object} shader - Shader descriptor to inspect.
-     * @returns {boolean} True when shader matches Game of Life.
-     */
-    isGameOfLifeShader(shader = this.editor?.currentShader)
-    {
-        if (!shader)
-        {
-            return false;
-        }
-
-        return shader.folder === "celular" && String(shader.name || "").startsWith("game_of_life");
     }
 
     /**
@@ -550,6 +509,18 @@ export class ShaderApp
     {
         document.addEventListener("keydown", (e) =>
         {
+            if (this.shouldIgnoreHotkeyEvent(e))
+            {
+                return;
+            }
+
+            if (this.isSpaceKey(e))
+            {
+                e.preventDefault();
+                this.handleSimulationPause();
+                return;
+            }
+
             if ((e.key === "F5" && e.ctrlKey) || (e.key === "R" && e.ctrlKey && e.shiftKey))
             {
                 e.preventDefault();
@@ -559,6 +530,40 @@ export class ShaderApp
                 location.reload();
             }
         });
+    }
+
+    /**
+     * Checks if the hotkey should be ignored for input elements.
+     *
+     * @param {KeyboardEvent} event - The keyboard event.
+     * @returns {boolean} True when hotkey should be ignored.
+     */
+    shouldIgnoreHotkeyEvent(event)
+    {
+        const target = event.target;
+        if (!(target instanceof HTMLElement))
+        {
+            return false;
+        }
+
+        const tagName = target.tagName;
+        if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT")
+        {
+            return true;
+        }
+
+        return target.isContentEditable;
+    }
+
+    /**
+     * Checks if the keyboard event represents a space key press.
+     *
+     * @param {KeyboardEvent} event - The keyboard event.
+     * @returns {boolean} True when space is pressed.
+     */
+    isSpaceKey(event)
+    {
+        return event.code === "Space" || event.key === " " || event.key === "Spacebar";
     }
 
     /**
