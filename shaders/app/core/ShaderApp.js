@@ -75,6 +75,7 @@ const SHADER_UI_TEMPLATE = `
                     <option value="3840x2880">3840×2880 (4:3)</option>
                     <option value="4096x3072">4096×3072 (4:3)</option>
                 </select>
+                <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             </div>
             <div class="shaders-toolbar-group">
                 <label for="model-select">Model:</label>
@@ -96,7 +97,6 @@ const SHADER_UI_TEMPLATE = `
                     <i class="fa-solid fa-pause" aria-hidden="true"></i>
                 </button>
             </div>
-            <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
             <button class="shaders-theme-toggle" id="canvas-theme-toggle" title="Toggle theme">☀</button>
         </div>
         <div class="shaders-canvas-wrapper">

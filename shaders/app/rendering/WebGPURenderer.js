@@ -168,6 +168,17 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Handles canvas resize events by reconfiguring the swap chain.
+     *
+     * @returns {void}
+     */
+    handleResize()
+    {
+        this.configureContext();
+        this.releaseDepthTexture();
+    }
+
+    /**
      * Accepts model payload and prepares buffers for GPU consumption.
      *
      * @param {object|null} model - Model payload or null to clear.
