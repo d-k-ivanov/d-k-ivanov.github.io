@@ -77,7 +77,7 @@ const SHADER_UI_TEMPLATE = `
                 </select>
                 <button class="shaders-toolbar-btn" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
                 <button class="shaders-toolbar-btn shaders-toolbar-toggle" id="fullscreen-resolution-toggle" title="Fullscreen keeps resolution" aria-label="Fullscreen keeps resolution" aria-pressed="false">
-                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                    <i class="fa-solid fa-up-right-and-down-left-from-center" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="shaders-toolbar-group">

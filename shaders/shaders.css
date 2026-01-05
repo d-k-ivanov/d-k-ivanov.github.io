@@ -99,6 +99,10 @@
     font-size: 12px;
 }
 
+.shaders-toolbar-toggle:not(.is-active) {
+    color: var(--sh-text-muted);
+}
+
 .shaders-toolbar-toggle.is-active {
     border-color: var(--sh-accent);
     background: var(--sh-bg-hover);

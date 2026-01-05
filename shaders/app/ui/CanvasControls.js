@@ -202,12 +202,6 @@ export class CanvasControls
                 : "Fullscreen keeps resolution";
             toggleBtn.title = label;
             toggleBtn.setAttribute("aria-label", label);
-            const icon = toggleBtn.querySelector("i");
-            if (icon)
-            {
-                icon.classList.toggle("fa-lock", !isEnabled);
-                icon.classList.toggle("fa-up-right-and-down-left-from-center", isEnabled);
-            }
         };
 
         if (this.boundFullscreenResolutionHandler)
