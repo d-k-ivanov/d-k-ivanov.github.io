@@ -42,6 +42,8 @@ export class CanvasControls
     } = {})
     {
         this.canvas = canvas;
+        this.savedResolution = null;
+        this.fullscreenResizesCanvas = false;
         this.onResolutionChange = onResolutionChange;
         this.onModelChange = onModelChange;
         this.onModelLoad = onModelLoad;
@@ -55,10 +57,12 @@ export class CanvasControls
         this.boundModelFileHandler = null;
         this.boundShaderCompileHandler = null;
         this.boundSimulationPauseHandler = null;
+        this.boundFullscreenResolutionHandler = null;
 
         this.elements = {
             resolutionSelect: document.getElementById("resolution-select"),
             fullscreenBtn: document.getElementById("fullscreen-toggle"),
+            fullscreenResolutionToggle: document.getElementById("fullscreen-resolution-toggle"),
             modelSelect: document.getElementById("model-select"),
             modelLoadBtn: document.getElementById("model-load-btn"),
             modelFileInput: document.getElementById("model-file-input"),
@@ -69,6 +73,7 @@ export class CanvasControls
 
         this.initResolutionSelector();
         this.initFullscreenToggle();
+        this.initFullscreenResolutionToggle();
         this.initModelSelector();
         this.initModelLoader();
         this.initSimulationControls();
@@ -112,8 +117,8 @@ export class CanvasControls
     /**
      * Configures fullscreen toggle button and resolution handling.
      *
-     * When entering fullscreen, the canvas is scaled to fill the display
-     * without changing the underlying render resolution.
+     * When entering fullscreen, the canvas is scaled to fill the display.
+     * Optionally the render resolution can be updated when enabled.
      *
      * @returns {void}
      */
@@ -121,6 +126,46 @@ export class CanvasControls
     {
         const btn = this.elements.fullscreenBtn;
         if (!btn) return;
+
+        const handleFullscreenChange = () =>
+        {
+            const isFullscreen = !!document.fullscreenElement;
+            if (!isFullscreen && this.savedResolution)
+            {
+                this.canvas.width = this.savedResolution.width;
+                this.canvas.height = this.savedResolution.height;
+                this.savedResolution = null;
+                if (this.onResolutionChange)
+                {
+                    this.onResolutionChange(this.canvas.width, this.canvas.height);
+                }
+                return;
+            }
+
+            if (!this.fullscreenResizesCanvas)
+            {
+                return;
+            }
+
+            if (isFullscreen)
+            {
+                if (!this.savedResolution)
+                {
+                    this.savedResolution = { width: this.canvas.width, height: this.canvas.height };
+                }
+                const width = Math.round(window.innerWidth * window.devicePixelRatio);
+                const height = Math.round(window.innerHeight * window.devicePixelRatio);
+                if (this.canvas.width !== width || this.canvas.height !== height)
+                {
+                    this.canvas.width = width;
+                    this.canvas.height = height;
+                    if (this.onResolutionChange)
+                    {
+                        this.onResolutionChange(width, height);
+                    }
+                }
+            }
+        };
 
         btn.addEventListener("click", () =>
         {
@@ -133,6 +178,50 @@ export class CanvasControls
                 this.canvas.requestFullscreen();
             }
         });
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+    }
+
+    /**
+     * Configures the fullscreen resolution toggle button.
+     *
+     * @returns {void}
+     */
+    initFullscreenResolutionToggle()
+    {
+        const toggleBtn = this.elements.fullscreenResolutionToggle;
+        if (!toggleBtn) return;
+
+        const updateToggleState = () =>
+        {
+            const isEnabled = this.fullscreenResizesCanvas;
+            toggleBtn.classList.toggle("is-active", isEnabled);
+            toggleBtn.setAttribute("aria-pressed", isEnabled ? "true" : "false");
+            const label = isEnabled
+                ? "Fullscreen matches screen resolution"
+                : "Fullscreen keeps resolution";
+            toggleBtn.title = label;
+            toggleBtn.setAttribute("aria-label", label);
+            const icon = toggleBtn.querySelector("i");
+            if (icon)
+            {
+                icon.classList.toggle("fa-lock", !isEnabled);
+                icon.classList.toggle("fa-up-right-and-down-left-from-center", isEnabled);
+            }
+        };
+
+        if (this.boundFullscreenResolutionHandler)
+        {
+            toggleBtn.removeEventListener("click", this.boundFullscreenResolutionHandler);
+        }
+
+        this.boundFullscreenResolutionHandler = () =>
+        {
+            this.fullscreenResizesCanvas = !this.fullscreenResizesCanvas;
+            updateToggleState();
+        };
+        toggleBtn.addEventListener("click", this.boundFullscreenResolutionHandler);
+        updateToggleState();
     }
 
     /**

@@ -93,6 +93,17 @@
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
+.shaders-toolbar-toggle {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+}
+
+.shaders-toolbar-toggle.is-active {
+    border-color: var(--sh-accent);
+    background: var(--sh-bg-hover);
+}
+
 .shaders-theme-toggle:hover, .shaders-toolbar-btn:hover {
     border-color: var(--sh-accent);
     background: var(--sh-bg-hover);
