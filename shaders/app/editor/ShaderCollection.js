@@ -37,7 +37,7 @@ export class ShaderCollection
         { language: "glsl", folder: "celular", name: "game_of_life_02-webgl" },
         { language: "wgsl", folder: "celular", name: "game_of_life_01-webgpu" },
         { language: "wgsl", folder: "celular", name: "game_of_life_02-webgpu" },
-        { language: "wgsl", folder: "celular", name: "game_of_life_03_computer-webgpu" },
+        { language: "wgsl", folder: "celular", name: "game_of_life_03_turing_machine" },
 
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
