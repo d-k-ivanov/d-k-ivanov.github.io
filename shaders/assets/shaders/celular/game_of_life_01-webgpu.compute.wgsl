@@ -249,6 +249,7 @@ fn main(@builtin(global_invocation_id) cell : vec3u)
     // Computation speed control: update every Nth frame
     if (shaderUniforms.iFrame % COMPUTE_FRAME_INTERVAL != 0u)
     {
+        setCellState(cell.x, cell.y, getCellState(cell.x, cell.y));
         return;
     }
 
