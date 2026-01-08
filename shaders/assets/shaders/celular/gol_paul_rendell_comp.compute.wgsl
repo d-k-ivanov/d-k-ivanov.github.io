@@ -1114,12 +1114,17 @@ fn cellIndex(cell: vec2u) -> u32
 
 fn cellActive(x: u32, y: u32) -> u32
 {
+    if (x >= shaderUniforms.iGridSize.x || y >= shaderUniforms.iGridSize.y)
+    {
+        return 0u;
+    }
+
     return cellStateIn[cellIndex(vec2(x, y))];
 }
 
 fn getCellState(x: u32, y: u32) -> u32
 {
-    return cellStateIn[cellIndex(vec2(x, y))];
+    return cellActive(x, y);
 }
 
 fn setCellState(x: u32, y: u32, state: u32)
