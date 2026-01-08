@@ -1,8 +1,12 @@
+// Author: Paul Rendell
+// Author's Website: http://rendell-attic.org/gol/tm.htm
+// LIF archive: https://d-k-ivanov.github.io/shaders/assets/shaders/celular/gol_paul_rendell_lifs.zip
+
 const COMPUTE_FRAME_INTERVAL : u32 = 3u;
 
-const COMP_WIDTH : u32 = 298u;
-const COMP_HEIGHT : u32 = 428u;
-const COMP_RUN_COUNT : u32 = 1073u;
+const PATTERN_WIDTH : u32 = 298u;
+const PATTERN_HEIGHT : u32 = 428u;
+const PATTERN_RUN_COUNT : u32 = 1073u;
 
 struct Run
 {
@@ -12,7 +16,7 @@ struct Run
 };
 
 // Run-length encoded live cell spans from tmp/gol-components/comp.lif (y, x, len).
-const COMP_RUNS : array<Run, 1073> = array<Run, 1073>(
+const PATTERN_RUNS : array<Run, 1073> = array<Run, 1073>(
     Run(0u, 171u, 1u),
     Run(1u, 170u, 3u),
     Run(2u, 169u, 2u),
@@ -1131,7 +1135,7 @@ fn initCellState(x: u32, y: u32)
     }
 
     let grid = shaderUniforms.iGridSize;
-    if (grid.x < COMP_WIDTH || grid.y < COMP_HEIGHT)
+    if (grid.x < PATTERN_WIDTH || grid.y < PATTERN_HEIGHT)
     {
         return;
     }
@@ -1142,11 +1146,11 @@ fn initCellState(x: u32, y: u32)
         cellStateOut[i] = 0u;
     }
 
-    let offset = vec2u((grid.x - COMP_WIDTH) / 2u, (grid.y - COMP_HEIGHT) / 2u);
+    let offset = vec2u((grid.x - PATTERN_WIDTH) / 2u, (grid.y - PATTERN_HEIGHT) / 2u);
 
-    for (var i = 0u; i < COMP_RUN_COUNT; i = i + 1u)
+    for (var i = 0u; i < PATTERN_RUN_COUNT; i = i + 1u)
     {
-        let run = COMP_RUNS[i];
+        let run = PATTERN_RUNS[i];
         let rowOffset = (run.y + offset.y) * grid.x + run.x + offset.x;
 
         for (var dx = 0u; dx < run.len; dx = dx + 1u)
