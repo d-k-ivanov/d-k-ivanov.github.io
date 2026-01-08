@@ -15,7 +15,7 @@ struct Run
     len : u32,
 };
 
-// Run-length encoded live cell spans from tmp/gol-components/inout.lif (y, x, len).
+// Run-length encoded live cell spans from inout.lif (y, x, len).
 const PATTERN_RUNS : array<Run, 2496> = array<Run, 2496>(
     Run(0u, 353u, 1u),
     Run(1u, 351u, 3u),

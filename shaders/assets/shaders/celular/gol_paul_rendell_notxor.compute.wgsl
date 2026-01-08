@@ -15,7 +15,7 @@ struct Run
     len : u32,
 };
 
-// Run-length encoded live cell spans from tmp/gol-components/notxor.lif (y, x, len).
+// Run-length encoded live cell spans from notxor.lif (y, x, len).
 const PATTERN_RUNS : array<Run, 223> = array<Run, 223>(
     Run(0u, 26u, 2u),
     Run(1u, 25u, 1u),

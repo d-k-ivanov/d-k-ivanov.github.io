@@ -15,7 +15,7 @@ struct Run
     len : u32,
 };
 
-// Run-length encoded live cell spans from tmp/gol-components/tackout.lif (y, x, len).
+// Run-length encoded live cell spans from tackout.lif (y, x, len).
 const PATTERN_RUNS : array<Run, 144> = array<Run, 144>(
     Run(0u, 3u, 2u),
     Run(0u, 24u, 2u),

@@ -15,7 +15,7 @@ struct Run
     len : u32,
 };
 
-// Run-length encoded live cell spans from tmp/gol-components/srlatchb.lif (y, x, len).
+// Run-length encoded live cell spans from srlatchb.lif (y, x, len).
 const PATTERN_RUNS : array<Run, 339> = array<Run, 339>(
     Run(0u, 92u, 2u),
     Run(1u, 91u, 1u),
