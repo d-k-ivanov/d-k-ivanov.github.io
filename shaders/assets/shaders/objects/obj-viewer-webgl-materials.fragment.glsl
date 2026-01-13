@@ -17,7 +17,7 @@ uniform float uModelScale;
 out vec4 outColor;
 
 const int BACKGROUND_STYLE = 1;
-const int MATERIAL_STYLE = 6; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal
+const int MATERIAL_STYLE = 7; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal
 const float DIFFUSE_AMBIENT = 0.2;
 const float MATERIAL_IOR = 1.35;
 const float TRANSPARENT_MATERIAL = 1.0;
@@ -192,6 +192,11 @@ vec3 metalMaterial(vec3 albedo, vec3 normal, vec3 viewDir, float diffuse)
     return base + spec * 0.6;
 }
 
+vec3 normalMaterial(vec3 normal)
+{
+    return normal * 0.5 + 0.5;
+}
+
 void main()
 {
     vec3 background = backgroundColor(vScreenUV, iTime);
@@ -245,6 +250,10 @@ void main()
     else if (MATERIAL_STYLE == 6)
     {
         color = metalMaterial(albedo, normal, viewDir, diffuse);
+    }
+    else if (MATERIAL_STYLE == 7)
+    {
+        color = normalMaterial(normal);
     }
 
     outColor = vec4(color, 1.0);

@@ -29,7 +29,7 @@ struct VertexOutput
 };
 
 const BACKGROUND_STYLE : i32 = 1;
-const MATERIAL_STYLE : i32 = 6; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal
+const MATERIAL_STYLE : i32 = 7; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal
 const DIFFUSE_AMBIENT : f32 = 0.2;
 const MATERIAL_IOR : f32 = 1.35;
 const TRANSPARENT_MATERIAL : f32 = 1.0;
@@ -204,6 +204,11 @@ fn metalMaterial(albedo : vec3f, normal : vec3f, viewDir : vec3f, diffuse : f32)
     return base + spec * 0.6;
 }
 
+fn normalMaterial(normal : vec3f) -> vec3f
+{
+    return normal * 0.5 + 0.5;
+}
+
 @fragment
 fn frag(input : VertexOutput) -> @location(0) vec4f
 {
@@ -256,6 +261,10 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
     else if (MATERIAL_STYLE == 6)
     {
         color = metalMaterial(albedo, normal, viewDir, diffuse);
+    }
+    else if (MATERIAL_STYLE == 7)
+    {
+        color = normalMaterial(normal);
     }
 
     return vec4f(color, 1.0);
