@@ -17,7 +17,7 @@ uniform float uModelScale;
 out vec4 outColor;
 
 const int BACKGROUND_STYLE = 1;
-const int MATERIAL_STYLE = 7; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal
+const int MATERIAL_STYLE = 8; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal, 8: inverted
 const float DIFFUSE_AMBIENT = 0.2;
 const float MATERIAL_IOR = 1.35;
 const float TRANSPARENT_MATERIAL = 1.0;
@@ -197,6 +197,17 @@ vec3 normalMaterial(vec3 normal)
     return normal * 0.5 + 0.5;
 }
 
+vec3 invertedTrianglesMaterial(vec3 albedo, vec3 normal, vec3 viewDir, float diffuse, float time)
+{
+    float facing = dot(normal, viewDir);
+    bool isInverted = facing < 0.0;
+    float pulse = 0.5 + 0.5 * sin(time * 3.0);
+    vec3 warningColor = vec3(1.0, 0.0, 0.0) * (0.7 + 0.3 * pulse);
+    vec3 correctColor = diffuseMaterial(albedo, diffuse);
+    
+    return isInverted ? warningColor : correctColor;
+}
+
 void main()
 {
     vec3 background = backgroundColor(vScreenUV, iTime);
@@ -254,6 +265,10 @@ void main()
     else if (MATERIAL_STYLE == 7)
     {
         color = normalMaterial(normal);
+    }
+    else if (MATERIAL_STYLE == 8)
+    {
+        color = invertedTrianglesMaterial(albedo, normal, viewDir, diffuse, iTime);
     }
 
     outColor = vec4(color, 1.0);

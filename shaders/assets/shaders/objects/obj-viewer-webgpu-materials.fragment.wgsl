@@ -29,7 +29,7 @@ struct VertexOutput
 };
 
 const BACKGROUND_STYLE : i32 = 1;
-const MATERIAL_STYLE : i32 = 7; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal
+const MATERIAL_STYLE : i32 = 8; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal, 8: inverted
 const DIFFUSE_AMBIENT : f32 = 0.2;
 const MATERIAL_IOR : f32 = 1.35;
 const TRANSPARENT_MATERIAL : f32 = 1.0;
@@ -209,6 +209,17 @@ fn normalMaterial(normal : vec3f) -> vec3f
     return normal * 0.5 + 0.5;
 }
 
+fn invertedTrianglesMaterial(albedo : vec3f, normal : vec3f, viewDir : vec3f, diffuse : f32, time : f32) -> vec3f
+{
+    let facing = dot(normal, viewDir);
+    let isInverted = facing < 0.0;
+    let pulse = 0.5 + 0.5 * sin(time * 3.0);
+    let warningColor = vec3f(1.0, 0.0, 0.0) * (0.7 + 0.3 * pulse);
+    let correctColor = diffuseMaterial(albedo, diffuse);
+    
+    return select(correctColor, warningColor, isInverted);
+}
+
 @fragment
 fn frag(input : VertexOutput) -> @location(0) vec4f
 {
@@ -265,6 +276,10 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
     else if (MATERIAL_STYLE == 7)
     {
         color = normalMaterial(normal);
+    }
+    else if (MATERIAL_STYLE == 8)
+    {
+        color = invertedTrianglesMaterial(albedo, normal, viewDir, diffuse, shaderUniforms.iTime);
     }
 
     return vec4f(color, 1.0);
