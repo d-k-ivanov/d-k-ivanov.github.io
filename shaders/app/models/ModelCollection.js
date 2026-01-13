@@ -23,7 +23,7 @@ export class ModelCollection
         { id: "cube_ascii_stl", name: "cube-ascii.stl", file: "cube-ascii.stl" },
         { id: "dragon_ply_res4", name: "dragon_res4.ply", file: "dragon_res4.ply" },
         { id: "dragon_vox", name: "dragon.vox", file: "dragon.vox" },
-        { id: "magnolia_bin_stl", name: "magnolia-bin.stl", file: "magnolia-bin.stl" },
+        { id: "magnolia_stl", name: "magnolia.stl", file: "magnolia.stl" },
         { id: "maze_vox", name: "maze.vox", file: "maze.vox" },
         { id: "menger_vox", name: "menger.vox", file: "menger.vox" },
         { id: "pig_obj", name: "pig.obj", file: "pig.obj" },

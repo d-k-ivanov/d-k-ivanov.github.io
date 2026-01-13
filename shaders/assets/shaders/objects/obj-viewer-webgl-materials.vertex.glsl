@@ -80,7 +80,7 @@ void main()
     }
 
     vec3 localPos = (aPosition - uModelCenter) * uModelScale;
-    mat3 rot = rotationY(iTime * 0.6) * rotationX(0.0) * rotationZ(0.0);
+    mat3 rot = rotationY(0.0) * rotationX(iTime * 1.0) * rotationZ(iTime * 0.6);
     vec3 world = rot * localPos;
     vec3 normal = normalize(rot * aNormal);
 

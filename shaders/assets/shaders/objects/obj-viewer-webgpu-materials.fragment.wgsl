@@ -28,8 +28,11 @@ struct VertexOutput
     @location(4) isBackground : f32,
 };
 
+// 0: solid color, 1: grid, 2: aurora, 3: stripes, 4: checkerboard
 const BACKGROUND_STYLE : i32 = 1;
-const MATERIAL_STYLE : i32 = 8; // 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone, 6: metal, 7: normal, 8: inverted
+// 0: stylized, 1: glass, 2: diffuse, 3: mirror, 4: bone, 5: stone,
+// 6: metal, 7: normal, 8: showInverted, 9: showBroken
+const MATERIAL_STYLE : i32 = 9;
 const DIFFUSE_AMBIENT : f32 = 0.2;
 const MATERIAL_IOR : f32 = 1.35;
 const TRANSPARENT_MATERIAL : f32 = 1.0;
@@ -213,11 +216,42 @@ fn invertedTrianglesMaterial(albedo : vec3f, normal : vec3f, viewDir : vec3f, di
 {
     let facing = dot(normal, viewDir);
     let isInverted = facing < 0.0;
-    let pulse = 0.5 + 0.5 * sin(time * 3.0);
+    let pulse = 0.5 + 0.5 * sin(time * 15.0);
     let warningColor = vec3f(1.0, 0.0, 0.0) * (0.7 + 0.3 * pulse);
     let correctColor = diffuseMaterial(albedo, diffuse);
-    
+
     return select(correctColor, warningColor, isInverted);
+}
+
+fn brokenGeometryMaterial(albedo : vec3f, normal : vec3f, uv : vec2f, diffuse : f32, time : f32) -> vec3f
+{
+    var issues = 0u;
+    let pulse = 0.5 + 0.5 * sin(time * 20.0);
+
+    let normalLen = length(normal);
+    let hasNaN = any(normal != normal);
+    let hasInf = any(abs(normal) > vec3f(1e10));
+    let hasInvalidNormal = normalLen < 0.01 || normalLen > 100.0 || hasNaN || hasInf;
+    if (hasInvalidNormal) { issues += 1u; }
+
+    let hasDegenerateNormal = normalLen > 0.01 && normalLen < 0.9;
+    if (hasDegenerateNormal) { issues += 1u; }
+
+    let hasUVNaN = any(uv != uv);
+    let hasUVInf = any(abs(uv) > vec2f(1e10));
+    let hasInvalidUV = hasUVNaN || hasUVInf || any(abs(uv) > vec2f(1000.0));
+    if (hasInvalidUV) { issues += 1u; }
+
+    if (issues > 0u)
+    {
+        let errorIntensity = f32(issues) / 3.0;
+        let red = vec3f(1.0, 0.0, 0.0) * pulse;
+        let yellow = vec3f(1.0, 1.0, 0.0) * pulse;
+        let errorColor = mix(red, yellow, errorIntensity);
+        return errorColor * (0.6 + 0.4 * pulse);
+    }
+
+    return diffuseMaterial(albedo, diffuse) * 0.7;
 }
 
 @fragment
@@ -280,6 +314,10 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
     else if (MATERIAL_STYLE == 8)
     {
         color = invertedTrianglesMaterial(albedo, normal, viewDir, diffuse, shaderUniforms.iTime);
+    }
+    else if (MATERIAL_STYLE == 9)
+    {
+        color = brokenGeometryMaterial(albedo, input.normal, input.uv, diffuse, shaderUniforms.iTime);
     }
 
     return vec4f(color, 1.0);
