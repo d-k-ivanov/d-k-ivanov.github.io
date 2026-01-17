@@ -38,35 +38,42 @@ struct VertexOutput
 fn degreeColor(degree : u32) -> vec3f
 {
     // The palette: degree -> primary color (low degrees are brightest).
-    if (degree == 1u)
+    // The palette cycles every 8 degrees to extend the original mapping.
+    if (degree == 0u)
+    {
+        return vec3f(1.0);
+    }
+
+    let idx = ((degree - 1u) % 8u) + 1u;
+    if (idx == 1u)
     {
         return vec3f(1.0, 0.0, 0.0); // Red
     }
-    if (degree == 2u)
+    if (idx == 2u)
     {
         return vec3f(0.0, 1.0, 0.0); // Green
     }
-    if (degree == 3u)
+    if (idx == 3u)
     {
         return vec3f(0.0, 0.0, 1.0); // Blue
     }
-    if (degree == 4u)
+    if (idx == 4u)
     {
         return vec3f(0.7, 0.7, 0.0); // Yellow
     }
-    if (degree == 5u)
+    if (idx == 5u)
     {
         return vec3f(1.0, 0.6, 0.0); // Orange
     }
-    if (degree == 6u)
+    if (idx == 6u)
     {
         return vec3f(0.0, 1.0, 1.0); // Cyan
     }
-    if (degree == 7u)
+    if (idx == 7u)
     {
         return vec3f(1.0, 0.0, 1.0); // Magenta
     }
-    if (degree == 8u)
+    if (idx == 8u)
     {
         return vec3f(0.6, 0.6, 0.6); // Light gray
     }
