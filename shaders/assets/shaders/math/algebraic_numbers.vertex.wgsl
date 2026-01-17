@@ -37,8 +37,7 @@ struct VertexOutput
 
 fn degreeColor(degree : u32) -> vec3f
 {
-    // The palette: degree -> primary color (low degrees are brightest).
-    // The palette cycles every 8 degrees to extend the original mapping.
+    // The palette: degree -> primary color (low degrees are brightest). The palette cycles every 8 degrees.
     if (degree == 0u)
     {
         return vec3f(1.0);
@@ -107,17 +106,21 @@ fn vert(input : VertexInput) -> VertexOutput
 
     // Data entries start after the header; instance_index maps to dataIndex.
     let dataIndex = input.instance_index + DATA_OFFSET - 1u;
+
+    // packedXY stores (x,y) roots as half-floats; unpack returns complex plane coordinates.
     let packed = packedXY[dataIndex];
     let pos = unpack2x16float(packed);
+
+    // packedInfo encodes degree in the upper 16 bits and complexity h in the lower 16 bits.
     let packedInfo = u32(packedMeta[dataIndex]);
     let h = packedInfo & 0xffffu;
     let degree = (packedInfo >> 16u) & 0xffffu;
 
-    // Blob radius: r = k1 * k2^(h-3) --> (k1=0.125, k2=0.5).
+    // Blob radius shrinks with complexity: r = k1 * k2^(h-3) (k1=0.125, k2=0.5).
     let r = 0.125 * pow(0.5, f32(h) - 3.0);
     let blobSize = r * 16.0;
 
-    // Map complex plane to screen (ortho zoom = yres / 5).
+    // Map complex plane to screen using orthographic zoom (yres / 5).
     let zoom = shaderUniforms.iResolution.y / 5.0;
     let worldPos = pos + local * blobSize;
     let screen = vec2f(shaderUniforms.iResolution.x * 0.5, shaderUniforms.iResolution.y * 0.5) + worldPos * zoom;

@@ -36,6 +36,17 @@ struct ShaderUniforms
 @group(0) @binding(1) var<storage, read_write> packedXY : array<u32>;
 @group(0) @binding(3) var<storage, read_write> packedMeta : array<f32>;
 
+// Mathematical overview:
+// 1) Enumerate integer coefficient magnitudes with fixed complexity
+//    h = sum(|c_n| + 1). The bit-pattern i encodes a composition of (h - 1):
+//    t[0..k] are run-lengths of 1s, k is the degree, and sum(t) + (k + 1) = h.
+// 2) Assign signs to non-zero coefficients (except the leading term) by
+//    iterating over 2^(nz-1) sign patterns, keeping the leading coefficient positive for normalization.
+// 3) Solve p(z) = sum_{n=0}^k c_n z^n with Newton iteration
+//    z_{n+1} = z_n - p(z_n)/p'(z_n), then deflate by (z - r) to get remaining roots.
+// 4) Store each root (x,y) and metadata (degree, h) in packed buffers, while
+//    persisting enumeration state in packedMeta so work is amortized per frame.
+
 // Linear congruential RNG used for Newton initial guesses.
 fn rand01(state : ptr<function, u32>) -> f32
 {
@@ -48,11 +59,13 @@ fn randSigned(state : ptr<function, u32>) -> f32
     return rand01(state) * 2.0 - 1.0;
 }
 
+// Complex multiplication: (a.x + i a.y) * (b.x + i b.y).
 fn multiplyVector(a : vec2f, b : vec2f) -> vec2f
 {
     return vec2f(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
+// Complex division: a / b using b * conj(b) in the denominator.
 fn divideVector(a : vec2f, b : vec2f) -> vec2f
 {
     let denom = dot(b, b);
@@ -67,6 +80,7 @@ fn findRoots(
 ) -> u32
 {
     // Newton's method for p(z) = 0, followed by polynomial deflation.
+    // coeffs[n] are real, but arithmetic is complex to capture non-real roots.
     var o = order;
     var rootCount : u32 = 0u;
 
@@ -114,6 +128,7 @@ fn findRoots(
             }
             iter += 1u;
 
+            // Evaluate p(z) and p'(z) together using powers p = z^n.
             let prev = r;
             var f = vec2f(0.0, 0.0);
             var d = vec2f(0.0, 0.0);
@@ -121,7 +136,7 @@ fn findRoots(
 
             for (var n : u32 = 0u; n < o; n++)
             {
-                // Evaluate p(z) and p'(z) together via Horner-like powers.
+                // p(z) += c_n * z^n, p'(z) += (n+1) c_{n+1} * z^n.
                 let c = (*coeffs)[n];
                 f = f + multiplyVector(p, c);
 
@@ -150,7 +165,7 @@ fn findRoots(
             }
         }
 
-        // Deflate by (z - r) to remove the discovered root.
+        // Deflate by (z - r) to remove the discovered root via synthetic division.
         (*roots)[rootCount] = r;
         rootCount += 1u;
 
@@ -213,6 +228,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
         return;
     }
 
+    // Resume enumeration state from the header so each dispatch continues where the previous frame left off.
     var count = u32(packedMeta[HEADER_COUNT_IDX]);
     var h = u32(packedMeta[HEADER_H_IDX]);
     var i = u32(packedMeta[HEADER_I_IDX]);
@@ -292,7 +308,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
             continue;
         }
 
-        // nz = number of non-zero coefficients.
+        // nz = number of non-zero coefficients (controls sign-pattern count).
         var nz : u32 = 0u;
         for (var idx : u32 = 0u; idx <= k; idx++)
         {
@@ -308,7 +324,8 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
             continue;
         }
 
-        // Enumerate signs for non-zero coefficients except the leading term.
+        // Enumerate signs for non-zero coefficients except the leading term
+        // (leading coefficient stays positive for normalization).
         let signCount = 1u << (nz - 1u);
         var currentSign = sign;
         if (currentSign == SIGN_SENTINEL || currentSign >= signCount)

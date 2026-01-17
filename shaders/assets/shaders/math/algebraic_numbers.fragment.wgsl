@@ -11,8 +11,8 @@ struct VertexOutput
 @fragment
 fn frag(input : VertexOutput) -> @location(0) vec4f
 {
-    // Radial falloff replicates the blurred texture used in OpenGL.
-    // f = R^2 / (1 + |x|^2), then scaled into [0, 1].
+    // Radial falloff matches the OpenGL precomputed blob texture:
+    // f = R^2 / (1 + |x|^2) with R=128, then normalized to [0, 1].
     let texCoord = input.local * 128.0;
     let f = (128.0 * 128.0) / (1.0 + dot(texCoord, texCoord));
     let intensity = min(1.0, f / 255.0);
