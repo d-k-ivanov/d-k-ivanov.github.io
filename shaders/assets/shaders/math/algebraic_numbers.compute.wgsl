@@ -1,22 +1,25 @@
-const MAX_H : u32 = 15u;
-const MAX_DEGREE : u32 = 14u;
-const MAX_COEFFS : u32 = 15u;
-const RNG_SEED : u32 = 0x1f2e3d4cu;
-const MAX_ITERS : u32 = 5000u;
-const RESTART_ITERS : u32 = 500u;
-const CONVERGENCE_EPS : f32 = 1e-12;
-const DATA_OFFSET : u32 = 8u;
-const HEADER_COUNT_IDX : u32 = 0u;
-const HEADER_H_IDX : u32 = 1u;
-const HEADER_I_IDX : u32 = 2u;
-const HEADER_SIGN_IDX : u32 = 3u;
-const HEADER_STATE_IDX : u32 = 4u;
-const HEADER_RNG_IDX : u32 = 5u;
-const HEADER_STATE_INIT : u32 = 0u;
-const HEADER_STATE_ACTIVE : u32 = 1u;
-const HEADER_STATE_DONE : u32 = 2u;
-const SIGN_SENTINEL : u32 = 65535u;
-const MAX_SIGNS_PER_DISPATCH : u32 = 8u;
+// Enumerates algebraic numbers as roots of integer polynomials with bounded
+// complexity h = sum(|c_n| + 1). Each polynomial is solved via Newton deflation
+// in the complex plane and written into a packed point buffer.
+const MAX_H : u32 = 15u;                  // Maximum complexity h explored (sum(|c_n| + 1) for each polynomial).
+const MAX_DEGREE : u32 = 14u;             // Maximum polynomial degree (k) supported by local arrays.
+const MAX_COEFFS : u32 = 15u;             // Maximum number of coefficients (degree + 1).
+const RNG_SEED : u32 = 0x1f2e3d4cu;       // Deterministic seed for Newton's method initial guesses.
+const MAX_ITERS : u32 = 5000u;            // Max Newton iterations before declaring failure for a root.
+const RESTART_ITERS : u32 = 500u;         // Restart Newton initial guess after this many steps.
+const CONVERGENCE_EPS : f32 = 1e-12;      // Convergence threshold on squared step length |z_{n+1}-z_n|^2.
+const DATA_OFFSET : u32 = 8u;             // Number of header slots reserved before data entries in packedMeta/packedXY.
+const HEADER_COUNT_IDX : u32 = 0u;        // Header index storing current generated point count.
+const HEADER_H_IDX : u32 = 1u;            // Header index storing current complexity h.
+const HEADER_I_IDX : u32 = 2u;            // Header index storing current composition index i (binary partition of h-1).
+const HEADER_SIGN_IDX : u32 = 3u;         // Header index storing current sign-pattern cursor.
+const HEADER_STATE_IDX : u32 = 4u;        // Header index storing compute state (init/active/done).
+const HEADER_RNG_IDX : u32 = 5u;          // Header index storing RNG state for deterministic continuation.
+const HEADER_STATE_INIT : u32 = 0u;       // Header state: initialization required.
+const HEADER_STATE_ACTIVE : u32 = 1u;     // Header state: actively generating points.
+const HEADER_STATE_DONE : u32 = 2u;       // Header state: generation complete.
+const SIGN_SENTINEL : u32 = 65535u;       // Sentinel meaning "start sign enumeration for this (h, i)".
+const MAX_SIGNS_PER_DISPATCH : u32 = 8u;  // Work chunk size: sign patterns processed per dispatch to limit GPU time.
 
 struct ShaderUniforms
 {
@@ -33,6 +36,7 @@ struct ShaderUniforms
 @group(0) @binding(1) var<storage, read_write> packedXY : array<u32>;
 @group(0) @binding(3) var<storage, read_write> packedMeta : array<f32>;
 
+// Linear congruential RNG used for Newton initial guesses.
 fn rand01(state : ptr<function, u32>) -> f32
 {
     *state = (*state * 1664525u) + 1013904223u;
@@ -62,6 +66,7 @@ fn findRoots(
     roots : ptr<function, array<vec2f, MAX_DEGREE>>
 ) -> u32
 {
+    // Newton's method in C for p(z) = 0, followed by polynomial deflation.
     var o = order;
     var rootCount : u32 = 0u;
 
@@ -116,6 +121,7 @@ fn findRoots(
 
             for (var n : u32 = 0u; n < o; n++)
             {
+                // Evaluate p(z) and p'(z) together via Horner-like powers.
                 let c = (*coeffs)[n];
                 f = f + cMul(p, c);
 
@@ -144,6 +150,7 @@ fn findRoots(
             }
         }
 
+        // Deflate by (z - r) to remove the discovered root.
         (*roots)[rootCount] = r;
         rootCount += 1u;
 
@@ -172,6 +179,8 @@ fn findRoots(
 
 fn advanceCursor(h : ptr<function, u32>, i : ptr<function, u32>, sign : ptr<function, u32>) -> bool
 {
+    // i encodes a binary composition of (h - 1). Advancing i walks all
+    // coefficient magnitude partitions for the current complexity.
     if (*i < 2u)
     {
         *h = *h + 1u;
@@ -213,6 +222,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
 
     if (state == HEADER_STATE_INIT)
     {
+        // Initialize persistent cursor so work can be amortized across frames.
         count = 0u;
         h = 2u;
         i = (1u << (h - 1u)) - 1u;
@@ -232,6 +242,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
     var steps : u32 = 0u;
     var complete = false;
 
+    // Process a limited number of sign patterns per dispatch to avoid timeouts.
     loop
     {
         if (steps >= MAX_SIGNS_PER_DISPATCH || complete)
@@ -245,6 +256,8 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
             break;
         }
 
+        // Build coefficient magnitudes from a composition of (h - 1).
+        // With k = number of separators (zero bits), sum(t) + (k + 1) = h.
         for (var idx : u32 = 0u; idx < MAX_H; idx++)
         {
             t[idx] = 0;
@@ -279,6 +292,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
             continue;
         }
 
+        // nz = number of non-zero coefficients.
         var nz : u32 = 0u;
         for (var idx : u32 = 0u; idx <= k; idx++)
         {
@@ -294,6 +308,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
             continue;
         }
 
+        // Enumerate signs for non-zero coefficients except the leading term.
         let signCount = 1u << (nz - 1u);
         var currentSign = sign;
         if (currentSign == SIGN_SENTINEL || currentSign >= signCount)
@@ -343,6 +358,7 @@ fn comp(@builtin(global_invocation_id) gid : vec3u)
                     break;
                 }
 
+                // Store z = x + i*y as half-floats; pack (degree, h) into 16+16 bits.
                 packedXY[writeIndex] = pack2x16float(roots[rIndex]);
                 packedMeta[writeIndex] = f32((k << 16u) | (h & 0xffffu));
                 count += 1u;

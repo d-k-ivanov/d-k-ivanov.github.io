@@ -231,7 +231,7 @@ export class WebGPURenderer extends BaseRenderer
         const glslMarkers = [
             /^\s*#version/m,
             /\bprecision\s+(?:lowp|mediump|highp)\b/,
-            /\blayout\s*\(/,
+            // /\blayout\s*\(/,
             /\bgl_(FragCoord|Position|VertexID|InstanceID)\b/,
             /\bsampler2D\b/
         ];
