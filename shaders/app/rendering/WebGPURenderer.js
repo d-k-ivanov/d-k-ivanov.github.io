@@ -504,6 +504,20 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
+     * Detects additive blending marker from WGSL sources.
+     *
+     * Expected format: const BLEND_ADD : bool = true;
+     *
+     * @param {Array<string>} sources - Shader sources to scan.
+     * @returns {boolean} True when additive blending is requested.
+     */
+    extractAdditiveBlend(sources)
+    {
+        const regex = /const\s+BLEND_ADD\b[^=]*=\s*true\b/i;
+        return sources.some(source => source && regex.test(source));
+    }
+
+    /**
      * Returns grid dimensions derived from the current canvas resolution.
      *
      * @returns {{x: number, y: number, z: number}} Resolution-backed grid size.
@@ -1415,6 +1429,7 @@ export class WebGPURenderer extends BaseRenderer
             const fragmentSource = (sources.fragment || "").trim();
             const computeSource = (sources.compute || "").trim();
             const shaderSources = [vertexSource, fragmentSource, computeSource];
+            const useAdditiveBlend = this.extractAdditiveBlend(shaderSources);
 
             this.useModelGeometry = this.detectModelGeometry(shaderSources);
             const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
@@ -1452,6 +1467,17 @@ export class WebGPURenderer extends BaseRenderer
                 throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
             }
 
+            const colorTarget = {
+                format: this.format
+            };
+            if (useAdditiveBlend)
+            {
+                colorTarget.blend = {
+                    color: { srcFactor: "one", dstFactor: "one", operation: "add" },
+                    alpha: { srcFactor: "one", dstFactor: "one", operation: "add" }
+                };
+            }
+
             const pipelineDescriptor = {
                 label: "Render Pipeline",
                 layout: "auto",
@@ -1462,9 +1488,7 @@ export class WebGPURenderer extends BaseRenderer
                 fragment: {
                     module: fragmentModule,
                     entryPoint: fragmentEntry,
-                    targets: [{
-                        format: this.format
-                    }]
+                    targets: [colorTarget]
                 },
                 primitive: { topology: "triangle-list" }
             };

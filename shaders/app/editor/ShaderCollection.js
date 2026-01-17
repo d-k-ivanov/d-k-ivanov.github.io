@@ -59,6 +59,7 @@ export class ShaderCollection
         { language: "wgsl", folder: "celular", name: "gol_paul_rendell_srlatchb" },
         { language: "wgsl", folder: "celular", name: "gol_paul_rendell_stackcell" },
         { language: "wgsl", folder: "celular", name: "gol_paul_rendell_tackout" },
+
         // Miscellaneous Examples from other authors
         { language: "glsl", folder: "misc", name: "bµg_moonlight_shadertoy" },
         { language: "glsl", folder: "misc", name: "bµg_moonlight" },
@@ -77,6 +78,9 @@ export class ShaderCollection
         // Procedural patterns
         { language: "glsl", folder: "patterns", name: "neon_grid" },
         { language: "glsl", folder: "patterns", name: "polar_flow" },
+
+        // Math
+        { language: "wgsl", folder: "math", name: "algebraic_numbers" },
 
         // Ray Tracing in One Weekend
         { language: "glsl", folder: "raytracing", name: "rtow-one-webgl" },
