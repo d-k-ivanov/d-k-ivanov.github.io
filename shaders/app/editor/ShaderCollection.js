@@ -82,6 +82,7 @@ export class ShaderCollection
         // Math
         { language: "wgsl", folder: "math", name: "algebraic_numbers" },
         { language: "wgsl", folder: "math", name: "mandelbrot" },
+        { language: "wgsl", folder: "math", name: "julia" },
 
         // Ray Tracing in One Weekend
         { language: "glsl", folder: "raytracing", name: "rtow-one-webgl" },
