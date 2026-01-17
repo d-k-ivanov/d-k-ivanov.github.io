@@ -37,7 +37,16 @@ export class ShaderRenderer
         this.model = null;
         this.updateQueue = Promise.resolve();
 
-        this.mouse = { x: 0, y: 0, clickX: 0, clickY: 0, isDown: false };
+        this.mouse = {
+            x: 0,
+            y: 0,
+            clickX: 0,
+            clickY: 0,
+            isDown: false,
+            zoom: 1,
+            centerX: 0,
+            centerY: 0
+        };
         this.removeMouseListeners = null;
         this.setupMouseEvents();
     }
@@ -74,6 +83,9 @@ export class ShaderRenderer
         this.mouse.y = 0;
         this.mouse.clickX = 0;
         this.mouse.clickY = 0;
+        this.mouse.zoom = 1;
+        this.mouse.centerX = 0;
+        this.mouse.centerY = 0;
         this.setupMouseEvents();
         this.webglRenderer = null;
         this.webgpuRenderer = null;
@@ -377,6 +389,8 @@ export class ShaderRenderer
             };
         };
 
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
         const onMouseDown = (e) =>
         {
             const pos = getMousePos(e);
@@ -407,10 +421,40 @@ export class ShaderRenderer
             this.mouse.isDown = false;
         };
 
+        const onWheel = (e) =>
+        {
+            if (e.cancelable)
+            {
+                e.preventDefault();
+            }
+
+            const pos = getMousePos(e);
+            this.mouse.x = pos.x;
+            this.mouse.y = pos.y;
+
+            const baseZoom = Math.max(1, canvas.height) / 5.0;
+            const zoom = Number.isFinite(this.mouse.zoom) ? this.mouse.zoom : 1.0;
+            const centerX = Number.isFinite(this.mouse.centerX) ? this.mouse.centerX : 0.0;
+            const centerY = Number.isFinite(this.mouse.centerY) ? this.mouse.centerY : 0.0;
+
+            const zoomFactor = Math.exp(-e.deltaY * 0.002);
+            const nextZoom = clamp(zoom * zoomFactor, 0.05, 50.0);
+            const screenCenterX = canvas.width * 0.5;
+            const screenCenterY = canvas.height * 0.5;
+            const invScale = 1.0 / (baseZoom * zoom);
+            const worldX = centerX + (pos.x - screenCenterX) * invScale;
+            const worldY = centerY + (pos.y - screenCenterY) * invScale;
+            const nextInvScale = 1.0 / (baseZoom * nextZoom);
+            this.mouse.centerX = worldX - (pos.x - screenCenterX) * nextInvScale;
+            this.mouse.centerY = worldY - (pos.y - screenCenterY) * nextInvScale;
+            this.mouse.zoom = nextZoom;
+        };
+
         canvas.addEventListener("mousedown", onMouseDown);
         canvas.addEventListener("mousemove", onMouseMove);
         canvas.addEventListener("mouseup", onMouseUp);
         canvas.addEventListener("mouseleave", onMouseLeave);
+        canvas.addEventListener("wheel", onWheel, { passive: false });
 
         this.removeMouseListeners = () =>
         {
@@ -418,6 +462,7 @@ export class ShaderRenderer
             canvas.removeEventListener("mousemove", onMouseMove);
             canvas.removeEventListener("mouseup", onMouseUp);
             canvas.removeEventListener("mouseleave", onMouseLeave);
+            canvas.removeEventListener("wheel", onWheel);
         };
     }
 }

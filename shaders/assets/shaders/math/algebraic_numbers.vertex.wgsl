@@ -1,11 +1,10 @@
-// Vertices per point sprite (two triangles forming a quad).
-const VERTEX_COUNT : u32 = 6u;
-
-// Header skip in packed buffers written by compute.
-const DATA_OFFSET : u32 = 8u;
-
-// Storage capacity and instance count (max points stored).
-const GRID_SIZE : vec3u = vec3u(1024u, 1024u, 1u);
+const USE_POINTER_ZOOM : bool = true;               // Enable pointer-centered zoom via mouse wheel (requires JS camera updates).
+const VERTEX_COUNT : u32 = 6u;                      // Vertices per point sprite (two triangles forming a quad).
+const DATA_OFFSET : u32 = 10u;                      // Header skip in packed buffers written by compute.
+const HEADER_CENTER_X_IDX : u32 = 6u;               // Header index storing camera center X in complex plane.
+const HEADER_CENTER_Y_IDX : u32 = 7u;               // Header index storing camera center Y in complex plane.
+const HEADER_ZOOM_IDX : u32 = 8u;                   // Header index storing camera zoom scale (relative to base zoom).
+const GRID_SIZE : vec3u = vec3u(1024u, 1024u, 1u);  // Storage capacity and instance count (max points stored).
 
 struct ShaderUniforms
 {
@@ -120,10 +119,25 @@ fn vert(input : VertexInput) -> VertexOutput
     let r = 0.125 * pow(0.5, f32(h) - 3.0);
     let blobSize = r * 16.0;
 
-    // Map complex plane to screen using orthographic zoom (yres / 5).
-    let zoom = shaderUniforms.iResolution.y / 5.0;
+    // Camera state comes from packedMeta header (center + zoom scale).
+    var viewCenter = vec2f(0.0, 0.0);
+    var zoomScale = 1.0;
+    if (USE_POINTER_ZOOM)
+    {
+        viewCenter = vec2f(packedMeta[HEADER_CENTER_X_IDX], packedMeta[HEADER_CENTER_Y_IDX]);
+        zoomScale = packedMeta[HEADER_ZOOM_IDX];
+    }
+    if (zoomScale <= 0.0)
+    {
+        zoomScale = 1.0;
+    }
+
+    // Map complex plane to screen using orthographic base zoom (yres / 5).
+    let baseZoom = shaderUniforms.iResolution.y / 5.0;
+    let zoom = baseZoom * zoomScale;
     let worldPos = pos + local * blobSize;
-    let screen = vec2f(shaderUniforms.iResolution.x * 0.5, shaderUniforms.iResolution.y * 0.5) + worldPos * zoom;
+    let screenCenter = vec2f(shaderUniforms.iResolution.x * 0.5, shaderUniforms.iResolution.y * 0.5);
+    let screen = screenCenter + (worldPos - viewCenter) * zoom;
     let ndc = (screen / shaderUniforms.iResolution.xy) * 2.0 - vec2f(1.0, 1.0);
 
     out.Position = vec4f(ndc, 0.0, 1.0);
