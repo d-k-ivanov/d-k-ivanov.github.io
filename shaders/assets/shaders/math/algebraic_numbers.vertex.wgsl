@@ -5,7 +5,7 @@ const VERTEX_COUNT : u32 = 6u;
 const DATA_OFFSET : u32 = 8u;
 
 // Storage capacity and instance count (max points stored).
-const GRID_SIZE : vec3u = vec3u(847618u, 1u, 1u);
+const GRID_SIZE : vec3u = vec3u(1024u, 1024u, 1u);
 
 struct ShaderUniforms
 {
