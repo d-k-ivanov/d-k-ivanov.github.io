@@ -48,12 +48,12 @@ fn randSigned(state : ptr<function, u32>) -> f32
     return rand01(state) * 2.0 - 1.0;
 }
 
-fn cMul(a : vec2f, b : vec2f) -> vec2f
+fn multiplyVector(a : vec2f, b : vec2f) -> vec2f
 {
     return vec2f(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-fn cDiv(a : vec2f, b : vec2f) -> vec2f
+fn divideVector(a : vec2f, b : vec2f) -> vec2f
 {
     let denom = dot(b, b);
     return vec2f((a.x * b.x + a.y * b.y) / denom, (a.y * b.x - a.x * b.y) / denom);
@@ -66,7 +66,7 @@ fn findRoots(
     roots : ptr<function, array<vec2f, MAX_DEGREE>>
 ) -> u32
 {
-    // Newton's method in C for p(z) = 0, followed by polynomial deflation.
+    // Newton's method for p(z) = 0, followed by polynomial deflation.
     var o = order;
     var rootCount : u32 = 0u;
 
@@ -86,7 +86,7 @@ fn findRoots(
             {
                 return 0u;
             }
-            let root = cDiv(vec2f(-c0.x, -c0.y), c1);
+            let root = divideVector(vec2f(-c0.x, -c0.y), c1);
             (*roots)[rootCount] = root;
             rootCount += 1u;
             break;
@@ -123,16 +123,16 @@ fn findRoots(
             {
                 // Evaluate p(z) and p'(z) together via Horner-like powers.
                 let c = (*coeffs)[n];
-                f = f + cMul(p, c);
+                f = f + multiplyVector(p, c);
 
                 let c1 = (*coeffs)[n + 1u];
                 let factor = f32(n + 1u);
-                d = d + cMul(p, c1) * factor;
+                d = d + multiplyVector(p, c1) * factor;
 
-                p = cMul(p, r);
+                p = multiplyVector(p, r);
             }
 
-            f = f + cMul(p, (*coeffs)[o]);
+            f = f + multiplyVector(p, (*coeffs)[o]);
 
             let denom = dot(d, d);
             if (denom == 0.0)
@@ -140,7 +140,7 @@ fn findRoots(
                 return 0u;
             }
 
-            let step = cDiv(f, d);
+            let step = divideVector(f, d);
             r = r - step;
 
             let diff = r - prev;
@@ -162,7 +162,7 @@ fn findRoots(
                 break;
             }
             let idx = n - 1u;
-            (*coeffs)[idx] = (*coeffs)[idx] + cMul(r, (*coeffs)[n]);
+            (*coeffs)[idx] = (*coeffs)[idx] + multiplyVector(r, (*coeffs)[n]);
             n = idx;
         }
 
