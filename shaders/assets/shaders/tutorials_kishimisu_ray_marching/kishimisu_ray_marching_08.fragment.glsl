@@ -46,10 +46,90 @@ void main(void)
     fragColor = vec4(color.xyz, 1.0f);
 }
 
-// sphere SDF (signed distance function)
+// sphere SDF
 float sdSphere(vec3 p, float s)
 {
     return length(p) - s;
+}
+
+// box SDF
+float sdBox(vec3 p, vec3 b)
+{
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0f)) + min(max(q.x, max(q.y, q.z)), 0.0f);
+}
+
+// Operations
+float opUnion(float d1, float d2)
+{
+    return min(d1, d2);
+}
+
+float opSubtraction(float d1, float d2)
+{
+    return max(-d1, d2);
+}
+
+float opIntersection(float d1, float d2)
+{
+    return max(d1, d2);
+}
+
+// Smooth operations
+float opSmoothUnion(float d1, float d2, float k)
+{
+    float h = clamp(0.5f + 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
+    return mix(d2, d1, h) - k * h * (1.0f - h);
+}
+
+float opSmoothSubtraction(float d1, float d2, float k)
+{
+    float h = clamp(0.5f - 0.5f * (d2 + d1) / k, 0.0f, 1.0f);
+    return mix(d2, -d1, h) + k * h * (1.0f - h);
+}
+
+float opSmoothIntersection(float d1, float d2, float k)
+{
+    float h = clamp(0.5f - 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
+    return mix(d2, d1, h) + k * h * (1.0f - h);
+}
+
+float smin(float a, float b, float k)
+{
+    float h = max(k - abs(a - b), 0.0f) / k;
+    return min(a, b) - h * h * h * k * (1.0f / 6.0f);
+}
+
+mat2 rot2D(float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat2(c, -s, s, c);
+}
+
+mat3 rot3DMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0f - c;
+
+    return mat3(//
+    oc * axis.x * axis.x + c,           //
+    oc * axis.x * axis.y - axis.z * s,  //
+    oc * axis.z * axis.x + axis.y * s,  //
+    oc * axis.x * axis.y + axis.z * s,  //
+    oc * axis.y * axis.y + c,           //
+    oc * axis.y * axis.z - axis.x * s,  //
+    oc * axis.z * axis.x - axis.y * s,  //
+    oc * axis.y * axis.z + axis.x * s,  //
+    oc * axis.z * axis.z + c);
+}
+
+vec3 rot3DRodrigues(vec3 p, vec3 axis, float angle)
+{
+    // Rodrigues' rotation formula
+    return mix(dot(p, axis) * axis, p, cos(angle)) + cross(axis, p) * sin(angle);
 }
 
 // Distance to the scene:
@@ -57,7 +137,17 @@ float map(vec3 p)
 {
     vec3 spherePos = vec3(sin(iTime) * 3.0f, 0.0f, 0.0f);   // Sphere position
     float sphere = sdSphere(p - spherePos, 1.0f);           // Sphere SDF
-    return sphere;
+
+    vec3 q = p; // copy of input position
+    q.xy *= rot2D(iTime); // rotate around Z axis
+
+    // float box = sdBox(p, vec3(0.75f));  // Cube SDF
+    float box = sdBox(q, vec3(0.75f));  // Cube SDF after rotation
+    float ground = p.y + 0.75f;         // Ground SDF
+
+    // Closest distance to the scene
+    // return min(ground, smin(sphere, box, 2.0f));
+    return smin(ground, smin(sphere, box, 2.0f), 1.0f);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)

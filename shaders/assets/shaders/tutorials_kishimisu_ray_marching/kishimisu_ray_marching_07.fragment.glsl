@@ -46,10 +46,58 @@ void main(void)
     fragColor = vec4(color.xyz, 1.0f);
 }
 
-// sphere SDF (signed distance function)
+// sphere SDF
 float sdSphere(vec3 p, float s)
 {
     return length(p) - s;
+}
+
+// box SDF
+float sdBox(vec3 p, vec3 b)
+{
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0f)) + min(max(q.x, max(q.y, q.z)), 0.0f);
+}
+
+// Operations
+float opUnion(float d1, float d2)
+{
+    return min(d1, d2);
+}
+
+float opSubtraction(float d1, float d2)
+{
+    return max(-d1, d2);
+}
+
+float opIntersection(float d1, float d2)
+{
+    return max(d1, d2);
+}
+
+// Smooth operations
+float opSmoothUnion(float d1, float d2, float k)
+{
+    float h = clamp(0.5f + 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
+    return mix(d2, d1, h) - k * h * (1.0f - h);
+}
+
+float opSmoothSubtraction(float d1, float d2, float k)
+{
+    float h = clamp(0.5f - 0.5f * (d2 + d1) / k, 0.0f, 1.0f);
+    return mix(d2, -d1, h) + k * h * (1.0f - h);
+}
+
+float opSmoothIntersection(float d1, float d2, float k)
+{
+    float h = clamp(0.5f - 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
+    return mix(d2, d1, h) + k * h * (1.0f - h);
+}
+
+float smin(float a, float b, float k)
+{
+    float h = max(k - abs(a - b), 0.0f) / k;
+    return min(a, b) - h * h * h * k * (1.0f / 6.0f);
 }
 
 // Distance to the scene:
@@ -57,7 +105,13 @@ float map(vec3 p)
 {
     vec3 spherePos = vec3(sin(iTime) * 3.0f, 0.0f, 0.0f);   // Sphere position
     float sphere = sdSphere(p - spherePos, 1.0f);           // Sphere SDF
-    return sphere;
+
+    float box = sdBox(p, vec3(0.75f));  // Cube SDF
+    float ground = p.y + 0.75f;         // Ground SDF
+
+    // Closest distance to the scene
+    // return min(ground, smin(sphere, box, 2.0f));
+    return smin(ground, smin(sphere, box, 2.0f), 1.0f);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
