@@ -2,8 +2,8 @@
 // complexity h = sum(|c_n| + 1). Each polynomial is solved via Newton deflation
 // in the complex plane and written into a packed point buffer.
 const MAX_H : u32 = 15u;                  // Maximum complexity h explored (sum(|c_n| + 1) for each polynomial).
-const MAX_DEGREE : u32 = 14u;             // Maximum polynomial degree (k) supported by local arrays.
-const MAX_COEFFS : u32 = 15u;             // Maximum number of coefficients (degree + 1).
+const MAX_DEGREE : u32 = 16u;             // Maximum polynomial degree (k) supported by local arrays.
+const MAX_COEFFS : u32 = 17u;             // Maximum number of coefficients (degree + 1).
 const RNG_SEED : u32 = 0x1f2e3d4cu;       // Deterministic seed for Newton's method initial guesses.
 const MAX_ITERS : u32 = 5000u;            // Max Newton iterations before declaring failure for a root.
 const RESTART_ITERS : u32 = 500u;         // Restart Newton initial guess after this many steps.

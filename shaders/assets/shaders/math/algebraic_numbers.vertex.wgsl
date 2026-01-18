@@ -35,46 +35,51 @@ struct VertexOutput
 
 fn degreeColor(degree : u32) -> vec3f
 {
-    // The palette: degree -> primary color (low degrees are brightest). The palette cycles every 8 degrees.
     if (degree == 0u)
     {
         return vec3f(1.0);
     }
 
-    let idx = ((degree - 1u) % 8u) + 1u;
-    if (idx == 1u)
-    {
-        return vec3f(1.0, 0.0, 0.0); // Red
-    }
-    if (idx == 2u)
-    {
-        return vec3f(0.0, 1.0, 0.0); // Green
-    }
-    if (idx == 3u)
-    {
-        return vec3f(0.0, 0.0, 1.0); // Blue
-    }
-    if (idx == 4u)
-    {
-        return vec3f(0.7, 0.7, 0.0); // Yellow
-    }
-    if (idx == 5u)
-    {
-        return vec3f(1.0, 0.6, 0.0); // Orange
-    }
-    if (idx == 6u)
-    {
-        return vec3f(0.0, 1.0, 1.0); // Cyan
-    }
-    if (idx == 7u)
-    {
-        return vec3f(1.0, 0.0, 1.0); // Magenta
-    }
-    if (idx == 8u)
-    {
-        return vec3f(0.6, 0.6, 0.6); // Light gray
-    }
-    return vec3f(1.0);
+    let paletteCommon = array<vec3f, 16>(
+        vec3f(1.0, 0.0, 0.0),    // Red
+        vec3f(0.0, 1.0, 0.0),    // Green
+        vec3f(0.0, 0.0, 1.0),    // Blue
+        vec3f(0.7, 0.7, 0.0),    // Yellow
+        vec3f(1.0, 0.6, 0.0),    // Orange
+        vec3f(0.0, 1.0, 1.0),    // Cyan
+        vec3f(1.0, 0.0, 1.0),    // Magenta
+        vec3f(0.6, 0.6, 0.6),    // Light gray
+        vec3f(0.6, 0.0, 0.0),    // Dark red
+        vec3f(0.5, 1.0, 0.0),    // Lime
+        vec3f(0.0, 0.0, 0.5),    // Navy blue
+        vec3f(1.0, 0.84, 0.0),   // Gold
+        vec3f(0.8, 0.4, 0.0),    // Dark orange
+        vec3f(0.0, 0.5, 0.5),    // Teal
+        vec3f(0.5, 0.0, 0.5),    // Purple
+        vec3f(1.0, 0.75, 0.8)    // Pink
+    );
+
+    let paletteDataSciece = array<vec3f, 16>(
+        vec3f(0.12, 0.47, 0.71), // Blue
+        vec3f(1.0, 0.5, 0.05),   // Orange
+        vec3f(0.17, 0.63, 0.17), // Green
+        vec3f(0.84, 0.15, 0.16), // Red
+        vec3f(0.58, 0.4, 0.74),  // Purple
+        vec3f(0.55, 0.34, 0.29), // Brown
+        vec3f(0.89, 0.47, 0.76), // Pink
+        vec3f(0.5, 0.5, 0.5),    // Gray
+        vec3f(0.74, 0.74, 0.13), // Yellow
+        vec3f(0.09, 0.75, 0.81), // Cyan
+        vec3f(0.0, 0.27, 0.68),  // Dark blue
+        vec3f(0.9, 0.33, 0.05),  // Dark orange
+        vec3f(0.0, 0.5, 0.5),    // Teal
+        vec3f(0.8, 0.0, 0.6),    // Magenta
+        vec3f(0.13, 0.54, 0.13), // Dark green
+        vec3f(0.2, 0.2, 0.58)    // Navy
+    );
+
+    let idx = (degree - 1u) % 16u;
+    return paletteCommon[idx];
 }
 
 @vertex
