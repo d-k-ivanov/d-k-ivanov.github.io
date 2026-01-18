@@ -7,8 +7,6 @@ const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const DEFAULT_WORKGROUPS = { x: 1, y: 1, z: 1 };
 const DEFAULT_VERTEX_COUNT = 3;
 const DEFAULT_GRID_SIZE = 1;
-const POINTER_ZOOM_HEADER_OFFSET = 6;
-const POINTER_ZOOM_HEADER_COUNT = 3;
 const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
 const MODEL_PADDING_MARKER = /\bMODEL_GEOMETRY_WITH_PADDING\b/;
 const MODEL_BINDINGS = {
@@ -102,8 +100,6 @@ export class WebGPURenderer extends BaseRenderer
         this.depthFormat = "depth24plus";
         this.isUpdating = false;
 
-        this.usePointerZoom = false;
-        this.pointerZoomState = { centerX: 0, centerY: 0, zoom: 1 };
     }
 
     /**
@@ -523,56 +519,6 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Detects pointer zoom marker from WGSL sources.
-     *
-     * Expected format: const USE_POINTER_ZOOM : bool = true;
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {boolean} True when pointer-centered zoom is requested.
-     */
-    extractPointerZoom(sources)
-    {
-        const regex = /const\s+USE_POINTER_ZOOM\b[^=]*=\s*true\b/i;
-        return sources.some(source => source && regex.test(source));
-    }
-
-    /**
-     * Updates packed meta header with camera center and zoom for pointer zoom shaders.
-     *
-     * @returns {void}
-     */
-    updatePointerZoomBuffer()
-    {
-        if (!this.usePointerZoom || !this.storageBuffers.buffer3 || !this.device)
-        {
-            return;
-        }
-
-        const mouse = this.mouse || {};
-        const centerX = Number.isFinite(mouse.centerX) ? mouse.centerX : 0.0;
-        const centerY = Number.isFinite(mouse.centerY) ? mouse.centerY : 0.0;
-        const zoom = Number.isFinite(mouse.zoom) && mouse.zoom > 0 ? mouse.zoom : 1.0;
-        const last = this.pointerZoomState;
-
-        if (last && centerX === last.centerX && centerY === last.centerY && zoom === last.zoom)
-        {
-            return;
-        }
-
-        const data = new Float32Array(POINTER_ZOOM_HEADER_COUNT);
-        data[0] = centerX;
-        data[1] = centerY;
-        data[2] = zoom;
-        this.device.queue.writeBuffer(
-            this.storageBuffers.buffer3,
-            POINTER_ZOOM_HEADER_OFFSET * Float32Array.BYTES_PER_ELEMENT,
-            data
-        );
-
-        this.pointerZoomState = { centerX, centerY, zoom };
-    }
-
-    /**
      * Returns grid dimensions derived from the current canvas resolution.
      *
      * @returns {{x: number, y: number, z: number}} Resolution-backed grid size.
@@ -978,7 +924,6 @@ export class WebGPURenderer extends BaseRenderer
     {
         this.destroyStorageBuffers();
         this.releaseChannelTextures();
-        this.pointerZoomState = null;
 
         const bindingEntriesRendering = [];
         const bindingEntriesCompute = [];
@@ -1486,7 +1431,6 @@ export class WebGPURenderer extends BaseRenderer
             const computeSource = (sources.compute || "").trim();
             const shaderSources = [vertexSource, fragmentSource, computeSource];
             const useAdditiveBlend = this.extractAdditiveBlend(shaderSources);
-            this.usePointerZoom = this.extractPointerZoom(shaderSources);
 
             this.useModelGeometry = this.detectModelGeometry(shaderSources);
             const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
@@ -1636,7 +1580,6 @@ export class WebGPURenderer extends BaseRenderer
 
             this.uniformState.nextFrame(time);
             this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformViews.buffer);
-            this.updatePointerZoomBuffer();
 
             // Ping-Pong storage buffers:
             if (this.storageBuffers.bindGroupA && this.storageBuffers.bindGroupB)

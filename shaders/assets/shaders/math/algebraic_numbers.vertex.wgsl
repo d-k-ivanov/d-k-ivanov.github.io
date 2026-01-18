@@ -1,8 +1,4 @@
-const USE_POINTER_ZOOM : bool = true;               // Enable pointer-centered zoom via mouse wheel (requires JS camera updates).
-const DATA_OFFSET : u32 = 10u;                      // Header skip in packed buffers written by compute.
-const HEADER_CENTER_X_IDX : u32 = 6u;               // Header index storing camera center X in complex plane.
-const HEADER_CENTER_Y_IDX : u32 = 7u;               // Header index storing camera center Y in complex plane.
-const HEADER_ZOOM_IDX : u32 = 8u;                   // Header index storing camera zoom scale (relative to base zoom).
+const DATA_OFFSET : u32 = 6u;                       // Header skip in packed buffers (count/h/i/sign/state/rng).
 const GRID_SIZE : vec3u = vec3u(1024u, 1024u, 1u);  // Storage capacity and instance count (max points stored).
 
 struct ShaderUniforms
@@ -14,6 +10,8 @@ struct ShaderUniforms
     iFrameRate : f32,
     iMouse : vec4f,
     iGridSize : vec3u,
+    iViewCenter : vec2f,
+    iViewZoom : f32,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -139,14 +137,9 @@ fn vert(input : VertexInput) -> VertexOutput
     let r = 0.125 * pow(0.5, f32(h) - 3.0);
     let blobSize = r * 16.0;
 
-    // Camera state comes from packedMeta header (center + zoom scale).
-    var viewCenter = vec2f(0.0, 0.0);
-    var zoomScale = 1.0;
-    if (USE_POINTER_ZOOM)
-    {
-        viewCenter = vec2f(packedMeta[HEADER_CENTER_X_IDX], packedMeta[HEADER_CENTER_Y_IDX]);
-        zoomScale = packedMeta[HEADER_ZOOM_IDX];
-    }
+    // Camera state comes from uniforms (center + zoom scale).
+    let viewCenter = shaderUniforms.iViewCenter;
+    var zoomScale = shaderUniforms.iViewZoom;
     if (zoomScale <= 0.0)
     {
         zoomScale = 1.0;

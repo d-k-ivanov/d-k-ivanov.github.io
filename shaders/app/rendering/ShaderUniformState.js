@@ -12,7 +12,7 @@
  */
 export class ShaderUniformState
 {
-    static BUFFER_SIZE = 64;
+    static BUFFER_SIZE = 80;
 
     static OFFSETS = {
         resolution: 0,
@@ -21,7 +21,9 @@ export class ShaderUniformState
         frame: 5,
         frameRate: 6,
         mouse: 8,
-        gridSize: 12
+        gridSize: 12,
+        viewCenter: 16,
+        viewZoom: 18
     };
 
     /**
@@ -237,6 +239,12 @@ export class ShaderUniformState
         const frame = Number.isFinite(this.frameOverride) ? this.frameOverride : this.frameCount++;
         const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
 
+        const viewCenter = {
+            x: Number.isFinite(mouse.centerX) ? mouse.centerX : 0,
+            y: Number.isFinite(mouse.centerY) ? mouse.centerY : 0
+        };
+        const viewZoom = Number.isFinite(mouse.zoom) && mouse.zoom > 0 ? mouse.zoom : 1.0;
+
         return {
             resolution,
             timeSeconds,
@@ -244,7 +252,9 @@ export class ShaderUniformState
             frame,
             frameRate,
             mouse: mouseState,
-            gridSize: this.gridSize
+            gridSize: this.gridSize,
+            viewCenter,
+            viewZoom
         };
     }
 
@@ -282,6 +292,9 @@ export class ShaderUniformState
         u[offsets.gridSize + 0] = data.gridSize.x;
         u[offsets.gridSize + 1] = data.gridSize.y;
         u[offsets.gridSize + 2] = data.gridSize.z;
+        f[offsets.viewCenter + 0] = data.viewCenter.x;
+        f[offsets.viewCenter + 1] = data.viewCenter.y;
+        f[offsets.viewZoom] = data.viewZoom;
     }
 
     /**

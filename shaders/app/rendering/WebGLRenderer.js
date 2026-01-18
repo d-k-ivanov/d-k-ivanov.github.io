@@ -130,6 +130,8 @@ export class WebGLRenderer extends BaseRenderer
             iFrame: gl.getUniformLocation(newProgram, "iFrame"),
             iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
             iMouse: gl.getUniformLocation(newProgram, "iMouse"),
+            iViewCenter: gl.getUniformLocation(newProgram, "iViewCenter"),
+            iViewZoom: gl.getUniformLocation(newProgram, "iViewZoom"),
             uHasModel: gl.getUniformLocation(newProgram, "uHasModel"),
             uModelCenter: gl.getUniformLocation(newProgram, "uModelCenter"),
             uModelScale: gl.getUniformLocation(newProgram, "uModelScale"),
@@ -269,6 +271,14 @@ export class WebGLRenderer extends BaseRenderer
         {
             const mouse = frameData.mouse;
             gl.uniform4f(u.iMouse, mouse.x, mouse.y, mouse.clickX * mouse.zSign, mouse.clickY);
+        }
+        if (u.iViewCenter)
+        {
+            gl.uniform2f(u.iViewCenter, frameData.viewCenter.x, frameData.viewCenter.y);
+        }
+        if (u.iViewZoom)
+        {
+            gl.uniform1f(u.iViewZoom, frameData.viewZoom);
         }
 
         this.applyModelUniforms();
