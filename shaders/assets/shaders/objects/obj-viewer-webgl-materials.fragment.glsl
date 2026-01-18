@@ -8,7 +8,6 @@ in vec2 vScreenUV;
 in float vIsBackground;
 
 uniform float iTime;
-uniform float uHasModel;
 uniform vec3 uModelBoundsMin;
 uniform vec3 uModelBoundsMax;
 uniform vec3 uModelCenter;

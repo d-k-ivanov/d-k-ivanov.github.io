@@ -10,8 +10,6 @@ precision mediump int;
 
 // Uniforms
 uniform vec3 iResolution;
-uniform float iTime;
-uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 color, in vec2 coordinates);
