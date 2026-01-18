@@ -1,6 +1,6 @@
-const MAX_ITERS : u32 = 30u;               // Mandelbrot iteration cap (higher = sharper boundary).
-const ESCAPE_RADIUS_SQ : f32 = 4.0;        // Escape radius squared (|z|^2 > 4 means divergence).
-const BASE_ZOOM_DIVISOR : f32 = 3.0;       // Base zoom: screen height divided by this value.
+const MAX_ITERS : u32 = 30u;                  // Mandelbrot iteration cap (higher = sharper boundary).
+const ESCAPE_RADIUS_SQ : f32 = 4.0;           // Escape radius squared (|z|^2 > 4 means divergence).
+const BASE_ZOOM_DIVISOR : f32 = 3.0;          // Base zoom: screen height divided by this value.
 const BASE_CENTER : vec2f = vec2f(-0.5, 0.0); // Default center of the Mandelbrot set.
 
 struct ShaderUniforms
