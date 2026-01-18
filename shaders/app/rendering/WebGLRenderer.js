@@ -270,7 +270,7 @@ export class WebGLRenderer extends BaseRenderer
         if (u.iMouse)
         {
             const mouse = frameData.mouse;
-            gl.uniform4f(u.iMouse, mouse.x, mouse.y, mouse.clickX * mouse.zSign, mouse.clickY);
+            gl.uniform4f(u.iMouse, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
         }
         if (u.iViewCenter)
         {

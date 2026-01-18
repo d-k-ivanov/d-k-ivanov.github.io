@@ -228,13 +228,25 @@ export class ShaderUniformState
         };
 
         const mouse = this.mouse || {};
+        const downX = Number.isFinite(mouse.clickX) ? mouse.clickX : 0;
+        const downY = Number.isFinite(mouse.clickY) ? mouse.clickY : 0;
+        const clickX = Number.isFinite(mouse.lastClickX) ? mouse.lastClickX : 0;
+        const clickY = Number.isFinite(mouse.lastClickY) ? mouse.lastClickY : 0;
+        const downSign = mouse.isDown ? 1 : -1;
+        const clickSign = mouse.clicked ? 1 : -1;
         const mouseState = {
-            x: mouse.x || 0,
-            y: mouse.y || 0,
-            clickX: mouse.clickX || 0,
-            clickY: mouse.clickY || 0,
-            zSign: mouse.isDown ? 1 : -1
+            downX,
+            downY,
+            clickX,
+            clickY,
+            downSign,
+            clickSign
         };
+
+        if (mouse.clicked)
+        {
+            mouse.clicked = false;
+        }
 
         const frame = Number.isFinite(this.frameOverride) ? this.frameOverride : this.frameCount++;
         const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
@@ -284,10 +296,10 @@ export class ShaderUniformState
         u[offsets.frame] = data.frame;
         f[offsets.frameRate] = data.frameRate;
 
-        f[offsets.mouse + 0] = data.mouse.x;
-        f[offsets.mouse + 1] = data.mouse.y;
-        f[offsets.mouse + 2] = data.mouse.clickX * data.mouse.zSign;
-        f[offsets.mouse + 3] = data.mouse.clickY;
+        f[offsets.mouse + 0] = data.mouse.downX;
+        f[offsets.mouse + 1] = data.mouse.downY;
+        f[offsets.mouse + 2] = data.mouse.clickX * data.mouse.downSign;
+        f[offsets.mouse + 3] = data.mouse.clickY * data.mouse.clickSign;
 
         u[offsets.gridSize + 0] = data.gridSize.x;
         u[offsets.gridSize + 1] = data.gridSize.y;

@@ -42,7 +42,10 @@ export class ShaderRenderer
             y: 0,
             clickX: 0,
             clickY: 0,
+            lastClickX: 0,
+            lastClickY: 0,
             isDown: false,
+            clicked: false,
             zoom: 1,
             centerX: 0,
             centerY: 0
@@ -83,6 +86,9 @@ export class ShaderRenderer
         this.mouse.y = 0;
         this.mouse.clickX = 0;
         this.mouse.clickY = 0;
+        this.mouse.lastClickX = 0;
+        this.mouse.lastClickY = 0;
+        this.mouse.clicked = false;
         this.mouse.zoom = 1;
         this.mouse.centerX = 0;
         this.mouse.centerY = 0;
@@ -398,14 +404,19 @@ export class ShaderRenderer
             this.mouse.y = pos.y;
             this.mouse.clickX = pos.x;
             this.mouse.clickY = pos.y;
+            this.mouse.lastClickX = pos.x;
+            this.mouse.lastClickY = pos.y;
             this.mouse.isDown = true;
         };
 
         const onMouseMove = (e) =>
         {
+            const pos = getMousePos(e);
+            this.mouse.x = pos.x;
+            this.mouse.y = pos.y;
+
             if (this.mouse.isDown)
             {
-                const pos = getMousePos(e);
                 const lastX = Number.isFinite(this.mouse.clickX) ? this.mouse.clickX : pos.x;
                 const lastY = Number.isFinite(this.mouse.clickY) ? this.mouse.clickY : pos.y;
                 const baseZoom = Math.max(1, canvas.height) / 5.0;
@@ -413,8 +424,6 @@ export class ShaderRenderer
                 const invScale = 1.0 / (baseZoom * zoom);
                 const dx = pos.x - lastX;
                 const dy = pos.y - lastY;
-                this.mouse.x = pos.x;
-                this.mouse.y = pos.y;
                 this.mouse.centerX -= dx * invScale;
                 this.mouse.centerY -= dy * invScale;
                 this.mouse.clickX = pos.x;
@@ -422,9 +431,23 @@ export class ShaderRenderer
             }
         };
 
-        const onMouseUp = () =>
+        const onMouseUp = (e) =>
         {
+            const wasDown = this.mouse.isDown;
             this.mouse.isDown = false;
+            if (!wasDown)
+            {
+                return;
+            }
+
+            const pos = getMousePos(e);
+            this.mouse.x = pos.x;
+            this.mouse.y = pos.y;
+            this.mouse.clickX = pos.x;
+            this.mouse.clickY = pos.y;
+            this.mouse.lastClickX = pos.x;
+            this.mouse.lastClickY = pos.y;
+            this.mouse.clicked = true;
         };
 
         const onMouseLeave = () =>
