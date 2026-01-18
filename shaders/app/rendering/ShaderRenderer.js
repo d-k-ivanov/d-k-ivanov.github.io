@@ -456,6 +456,28 @@ export class ShaderRenderer
             return null;
         };
 
+        const updateClickPos = (state, pos) =>
+        {
+            state.clickX = pos.x;
+            state.clickY = pos.y;
+        };
+
+        const applyPan = (state, wasDown, pos) =>
+        {
+            const lastX = wasDown && Number.isFinite(state.clickX) ? state.clickX : pos.x;
+            const lastY = wasDown && Number.isFinite(state.clickY) ? state.clickY : pos.y;
+            const zoomState = this.mouse.zoom || {};
+            const baseZoom = Math.max(1, canvas.height) / 5.0;
+            const zoomScale = Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0;
+            const invScale = 1.0 / (baseZoom * zoomScale);
+            const dx = pos.x - lastX;
+            const dy = pos.y - lastY;
+            zoomState.x = (Number.isFinite(zoomState.x) ? zoomState.x : 0) - dx * invScale;
+            zoomState.y = (Number.isFinite(zoomState.y) ? zoomState.y : 0) - dy * invScale;
+            this.mouse.zoom = zoomState;
+            updateClickPos(state, pos);
+        };
+
         const onMouseDown = (e) =>
         {
             const pos = getMousePos(e);
@@ -482,6 +504,8 @@ export class ShaderRenderer
             const leftDown = buttons === null ? wasLeftDown : (buttons & 1) !== 0;
             const rightDown = buttons === null ? wasRightDown : (buttons & 2) !== 0;
             const wheelDown = buttons === null ? wasWheelDown : (buttons & 4) !== 0;
+            const panWithRight = rightDown && e.shiftKey;
+            const panWithWheel = wheelDown;
 
             if (buttons !== null)
             {
@@ -501,31 +525,25 @@ export class ShaderRenderer
 
             if (leftDown && leftState)
             {
-                const lastX = wasLeftDown ? leftState.clickX : pos.x;
-                const lastY = wasLeftDown ? leftState.clickY : pos.y;
-                const zoomState = this.mouse.zoom || {};
-                const baseZoom = Math.max(1, canvas.height) / 5.0;
-                const zoomScale = Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0;
-                const invScale = 1.0 / (baseZoom * zoomScale);
-                const dx = pos.x - lastX;
-                const dy = pos.y - lastY;
-                zoomState.x = (Number.isFinite(zoomState.x) ? zoomState.x : 0) - dx * invScale;
-                zoomState.y = (Number.isFinite(zoomState.y) ? zoomState.y : 0) - dy * invScale;
-                this.mouse.zoom = zoomState;
-                leftState.clickX = pos.x;
-                leftState.clickY = pos.y;
+                updateClickPos(leftState, pos);
             }
 
-            if (rightDown && rightState)
+            if (panWithWheel && wheelState)
             {
-                rightState.clickX = pos.x;
-                rightState.clickY = pos.y;
+                applyPan(wheelState, wasWheelDown, pos);
+            }
+            else if (wheelDown && wheelState)
+            {
+                updateClickPos(wheelState, pos);
             }
 
-            if (wheelDown && wheelState)
+            if (panWithRight && rightState)
             {
-                wheelState.clickX = pos.x;
-                wheelState.clickY = pos.y;
+                applyPan(rightState, wasRightDown, pos);
+            }
+            else if (rightDown && rightState)
+            {
+                updateClickPos(rightState, pos);
             }
         };
 
