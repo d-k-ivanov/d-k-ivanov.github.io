@@ -45,9 +45,7 @@ export class ShaderRenderer
             isDown: false,
             zoom: 1,
             centerX: 0,
-            centerY: 0,
-            dragX: 0,
-            dragY: 0
+            centerY: 0
         };
         this.removeMouseListeners = null;
         this.setupMouseEvents();
@@ -88,8 +86,6 @@ export class ShaderRenderer
         this.mouse.zoom = 1;
         this.mouse.centerX = 0;
         this.mouse.centerY = 0;
-        this.mouse.dragX = 0;
-        this.mouse.dragY = 0;
         this.setupMouseEvents();
         this.webglRenderer = null;
         this.webgpuRenderer = null;
@@ -402,8 +398,6 @@ export class ShaderRenderer
             this.mouse.y = pos.y;
             this.mouse.clickX = pos.x;
             this.mouse.clickY = pos.y;
-            this.mouse.dragX = pos.x;
-            this.mouse.dragY = pos.y;
             this.mouse.isDown = true;
         };
 
@@ -412,8 +406,8 @@ export class ShaderRenderer
             if (this.mouse.isDown)
             {
                 const pos = getMousePos(e);
-                const lastX = Number.isFinite(this.mouse.dragX) ? this.mouse.dragX : pos.x;
-                const lastY = Number.isFinite(this.mouse.dragY) ? this.mouse.dragY : pos.y;
+                const lastX = Number.isFinite(this.mouse.clickX) ? this.mouse.clickX : pos.x;
+                const lastY = Number.isFinite(this.mouse.clickY) ? this.mouse.clickY : pos.y;
                 const baseZoom = Math.max(1, canvas.height) / 5.0;
                 const zoom = Number.isFinite(this.mouse.zoom) && this.mouse.zoom > 0 ? this.mouse.zoom : 1.0;
                 const invScale = 1.0 / (baseZoom * zoom);
@@ -423,8 +417,8 @@ export class ShaderRenderer
                 this.mouse.y = pos.y;
                 this.mouse.centerX -= dx * invScale;
                 this.mouse.centerY -= dy * invScale;
-                this.mouse.dragX = pos.x;
-                this.mouse.dragY = pos.y;
+                this.mouse.clickX = pos.x;
+                this.mouse.clickY = pos.y;
             }
         };
 
