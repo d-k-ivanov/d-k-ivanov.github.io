@@ -314,6 +314,16 @@
     line-height: 1.5;
 }
 
+.shaders-note-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 240px;
+    max-height: min(240px, 35vh);
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
 .shaders-note.collapsed {
     padding-bottom: 6px;
     cursor: pointer;
@@ -328,6 +338,37 @@
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 6px;
+}
+
+.shaders-note-section-title {
+    color: var(--sh-text-primary);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.shaders-note-grid {
+    display: grid;
+    grid-template-columns: minmax(140px, max-content) 1fr;
+    column-gap: 12px;
+    row-gap: 6px;
+    align-items: start;
+}
+
+.shaders-note-grid-compact {
+    grid-template-columns: minmax(80px, max-content) 1fr;
+}
+
+.shaders-note-key {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    color: var(--sh-text-primary);
+    white-space: nowrap;
+}
+
+.shaders-note-desc {
+    color: var(--sh-text-muted);
 }
 
 .shaders-note.collapsed .shaders-note-title::after {

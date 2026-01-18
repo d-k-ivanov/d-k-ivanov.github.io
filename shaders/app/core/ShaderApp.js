@@ -139,56 +139,98 @@ const SHADER_UI_TEMPLATE = `
                     </div>
                 </div>
             </div>
-            <div class="shaders-note">
-                <div class="shaders-note-title">Inputs:</div>
-                <b>GLSL:</b>
-                <p>
-                    vec3 iResolution<br>
-                    float iTime<br>
-                    float iTimeDelta<br>
-                    int iFrame<br>
-                    float iFrameRate<br>
-                    vec4 iMouseL<br>
-                    vec4 iMouseR<br>
-                    vec4 iMouseW<br>
-                    vec4 iMouseZoom<br>
-                    sampler{2D,Cube} iChannel0<br>
-                    sampler{2D,Cube} iChannel1<br>
-                    sampler{2D,Cube} iChannel2<br>
-                    sampler{2D,Cube} iChannel3<br>
-                    sampler2D uBackbuffer<br>
-                    float uHasModel<br>
-                    vec3 uModelCenter<br>
-                    float uModelScale<br>
-                    vec3 uModelBoundsMin<br>
-                    vec3 uModelBoundsMax<br>
-                </p>
-                <b>WebGPU bindings:</b>
-                <p>
-                    00: Uniforms<br>
-                    01: storage in  u32[2xGRID_SIZE]<br>
-                    02: storage out u32[2xGRID_SIZE]<br>
-                    03: storage in  f32[2xGRID_SIZE]<br>
-                    04: storage out f32[2xGRID_SIZE]<br>
-                    10: texture_2d f32<br>
-                    11: texture_2d f32<br>
-                    12: texture_2d f32<br>
-                    13: texture_2d f32<br>
-                    14: sampler<br>
-                    15: sampler<br>
-                    16: sampler<br>
-                    17: sampler<br>
-                    20: storage vec4 positions<br>
-                    21: storage vec4 normals<br>
-                    22: storage vec4 uvs<br>
-                    23: storage vec4 modelInfo<br>
-                </p>
-            </div>
         </div>
         <div class="shaders-resize-handle shaders-resize-handle-h" id="resize-tree"></div>
         <div class="shaders-editor-area">
             <div class="shaders-tab-bar" id="tab-bar">
                 <!-- Tabs will be populated by JS -->
+            </div>
+            <div class="shaders-note">
+                <div class="shaders-note-title">Inputs:</div>
+                <div class="shaders-note-body">
+                    <div class="shaders-note-section">
+                        <div class="shaders-note-section-title">GLSL</div>
+                        <div class="shaders-note-grid">
+                            <span class="shaders-note-key">vec3 iResolution</span>
+                            <span class="shaders-note-desc">viewport resolution in pixels (z is pixel aspect, usually 1.0)</span>
+                            <span class="shaders-note-key">float iTime</span>
+                            <span class="shaders-note-desc">elapsed time in seconds since the shader started</span>
+                            <span class="shaders-note-key">float iTimeDelta</span>
+                            <span class="shaders-note-desc">time between the current and previous frame in seconds</span>
+                            <span class="shaders-note-key">int iFrame</span>
+                            <span class="shaders-note-desc">frame counter incremented every render pass</span>
+                            <span class="shaders-note-key">float iFrameRate</span>
+                            <span class="shaders-note-desc">estimated frames per second for the current run</span>
+                            <span class="shaders-note-key">vec4 iMouseL</span>
+                            <span class="shaders-note-desc">left button: xy = last down position, zw = last click position with sign for down/click</span>
+                            <span class="shaders-note-key">vec4 iMouseR</span>
+                            <span class="shaders-note-desc">right button: xy = last down position, zw = last click position with sign for down/click</span>
+                            <span class="shaders-note-key">vec4 iMouseW</span>
+                            <span class="shaders-note-desc">wheel button: xy = last down position, zw = last click position with sign for down/click</span>
+                            <span class="shaders-note-key">vec4 iMouseZoom</span>
+                            <span class="shaders-note-desc">view center xy in world space, zoom scale z (1.0 = default), w reserved</span>
+                            <span class="shaders-note-key">sampler{2D,Cube} iChannel0</span>
+                            <span class="shaders-note-desc">optional texture or cubemap input bound by the editor</span>
+                            <span class="shaders-note-key">sampler{2D,Cube} iChannel1</span>
+                            <span class="shaders-note-desc">optional texture or cubemap input bound by the editor</span>
+                            <span class="shaders-note-key">sampler{2D,Cube} iChannel2</span>
+                            <span class="shaders-note-desc">optional texture or cubemap input bound by the editor</span>
+                            <span class="shaders-note-key">sampler{2D,Cube} iChannel3</span>
+                            <span class="shaders-note-desc">optional texture or cubemap input bound by the editor</span>
+                            <span class="shaders-note-key">sampler2D uBackbuffer</span>
+                            <span class="shaders-note-desc">previous frame color buffer for feedback effects</span>
+                            <span class="shaders-note-key">float uHasModel</span>
+                            <span class="shaders-note-desc">1.0 when a model is loaded, otherwise 0.0</span>
+                            <span class="shaders-note-key">vec3 uModelCenter</span>
+                            <span class="shaders-note-desc">center of the loaded model's bounding box</span>
+                            <span class="shaders-note-key">float uModelScale</span>
+                            <span class="shaders-note-desc">scale factor applied to fit the model into view</span>
+                            <span class="shaders-note-key">vec3 uModelBoundsMin</span>
+                            <span class="shaders-note-desc">minimum corner of the model bounding box</span>
+                            <span class="shaders-note-key">vec3 uModelBoundsMax</span>
+                            <span class="shaders-note-desc">maximum corner of the model bounding box</span>
+                        </div>
+                    </div>
+                    <div class="shaders-note-section">
+                        <div class="shaders-note-section-title">WebGPU bindings</div>
+                        <div class="shaders-note-grid shaders-note-grid-compact">
+                            <span class="shaders-note-key">00</span>
+                            <span class="shaders-note-desc">Uniforms</span>
+                            <span class="shaders-note-key">01</span>
+                            <span class="shaders-note-desc">storage in u32[2xGRID_SIZE]</span>
+                            <span class="shaders-note-key">02</span>
+                            <span class="shaders-note-desc">storage out u32[2xGRID_SIZE]</span>
+                            <span class="shaders-note-key">03</span>
+                            <span class="shaders-note-desc">storage in f32[2xGRID_SIZE]</span>
+                            <span class="shaders-note-key">04</span>
+                            <span class="shaders-note-desc">storage out f32[2xGRID_SIZE]</span>
+                            <span class="shaders-note-key">10</span>
+                            <span class="shaders-note-desc">texture_2d f32</span>
+                            <span class="shaders-note-key">11</span>
+                            <span class="shaders-note-desc">texture_2d f32</span>
+                            <span class="shaders-note-key">12</span>
+                            <span class="shaders-note-desc">texture_2d f32</span>
+                            <span class="shaders-note-key">13</span>
+                            <span class="shaders-note-desc">texture_2d f32</span>
+                            <span class="shaders-note-key">14</span>
+                            <span class="shaders-note-desc">sampler</span>
+                            <span class="shaders-note-key">15</span>
+                            <span class="shaders-note-desc">sampler</span>
+                            <span class="shaders-note-key">16</span>
+                            <span class="shaders-note-desc">sampler</span>
+                            <span class="shaders-note-key">17</span>
+                            <span class="shaders-note-desc">sampler</span>
+                            <span class="shaders-note-key">20</span>
+                            <span class="shaders-note-desc">storage vec4 positions</span>
+                            <span class="shaders-note-key">21</span>
+                            <span class="shaders-note-desc">storage vec4 normals</span>
+                            <span class="shaders-note-key">22</span>
+                            <span class="shaders-note-desc">storage vec4 uvs</span>
+                            <span class="shaders-note-key">23</span>
+                            <span class="shaders-note-desc">storage vec4 modelInfo</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="shaders-editor-content" id="editor-content">
                 <div class="shaders-editor-empty" id="editor-empty">
