@@ -472,11 +472,37 @@ export class ShaderRenderer
         const onMouseMove = (e) =>
         {
             const pos = getMousePos(e);
+            const buttons = Number.isFinite(e.buttons) ? e.buttons : null;
+            const leftState = this.mouse.left;
+            const rightState = this.mouse.right;
+            const wheelState = this.mouse.wheel;
+            const wasLeftDown = leftState?.isDown;
+            const wasRightDown = rightState?.isDown;
+            const wasWheelDown = wheelState?.isDown;
+            const leftDown = buttons === null ? wasLeftDown : (buttons & 1) !== 0;
+            const rightDown = buttons === null ? wasRightDown : (buttons & 2) !== 0;
+            const wheelDown = buttons === null ? wasWheelDown : (buttons & 4) !== 0;
 
-            if (this.mouse.left?.isDown)
+            if (buttons !== null)
             {
-                const lastX = Number.isFinite(this.mouse.left.clickX) ? this.mouse.left.clickX : pos.x;
-                const lastY = Number.isFinite(this.mouse.left.clickY) ? this.mouse.left.clickY : pos.y;
+                if (leftState)
+                {
+                    leftState.isDown = leftDown;
+                }
+                if (rightState)
+                {
+                    rightState.isDown = rightDown;
+                }
+                if (wheelState)
+                {
+                    wheelState.isDown = wheelDown;
+                }
+            }
+
+            if (leftDown && leftState)
+            {
+                const lastX = wasLeftDown ? leftState.clickX : pos.x;
+                const lastY = wasLeftDown ? leftState.clickY : pos.y;
                 const zoomState = this.mouse.zoom || {};
                 const baseZoom = Math.max(1, canvas.height) / 5.0;
                 const zoomScale = Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0;
@@ -486,20 +512,20 @@ export class ShaderRenderer
                 zoomState.x = (Number.isFinite(zoomState.x) ? zoomState.x : 0) - dx * invScale;
                 zoomState.y = (Number.isFinite(zoomState.y) ? zoomState.y : 0) - dy * invScale;
                 this.mouse.zoom = zoomState;
-                this.mouse.left.clickX = pos.x;
-                this.mouse.left.clickY = pos.y;
+                leftState.clickX = pos.x;
+                leftState.clickY = pos.y;
             }
 
-            if (this.mouse.right?.isDown)
+            if (rightDown && rightState)
             {
-                this.mouse.right.clickX = pos.x;
-                this.mouse.right.clickY = pos.y;
+                rightState.clickX = pos.x;
+                rightState.clickY = pos.y;
             }
 
-            if (this.mouse.wheel?.isDown)
+            if (wheelDown && wheelState)
             {
-                this.mouse.wheel.clickX = pos.x;
-                this.mouse.wheel.clickY = pos.y;
+                wheelState.clickX = pos.x;
+                wheelState.clickY = pos.y;
             }
         };
 
