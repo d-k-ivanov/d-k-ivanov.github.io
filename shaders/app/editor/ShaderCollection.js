@@ -92,7 +92,7 @@ export class ShaderCollection
         { language: "glsl", folder: "sdf", name: "2d_distances" },
         { language: "wgsl", folder: "sdf", name: "3d-sdf-primitives-webgpu" },
 
-        // Shader Art Examples
+        // Shader Art by Kishimisu
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_01" },
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_02" },
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_03" },
@@ -117,6 +117,9 @@ export class ShaderCollection
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_22" },
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_23" },
         { language: "glsl", folder: "tutorials", name: "kishimisu_introduction_24" },
+
+        // Ray Marching Tutorials by Kishimisu
+        { language: "glsl", folder: "tutorials", name: "kishimisu_ray_marching_01" },
 
         // WebGPU WGSL Examples
         { language: "wgsl", folder: "webgpu", name: "atomic_pulse" },
