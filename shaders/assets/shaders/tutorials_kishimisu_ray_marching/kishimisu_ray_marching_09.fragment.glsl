@@ -11,7 +11,7 @@ precision mediump int;
 // Uniforms
 uniform vec3 iResolution;
 uniform float iTime;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 color, in vec2 coordinates);
@@ -154,7 +154,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     // Normalized pixel coordinates (from -1 to 1)
     vec2 uv = (fragCoord * 2.0f - iResolution.xy) / iResolution.y;
-    vec2 m = (iMouse.xy * 2.0f - iResolution.xy) / iResolution.y;
+    vec2 m = (iMouseL.xy * 2.0f - iResolution.xy) / iResolution.y;
 
     // Initialization:
     vec3 rayOrigin = vec3(0.0f, 0.0f, -3.0f);

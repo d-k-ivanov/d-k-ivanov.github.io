@@ -8,7 +8,7 @@
 // Uniforms
 uniform vec3 iResolution;
 uniform float iTime;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 c, in vec2 f);

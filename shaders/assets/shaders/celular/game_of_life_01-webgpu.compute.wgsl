@@ -7,7 +7,10 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
     iGridSize : vec3u,
 };
 
@@ -48,12 +51,12 @@ fn randomCellValue1(x: u32, y: u32) -> u32
     return u32(floor(randomValue * 2.0));
 }
 
-// Returns the random 0 or 1 value for the given cell index, influenced by iResolution, iTime, and iMouse.
+// Returns the random 0 or 1 value for the given cell index, influenced by iResolution, iTime, and iMouseL.
 fn randomCellValue2(x: u32, y: u32) -> u32
 {
     let px = f32(x) / shaderUniforms.iResolution.x;
     let py = f32(y) / shaderUniforms.iResolution.y;
-    let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
+    let mouseInfluence = shaderUniforms.iMouseL.x * px + shaderUniforms.iMouseL.y * py;
     let timeInfluence = shaderUniforms.iTime * 0.1234;
     let seed = px * 12.9898 + py * 78.233 + mouseInfluence * 31.4159 + timeInfluence;
     let randomValue = fract(sin(seed) * 43758.5453123);
@@ -70,12 +73,12 @@ fn randomCellValue3(x: u32, y: u32) -> u32
     return u32(floor(randomValue * 2.0));
 }
 
-// Returns the random 0 or 1 value for the given cell index, influenced by iMouse.
+// Returns the random 0 or 1 value for the given cell index, influenced by iMouseL.
 fn randomCellValue4(x: u32, y: u32) -> u32
 {
     let px = f32(x) / shaderUniforms.iResolution.x;
     let py = f32(y) / shaderUniforms.iResolution.y;
-    let mouseInfluence = shaderUniforms.iMouse.x * px + shaderUniforms.iMouse.y * py;
+    let mouseInfluence = shaderUniforms.iMouseL.x * px + shaderUniforms.iMouseL.y * py;
     let seed = mouseInfluence * 12.9898 + mouseInfluence * 78.233 + mouseInfluence * 31.4159;
     let randomValue = fract(sin(seed) * 43758.5453123);
     return u32(floor(randomValue * 2.0));
@@ -164,14 +167,14 @@ fn initCellState2(x: u32, y: u32, z: u32)
 
 fn applyMouseOverride(cell: vec2u) -> bool
 {
-    if (shaderUniforms.iMouse.z <= 0.0)
+    if (shaderUniforms.iMouseL.z <= 0.0)
     {
         return false;
     }
 
     let grid = vec2f(f32(shaderUniforms.iGridSize.x), f32(shaderUniforms.iGridSize.y));
     let cellSize = shaderUniforms.iResolution.xy / grid;
-    let mousePos = clamp(shaderUniforms.iMouse.xy, vec2f(0.0), shaderUniforms.iResolution.xy - vec2f(1.0));
+    let mousePos = clamp(shaderUniforms.iMouseL.xy, vec2f(0.0), shaderUniforms.iResolution.xy - vec2f(1.0));
     let mouseCell = vec2u(mousePos / cellSize);
     let dx = abs(i32(cell.x) - i32(mouseCell.x));
     let dy = abs(i32(cell.y) - i32(mouseCell.y));

@@ -109,7 +109,10 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
     iGridSize : vec3u,
 };
 
@@ -217,14 +220,14 @@ fn applyGameOfLifeRules(cell: vec2u, activeNeighbors: u32)
 
 fn applyMouseOverride(cell: vec2u) -> bool
 {
-    if (shaderUniforms.iMouse.z <= 0.0)
+    if (shaderUniforms.iMouseL.z <= 0.0)
     {
         return false;
     }
 
     let grid = vec2f(f32(shaderUniforms.iGridSize.x), f32(shaderUniforms.iGridSize.y));
     let cellSize = shaderUniforms.iResolution.xy / grid;
-    let mousePos = clamp(shaderUniforms.iMouse.xy, vec2f(0.0), shaderUniforms.iResolution.xy - vec2f(1.0));
+    let mousePos = clamp(shaderUniforms.iMouseL.xy, vec2f(0.0), shaderUniforms.iResolution.xy - vec2f(1.0));
     let mouseCell = vec2u(mousePos / cellSize);
     let dx = abs(i32(cell.x) - i32(mouseCell.x));
     let dy = abs(i32(cell.y) - i32(mouseCell.y));

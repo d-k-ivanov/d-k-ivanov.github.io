@@ -148,7 +148,10 @@ const SHADER_UI_TEMPLATE = `
                     float iTimeDelta<br>
                     int iFrame<br>
                     float iFrameRate<br>
-                    vec4 iMouse<br>
+                    vec4 iMouseL<br>
+                    vec4 iMouseR<br>
+                    vec4 iMouseW<br>
+                    vec4 iMouseZoom<br>
                     sampler{2D,Cube} iChannel0<br>
                     sampler{2D,Cube} iChannel1<br>
                     sampler{2D,Cube} iChannel2<br>

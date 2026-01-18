@@ -15,7 +15,7 @@ uniform float iTime;
 uniform float iTimeDelta;
 uniform int iFrame;
 uniform float iFrameRate;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 const float PI = 3.14159265359;
 const float FOV = radians(50.0);
@@ -343,7 +343,7 @@ void main()
 {
     vec2 res = iResolution.xy;
     float aspect = res.x / max(res.y, 1.0);
-    float unused = (iTime + iTimeDelta + float(iFrame) + iFrameRate + iMouse.x + iMouse.y + iMouse.z + iMouse.w) * 0.0;
+    float unused = (iTime + iTimeDelta + float(iFrame) + iFrameRate + iMouseL.x + iMouseL.y + iMouseL.z + iMouseL.w) * 0.0;
 
     Sphere scn[SPHERE_COUNT] = SCENE;
 

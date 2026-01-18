@@ -12,7 +12,7 @@ uniform float iTime;
 uniform float iTimeDelta;
 uniform float iFrameRate;
 uniform int iFrame;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 c, in vec2 f);
@@ -145,7 +145,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     vec2 uv = (fragCoord - iResolution.xy * 0.5f) / iResolution.y; // [-0.5, 0.5] adjusted for aspect ratio
     vec3 outColor = vec3(0.0f); // Background color
-    vec4 m = iMouse / iResolution.yyyy;
+    vec4 m = iMouseL / iResolution.yyyy;
     float t = 0.0f;
 
     if(m.z > 0.0f)

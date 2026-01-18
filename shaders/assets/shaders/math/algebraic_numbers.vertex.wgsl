@@ -8,10 +8,11 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
     iGridSize : vec3u,
-    iViewCenter : vec2f,
-    iViewZoom : f32,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -138,8 +139,8 @@ fn vert(input : VertexInput) -> VertexOutput
     let blobSize = r * 16.0;
 
     // Camera state comes from uniforms (center + zoom scale).
-    let viewCenter = shaderUniforms.iViewCenter;
-    var zoomScale = shaderUniforms.iViewZoom;
+    let viewCenter = shaderUniforms.iMouseZoom.xy;
+    var zoomScale = shaderUniforms.iMouseZoom.z;
     if (zoomScale <= 0.0)
     {
         zoomScale = 1.0;

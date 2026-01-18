@@ -5,7 +5,10 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
     iGridSize : vec3u,
 };
 
@@ -38,9 +41,9 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
     let rim = vec3f(0.8, 0.5, 0.2) * rings;
     let centerPulse = exp(-6.0 * pow(abs(radius - 0.18), 1.4));
 
-    let mouse = shaderUniforms.iMouse.xy / res;
+    let mouse = shaderUniforms.iMouseL.xy / res;
     let mousePos = (mouse - 0.5) * vec2f(aspect, 1.0) * 2.0;
-    let mouseGlow = exp(-25.0 * length(uv - mousePos)) * step(0.0, shaderUniforms.iMouse.z);
+    let mouseGlow = exp(-25.0 * length(uv - mousePos)) * step(0.0, shaderUniforms.iMouseL.z);
 
     let color = clamp(
         base + rim + centerPulse * vec3f(0.12, 0.2, 0.4) + mouseGlow * vec3f(0.6, 0.8, 1.0),

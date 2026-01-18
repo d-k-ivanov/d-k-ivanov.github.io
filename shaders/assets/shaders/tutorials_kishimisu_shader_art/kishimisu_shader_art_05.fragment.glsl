@@ -11,7 +11,7 @@ precision mediump int;
 // Uniforms
 uniform vec3 iResolution;
 uniform float iTime;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 color, in vec2 coordinates);
@@ -128,10 +128,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     color = drawAxis(uv, color);
 
     // Draw a distance line from the mouse position to the distance field
-    if(iMouse.z > 0.001f)
+    if(iMouseL.z > 0.001f)
     {
         // Mouse position in NDC
-        vec2 mousePos = (iMouse.xy * 2.0f - iResolution.xy) / iResolution.y;
+        vec2 mousePos = (iMouseL.xy * 2.0f - iResolution.xy) / iResolution.y;
 
         // Colors
         vec3 ousideOfTheCircleColor = vec3(0.0f, 0.5f, 0.0f);

@@ -5,7 +5,11 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;

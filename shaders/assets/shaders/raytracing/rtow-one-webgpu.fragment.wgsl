@@ -5,7 +5,11 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -24,7 +28,7 @@ fn frag(input : VertexOutput) -> @location(0) vec4f
     let res = shaderUniforms.iResolution.xy;
     var uv = input.uv;
     uv.y = 1.0 - uv.y;
-    let unusedUniforms = shaderUniforms.iTime * 0.0 + shaderUniforms.iTimeDelta * 0.0 + f32(shaderUniforms.iFrame) * 0.0 + shaderUniforms.iFrameRate * 0.0 + shaderUniforms.iMouse.x * 0.0 + shaderUniforms.iMouse.y * 0.0 + shaderUniforms.iMouse.z * 0.0 + shaderUniforms.iMouse.w * 0.0;
+    let unusedUniforms = shaderUniforms.iTime * 0.0 + shaderUniforms.iTimeDelta * 0.0 + f32(shaderUniforms.iFrame) * 0.0 + shaderUniforms.iFrameRate * 0.0 + shaderUniforms.iMouseL.x * 0.0 + shaderUniforms.iMouseL.y * 0.0 + shaderUniforms.iMouseL.z * 0.0 + shaderUniforms.iMouseL.w * 0.0;
 
     var color = textureSampleLevel(computeTexture, computeSampler, uv, 0.0).rgb;
     let frameNoise = fract(sin((f32(shaderUniforms.iFrame) * 0.0 + 12.9898 + res.x * 0.001 + res.y * 0.002)) * 43758.5453);

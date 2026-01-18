@@ -5,7 +5,11 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -375,7 +379,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
 
     let res = vec2f(f32(dims.x), f32(dims.y));
     let aspect = res.x / max(res.y, 1.0);
-    let unused = shaderUniforms.iTime + shaderUniforms.iTimeDelta + f32(shaderUniforms.iFrame) + shaderUniforms.iFrameRate + shaderUniforms.iMouse.x + shaderUniforms.iMouse.y + shaderUniforms.iMouse.z + shaderUniforms.iMouse.w;
+    let unused = shaderUniforms.iTime + shaderUniforms.iTimeDelta + f32(shaderUniforms.iFrame) + shaderUniforms.iFrameRate + shaderUniforms.iMouseL.x + shaderUniforms.iMouseL.y + shaderUniforms.iMouseL.z + shaderUniforms.iMouseL.w;
 
     var seed = (gid.x * 1973u) ^ (gid.y * 9277u) ^ 26699u ^ u32(unused * 0.0);
 

@@ -8,7 +8,7 @@
 // Uniforms
 uniform vec3 iResolution;
 uniform float iTime;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 
 // Forward declarations
 void mainImage(out vec4 c, in vec2 f);
@@ -161,9 +161,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec4 res = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     vec2 mou = DCToNDC(0.5f * iResolution.xy);
-    if(iMouse.w != 0.0f)
+    if(iMouseL.w != 0.0f)
     {
-        mou = DCToNDC(iMouse.xy);
+        mou = DCToNDC(iMouseL.xy);
     }
 
     for(int ix = 0; ix < n; ix += 1) for(int iy = 0; iy < n; iy += 1)

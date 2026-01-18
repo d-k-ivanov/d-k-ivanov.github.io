@@ -12,7 +12,7 @@
  */
 export class ShaderUniformState
 {
-    static BUFFER_SIZE = 80;
+    static BUFFER_SIZE = 128;
 
     static OFFSETS = {
         resolution: 0,
@@ -20,10 +20,11 @@ export class ShaderUniformState
         timeDelta: 4,
         frame: 5,
         frameRate: 6,
-        mouse: 8,
-        gridSize: 12,
-        viewCenter: 16,
-        viewZoom: 18
+        mouseL: 8,
+        mouseR: 12,
+        mouseW: 16,
+        mouseZoom: 20,
+        gridSize: 24
     };
 
     /**
@@ -228,34 +229,54 @@ export class ShaderUniformState
         };
 
         const mouse = this.mouse || {};
-        const downX = Number.isFinite(mouse.clickX) ? mouse.clickX : 0;
-        const downY = Number.isFinite(mouse.clickY) ? mouse.clickY : 0;
-        const clickX = Number.isFinite(mouse.lastClickX) ? mouse.lastClickX : 0;
-        const clickY = Number.isFinite(mouse.lastClickY) ? mouse.lastClickY : 0;
-        const downSign = mouse.isDown ? 1 : -1;
-        const clickSign = mouse.clicked ? 1 : -1;
-        const mouseState = {
-            downX,
-            downY,
-            clickX,
-            clickY,
-            downSign,
-            clickSign
+        const mouseLeft = mouse.left || {};
+        const mouseRight = mouse.right || {};
+        const mouseWheel = mouse.wheel || {};
+        const zoomState = mouse.zoom || {};
+        const buildMouseState = (source) =>
+        {
+            const downX = Number.isFinite(source.clickX) ? source.clickX : 0;
+            const downY = Number.isFinite(source.clickY) ? source.clickY : 0;
+            const clickX = Number.isFinite(source.lastClickX) ? source.lastClickX : 0;
+            const clickY = Number.isFinite(source.lastClickY) ? source.lastClickY : 0;
+            const downSign = source.isDown ? 1 : -1;
+            const clickSign = source.clicked ? 1 : -1;
+            return {
+                downX,
+                downY,
+                clickX,
+                clickY,
+                downSign,
+                clickSign
+            };
         };
 
-        if (mouse.clicked)
+        const mouseL = buildMouseState(mouseLeft);
+        const mouseR = buildMouseState(mouseRight);
+        const mouseW = buildMouseState(mouseWheel);
+
+        if (mouseLeft.clicked)
         {
-            mouse.clicked = false;
+            mouseLeft.clicked = false;
+        }
+        if (mouseRight.clicked)
+        {
+            mouseRight.clicked = false;
+        }
+        if (mouseWheel.clicked)
+        {
+            mouseWheel.clicked = false;
         }
 
         const frame = Number.isFinite(this.frameOverride) ? this.frameOverride : this.frameCount++;
         const frameRate = deltaSeconds > 0 ? 1.0 / deltaSeconds : 0.0;
 
-        const viewCenter = {
-            x: Number.isFinite(mouse.centerX) ? mouse.centerX : 0,
-            y: Number.isFinite(mouse.centerY) ? mouse.centerY : 0
+        const mouseZoom = {
+            x: Number.isFinite(zoomState.x) ? zoomState.x : 0,
+            y: Number.isFinite(zoomState.y) ? zoomState.y : 0,
+            z: Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0,
+            w: Number.isFinite(zoomState.w) ? zoomState.w : 0.0
         };
-        const viewZoom = Number.isFinite(mouse.zoom) && mouse.zoom > 0 ? mouse.zoom : 1.0;
 
         return {
             resolution,
@@ -263,10 +284,11 @@ export class ShaderUniformState
             deltaSeconds,
             frame,
             frameRate,
-            mouse: mouseState,
+            mouseL,
+            mouseR,
+            mouseW,
             gridSize: this.gridSize,
-            viewCenter,
-            viewZoom
+            mouseZoom
         };
     }
 
@@ -296,17 +318,26 @@ export class ShaderUniformState
         u[offsets.frame] = data.frame;
         f[offsets.frameRate] = data.frameRate;
 
-        f[offsets.mouse + 0] = data.mouse.downX;
-        f[offsets.mouse + 1] = data.mouse.downY;
-        f[offsets.mouse + 2] = data.mouse.clickX * data.mouse.downSign;
-        f[offsets.mouse + 3] = data.mouse.clickY * data.mouse.clickSign;
+        const writeMouse = (offset, mouseData) =>
+        {
+            f[offset + 0] = mouseData.downX;
+            f[offset + 1] = mouseData.downY;
+            f[offset + 2] = mouseData.clickX * mouseData.downSign;
+            f[offset + 3] = mouseData.clickY * mouseData.clickSign;
+        };
+
+        writeMouse(offsets.mouseL, data.mouseL);
+        writeMouse(offsets.mouseR, data.mouseR);
+        writeMouse(offsets.mouseW, data.mouseW);
+
+        f[offsets.mouseZoom + 0] = data.mouseZoom.x;
+        f[offsets.mouseZoom + 1] = data.mouseZoom.y;
+        f[offsets.mouseZoom + 2] = data.mouseZoom.z;
+        f[offsets.mouseZoom + 3] = data.mouseZoom.w;
 
         u[offsets.gridSize + 0] = data.gridSize.x;
         u[offsets.gridSize + 1] = data.gridSize.y;
         u[offsets.gridSize + 2] = data.gridSize.z;
-        f[offsets.viewCenter + 0] = data.viewCenter.x;
-        f[offsets.viewCenter + 1] = data.viewCenter.y;
-        f[offsets.viewZoom] = data.viewZoom;
     }
 
     /**

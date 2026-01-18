@@ -129,9 +129,10 @@ export class WebGLRenderer extends BaseRenderer
             iTimeDelta: gl.getUniformLocation(newProgram, "iTimeDelta"),
             iFrame: gl.getUniformLocation(newProgram, "iFrame"),
             iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
-            iMouse: gl.getUniformLocation(newProgram, "iMouse"),
-            iViewCenter: gl.getUniformLocation(newProgram, "iViewCenter"),
-            iViewZoom: gl.getUniformLocation(newProgram, "iViewZoom"),
+            iMouseL: gl.getUniformLocation(newProgram, "iMouseL"),
+            iMouseR: gl.getUniformLocation(newProgram, "iMouseR"),
+            iMouseW: gl.getUniformLocation(newProgram, "iMouseW"),
+            iMouseZoom: gl.getUniformLocation(newProgram, "iMouseZoom"),
             uHasModel: gl.getUniformLocation(newProgram, "uHasModel"),
             uModelCenter: gl.getUniformLocation(newProgram, "uModelCenter"),
             uModelScale: gl.getUniformLocation(newProgram, "uModelScale"),
@@ -267,18 +268,25 @@ export class WebGLRenderer extends BaseRenderer
         {
             gl.uniform1f(u.iFrameRate, frameData.frameRate);
         }
-        if (u.iMouse)
+        if (u.iMouseL)
         {
-            const mouse = frameData.mouse;
-            gl.uniform4f(u.iMouse, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
+            const mouse = frameData.mouseL;
+            gl.uniform4f(u.iMouseL, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
         }
-        if (u.iViewCenter)
+        if (u.iMouseR)
         {
-            gl.uniform2f(u.iViewCenter, frameData.viewCenter.x, frameData.viewCenter.y);
+            const mouse = frameData.mouseR;
+            gl.uniform4f(u.iMouseR, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
         }
-        if (u.iViewZoom)
+        if (u.iMouseW)
         {
-            gl.uniform1f(u.iViewZoom, frameData.viewZoom);
+            const mouse = frameData.mouseW;
+            gl.uniform4f(u.iMouseW, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
+        }
+        if (u.iMouseZoom)
+        {
+            const zoom = frameData.mouseZoom;
+            gl.uniform4f(u.iMouseZoom, zoom.x, zoom.y, zoom.z, zoom.w);
         }
 
         this.applyModelUniforms();

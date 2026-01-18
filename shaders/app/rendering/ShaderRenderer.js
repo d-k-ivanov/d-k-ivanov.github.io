@@ -38,17 +38,36 @@ export class ShaderRenderer
         this.updateQueue = Promise.resolve();
 
         this.mouse = {
-            x: 0,
-            y: 0,
-            clickX: 0,
-            clickY: 0,
-            lastClickX: 0,
-            lastClickY: 0,
-            isDown: false,
-            clicked: false,
-            zoom: 1,
-            centerX: 0,
-            centerY: 0
+            left: {
+                clickX: 0,
+                clickY: 0,
+                lastClickX: 0,
+                lastClickY: 0,
+                isDown: false,
+                clicked: false
+            },
+            right: {
+                clickX: 0,
+                clickY: 0,
+                lastClickX: 0,
+                lastClickY: 0,
+                isDown: false,
+                clicked: false
+            },
+            wheel: {
+                clickX: 0,
+                clickY: 0,
+                lastClickX: 0,
+                lastClickY: 0,
+                isDown: false,
+                clicked: false
+            },
+            zoom: {
+                x: 0,
+                y: 0,
+                z: 1,
+                w: 0
+            }
         };
         this.removeMouseListeners = null;
         this.setupMouseEvents();
@@ -81,17 +100,40 @@ export class ShaderRenderer
             this.stop();
         }
         this.canvas = canvas;
-        this.mouse.isDown = false;
-        this.mouse.x = 0;
-        this.mouse.y = 0;
-        this.mouse.clickX = 0;
-        this.mouse.clickY = 0;
-        this.mouse.lastClickX = 0;
-        this.mouse.lastClickY = 0;
-        this.mouse.clicked = false;
-        this.mouse.zoom = 1;
-        this.mouse.centerX = 0;
-        this.mouse.centerY = 0;
+        if (this.mouse.left)
+        {
+            this.mouse.left.clickX = 0;
+            this.mouse.left.clickY = 0;
+            this.mouse.left.lastClickX = 0;
+            this.mouse.left.lastClickY = 0;
+            this.mouse.left.isDown = false;
+            this.mouse.left.clicked = false;
+        }
+        if (this.mouse.right)
+        {
+            this.mouse.right.clickX = 0;
+            this.mouse.right.clickY = 0;
+            this.mouse.right.lastClickX = 0;
+            this.mouse.right.lastClickY = 0;
+            this.mouse.right.isDown = false;
+            this.mouse.right.clicked = false;
+        }
+        if (this.mouse.wheel)
+        {
+            this.mouse.wheel.clickX = 0;
+            this.mouse.wheel.clickY = 0;
+            this.mouse.wheel.lastClickX = 0;
+            this.mouse.wheel.lastClickY = 0;
+            this.mouse.wheel.isDown = false;
+            this.mouse.wheel.clicked = false;
+        }
+        if (this.mouse.zoom)
+        {
+            this.mouse.zoom.x = 0;
+            this.mouse.zoom.y = 0;
+            this.mouse.zoom.z = 1;
+            this.mouse.zoom.w = 0;
+        }
         this.setupMouseEvents();
         this.webglRenderer = null;
         this.webgpuRenderer = null;
@@ -367,7 +409,7 @@ export class ShaderRenderer
     }
 
     /**
-     * Tracks mouse interactions over the canvas for iMouse uniform.
+     * Tracks mouse interactions over the canvas for iMouseL/iMouseR/iMouseW.
      *
      * @returns {void}
      */
@@ -397,62 +439,106 @@ export class ShaderRenderer
 
         const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+        const getButtonState = (button) =>
+        {
+            if (button === 0)
+            {
+                return this.mouse.left;
+            }
+            if (button === 1)
+            {
+                return this.mouse.wheel;
+            }
+            if (button === 2)
+            {
+                return this.mouse.right;
+            }
+            return null;
+        };
+
         const onMouseDown = (e) =>
         {
             const pos = getMousePos(e);
-            this.mouse.x = pos.x;
-            this.mouse.y = pos.y;
-            this.mouse.clickX = pos.x;
-            this.mouse.clickY = pos.y;
-            this.mouse.lastClickX = pos.x;
-            this.mouse.lastClickY = pos.y;
-            this.mouse.isDown = true;
+            const buttonState = getButtonState(e.button);
+            if (!buttonState)
+            {
+                return;
+            }
+            buttonState.clickX = pos.x;
+            buttonState.clickY = pos.y;
+            buttonState.isDown = true;
         };
 
         const onMouseMove = (e) =>
         {
             const pos = getMousePos(e);
-            this.mouse.x = pos.x;
-            this.mouse.y = pos.y;
 
-            if (this.mouse.isDown)
+            if (this.mouse.left?.isDown)
             {
-                const lastX = Number.isFinite(this.mouse.clickX) ? this.mouse.clickX : pos.x;
-                const lastY = Number.isFinite(this.mouse.clickY) ? this.mouse.clickY : pos.y;
+                const lastX = Number.isFinite(this.mouse.left.clickX) ? this.mouse.left.clickX : pos.x;
+                const lastY = Number.isFinite(this.mouse.left.clickY) ? this.mouse.left.clickY : pos.y;
+                const zoomState = this.mouse.zoom || {};
                 const baseZoom = Math.max(1, canvas.height) / 5.0;
-                const zoom = Number.isFinite(this.mouse.zoom) && this.mouse.zoom > 0 ? this.mouse.zoom : 1.0;
-                const invScale = 1.0 / (baseZoom * zoom);
+                const zoomScale = Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0;
+                const invScale = 1.0 / (baseZoom * zoomScale);
                 const dx = pos.x - lastX;
                 const dy = pos.y - lastY;
-                this.mouse.centerX -= dx * invScale;
-                this.mouse.centerY -= dy * invScale;
-                this.mouse.clickX = pos.x;
-                this.mouse.clickY = pos.y;
+                zoomState.x = (Number.isFinite(zoomState.x) ? zoomState.x : 0) - dx * invScale;
+                zoomState.y = (Number.isFinite(zoomState.y) ? zoomState.y : 0) - dy * invScale;
+                this.mouse.zoom = zoomState;
+                this.mouse.left.clickX = pos.x;
+                this.mouse.left.clickY = pos.y;
+            }
+
+            if (this.mouse.right?.isDown)
+            {
+                this.mouse.right.clickX = pos.x;
+                this.mouse.right.clickY = pos.y;
+            }
+
+            if (this.mouse.wheel?.isDown)
+            {
+                this.mouse.wheel.clickX = pos.x;
+                this.mouse.wheel.clickY = pos.y;
             }
         };
 
         const onMouseUp = (e) =>
         {
-            const wasDown = this.mouse.isDown;
-            this.mouse.isDown = false;
+            const buttonState = getButtonState(e.button);
+            if (!buttonState)
+            {
+                return;
+            }
+            const wasDown = buttonState.isDown;
+            buttonState.isDown = false;
             if (!wasDown)
             {
                 return;
             }
 
             const pos = getMousePos(e);
-            this.mouse.x = pos.x;
-            this.mouse.y = pos.y;
-            this.mouse.clickX = pos.x;
-            this.mouse.clickY = pos.y;
-            this.mouse.lastClickX = pos.x;
-            this.mouse.lastClickY = pos.y;
-            this.mouse.clicked = true;
+            buttonState.clickX = pos.x;
+            buttonState.clickY = pos.y;
+            buttonState.lastClickX = pos.x;
+            buttonState.lastClickY = pos.y;
+            buttonState.clicked = true;
         };
 
         const onMouseLeave = () =>
         {
-            this.mouse.isDown = false;
+            if (this.mouse.left)
+            {
+                this.mouse.left.isDown = false;
+            }
+            if (this.mouse.right)
+            {
+                this.mouse.right.isDown = false;
+            }
+            if (this.mouse.wheel)
+            {
+                this.mouse.wheel.isDown = false;
+            }
         };
 
         const onWheel = (e) =>
@@ -463,13 +549,12 @@ export class ShaderRenderer
             }
 
             const pos = getMousePos(e);
-            this.mouse.x = pos.x;
-            this.mouse.y = pos.y;
+            const zoomState = this.mouse.zoom || {};
 
             const baseZoom = Math.max(1, canvas.height) / 5.0;
-            const zoom = Number.isFinite(this.mouse.zoom) ? this.mouse.zoom : 1.0;
-            const centerX = Number.isFinite(this.mouse.centerX) ? this.mouse.centerX : 0.0;
-            const centerY = Number.isFinite(this.mouse.centerY) ? this.mouse.centerY : 0.0;
+            const zoom = Number.isFinite(zoomState.z) && zoomState.z > 0 ? zoomState.z : 1.0;
+            const centerX = Number.isFinite(zoomState.x) ? zoomState.x : 0.0;
+            const centerY = Number.isFinite(zoomState.y) ? zoomState.y : 0.0;
 
             const zoomFactor = Math.exp(-e.deltaY * 0.002);
             const nextZoom = clamp(zoom * zoomFactor, 0.05, 50.0);
@@ -479,16 +564,20 @@ export class ShaderRenderer
             const worldX = centerX + (pos.x - screenCenterX) * invScale;
             const worldY = centerY + (pos.y - screenCenterY) * invScale;
             const nextInvScale = 1.0 / (baseZoom * nextZoom);
-            this.mouse.centerX = worldX - (pos.x - screenCenterX) * nextInvScale;
-            this.mouse.centerY = worldY - (pos.y - screenCenterY) * nextInvScale;
-            this.mouse.zoom = nextZoom;
+            zoomState.x = worldX - (pos.x - screenCenterX) * nextInvScale;
+            zoomState.y = worldY - (pos.y - screenCenterY) * nextInvScale;
+            zoomState.z = nextZoom;
+            this.mouse.zoom = zoomState;
         };
+
+        const onContextMenu = (e) => e.preventDefault();
 
         canvas.addEventListener("mousedown", onMouseDown);
         canvas.addEventListener("mousemove", onMouseMove);
         canvas.addEventListener("mouseup", onMouseUp);
         canvas.addEventListener("mouseleave", onMouseLeave);
         canvas.addEventListener("wheel", onWheel, { passive: false });
+        canvas.addEventListener("contextmenu", onContextMenu);
 
         this.removeMouseListeners = () =>
         {
@@ -497,6 +586,7 @@ export class ShaderRenderer
             canvas.removeEventListener("mouseup", onMouseUp);
             canvas.removeEventListener("mouseleave", onMouseLeave);
             canvas.removeEventListener("wheel", onWheel);
+            canvas.removeEventListener("contextmenu", onContextMenu);
         };
     }
 }

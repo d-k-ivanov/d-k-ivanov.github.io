@@ -5,7 +5,10 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
     iGridSize : vec3u,
 };
 
@@ -40,7 +43,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     let ringPulse = 0.5 + 0.5 * sin(time * 2.0 + radius * 10.0);
     let baseColor = palette(0.5 + 0.25 * waves + 0.25 * ringPulse);
 
-    let mouse = shaderUniforms.iMouse;
+    let mouse = shaderUniforms.iMouseL;
     var glow = 0.0;
     if (mouse.z > 0.0)
     {

@@ -10,7 +10,7 @@ precision mediump int;
 
 uniform vec3 iResolution;
 uniform int iFrame;
-uniform vec4 iMouse;
+uniform vec4 iMouseL;
 uniform sampler2D uBackbuffer;
 
 out vec4 fragColor;
@@ -90,9 +90,9 @@ void main()
         }
     }
 
-    if(iMouse.z > 0.0f)
+    if(iMouseL.z > 0.0f)
     {
-        ivec2 mouseCell = ivec2(floor(iMouse.xy / cellSize));
+        ivec2 mouseCell = ivec2(floor(iMouseL.xy / cellSize));
         ivec2 delta = cell - mouseCell;
         // if(max(abs(delta.x), abs(delta.y)) <= 2) // 5x5 brush
         if(max(abs(delta.x), abs(delta.y)) == 0)    // 1x1 brush

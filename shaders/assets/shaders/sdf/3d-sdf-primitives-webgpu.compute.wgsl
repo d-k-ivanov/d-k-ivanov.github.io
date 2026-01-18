@@ -5,7 +5,11 @@ struct ShaderUniforms
     iTimeDelta : f32,
     iFrame : u32,
     iFrameRate : f32,
-    iMouse : vec4f,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
+    iGridSize : vec3u,
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
@@ -879,7 +883,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u)
     }
 
     let res = vec2f(dims);
-    let mouse = shaderUniforms.iMouse;
+    let mouse = shaderUniforms.iMouseL;
     let hasMouse = mouse.z != 0.0 || mouse.w != 0.0;
     let mousePos = select(res * 0.5, mouse.xy, hasMouse);
     let mouseNormalized = mousePos / res - 0.5;

@@ -8,7 +8,7 @@ precision highp int;
 // Uniforms
 uniform vec3 iResolution;   // viewport resolution (in pixels)
 uniform float iTime;        // shader playback time (in seconds)
-uniform vec4 iMouse;        // mouse pixel coords. xy: current (if MLB down), zw: click
+uniform vec4 iMouseL;        // mouse pixel coords. xy: current (if MLB down), zw: click
 uniform int iFrame;         // shader playback frame
 
 // Forward declarations
@@ -690,7 +690,7 @@ mat3 setCamera(in vec3 ro, in vec3 ta, float cr)
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
-    vec2 mo = iMouse.xy / iResolution.xy;
+    vec2 mo = iMouseL.xy / iResolution.xy;
     float time = 32.0f + iTime * 1.5f;
 
     // camera
