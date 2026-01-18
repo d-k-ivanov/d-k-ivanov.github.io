@@ -100,40 +100,7 @@ export class ShaderRenderer
             this.stop();
         }
         this.canvas = canvas;
-        if (this.mouse.left)
-        {
-            this.mouse.left.clickX = 0;
-            this.mouse.left.clickY = 0;
-            this.mouse.left.lastClickX = 0;
-            this.mouse.left.lastClickY = 0;
-            this.mouse.left.isDown = false;
-            this.mouse.left.clicked = false;
-        }
-        if (this.mouse.right)
-        {
-            this.mouse.right.clickX = 0;
-            this.mouse.right.clickY = 0;
-            this.mouse.right.lastClickX = 0;
-            this.mouse.right.lastClickY = 0;
-            this.mouse.right.isDown = false;
-            this.mouse.right.clicked = false;
-        }
-        if (this.mouse.wheel)
-        {
-            this.mouse.wheel.clickX = 0;
-            this.mouse.wheel.clickY = 0;
-            this.mouse.wheel.lastClickX = 0;
-            this.mouse.wheel.lastClickY = 0;
-            this.mouse.wheel.isDown = false;
-            this.mouse.wheel.clicked = false;
-        }
-        if (this.mouse.zoom)
-        {
-            this.mouse.zoom.x = 0;
-            this.mouse.zoom.y = 0;
-            this.mouse.zoom.z = 1;
-            this.mouse.zoom.w = 0;
-        }
+        this.resetMouseState();
         this.setupMouseEvents();
         this.webglRenderer = null;
         this.webgpuRenderer = null;
@@ -406,6 +373,40 @@ export class ShaderRenderer
             return this.activeRenderer.getTimeSeconds();
         }
         return 0;
+    }
+
+    /**
+     * Resets mouse-derived uniform state to defaults.
+     *
+     * @returns {void}
+     */
+    resetMouseState()
+    {
+        const resetButton = (state) =>
+        {
+            if (!state)
+            {
+                return;
+            }
+            state.clickX = 0;
+            state.clickY = 0;
+            state.lastClickX = 0;
+            state.lastClickY = 0;
+            state.isDown = false;
+            state.clicked = false;
+        };
+
+        resetButton(this.mouse.left);
+        resetButton(this.mouse.right);
+        resetButton(this.mouse.wheel);
+
+        if (this.mouse.zoom)
+        {
+            this.mouse.zoom.x = 0;
+            this.mouse.zoom.y = 0;
+            this.mouse.zoom.z = 1;
+            this.mouse.zoom.w = 0;
+        }
     }
 
     /**

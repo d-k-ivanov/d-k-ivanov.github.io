@@ -103,6 +103,7 @@ export class ShaderCollection
         { language: "glsl", folder: "tutorials_kishimisu_ray_marching", name: "kishimisu_ray_marching_07" },
         { language: "glsl", folder: "tutorials_kishimisu_ray_marching", name: "kishimisu_ray_marching_08" },
         { language: "glsl", folder: "tutorials_kishimisu_ray_marching", name: "kishimisu_ray_marching_09" },
+        { language: "glsl", folder: "tutorials_kishimisu_ray_marching", name: "kishimisu_ray_marching_10" },
 
         // Tutorials: Shader Art by Kishimisu
         { language: "glsl", folder: "tutorials_kishimisu_shader_art", name: "kishimisu_shader_art_01" },

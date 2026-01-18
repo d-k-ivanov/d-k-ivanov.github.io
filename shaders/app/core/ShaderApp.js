@@ -334,6 +334,7 @@ export class ShaderApp
         this.simulationPaused = false;
         this.renderer.clearFrameOverride();
         this.renderer.clearTimeOverride();
+        this.renderer.resetMouseState();
         this.canvasControls.setSimulationControlsVisible(true);
         this.canvasControls.setSimulationPaused(false);
     }
@@ -347,6 +348,7 @@ export class ShaderApp
     {
         if (this.editor)
         {
+            this.renderer.resetMouseState();
             this.editor.recompileShader();
         }
     }
