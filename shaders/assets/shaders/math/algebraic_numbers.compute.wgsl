@@ -63,13 +63,13 @@ fn randSigned(state : ptr<function, u32>) -> f32
 }
 
 // Complex multiplication: (a.x + i a.y) * (b.x + i b.y).
-fn multiplyVector(a : vec2f, b : vec2f) -> vec2f
+fn complexMultiply(a : vec2f, b : vec2f) -> vec2f
 {
     return vec2f(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
 // Complex division: a / b using b * conj(b) in the denominator.
-fn divideVector(a : vec2f, b : vec2f) -> vec2f
+fn complexDivide(a : vec2f, b : vec2f) -> vec2f
 {
     let denom = dot(b, b);
     return vec2f((a.x * b.x + a.y * b.y) / denom, (a.y * b.x - a.x * b.y) / denom);
@@ -103,7 +103,7 @@ fn findRoots(
             {
                 return 0u;
             }
-            let root = divideVector(vec2f(-c0.x, -c0.y), c1);
+            let root = complexDivide(vec2f(-c0.x, -c0.y), c1);
             (*roots)[rootCount] = root;
             rootCount += 1u;
             break;
@@ -141,16 +141,16 @@ fn findRoots(
             {
                 // p(z) += c_n * z^n, p'(z) += (n+1) c_{n+1} * z^n.
                 let c = (*coeffs)[n];
-                f = f + multiplyVector(p, c);
+                f = f + complexMultiply(p, c);
 
                 let c1 = (*coeffs)[n + 1u];
                 let factor = f32(n + 1u);
-                d = d + multiplyVector(p, c1) * factor;
+                d = d + complexMultiply(p, c1) * factor;
 
-                p = multiplyVector(p, r);
+                p = complexMultiply(p, r);
             }
 
-            f = f + multiplyVector(p, (*coeffs)[o]);
+            f = f + complexMultiply(p, (*coeffs)[o]);
 
             let denom = dot(d, d);
             if (denom == 0.0)
@@ -158,7 +158,7 @@ fn findRoots(
                 return 0u;
             }
 
-            let step = divideVector(f, d);
+            let step = complexDivide(f, d);
             r = r - step;
 
             let diff = r - prev;
@@ -180,7 +180,7 @@ fn findRoots(
                 break;
             }
             let idx = n - 1u;
-            (*coeffs)[idx] = (*coeffs)[idx] + multiplyVector(r, (*coeffs)[n]);
+            (*coeffs)[idx] = (*coeffs)[idx] + complexMultiply(r, (*coeffs)[n]);
             n = idx;
         }
 

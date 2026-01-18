@@ -1,5 +1,4 @@
 const USE_POINTER_ZOOM : bool = true;               // Enable pointer-centered zoom via mouse wheel (requires JS camera updates).
-const VERTEX_COUNT : u32 = 6u;                      // Vertices per point sprite (two triangles forming a quad).
 const DATA_OFFSET : u32 = 10u;                      // Header skip in packed buffers written by compute.
 const HEADER_CENTER_X_IDX : u32 = 6u;               // Header index storing camera center X in complex plane.
 const HEADER_CENTER_Y_IDX : u32 = 7u;               // Header index storing camera center Y in complex plane.
@@ -81,13 +80,10 @@ fn degreeColor(degree : u32) -> vec3f
 @vertex
 fn vert(input : VertexInput) -> VertexOutput
 {
-    var positions = array<vec2f, VERTEX_COUNT>(
+    var positions = array<vec2f, 3>(
         vec2f(-1.0, -1.0),
-        vec2f( 1.0, -1.0),
-        vec2f( 1.0,  1.0),
-        vec2f(-1.0, -1.0),
-        vec2f( 1.0,  1.0),
-        vec2f(-1.0,  1.0)
+        vec2f(3.0, -1.0),
+        vec2f(-1.0, 3.0)
     );
 
     var out : VertexOutput;
