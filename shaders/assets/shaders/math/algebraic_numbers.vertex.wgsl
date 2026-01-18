@@ -78,6 +78,25 @@ fn degreeColor(degree : u32) -> vec3f
         vec3f(0.2, 0.2, 0.58)    // Navy
     );
 
+    let paletteEuroStat = array<vec3f, 16>(
+        vec3f(0.91, 0.3, 0.24),  // Red
+        vec3f(0.18, 0.8, 0.44),  // Green
+        vec3f(0.2, 0.6, 0.86),   // Blue
+        vec3f(1.0, 0.5, 0.0),    // Orange
+        vec3f(0.61, 0.35, 0.71), // Purple
+        vec3f(0.4, 0.76, 0.65),  // Teal
+        vec3f(0.99, 0.75, 0.44), // Light orange
+        vec3f(0.55, 0.34, 0.29), // Brown
+        vec3f(0.9, 0.49, 0.13),  // Dark orange
+        vec3f(0.17, 0.63, 0.17), // Dark green
+        vec3f(0.58, 0.4, 0.74),  // Dark purple
+        vec3f(0.2, 0.6, 0.86),   // Dark blue
+        vec3f(1.0, 0.84, 0.0),   // Gold
+        vec3f(0.13, 0.54, 0.13), // Forest green
+        vec3f(0.89, 0.47, 0.76), // Pink
+        vec3f(0.5, 0.5, 0.5)     // Gray
+    );
+
     let idx = (degree - 1u) % 16u;
     return paletteCommon[idx];
 }
