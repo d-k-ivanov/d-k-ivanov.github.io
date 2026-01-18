@@ -44,12 +44,12 @@ fn mandelbrotColor(c : vec2f) -> vec3f
 
     if (iter >= MAX_ITERS)
     {
-        return vec3f(0.0);
+        return vec3f(0.1);
     }
 
     let mag = max(dot(z, z), 1e-12);
     let smoothIter = (f32(iter) + 1.0 - log2(log2(mag))) / f32(MAX_ITERS);
-    let t = clamp(smoothIter, 0.1, 0.9);
+    let t = clamp(smoothIter, 0.0, 1.0);
     let intensity = t;
     let palette = 0.5 + 0.5 * cos(6.2831853 * (t + vec3f(0.0, 0.33, 0.67)));
     return palette * intensity;
