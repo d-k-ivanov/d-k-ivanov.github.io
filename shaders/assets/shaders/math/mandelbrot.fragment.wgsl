@@ -21,6 +21,16 @@ struct FragmentInput
     @builtin(position) Position : vec4f,
 };
 
+fn palette(t : f32) -> vec3f
+{
+    let a = vec3f(0.500, 0.500, 0.500);
+    let b = vec3f(0.500, 0.500, 0.500);
+    let c = vec3f(1.000, 1.000, 1.000);
+    // let d = vec3f(0.000, 0.333, 0.667);
+    let d = vec3f(0.263, 0.416, 0.557);
+    return a + b * cos(6.2831853 * (c * t + d));
+}
+
 fn mandelbrotColor(c : vec2f) -> vec3f
 {
     var z = vec2f(0.0, 0.0);
@@ -51,7 +61,7 @@ fn mandelbrotColor(c : vec2f) -> vec3f
     let smoothIter = (f32(iter) + 1.0 - log2(log2(mag))) / f32(MAX_ITERS);
     let t = clamp(smoothIter, 0.0, 1.0);
     let intensity = t;
-    let palette = 0.5 + 0.5 * cos(6.2831853 * (t + vec3f(0.0, 0.33, 0.67)));
+    let palette = palette(t);
     return palette * intensity;
 }
 
