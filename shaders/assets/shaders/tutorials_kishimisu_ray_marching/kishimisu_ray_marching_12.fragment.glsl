@@ -46,6 +46,12 @@ void main(void)
     fragColor = vec4(color.xyz, 1.0f);
 }
 
+// Palette:
+vec3 palette(float t)
+{
+    return 0.5f + 0.5f * cos(6.28318f * (t + vec3(0.3f, 0.416f, 0.557f)));
+}
+
 // sphere SDF
 float sdSphere(vec3 p, float s)
 {
@@ -135,21 +141,10 @@ vec3 rot3DRodrigues(vec3 p, vec3 axis, float angle)
 // Distance to the scene:
 float map(vec3 p)
 {
-    vec3 spherePos = vec3(sin(iTime) * 3.0f, 0.0f, 0.0f);   // Sphere position
-    float sphere = sdSphere(p - spherePos, 1.0f);           // Sphere SDF
-
-    vec3 q = p;                 // copy of input position
-    // q.xy *= rot2D(iTime);    // rotate around Z axis
-    // q = fract(q) - 0.5f;     // space repetition in all axes
-    q.xy = fract(q.xy) - 0.5f;  // space repetition in XY plane
-
-    // float box = sdBox(p, vec3(0.75f));  // Cube SDF
-    float box = sdBox(q, vec3(0.1f));  // Cube SDF after rotation
-    float ground = p.y + 0.75f;         // Ground SDF
-
-    // Closest distance to the scene
-    // return min(ground, smin(sphere, box, 2.0f));
-    return smin(ground, smin(sphere, box, 2.0f), 1.0f);
+    p.z += iTime * 0.4f;    // forward movement
+    p = fract(p) - 0.5f;    // space repetition in all axes
+    float box = sdBox(p, vec3(0.1f));  // Cube SDF after rotation
+    return box;
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
@@ -200,7 +195,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         }
     }
 
-    finalPixelColor = vec3(totalDistance * 0.2f);
+    finalPixelColor = palette(totalDistance * 0.04f);
 
     fragColor = vec4(finalPixelColor, 1.0f);
 }

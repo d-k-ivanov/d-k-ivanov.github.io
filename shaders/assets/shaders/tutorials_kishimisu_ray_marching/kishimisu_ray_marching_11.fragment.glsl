@@ -138,10 +138,9 @@ float map(vec3 p)
     vec3 spherePos = vec3(sin(iTime) * 3.0f, 0.0f, 0.0f);   // Sphere position
     float sphere = sdSphere(p - spherePos, 1.0f);           // Sphere SDF
 
-    vec3 q = p;                 // copy of input position
-    // q.xy *= rot2D(iTime);    // rotate around Z axis
-    // q = fract(q) - 0.5f;     // space repetition in all axes
-    q.xy = fract(q.xy) - 0.5f;  // space repetition in XY plane
+    vec3 q = p;             // copy of input position
+    q.y -= iTime * 0.4f;    // upward movement
+    q = fract(q) - 0.5f;    // space repetition in all axes
 
     // float box = sdBox(p, vec3(0.75f));  // Cube SDF
     float box = sdBox(q, vec3(0.1f));  // Cube SDF after rotation
@@ -200,7 +199,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         }
     }
 
-    finalPixelColor = vec3(totalDistance * 0.2f);
+    finalPixelColor = vec3(totalDistance * 0.05f);
 
     fragColor = vec4(finalPixelColor, 1.0f);
 }

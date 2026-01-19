@@ -46,6 +46,12 @@ void main(void)
     fragColor = vec4(color.xyz, 1.0f);
 }
 
+// Palette:
+vec3 palette(float t)
+{
+    return 0.5f + 0.5f * cos(6.28318f * (t + vec3(0.3f, 0.416f, 0.557f)));
+}
+
 // sphere SDF
 float sdSphere(vec3 p, float s)
 {
@@ -57,6 +63,13 @@ float sdBox(vec3 p, vec3 b)
 {
     vec3 q = abs(p) - b;
     return length(max(q, 0.0f)) + min(max(q.x, max(q.y, q.z)), 0.0f);
+}
+
+// octahedron SDF
+float sdOctahedron(vec3 p, float s)
+{
+    p = abs(p);
+    return (p.x + p.y + p.z - s) * 0.57735027f;
 }
 
 // Operations
@@ -135,21 +148,15 @@ vec3 rot3DRodrigues(vec3 p, vec3 axis, float angle)
 // Distance to the scene:
 float map(vec3 p)
 {
-    vec3 spherePos = vec3(sin(iTime) * 3.0f, 0.0f, 0.0f);   // Sphere position
-    float sphere = sdSphere(p - spherePos, 1.0f);           // Sphere SDF
+    p.z += iTime * 0.4f;    // forward movement
 
-    vec3 q = p;                 // copy of input position
-    // q.xy *= rot2D(iTime);    // rotate around Z axis
-    // q = fract(q) - 0.5f;     // space repetition in all axes
-    q.xy = fract(q.xy) - 0.5f;  // space repetition in XY plane
+    // space repetition
+    p.xy = fract(p.xy) - 0.5f;      // space repetition in X and Y axes
+    p.z = mod(p.z, 0.25f) - 0.125f; // space repetition in Z axis
 
-    // float box = sdBox(p, vec3(0.75f));  // Cube SDF
-    float box = sdBox(q, vec3(0.1f));  // Cube SDF after rotation
-    float ground = p.y + 0.75f;         // Ground SDF
+    float box = sdOctahedron(p, 0.15f);  // Octahedron SDF
 
-    // Closest distance to the scene
-    // return min(ground, smin(sphere, box, 2.0f));
-    return smin(ground, smin(sphere, box, 2.0f), 1.0f);
+    return box;
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
@@ -182,7 +189,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     int maxSteps = 100;
     float thresholdNear = 0.001f;
     float thresholdFar = 100.0f;
-    for(int i = 0; i < maxSteps; i++)
+
+    int i;
+    for(i = 0; i < maxSteps; i++)
     {
         // position along the ray
         vec3 position = rayOrigin + rayDirection * totalDistance;
@@ -200,7 +209,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         }
     }
 
-    finalPixelColor = vec3(totalDistance * 0.2f);
+    finalPixelColor = vec3(float(i) / float(maxSteps));
+    // finalPixelColor = palette(totalDistance * 0.04f);
 
     fragColor = vec4(finalPixelColor, 1.0f);
 }
