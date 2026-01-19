@@ -161,7 +161,7 @@ const SHADER_UI_TEMPLATE = `
                             <span class="shaders-note-desc">frame counter incremented every render pass</span>
                             <span class="shaders-note-key">float iFrameRate</span>
                             <span class="shaders-note-desc">estimated frames per second for the current run</span>
-                            <span class="shaders-note-key">vec4 iMouseL</span>
+                            <span class="shaders-note-key">vec4 iMouse(L)</span>
                             <span class="shaders-note-desc">left button: xy = last down position, zw = last click position with sign for down/click</span>
                             <span class="shaders-note-key">vec4 iMouseR</span>
                             <span class="shaders-note-desc">right button: xy = last down position, zw = last click position with sign for down/click</span>

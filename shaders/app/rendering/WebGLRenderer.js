@@ -129,6 +129,7 @@ export class WebGLRenderer extends BaseRenderer
             iTimeDelta: gl.getUniformLocation(newProgram, "iTimeDelta"),
             iFrame: gl.getUniformLocation(newProgram, "iFrame"),
             iFrameRate: gl.getUniformLocation(newProgram, "iFrameRate"),
+            iMouse: gl.getUniformLocation(newProgram, "iMouse"),
             iMouseL: gl.getUniformLocation(newProgram, "iMouseL"),
             iMouseR: gl.getUniformLocation(newProgram, "iMouseR"),
             iMouseW: gl.getUniformLocation(newProgram, "iMouseW"),
@@ -267,6 +268,11 @@ export class WebGLRenderer extends BaseRenderer
         if (u.iFrameRate)
         {
             gl.uniform1f(u.iFrameRate, frameData.frameRate);
+        }
+        if (u.iMouse)
+        {
+            const mouse = frameData.mouseL;
+            gl.uniform4f(u.iMouse, mouse.downX, mouse.downY, mouse.clickX * mouse.downSign, mouse.clickY * mouse.clickSign);
         }
         if (u.iMouseL)
         {
