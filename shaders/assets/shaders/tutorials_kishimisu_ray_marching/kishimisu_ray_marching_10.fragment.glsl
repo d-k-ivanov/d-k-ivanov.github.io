@@ -157,6 +157,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     // Normalized pixel coordinates (from -1 to 1)
     vec2 uv = (fragCoord * 2.0f - iResolution.xy) / iResolution.y;
     vec2 m = (iMouseL.xy * 2.0f - iResolution.xy) / iResolution.y;
+    if(iMouseL.x == 0.0f && iMouseL.y == 0.0f)
+    {
+        m = vec2(0.0f);
+    }
 
     // Initialization:
     vec3 rayOrigin = vec3(0.0f, 0.0f, -3.0f);

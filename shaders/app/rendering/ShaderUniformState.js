@@ -233,19 +233,14 @@ export class ShaderUniformState
         const mouseRight = mouse.right || {};
         const mouseWheel = mouse.wheel || {};
         const zoomState = mouse.zoom || {};
-        const buildMouseState = (source, useCenterFallback) =>
+        const buildMouseState = (source) =>
         {
-            let downX = Number.isFinite(source.clickX) ? source.clickX : 0;
-            let downY = Number.isFinite(source.clickY) ? source.clickY : 0;
+            const downX = Number.isFinite(source.clickX) ? source.clickX : 0;
+            const downY = Number.isFinite(source.clickY) ? source.clickY : 0;
             const clickX = Number.isFinite(source.lastClickX) ? source.lastClickX : 0;
             const clickY = Number.isFinite(source.lastClickY) ? source.lastClickY : 0;
             const downSign = source.isDown ? 1 : -1;
             const clickSign = source.clicked ? 1 : -1;
-            if (useCenterFallback && !source.hasInteraction && !source.isDown && !source.clicked)
-            {
-                downX = resolution.x * 0.5;
-                downY = resolution.y * 0.5;
-            }
             return {
                 downX,
                 downY,
@@ -256,9 +251,9 @@ export class ShaderUniformState
             };
         };
 
-        const mouseL = buildMouseState(mouseLeft, true);
-        const mouseR = buildMouseState(mouseRight, false);
-        const mouseW = buildMouseState(mouseWheel, false);
+        const mouseL = buildMouseState(mouseLeft);
+        const mouseR = buildMouseState(mouseRight);
+        const mouseW = buildMouseState(mouseWheel);
 
         if (mouseLeft.clicked)
         {

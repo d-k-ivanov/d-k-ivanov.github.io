@@ -44,8 +44,7 @@ export class ShaderRenderer
                 lastClickX: 0,
                 lastClickY: 0,
                 isDown: false,
-                clicked: false,
-                hasInteraction: false
+                clicked: false
             },
             right: {
                 clickX: 0,
@@ -53,8 +52,7 @@ export class ShaderRenderer
                 lastClickX: 0,
                 lastClickY: 0,
                 isDown: false,
-                clicked: false,
-                hasInteraction: false
+                clicked: false
             },
             wheel: {
                 clickX: 0,
@@ -62,8 +60,7 @@ export class ShaderRenderer
                 lastClickX: 0,
                 lastClickY: 0,
                 isDown: false,
-                clicked: false,
-                hasInteraction: false
+                clicked: false
             },
             zoom: {
                 x: 0,
@@ -397,7 +394,6 @@ export class ShaderRenderer
             state.lastClickY = 0;
             state.isDown = false;
             state.clicked = false;
-            state.hasInteraction = false;
         };
 
         resetButton(this.mouse.left);
@@ -491,7 +487,6 @@ export class ShaderRenderer
             {
                 return;
             }
-            buttonState.hasInteraction = true;
             buttonState.clickX = pos.x;
             buttonState.clickY = pos.y;
             buttonState.isDown = true;
@@ -531,29 +526,24 @@ export class ShaderRenderer
 
             if (leftDown && leftState)
             {
-                leftState.hasInteraction = true;
                 updateClickPos(leftState, pos);
             }
 
             if (panWithWheel && wheelState)
             {
-                wheelState.hasInteraction = true;
                 applyPan(wheelState, wasWheelDown, pos);
             }
             else if (wheelDown && wheelState)
             {
-                wheelState.hasInteraction = true;
                 updateClickPos(wheelState, pos);
             }
 
             if (panWithRight && rightState)
             {
-                rightState.hasInteraction = true;
                 applyPan(rightState, wasRightDown, pos);
             }
             else if (rightDown && rightState)
             {
-                rightState.hasInteraction = true;
                 updateClickPos(rightState, pos);
             }
         };
