@@ -526,7 +526,8 @@ export class ShaderRenderer
 
             if (leftDown && leftState)
             {
-                updateClickPos(leftState, pos);
+                // updateClickPos(leftState, pos);
+                applyPan(leftState, leftDown, pos);
             }
 
             if (panWithWheel && wheelState)
