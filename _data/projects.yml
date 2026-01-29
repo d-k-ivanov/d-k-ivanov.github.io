@@ -1,5 +1,5 @@
 main:
-  - title: "Shader Editor for WebGL"
+  - title: "Shader Editor for WebGL and WebGPU"
     authors: Dmitry Ivanov
     code: https://github.com/d-k-ivanov/d-k-ivanov.github.io/tree/main/shaders
     badge: WebGL, Graphics
