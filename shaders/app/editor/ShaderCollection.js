@@ -89,6 +89,9 @@ export class ShaderCollection
         { language: "glsl", folder: "raytracing", name: "rtow-one-webgl" },
         { language: "wgsl", folder: "raytracing", name: "rtow-one-webgpu" },
 
+        // Sampling
+        { language: "glsl", folder: "sampling", name: "glinty_ndf" },
+
         // Signed Distance Field (SDF) Examples
         { language: "glsl", folder: "sdf", name: "2d_distances" },
         { language: "wgsl", folder: "sdf", name: "3d-sdf-primitives-webgpu" },
