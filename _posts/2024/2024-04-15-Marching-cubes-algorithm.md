@@ -515,10 +515,13 @@ Shift + End              slow source point animation on/off
 
 ### Demo
 
-<iframe width="100%" height="868" src="https://www.youtube.com/embed/g1hMBADRBHU" title="Marching Cubes Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<video controls autoplay muted loop width="100%">
+  <source src="/assets/blog/2024/04-MarchingCubesDemo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## References
 
-* [Marching Cubes: A High Resolution 3D Surface Construction Algorithm (original paper)](https://www.researchgate.net/publication/202232897_Marching_Cubes_A_High_Resolution_3D_Surface_Construction_Algorithm)
+* [Marching Cubes: A High-Resolution 3D Surface Construction Algorithm (original paper)](https://www.researchgate.net/publication/202232897_Marching_Cubes_A_High_Resolution_3D_Surface_Construction_Algorithm)
 * [Polygonizing a scalar field (Marching Cubes)](https://paulbourke.net/geometry/polygonise/) by [Paul Bourke](https://paulbourke.net/geometry/)
 * [NVIDIA Developer: Generating Complex Procedural Terrains](https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu)
