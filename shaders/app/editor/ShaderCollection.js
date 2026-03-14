@@ -69,6 +69,7 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "iq_primitives" },
         { language: "glsl", folder: "misc", name: "isometries" },
         { language: "glsl", folder: "misc", name: "kaneta_raymarching" },
+        { language: "glsl", folder: "misc", name: "kishimisu_xmas_tree" },
 
         // Model rendering
         { language: "glsl", folder: "objects", name: "obj-viewer-webgl-materials" },
