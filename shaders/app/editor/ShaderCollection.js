@@ -35,6 +35,7 @@ export class ShaderCollection
         // Artificial Life
         // https://arxiv.org/abs/2406.19108
         { language: "wgsl", folder: "celular", name: "computational_life_01-webgpu" },
+        { language: "wgsl", folder: "celular", name: "computational_life_02-webgpu" },
 
         // Cellular Automata
         { language: "glsl", folder: "celular", name: "game_of_life_01-webgl" },
