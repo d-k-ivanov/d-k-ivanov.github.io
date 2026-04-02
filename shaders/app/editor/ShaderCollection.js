@@ -32,6 +32,10 @@ export class ShaderCollection
         { language: "glsl", folder: "basics", name: "print_text" },
         { language: "glsl", folder: "basics", name: "shadertoy" },
 
+        // Artificial Life
+        // https://arxiv.org/abs/2406.19108
+        { language: "wgsl", folder: "celular", name: "computational_life_01-webgpu" },
+
         // Cellular Automata
         { language: "glsl", folder: "celular", name: "game_of_life_01-webgl" },
         { language: "glsl", folder: "celular", name: "game_of_life_02-webgl" },

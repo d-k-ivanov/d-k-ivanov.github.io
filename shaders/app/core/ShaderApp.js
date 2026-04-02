@@ -26,7 +26,7 @@ const SHADER_UI_TEMPLATE = `
                     <option value="128x128">128×128 (1:1)</option>
                     <option value="256x256">256×256 (1:1)</option>
                     <option value="512x512">512×512 (1:1)</option>
-                    <option value="1024x1024">1024×1024 (1:1)</option>
+                    <option value="1024x1024" selected>1024×1024 (1:1)</option>
                     <option value="2048x2048">2048×2048 (1:1)</option>
                     <option value="4096x4096">4096×4096 (1:1)</option>
 
@@ -35,7 +35,7 @@ const SHADER_UI_TEMPLATE = `
                     <option value="640x400">640×400 (16:10)</option>
                     <option value="800x500">800×500 (16:10)</option>
                     <option value="960x600">960×600 (16:10)</option>
-                    <option value="1024x640" selected>1024×640 (16:10)</option>
+                    <option value="1024x640">1024×640 (16:10)</option>
                     <option value="1280x800">1280×800 (16:10)</option>
                     <option value="1440x900">1440×900 (16:10)</option>
                     <option value="1680x1050">1680×1050 (16:10)</option>
