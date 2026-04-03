@@ -345,9 +345,11 @@ fn seekBackward(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>, pc: u32) -> i
 
 fn runTape(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>)
 {
-    var pc = 0u;
-    var head0 = 0u;
-    var head1 = 0u;
+    // Match tmp/cubff: the first two bytes encode the initial head positions
+    // and execution begins at byte 2.
+    var pc = 2u;
+    var head0 = (*tape)[0] & (DOUBLE_TAPE_SIZE - 1u);
+    var head1 = (*tape)[1] & (DOUBLE_TAPE_SIZE - 1u);
 
     for (var step = 0u; step < MAX_STEPS; step = step + 1u)
     {
