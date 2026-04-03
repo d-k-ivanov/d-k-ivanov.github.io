@@ -9,6 +9,7 @@
 // 1. a short random-soup pre-life period,
 // 2. a seeded "transition" frame inspired by Figure 8,
 // 3. repeated local BFF interactions with paper-matched low background mutation.
+// Score and cycle terms below are visualization aids, not paper metrics.
 
 // Grid and Viewport configuration
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
@@ -18,8 +19,8 @@ const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const MAX_STEPS : u32 = 1024u;
-const CYCLE_LENGTH : u32 = 720u;
+const MAX_STEPS : u32 = 8192u;
+const CYCLE_LENGTH : u32 = 50000u;
 const EMERGENCE_EPOCH : u32 = 88u;
 const SCORE_DECAY : f32 = 0.985;
 const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
@@ -43,6 +44,7 @@ const OP_KIND_NULL : u32 = 4u;
 const OP_KIND_NOOP : u32 = 5u;
 
 const PROTO_PREFIX_LENGTH : u32 = 24u;
+// Deterministic sweep used to approximate the paper's local random matching.
 const PHASE_OFFSETS : array<vec2i, 12> = array<vec2i, 12>(
     vec2i(1, 0),
     vec2i(0, 1),
@@ -288,6 +290,7 @@ fn transitionFront(programX: u32, cycleEpoch: u32) -> u32
     return min(PROGRAM_GRID_SIZE.y - 1u, base + wobble);
 }
 
+// Visualization-only proxy for structured tapes.
 fn similarityScore(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>, baseOffset: u32) -> f32
 {
     var commandCount = 0u;
@@ -333,6 +336,11 @@ fn maybeMutateByte(byteValue: u32, seed: u32) -> u32
         return byteValue & 255u;
     }
     return hash32(seed ^ 0xA511E9B3u) & 255u;
+}
+
+fn mutationSeed(program: vec2u, byteOffset: u32, epoch: u32) -> u32
+{
+    return hash3(programIndex(program), byteOffset, epoch * 0x9E3779B9u + 0x00C0FFEEu);
 }
 
 fn evaluateTape(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>)
@@ -485,6 +493,16 @@ fn copyProgram(program: vec2u)
     writeScore(program, readScore(program) * SCORE_DECAY);
 }
 
+fn copyProgramWithMutation(program: vec2u, epoch: u32)
+{
+    for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
+    {
+        let byteValue = maybeMutateByte(readProgramByte(program, i), mutationSeed(program, i, epoch));
+        writeProgramByte(program, i, byteValue);
+    }
+    writeScore(program, readScore(program) * SCORE_DECAY);
+}
+
 fn initRandomSoup(program: vec2u, cycleEpoch: u32)
 {
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
@@ -517,10 +535,11 @@ fn runPair(programA: vec2u, programB: vec2u, epoch: u32)
 {
     var tape : array<u32, DOUBLE_TAPE_SIZE>;
 
+    // The paper mutates every tape before execution.
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
     {
-        tape[i] = readProgramByte(programA, i);
-        tape[TAPE_SIZE + i] = readProgramByte(programB, i);
+        tape[i] = maybeMutateByte(readProgramByte(programA, i), mutationSeed(programA, i, epoch));
+        tape[TAPE_SIZE + i] = maybeMutateByte(readProgramByte(programB, i), mutationSeed(programB, i, epoch));
     }
 
     evaluateTape(&tape);
@@ -528,13 +547,10 @@ fn runPair(programA: vec2u, programB: vec2u, epoch: u32)
     let scoreA = max(readScore(programA) * SCORE_DECAY, similarityScore(&tape, 0u));
     let scoreB = max(readScore(programB) * SCORE_DECAY, similarityScore(&tape, TAPE_SIZE));
 
-    let pairSeed = hash3(programIndex(programA), programIndex(programB), epoch);
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
     {
-        let seedA = pairSeed ^ (i * 0x7FEB352Du + 0x12345u);
-        let seedB = pairSeed ^ (i * 0x846CA68Bu + 0xABCDEu);
-        writeProgramByte(programA, i, maybeMutateByte(tape[i], seedA));
-        writeProgramByte(programB, i, maybeMutateByte(tape[TAPE_SIZE + i], seedB));
+        writeProgramByte(programA, i, tape[i]);
+        writeProgramByte(programB, i, tape[TAPE_SIZE + i]);
     }
 
     writeScore(programA, scoreA);
@@ -556,6 +572,12 @@ fn main(@builtin(workgroup_id) workgroup : vec3u, @builtin(local_invocation_id) 
     }
 
     let frame = shaderUniforms.iFrame;
+    if (frame % COMPUTE_FRAME_INTERVAL != 0u)
+    {
+        copyProgram(program);
+        return;
+    }
+
     let epoch = frame / COMPUTE_FRAME_INTERVAL;
     let cycleEpoch = epoch % CYCLE_LENGTH;
 
@@ -571,12 +593,6 @@ fn main(@builtin(workgroup_id) workgroup : vec3u, @builtin(local_invocation_id) 
         return;
     }
 
-    if (frame % COMPUTE_FRAME_INTERVAL != 0u)
-    {
-        copyProgram(program);
-        return;
-    }
-
     let phase = epoch % 12u;
     let offset = PHASE_OFFSETS[phase];
     let parity = (program.x + program.y + phase) & 1u;
@@ -586,7 +602,7 @@ fn main(@builtin(workgroup_id) workgroup : vec3u, @builtin(local_invocation_id) 
 
     if (!programInBounds(partnerSigned))
     {
-        copyProgram(program);
+        copyProgramWithMutation(program, epoch);
         return;
     }
 

@@ -1,11 +1,5 @@
-// WGSL adaptation of tmp/Rabrg-artificial-life/main.py.
-//
-// The Python reference runs 64-byte programs, pairs them from a random radius-2
-// neighborhood, concatenates each pair into a 128-cell tape, executes BFF with
-// pc/head0/head1 starting at zero, then applies low-rate background mutation.
-//
-// This Shader Editor version preserves that execution model and rendering layout,
-// but uses an 80x50 soup instead of 240x135 so it fits a 16:10 viewport in-browser.
+// Section 2's `bff_noheads` soup from "Computational Life", downscaled for the browser.
+// tmp/Rabrg-artificial-life/main.py is a nearby CPU reference for the same neighborhood layout.
 
 // Grid and Viewport configuration
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
@@ -15,7 +9,7 @@ const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const MAX_STEPS : u32 = 8192u;
+const MAX_STEPS : u32 = 81920u;
 const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
 const INVALID_INDEX : u32 = 0xFFFFFFFFu;
 
@@ -173,6 +167,7 @@ fn proposalIndex(program: vec2u, epoch: u32) -> u32
     return programIndex(vec2u(proposed));
 }
 
+// Hash priorities reproduce the paper's random-order greedy matching without a shuffle buffer.
 fn priorityFor(program: vec2u, epoch: u32) -> u32
 {
     return hash3(programIndex(program), epoch, 0x91E10DA5u);
@@ -475,20 +470,19 @@ fn executePair(programA: vec2u, programB: vec2u, epoch: u32)
 {
     var tape : array<u32, DOUBLE_TAPE_SIZE>;
 
+    // The paper mutates every tape before execution.
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
     {
-        tape[i] = readProgramByte(programA, i);
-        tape[TAPE_SIZE + i] = readProgramByte(programB, i);
+        tape[i] = maybeMutateByte(readProgramByte(programA, i), programA, i, epoch);
+        tape[TAPE_SIZE + i] = maybeMutateByte(readProgramByte(programB, i), programB, i, epoch);
     }
 
     runTape(&tape);
 
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
     {
-        let byteA = maybeMutateByte(tape[i], programA, i, epoch);
-        let byteB = maybeMutateByte(tape[TAPE_SIZE + i], programB, i, epoch);
-        writeProgramByte(programA, i, byteA);
-        writeProgramByte(programB, i, byteB);
+        writeProgramByte(programA, i, tape[i]);
+        writeProgramByte(programB, i, tape[TAPE_SIZE + i]);
     }
 }
 
@@ -510,18 +504,18 @@ fn main(
     }
 
     let frame = shaderUniforms.iFrame;
-    let epoch = frame / COMPUTE_FRAME_INTERVAL;
-
-    // Seed both ping-pong buffers on startup, then evolve continuously.
-    if (epoch == 0u)
-    {
-        initRandomSoup(program);
-        return;
-    }
-
     if (frame % COMPUTE_FRAME_INTERVAL != 0u)
     {
         copyProgram(program);
+        return;
+    }
+
+    let epoch = frame / COMPUTE_FRAME_INTERVAL;
+
+    // Odd frames just forward the previous state; initialization happens once per epoch.
+    if (epoch == 0u)
+    {
+        initRandomSoup(program);
         return;
     }
 
