@@ -1,14 +1,44 @@
-// Adapted from http://github.com/Rabrg/artificial-life
+// Minimal WebGPU port of tmp/cubff's BFF soup.
+
+// Adapted from
+// * https://github.com/Rabrg/artificial-life
+// * https://github.com/paradigms-of-intelligence/cubff.git
+
+// Paper: https://arxiv.org/abs/2406.19108
+
+// CUDA shuffles the full program population each epoch, mutates the concatenated
+// 128-byte pair, executes it, then writes both 64-byte tapes back. WGSL does not
+// have CUDA's shuffle buffer, so this shader uses a deterministic global
+// permutation and pairs adjacent slots from that permutation. This preserves the
+// CUDA interaction model much more closely than the previous local-neighborhood
+// matcher.
 
 // Grid and Viewport configuration
+// Kee this value in sync with the vertex shader's GRID_SIZE and the host code's gridSize.
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
-const TAPE_SIDE : u32 = 8u;
 const PROGRAM_GRID_SIZE : vec2u = vec2u(GRID_SIZE.x / TAPE_SIDE, GRID_SIZE.y / TAPE_SIDE);
+
+const MAX_STEPS : u32 = 8192u;
+
+const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const MAX_STEPS : u32 = 8192u;
-const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
 const INVALID_INDEX : u32 = 0xFFFFFFFFu;
+
+const NUM_PROGRAMS : u32 = PROGRAM_GRID_SIZE.x * PROGRAM_GRID_SIZE.y;
+
+const MUTATION_THRESHOLD : u32 = 262144u;        // 1 << 18
+const MUTATION_PROBABILITY_MASK : u32 = 0x3FFFFFFFu;
+
+const PERMUTATION_COUNT : u32 = 16u;
+const PERMUTATION_OFFSETS : array<u32, 16> = array<u32, 16>(
+    3u, 7u, 11u, 17u, 23u, 29u, 33u, 39u,
+    41u, 47u, 53u, 59u, 61u, 67u, 73u, 79u
+);
+const PERMUTATION_INVERSES : array<u32, 16> = array<u32, 16>(
+    2667u, 1143u, 1091u, 2353u, 2087u, 2069u, 1697u, 2359u,
+    1561u, 2383u, 2717u, 339u, 3541u, 3403u, 2137u, 1519u
+);
 
 const OP_LT : u32 = 60u;      // <
 const OP_GT : u32 = 62u;      // >
@@ -51,14 +81,14 @@ fn hash3(a: u32, b: u32, c: u32) -> u32
     return hash32(a ^ hash32(b + 0x9E3779B9u) ^ hash32(c + 0x85EBCA6Bu));
 }
 
-fn random01(seed: u32) -> f32
-{
-    return f32(hash32(seed)) / 4294967295.0;
-}
-
 fn programIndex(program: vec2u) -> u32
 {
     return program.y * PROGRAM_GRID_SIZE.x + program.x;
+}
+
+fn programFromIndex(index: u32) -> vec2u
+{
+    return vec2u(index % PROGRAM_GRID_SIZE.x, index / PROGRAM_GRID_SIZE.x);
 }
 
 fn sameProgram(a: vec2i, b: vec2i) -> bool
@@ -99,6 +129,43 @@ fn programInBounds(program: vec2i) -> bool
         && program.y < i32(PROGRAM_GRID_SIZE.y);
 }
 
+fn permutationVariant(epoch: u32) -> u32
+{
+    return hash3(epoch, NUM_PROGRAMS, 0x91E10DA5u) % PERMUTATION_COUNT;
+}
+
+fn permutationOffset(epoch: u32) -> u32
+{
+    return PERMUTATION_OFFSETS[permutationVariant(epoch)];
+}
+
+fn permutationInverse(epoch: u32) -> u32
+{
+    return PERMUTATION_INVERSES[permutationVariant(epoch)];
+}
+
+fn permutationShift(epoch: u32) -> u32
+{
+    return hash3(epoch, NUM_PROGRAMS, 0xBFF10001u) % NUM_PROGRAMS;
+}
+
+fn shuffledIndexAt(position: u32, epoch: u32) -> u32
+{
+    return (position * permutationOffset(epoch) + permutationShift(epoch)) % NUM_PROGRAMS;
+}
+
+fn programPosition(program: vec2u, epoch: u32) -> u32
+{
+    let shift = permutationShift(epoch);
+    let shifted = (programIndex(program) + NUM_PROGRAMS - shift) % NUM_PROGRAMS;
+    return (shifted * permutationInverse(epoch)) % NUM_PROGRAMS;
+}
+
+fn pairIndexFor(program: vec2u, epoch: u32) -> u32
+{
+    return programPosition(program, epoch) >> 1u;
+}
+
 fn neighborhoodBounds(program: vec2u) -> vec4i
 {
     let x = i32(program.x);
@@ -121,36 +188,8 @@ fn neighborhoodCount(program: vec2u) -> u32
 
 fn proposalFor(program: vec2u, epoch: u32) -> vec2i
 {
-    let count = neighborhoodCount(program);
-    if (count == 0u)
-    {
-        return vec2i(-1, -1);
-    }
-
-    let choice = hash3(programIndex(program), epoch, 0xBFF10001u) % count;
-    let bounds = neighborhoodBounds(program);
-    let programCoord = vec2i(program);
-    var cursor = 0u;
-
-    for (var nx = bounds.x; nx < bounds.y; nx = nx + 1)
-    {
-        for (var ny = bounds.z; ny < bounds.w; ny = ny + 1)
-        {
-            let candidate = vec2i(nx, ny);
-            if (sameProgram(candidate, programCoord))
-            {
-                continue;
-            }
-
-            if (cursor == choice)
-            {
-                return candidate;
-            }
-            cursor = cursor + 1u;
-        }
-    }
-
-    return vec2i(-1, -1);
+    let partnerPosition = programPosition(program, epoch) ^ 1u;
+    return vec2i(programFromIndex(shuffledIndexAt(partnerPosition, epoch)));
 }
 
 fn proposalIndex(program: vec2u, epoch: u32) -> u32
@@ -229,70 +268,34 @@ fn hasWinningOutgoingClaim(program: vec2u, epoch: u32) -> bool
 
 fn isSelectedLeader(program: vec2u, epoch: u32) -> bool
 {
-    let partnerSigned = proposalFor(program, epoch);
-    if (!programInBounds(partnerSigned))
-    {
-        return false;
-    }
-
-    if (!hasWinningOutgoingClaim(program, epoch))
-    {
-        return false;
-    }
-
-    let partner = vec2u(partnerSigned);
-    let selfIndex = programIndex(program);
-    let partnerIndex = programIndex(partner);
-    let selfPriority = priorityFor(program, epoch);
-    let partnerPriority = priorityFor(partner, epoch);
-
-    if (priorityLess(partnerPriority, partnerIndex, selfPriority, selfIndex) && hasWinningOutgoingClaim(partner, epoch))
-    {
-        return false;
-    }
-
-    return true;
+    return (programPosition(program, epoch) & 1u) == 0u;
 }
 
 fn isSelectedFollower(program: vec2u, epoch: u32) -> bool
 {
-    let programIndexValue = programIndex(program);
-    let bounds = neighborhoodBounds(program);
-
-    for (var nx = bounds.x; nx < bounds.y; nx = nx + 1)
-    {
-        for (var ny = bounds.z; ny < bounds.w; ny = ny + 1)
-        {
-            let contenderSigned = vec2i(nx, ny);
-            if (!programInBounds(contenderSigned) || sameProgram(contenderSigned, vec2i(program)))
-            {
-                continue;
-            }
-
-            let contender = vec2u(contenderSigned);
-            if (!isSelectedLeader(contender, epoch))
-            {
-                continue;
-            }
-
-            if (proposalIndex(contender, epoch) == programIndexValue)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
+    return (programPosition(program, epoch) & 1u) == 1u;
 }
 
 fn maybeMutateByte(byteValue: u32, program: vec2u, byteOffset: u32, epoch: u32) -> u32
 {
     let seed = hash3(programIndex(program), byteOffset, epoch * 0x9E3779B9u + 0x00C0FFEEu);
-    if (random01(seed) >= BACKGROUND_MUTATION_RATE)
+    let probability = hash32(seed ^ 0xA511E9B3u) & MUTATION_PROBABILITY_MASK;
+    if (probability >= MUTATION_THRESHOLD)
     {
         return byteValue & 255u;
     }
-    return hash32(seed ^ 0xA511E9B3u) & 255u;
+    return seed & 255u;
+}
+
+fn maybeMutatePairByte(byteValue: u32, pairIndex: u32, tapeOffset: u32, epoch: u32) -> u32
+{
+    let seed = hash3(pairIndex, tapeOffset, epoch * 0x9E3779B9u + 0x00C0FFEEu);
+    let probability = hash32(seed ^ 0xA511E9B3u) & MUTATION_PROBABILITY_MASK;
+    if (probability >= MUTATION_THRESHOLD)
+    {
+        return byteValue & 255u;
+    }
+    return seed & 255u;
 }
 
 fn seekForward(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>, pc: u32) -> i32
@@ -362,9 +365,9 @@ fn seekBackward(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>, pc: u32) -> i
 
 fn runTape(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>)
 {
-    var pc = 0u;
-    var head0 = 0u;
-    var head1 = 0u;
+    var pc = 2u;
+    var head0 = (*tape)[0] & (DOUBLE_TAPE_SIZE - 1u);
+    var head1 = (*tape)[1] & (DOUBLE_TAPE_SIZE - 1u);
 
     for (var step = 0u; step < MAX_STEPS; step = step + 1u)
     {
@@ -475,12 +478,13 @@ fn copyProgramWithMutation(program: vec2u, epoch: u32)
 fn executePair(programA: vec2u, programB: vec2u, epoch: u32)
 {
     var tape : array<u32, DOUBLE_TAPE_SIZE>;
+    let pairIndex = pairIndexFor(programA, epoch);
 
-    // The paper mutates every tape before execution.
+    // Match CUDA's mutate-then-execute pipeline on the concatenated pair.
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
     {
-        tape[i] = maybeMutateByte(readProgramByte(programA, i), programA, i, epoch);
-        tape[TAPE_SIZE + i] = maybeMutateByte(readProgramByte(programB, i), programB, i, epoch);
+        tape[i] = maybeMutatePairByte(readProgramByte(programA, i), pairIndex, i, epoch);
+        tape[TAPE_SIZE + i] = maybeMutatePairByte(readProgramByte(programB, i), pairIndex, TAPE_SIZE + i, epoch);
     }
 
     runTape(&tape);

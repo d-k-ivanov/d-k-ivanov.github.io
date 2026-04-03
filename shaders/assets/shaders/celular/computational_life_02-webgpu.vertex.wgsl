@@ -1,4 +1,8 @@
-// Adapted from http://github.com/Rabrg/artificial-life
+// Adapted from
+// * https://github.com/Rabrg/artificial-life
+// * https://github.com/paradigms-of-intelligence/cubff.git
+
+// Paper: https://arxiv.org/abs/2406.19108
 
 const TAPE_SIDE : u32 = 8u;
 const VERTEX_COUNT : u32 = 6u;
