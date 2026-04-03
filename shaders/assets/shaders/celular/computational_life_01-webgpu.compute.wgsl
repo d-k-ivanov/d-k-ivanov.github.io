@@ -16,13 +16,12 @@
 // Grid and Viewport configuration
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
 const TAPE_SIDE : u32 = 8u;
-// Keep the tape grid derived from the byte grid so both stay in sync.
 const PROGRAM_GRID_SIZE : vec2u = vec2u(GRID_SIZE.x / TAPE_SIDE, GRID_SIZE.y / TAPE_SIDE);
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
 const MAX_STEPS : u32 = 8192u;
 const CYCLE_LENGTH : u32 = 50000u;
-const EMERGENCE_EPOCH : u32 = 88u;
+const EMERGENCE_EPOCH : u32 = 188u;
 const SCORE_DECAY : f32 = 0.985;
 const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
 
