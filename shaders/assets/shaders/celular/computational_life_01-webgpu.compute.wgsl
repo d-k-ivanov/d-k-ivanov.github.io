@@ -15,7 +15,6 @@
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
 
-const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
@@ -484,15 +483,6 @@ fn evaluateTape(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>)
     }
 }
 
-fn copyProgram(program: vec2u)
-{
-    for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
-    {
-        writeProgramByte(program, i, readProgramByte(program, i));
-    }
-    writeScore(program, readScore(program) * SCORE_DECAY);
-}
-
 fn copyProgramWithMutation(program: vec2u, epoch: u32)
 {
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
@@ -571,14 +561,7 @@ fn main(@builtin(workgroup_id) workgroup : vec3u, @builtin(local_invocation_id) 
         return;
     }
 
-    let frame = shaderUniforms.iFrame;
-    if (frame % COMPUTE_FRAME_INTERVAL != 0u)
-    {
-        copyProgram(program);
-        return;
-    }
-
-    let epoch = frame / COMPUTE_FRAME_INTERVAL;
+    let epoch = shaderUniforms.iFrame;
     let cycleEpoch = epoch % CYCLE_LENGTH;
 
     if (cycleEpoch == 0u)

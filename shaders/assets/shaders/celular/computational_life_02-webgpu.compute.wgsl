@@ -5,11 +5,10 @@
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
 
-const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const MAX_STEPS : u32 = 81920u;
+const MAX_STEPS : u32 = 8192u;
 const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
 const INVALID_INDEX : u32 = 0xFFFFFFFFu;
 
@@ -449,14 +448,6 @@ fn initRandomSoup(program: vec2u)
     }
 }
 
-fn copyProgram(program: vec2u)
-{
-    for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
-    {
-        writeProgramByte(program, i, readProgramByte(program, i));
-    }
-}
-
 fn copyProgramWithMutation(program: vec2u, epoch: u32)
 {
     for (var i = 0u; i < TAPE_SIZE; i = i + 1u)
@@ -503,16 +494,9 @@ fn main(
         return;
     }
 
-    let frame = shaderUniforms.iFrame;
-    if (frame % COMPUTE_FRAME_INTERVAL != 0u)
-    {
-        copyProgram(program);
-        return;
-    }
+    let epoch = shaderUniforms.iFrame;
 
-    let epoch = frame / COMPUTE_FRAME_INTERVAL;
-
-    // Odd frames just forward the previous state; initialization happens once per epoch.
+    // Initialization happens once on frame 0.
     if (epoch == 0u)
     {
         initRandomSoup(program);
