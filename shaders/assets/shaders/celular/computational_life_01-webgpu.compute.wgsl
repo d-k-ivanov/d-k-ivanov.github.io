@@ -14,10 +14,10 @@
 // 3. repeated local BFF interactions with paper-matched low background mutation.
 
 // Grid and Viewport configuration
-const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
-
 const TAPE_SIDE : u32 = 8u;
+// Keep the tape grid derived from the byte grid so both stay in sync.
+const PROGRAM_GRID_SIZE : vec2u = vec2u(GRID_SIZE.x / TAPE_SIDE, GRID_SIZE.y / TAPE_SIDE);
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
 const MAX_STEPS : u32 = 8192u;
@@ -76,9 +76,9 @@ struct ShaderUniforms
 };
 
 @group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
-@group(0) @binding(1) var<storage, read_write> cellStateIn : array<u32>;
+@group(0) @binding(1) var<storage, read> cellStateIn : array<u32>;
 @group(0) @binding(2) var<storage, read_write> cellStateOut : array<u32>;
-@group(0) @binding(3) var<storage, read_write> scoreStateIn : array<f32>;
+@group(0) @binding(3) var<storage, read> scoreStateIn : array<f32>;
 @group(0) @binding(4) var<storage, read_write> scoreStateOut : array<f32>;
 
 fn hash32(value: u32) -> u32
@@ -195,7 +195,8 @@ fn programByteIndex(program: vec2u, byteOffset: u32) -> u32
 
 fn scoreIndex(program: vec2u) -> u32
 {
-    return byteCellIndex(programOrigin(program));
+    // Scores are tracked per program, so keep them densely packed.
+    return programIndex(program);
 }
 
 fn programInBounds(program: vec2i) -> bool

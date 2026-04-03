@@ -1,8 +1,6 @@
 // Vibecoded version of "Computational Life"
 // https://arxiv.org/abs/2406.19108
 
-const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
-
 const TAPE_SIDE : u32 = 8u;
 const VERTEX_COUNT : u32 = 6u;
 
@@ -38,9 +36,10 @@ struct VertexOutput
     @location(2) score : f32,
 };
 
-fn byteCellIndex(cell: vec2u) -> u32
+fn programIndex(program: vec2u) -> u32
 {
-    return cell.y * shaderUniforms.iGridSize.x + cell.x;
+    let programsPerRow = shaderUniforms.iGridSize.x / TAPE_SIDE;
+    return program.y * programsPerRow + program.x;
 }
 
 @vertex
@@ -60,8 +59,8 @@ fn vert(input : VertexInput) -> VertexOutput
     let cell = vec2u(input.instanceIndex % grid.x, input.instanceIndex / grid.x);
     let localCell = cell % vec2u(TAPE_SIDE, TAPE_SIDE);
     let programCell = cell / vec2u(TAPE_SIDE, TAPE_SIDE);
-    let topLeft = programCell * vec2u(TAPE_SIDE, TAPE_SIDE);
-    let score = scoreState[byteCellIndex(topLeft)];
+    // Every byte in the same 8x8 tape reads the same program score.
+    let score = scoreState[programIndex(programCell)];
 
     let cellMin = vec2f(cell) / gridF;
     let cellMax = vec2f(cell + vec2u(1u, 1u)) / gridF;

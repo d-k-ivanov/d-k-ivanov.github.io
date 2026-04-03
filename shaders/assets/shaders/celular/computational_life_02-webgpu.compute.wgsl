@@ -1,10 +1,10 @@
 // Adapted from http://github.com/Rabrg/artificial-life
 
 // Grid and Viewport configuration
-const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
-
 const TAPE_SIDE : u32 = 8u;
+// Keep the tape grid derived from the byte grid so both stay in sync.
+const PROGRAM_GRID_SIZE : vec2u = vec2u(GRID_SIZE.x / TAPE_SIDE, GRID_SIZE.y / TAPE_SIDE);
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
 const MAX_STEPS : u32 = 8192u;
@@ -511,6 +511,7 @@ fn main(
 
     if (isSelectedFollower(program, epoch))
     {
+        // The selected leader already wrote both tapes for this pair.
         return;
     }
 
