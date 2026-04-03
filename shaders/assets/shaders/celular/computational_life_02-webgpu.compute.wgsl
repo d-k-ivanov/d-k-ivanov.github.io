@@ -58,8 +58,7 @@ fn random01(seed: u32) -> f32
 
 fn programIndex(program: vec2u) -> u32
 {
-    // Match the Python layout: idx = x * height + y.
-    return program.x * PROGRAM_GRID_SIZE.y + program.y;
+    return program.y * PROGRAM_GRID_SIZE.x + program.x;
 }
 
 fn sameProgram(a: vec2i, b: vec2i) -> bool
@@ -164,7 +163,8 @@ fn proposalIndex(program: vec2u, epoch: u32) -> u32
     return programIndex(vec2u(proposed));
 }
 
-// Hash priorities reproduce the paper's random-order greedy matching without a shuffle buffer.
+// Hash priorities approximate the paper's random-order greedy matching without
+// materializing an explicit shuffle buffer.
 fn priorityFor(program: vec2u, epoch: u32) -> u32
 {
     return hash3(programIndex(program), epoch, 0x91E10DA5u);
@@ -215,10 +215,27 @@ fn winsClaims(claimant: vec2u, targetProgram: vec2u, epoch: u32) -> bool
     return true;
 }
 
+fn hasWinningOutgoingClaim(program: vec2u, epoch: u32) -> bool
+{
+    let partnerSigned = proposalFor(program, epoch);
+    if (!programInBounds(partnerSigned))
+    {
+        return false;
+    }
+
+    let partner = vec2u(partnerSigned);
+    return winsClaims(program, program, epoch) && winsClaims(program, partner, epoch);
+}
+
 fn isSelectedLeader(program: vec2u, epoch: u32) -> bool
 {
     let partnerSigned = proposalFor(program, epoch);
     if (!programInBounds(partnerSigned))
+    {
+        return false;
+    }
+
+    if (!hasWinningOutgoingClaim(program, epoch))
     {
         return false;
     }
@@ -229,12 +246,12 @@ fn isSelectedLeader(program: vec2u, epoch: u32) -> bool
     let selfPriority = priorityFor(program, epoch);
     let partnerPriority = priorityFor(partner, epoch);
 
-    if (!priorityLess(selfPriority, selfIndex, partnerPriority, partnerIndex))
+    if (priorityLess(partnerPriority, partnerIndex, selfPriority, selfIndex) && hasWinningOutgoingClaim(partner, epoch))
     {
         return false;
     }
 
-    return winsClaims(program, program, epoch) && winsClaims(program, partner, epoch);
+    return true;
 }
 
 fn isSelectedFollower(program: vec2u, epoch: u32) -> bool
@@ -345,11 +362,9 @@ fn seekBackward(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>, pc: u32) -> i
 
 fn runTape(tape: ptr<function, array<u32, DOUBLE_TAPE_SIZE>>)
 {
-    // Match tmp/cubff: the first two bytes encode the initial head positions
-    // and execution begins at byte 2.
-    var pc = 2u;
-    var head0 = (*tape)[0] & (DOUBLE_TAPE_SIZE - 1u);
-    var head1 = (*tape)[1] & (DOUBLE_TAPE_SIZE - 1u);
+    var pc = 0u;
+    var head0 = 0u;
+    var head1 = 0u;
 
     for (var step = 0u; step < MAX_STEPS; step = step + 1u)
     {
