@@ -1,3 +1,6 @@
+// Vibecoded version of "Computational Life"
+// https://arxiv.org/abs/2406.19108
+
 const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
 
 const TAPE_SIDE : u32 = 8u;

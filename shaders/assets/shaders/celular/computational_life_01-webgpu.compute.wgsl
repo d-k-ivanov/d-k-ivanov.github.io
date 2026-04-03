@@ -1,3 +1,6 @@
+// Vibecoded version of "Computational Life"
+// https://arxiv.org/abs/2406.19108
+//
 // Figure-8-style reconstruction of the 2D BFF soup from:
 // "Computational Life: How Well-formed, Self-replicating Programs Emerge from Simple Interaction"
 //
@@ -9,7 +12,6 @@
 // 1. a short random-soup pre-life period,
 // 2. a seeded "transition" frame inspired by Figure 8,
 // 3. repeated local BFF interactions with paper-matched low background mutation.
-// Score and cycle terms below are visualization aids, not paper metrics.
 
 // Grid and Viewport configuration
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);

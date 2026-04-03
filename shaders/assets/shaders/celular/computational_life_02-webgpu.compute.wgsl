@@ -1,5 +1,4 @@
-// Section 2's `bff_noheads` soup from "Computational Life", downscaled for the browser.
-// tmp/Rabrg-artificial-life/main.py is a nearby CPU reference for the same neighborhood layout.
+// Adapted from http://github.com/Rabrg/artificial-life
 
 // Grid and Viewport configuration
 const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
