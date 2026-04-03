@@ -3,19 +3,21 @@
 //
 // The paper renders 32,400 programs in a 240x135 grid, each program shown as an 8x8 tape.
 // This Shader Editor adaptation keeps the 8x8 tape visualization and the BFF execution model,
-// but downscales the soup to 80x45 programs so it remains interactive inside the browser.
+// but downscales the soup to 80x50 programs so it fits a 16:10 viewport in-browser.
 //
 // To make the takeover phase visible on human timescales, the simulation loops through:
 // 1. a short random-soup pre-life period,
 // 2. a seeded "transition" frame inspired by Figure 8,
 // 3. repeated local BFF interactions with paper-matched low background mutation.
 
+// Grid and Viewport configuration
+const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
+const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
+
 const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 45u);
-const GRID_SIZE : vec3u = vec3u(640u, 360u, 1u);
 const MAX_STEPS : u32 = 1024u;
 const CYCLE_LENGTH : u32 = 720u;
 const EMERGENCE_EPOCH : u32 = 88u;

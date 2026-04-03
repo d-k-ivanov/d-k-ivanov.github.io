@@ -1,4 +1,5 @@
-const GRID_SIZE : vec3u = vec3u(640u, 360u, 1u);
+const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
+
 const TAPE_SIDE : u32 = 8u;
 const VERTEX_COUNT : u32 = 6u;
 

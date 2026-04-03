@@ -5,14 +5,16 @@
 // pc/head0/head1 starting at zero, then applies low-rate background mutation.
 //
 // This Shader Editor version preserves that execution model and rendering layout,
-// but uses an 80x45 soup instead of 240x135 so it remains interactive in-browser.
+// but uses an 80x50 soup instead of 240x135 so it fits a 16:10 viewport in-browser.
+
+// Grid and Viewport configuration
+const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 50u);
+const GRID_SIZE : vec3u = vec3u(640u, 400u, 1u);
 
 const COMPUTE_FRAME_INTERVAL : u32 = 2u;
 const TAPE_SIDE : u32 = 8u;
 const TAPE_SIZE : u32 = 64u;
 const DOUBLE_TAPE_SIZE : u32 = 128u;
-const PROGRAM_GRID_SIZE : vec2u = vec2u(80u, 45u);
-const GRID_SIZE : vec3u = vec3u(640u, 360u, 1u);
 const MAX_STEPS : u32 = 8192u;
 const BACKGROUND_MUTATION_RATE : f32 = 0.00024;
 const INVALID_INDEX : u32 = 0xFFFFFFFFu;
