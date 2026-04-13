@@ -10,6 +10,24 @@
 #   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1669769792i/63891183.jpg
 #   notes: >
 
+# - title: "Getting Real"
+#   year: 2026
+#   author: Jason Fried, David Heinemeier Hansson, Matthew Linderman
+#   cover: https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1643253913i/447648.jpg
+#   notes: >
+
+# - title: "Generative Deep Learning: Teaching Machines to Paint, Write, Compose, and Play"
+#   year: 2025
+#   author: David Foster
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1562579441i/44144492.jpg
+#   notes: >
+
+# - title: "3D Deep Learning with Python"
+#   year: 2024
+#   author: Xudong Ma, Vishakh Hegde, Lilit Yolyan
+#   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1673204768i/75656117.jpg
+#   notes: >
+
 - title: "Project Hail Mary"
   year: 2026
   author: Andy Weir
@@ -26,12 +44,6 @@
   year: 2026
   author: Suzanne Collins
   cover: https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1586722941i/6148028.jpg
-  notes: >
-
-- title: "Getting Real"
-  year: 2026
-  author: Jason Fried, David Heinemeier Hansson, Matthew Linderman
-  cover: https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1643253913i/447648.jpg
   notes: >
 
 - title: "The Hunger Games"
@@ -52,12 +64,6 @@
   cover: https://m.media-amazon.com/images/I/61ZNs2c8iPL._SL1005_.jpg
   notes: >
 
-- title: "Generative Deep Learning: Teaching Machines to Paint, Write, Compose, and Play"
-  year: 2025
-  author: David Foster
-  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1562579441i/44144492.jpg
-  notes: >
-
 - title: "The Ph.D. Grind: A Ph.D. Student Memoir"
   year: 2025
   author: Philip J. Guo
@@ -74,12 +80,6 @@
   year: 2024
   author: J.K. Rowling, Jack Thorne
   cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1470082995i/29056083.jpg
-  notes: >
-
-- title: "3D Deep Learning with Python"
-  year: 2024
-  author: Xudong Ma, Vishakh Hegde, Lilit Yolyan
-  cover: https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1673204768i/75656117.jpg
   notes: >
 
 - title: "Король и Шут. Между Купчино и Ржевкой..."
