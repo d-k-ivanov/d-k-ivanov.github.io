@@ -1,3 +1,9 @@
+// *******************************************************************
+//
+// Evaluating and Sampling Glinty NDFs in Constant Time
+// https://perso.telecom-paristech.fr/boubek/papers/Glinty/
+//
+// *******************************************************************
 #version 300 es
 
 #ifdef GL_ES
@@ -44,7 +50,7 @@ void main(void)
 // *******************************************************************
 //
 // Evaluating and Sampling Glinty NDFs in Constant Time
-// https://perso.telecom-paristech.0fr/boubek/papers/Glinty/
+// https://perso.telecom-paristech.fr/boubek/papers/Glinty/
 //
 // *******************************************************************
 
