@@ -8,6 +8,7 @@ permalink: /tools/
 
 - <a name="Compare Two Lists" href="/tools/compare-two-lists/">Compare Two Lists</a>
 - <a name="Random Lines Picker" href="/tools/random-lines/">Random Lines Picker</a>
+- <a name="Unlimited Input Field" href="/tools/unlimited-input-field/">Unlimited Input Field</a>
 
 ## Shader Tools
 
