@@ -1,10 +1,11 @@
+#version 300 es
+
 // *******************************************************************
 //
 // Evaluating and Sampling Glinty NDFs in Constant Time
 // https://perso.telecom-paristech.fr/boubek/papers/Glinty/
 //
 // *******************************************************************
-#version 300 es
 
 #ifdef GL_ES
 precision highp float;
