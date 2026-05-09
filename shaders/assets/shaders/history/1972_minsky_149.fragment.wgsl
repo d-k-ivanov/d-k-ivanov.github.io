@@ -1,0 +1,21 @@
+struct ShaderUniforms
+{
+    iResolution : vec3f,
+    iTime : f32,
+    iTimeDelta : f32,
+    iFrame : u32,
+    iFrameRate : f32,
+    iMouseL : vec4f,
+    iMouseR : vec4f,
+    iMouseW : vec4f,
+    iMouseZoom : vec4f,
+    iGridSize : vec3u,
+};
+
+@group(0) @binding(0) var<uniform> shaderUniforms : ShaderUniforms;
+
+@fragment
+fn frag() -> @location(0) vec4f
+{
+    return vec4f(1.0, 1.0, 1.0, 1.0);
+}
