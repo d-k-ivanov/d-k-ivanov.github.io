@@ -66,6 +66,7 @@ export class ShaderCollection
         { language: "wgsl", folder: "celular", name: "gol_paul_rendell_tackout" },
 
         // History of computing
+        { language: "wgsl", folder: "history", name: "1960_minskytron" },
         { language: "wgsl", folder: "history", name: "1972_minsky_149" },
 
         // Math
