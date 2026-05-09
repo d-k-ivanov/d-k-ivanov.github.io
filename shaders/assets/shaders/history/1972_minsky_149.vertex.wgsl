@@ -1,7 +1,9 @@
 // Constants
 const PI : f32 = 3.14159265358979323846264338327;
 // Large number of vertices to allow many circles to accumulate over time
-const VERTEX_COUNT : u32 = 1000000u;
+// Increase if you want more circles to accumulate.
+// WARNING: increasing this will increase GPU load and may cause performance issues.
+const VERTEX_COUNT : u32 = 100000u;
 
 const NUM_SEGMENTS : u32 = 32u;
 const VERTS_PER_CIRCLE : u32 = 96u; // NUM_SEGMENTS * 3
@@ -102,8 +104,8 @@ fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
     // Accumulate circles over time: one new circle per frame, reset after full orbit
     // Number of circles to keep on screen at once
     // let overlap = 0.25; // 25% overlap arc
-    let overlap = 1.1; // Number of circles to keep on screen at once
-    let num_circles = overlap * f32((shaderUniforms.iFrame / 1u) % num_of_cirlces_to_form_orbit + 2u);
+    let overlap = 1.0; // Number of circles to keep on screen at once
+    let num_circles = overlap * f32((shaderUniforms.iFrame / 1u) % num_of_cirlces_to_form_orbit + 1u);
 
     // Push vertices that exceed the current number of circles off-screen
     if (circle_idx >= u32(num_circles)) {
@@ -125,7 +127,7 @@ fn vert(@builtin(vertex_index) idx : u32) -> VertexOutput
     }
 
     var pos : vec2f;
-    pos = circle(local_idx, 0.01, cx, cy);
+    pos = circle(local_idx, 0.02, cx, cy);
 
     var out : VertexOutput;
     out.Position = vec4f(pos.x / aspect, pos.y, 0.0, 1.0);
