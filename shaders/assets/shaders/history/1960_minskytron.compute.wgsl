@@ -17,9 +17,9 @@
 //   [1 + i*3+2] = packed f16x2 position of oscillator C at step i
 // ============================================================================
 
-const MAX_STEPS : u32 = 6500u;
-const STEPS_PER_FRAME : u32 = 5u;
-const GRID_SIZE : vec3u = vec3u(24576u, 1u, 1u);
+const GRID_SIZE : vec3u = vec3u(102400u, 1u, 1u);
+const MAX_STEPS : u32 = 30000u;
+const STEPS_PER_FRAME : u32 = 10u;
 
 struct ShaderUniforms
 {

@@ -15,7 +15,6 @@
 // ============================================================================
 
 const VERTEX_COUNT : u32 = 3u;
-const GRID_SIZE : vec3u = vec3u(24576u, 1u, 1u);
 
 struct ShaderUniforms
 {
@@ -94,9 +93,9 @@ fn vert(input : VertexInput) -> VertexOutput
     // Per-oscillator color
     var col : vec3f;
     switch osc_idx {
-        case 0u: { col = vec3f(1.0, 0.0, 0.0); }  // A: red
-        case 1u: { col = vec3f(0.0, 0.0, 1.0); }  // B: blue
-        default: { col = vec3f(0.0, 1.0, 0.0); }  // C: green
+        case 0u: { col = vec3f(1.0, 0.3, 0.2); }  // A: amber
+        case 1u: { col = vec3f(0.3, 0.6, 0.0); }  // B: yellow
+        default: { col = vec3f(0.0, 0.5, 0.2); }  // C: greenish
     }
 
     // Phosphor persistence: newer dots brighter
