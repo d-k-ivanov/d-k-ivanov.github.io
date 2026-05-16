@@ -84,6 +84,7 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "isometries" },
         { language: "glsl", folder: "misc", name: "kaneta_raymarching" },
         { language: "glsl", folder: "misc", name: "kishimisu_xmas_tree" },
+        { language: "glsl", folder: "misc", name: "paniq_fast_voxel_traversal" },
 
         // Model rendering
         { language: "glsl", folder: "objects", name: "obj-viewer-webgl-materials" },
