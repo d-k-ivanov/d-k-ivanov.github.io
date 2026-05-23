@@ -14,6 +14,10 @@ permalink: /tools/
 
 - <a name="Shader Font Generator" href="/tools/shader_fontgen/">Shader Font Generator by Otavio Good  and Tim Maffett</a>
 
+## FPGA Tools
+
+- <a name="OpenCores" href="/tools/opencores.org/" target="_blank">OpenCores</a>
+
 ## Playgrounds
 
 ### 3D Playground
