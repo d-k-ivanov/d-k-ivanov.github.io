@@ -16,7 +16,7 @@ permalink: /tools/
 
 ## FPGA Tools
 
-- <a name="OpenCores" href="/tools/opencores.org/" target="_blank">OpenCores</a>
+- <a name="OpenCores" href="/tools/opencores.org/" target="_blank">OpenCores</a> scrapped by <a href="https://github.com/fabriziotappero" target="_blank">Fabrizio Tappero</a>
 
 ## Playgrounds
 
