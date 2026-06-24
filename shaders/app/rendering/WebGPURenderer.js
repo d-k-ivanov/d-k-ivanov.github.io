@@ -606,6 +606,9 @@ export class WebGPURenderer extends BaseRenderer
     /**
      * Creates bind groups for render and compute pipelines.
      *
+     * Orchestrates per-resource binding helpers, then builds the base bind
+     * groups and the swapped ping-pong variants for double-buffered shaders.
+     *
      * @returns {Promise<void>} Resolves once bind groups are rebuilt.
      */
     async buildBindGroups()
@@ -613,13 +616,33 @@ export class WebGPURenderer extends BaseRenderer
         this.destroyStorageBuffers();
         this.releaseChannelTextures();
 
-        const bindingEntriesRendering = [];
-        const bindingEntriesCompute = [];
+        const renderEntries = [];
+        const computeEntries = [];
 
+        this.appendUniformBindings(renderEntries, computeEntries);
+        this.appendU32StorageBindings(renderEntries, computeEntries);
+        this.appendF32StorageBindings(renderEntries, computeEntries);
+        await this.appendChannelTextureBindings(renderEntries, computeEntries);
+        this.appendSamplerBindings(renderEntries);
+        this.appendModelBindings(renderEntries);
+
+        this.createBaseBindGroups(renderEntries, computeEntries);
+        this.createPingPongBindGroups(renderEntries, computeEntries);
+    }
+
+    /**
+     * Appends the shared uniform buffer binding (binding 0).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @param {Array<object>} computeEntries - Compute bind group entries to extend.
+     * @returns {void}
+     */
+    appendUniformBindings(renderEntries, computeEntries)
+    {
         // Binding 0: Uniform Buffer
         if (this.bindingsRender.has(0))
         {
-            bindingEntriesRendering.push({
+            renderEntries.push({
                 laber: "Uniform Buffer: Render",
                 binding: 0,
                 resource: { buffer: this.uniformBuffer }
@@ -628,13 +651,23 @@ export class WebGPURenderer extends BaseRenderer
 
         if (this.bindingsCompute.has(0))
         {
-            bindingEntriesCompute.push({
+            computeEntries.push({
                 laber: "Uniform Buffer: Compute",
                 binding: 0,
                 resource: { buffer: this.uniformBuffer }
             });
         }
+    }
 
+    /**
+     * Appends the u32 ping-pong storage buffers (bindings 1 and 2).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @param {Array<object>} computeEntries - Compute bind group entries to extend.
+     * @returns {void}
+     */
+    appendU32StorageBindings(renderEntries, computeEntries)
+    {
         // Binding 1 and 2: Storage Ping-Pong Buffers Uint32Array
         if (this.bindingsRender.has(1) || this.bindingsCompute.has(1) || this.bindingsRender.has(2) || this.bindingsCompute.has(2))
         {
@@ -699,7 +732,7 @@ export class WebGPURenderer extends BaseRenderer
             // Binding 1: Input buffer
             if (this.bindingsRender.has(1) && this.storageBuffers.buffer1)
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Storage Buffer Binding 1 (Input)",
                     binding: 1,
                     resource: { buffer: this.storageBuffers.buffer1 }
@@ -708,7 +741,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsCompute.has(1) && this.storageBuffers.buffer1)
             {
-                bindingEntriesCompute.push({
+                computeEntries.push({
                     label: "Storage Buffer Binding 1 (Input)",
                     binding: 1,
                     resource: { buffer: this.storageBuffers.buffer1 }
@@ -718,7 +751,7 @@ export class WebGPURenderer extends BaseRenderer
             // Binding 2: Output buffer
             if (this.bindingsRender.has(2) && this.storageBuffers.buffer2)
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Storage Buffer Binding 2 (Output)",
                     binding: 2,
                     resource: { buffer: this.storageBuffers.buffer2 }
@@ -727,7 +760,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsCompute.has(2) && this.storageBuffers.buffer2)
             {
-                bindingEntriesCompute.push({
+                computeEntries.push({
                     label: "Storage Buffer Binding 2 (Output)",
                     binding: 2,
                     resource: { buffer: this.storageBuffers.buffer2 }
@@ -741,7 +774,17 @@ export class WebGPURenderer extends BaseRenderer
                 this.workgroups.z = this.gridSize.z;
             }
         }
+    }
 
+    /**
+     * Appends the f32 ping-pong storage buffers (bindings 3 and 4).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @param {Array<object>} computeEntries - Compute bind group entries to extend.
+     * @returns {void}
+     */
+    appendF32StorageBindings(renderEntries, computeEntries)
+    {
         // Binding 3 and 4: Storage Ping-Pong Buffers Float32Array
         if (this.bindingsRender.has(3) || this.bindingsCompute.has(3) || this.bindingsRender.has(4) || this.bindingsCompute.has(4))
         {
@@ -775,7 +818,7 @@ export class WebGPURenderer extends BaseRenderer
             // Binding 3: Input buffer
             if (this.bindingsRender.has(3) && this.storageBuffers.buffer3)
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Storage Buffer Binding 3 (Input)",
                     binding: 3,
                     resource: { buffer: this.storageBuffers.buffer3 }
@@ -784,7 +827,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsCompute.has(3) && this.storageBuffers.buffer3)
             {
-                bindingEntriesCompute.push({
+                computeEntries.push({
                     label: "Storage Buffer Binding 3 (Input)",
                     binding: 3,
                     resource: { buffer: this.storageBuffers.buffer3 }
@@ -794,7 +837,7 @@ export class WebGPURenderer extends BaseRenderer
             // Binding 4: Output buffer
             if (this.bindingsRender.has(4) && this.storageBuffers.buffer4)
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Storage Buffer Binding 4 (Output)",
                     binding: 4,
                     resource: { buffer: this.storageBuffers.buffer4 }
@@ -803,7 +846,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsCompute.has(4) && this.storageBuffers.buffer4)
             {
-                bindingEntriesCompute.push({
+                computeEntries.push({
                     label: "Storage Buffer Binding 4 (Output)",
                     binding: 4,
                     resource: { buffer: this.storageBuffers.buffer4 }
@@ -817,7 +860,17 @@ export class WebGPURenderer extends BaseRenderer
                 this.workgroups.z = this.gridSize.z;
             }
         }
+    }
 
+    /**
+     * Loads and appends channel textures (bindings 10-13).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @param {Array<object>} computeEntries - Compute bind group entries to extend.
+     * @returns {Promise<void>} Resolves once channel textures are uploaded.
+     */
+    async appendChannelTextureBindings(renderEntries, computeEntries)
+    {
         // Channels (10, 11, 12, 14)
         for (const index of [10, 11, 12, 13])
         {
@@ -833,7 +886,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsRender.has(index))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: `Texture Binding ${index}: Render`,
                     binding: index,
                     resource: texture.createView()
@@ -841,7 +894,7 @@ export class WebGPURenderer extends BaseRenderer
             }
             if (this.bindingsCompute.has(index))
             {
-                bindingEntriesCompute.push({
+                computeEntries.push({
                     label: `Texture Binding ${index}: Compute`,
                     binding: index,
                     resource: texture.createView()
@@ -852,13 +905,22 @@ export class WebGPURenderer extends BaseRenderer
                 this.workgroups.z = 1;
             }
         }
+    }
 
+    /**
+     * Appends channel samplers (bindings 14-17).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @returns {void}
+     */
+    appendSamplerBindings(renderEntries)
+    {
         // Samplers (14, 15, 16, 17)
         for (const index of [14, 15, 16, 17])
         {
             if (this.bindingsRender.has(index))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: `Sampler Binding ${index}: Render`,
                     binding: index,
                     resource: this.device.createSampler({
@@ -870,7 +932,16 @@ export class WebGPURenderer extends BaseRenderer
                 });
             }
         }
+    }
 
+    /**
+     * Appends model storage buffers (bindings 20-23).
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries to extend.
+     * @returns {void}
+     */
+    appendModelBindings(renderEntries)
+    {
         // Model Buffers (20, 21, 22, 23)
         if (this.usesModelBindings())
         {
@@ -878,7 +949,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsRender.has(MODEL_BINDINGS.positions))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Model Positions",
                     binding: MODEL_BINDINGS.positions,
                     resource: { buffer: this.modelBuffers.positions.buffer }
@@ -887,7 +958,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsRender.has(MODEL_BINDINGS.normals))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Model Normals",
                     binding: MODEL_BINDINGS.normals,
                     resource: { buffer: this.modelBuffers.normals.buffer }
@@ -896,7 +967,7 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsRender.has(MODEL_BINDINGS.uvs))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Model UVs",
                     binding: MODEL_BINDINGS.uvs,
                     resource: { buffer: this.modelBuffers.uvs.buffer }
@@ -905,20 +976,30 @@ export class WebGPURenderer extends BaseRenderer
 
             if (this.bindingsRender.has(MODEL_BINDINGS.info))
             {
-                bindingEntriesRendering.push({
+                renderEntries.push({
                     label: "Model Info",
                     binding: MODEL_BINDINGS.info,
                     resource: { buffer: this.modelBuffers.info.buffer }
                 });
             }
         }
+    }
 
+    /**
+     * Creates the primary render and compute bind groups.
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries.
+     * @param {Array<object>} computeEntries - Compute bind group entries.
+     * @returns {void}
+     */
+    createBaseBindGroups(renderEntries, computeEntries)
+    {
         try
         {
             this.renderBindGroup = this.device.createBindGroup({
                 label: "Render Bind Group",
                 layout: this.renderPipeline.getBindGroupLayout(0),
-                entries: bindingEntriesRendering
+                entries: renderEntries
             });
         }
         catch (err)
@@ -931,19 +1012,32 @@ export class WebGPURenderer extends BaseRenderer
             this.computeBindGroup = this.device.createBindGroup({
                 label: "Compute Bind Group",
                 layout: this.computePipeline.getBindGroupLayout(0),
-                entries: bindingEntriesCompute
+                entries: computeEntries
             });
         }
         else
         {
             this.computeBindGroup = null;
         }
+    }
 
+    /**
+     * Creates the swapped bind-group set used for ping-pong double buffering.
+     *
+     * When storage ping-pong buffers exist, this builds an alternate set with
+     * the input/output buffers swapped so the render loop can alternate frames.
+     *
+     * @param {Array<object>} renderEntries - Render bind group entries.
+     * @param {Array<object>} computeEntries - Compute bind group entries.
+     * @returns {void}
+     */
+    createPingPongBindGroups(renderEntries, computeEntries)
+    {
         // If we have double buffering, create a second set of bind groups for ping-pong swap
         if ((this.storageBuffers.buffer1 && this.storageBuffers.buffer2) || (this.storageBuffers.buffer3 && this.storageBuffers.buffer4))
         {
             // Create alternate bind groups with swapped buffers
-            const bindingEntriesRenderingAlt = bindingEntriesRendering.map(entry =>
+            const bindingEntriesRenderingAlt = renderEntries.map(entry =>
             {
                 if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
                 {
@@ -968,7 +1062,7 @@ export class WebGPURenderer extends BaseRenderer
                 return entry;
             });
 
-            const bindingEntriesComputeAlt = this.computeBindGroup ? bindingEntriesCompute.map(entry =>
+            const bindingEntriesComputeAlt = this.computeBindGroup ? computeEntries.map(entry =>
             {
 
                 if (this.storageBuffers.buffer1 && this.storageBuffers.buffer2)
@@ -1013,7 +1107,6 @@ export class WebGPURenderer extends BaseRenderer
                 }) : null
             };
         }
-
     }
 
     /**

@@ -2,6 +2,8 @@
 
 import { GLSLHighlighter } from "./GLSLHighlighter.js";
 import { ShaderCollection } from "./ShaderCollection.js";
+import { ShaderSourceLoader } from "./ShaderSourceLoader.js";
+import { ShaderStorage } from "./ShaderStorage.js";
 import { ShaderRenderer } from "../rendering/ShaderRenderer.js";
 
 const SHADER_TYPES = [
@@ -9,9 +11,6 @@ const SHADER_TYPES = [
     { id: "fragment", label: "Fragment", extension: "fragment", icon: "fragment", context: null, placeholder: "Fragment shader source..." },
     { id: "compute", label: "Compute", extension: "compute", icon: "compute", context: ShaderRenderer.CONTEXTS.WEBGPU, placeholder: "Compute shader source..." }
 ];
-
-const STORAGE_KEY = "shaders-selected-shader";
-const STORAGE_KEY_MODEL = "shaders-selected-model";
 
 /**
  * Manages shader source editing, tree navigation, tab handling, and compilation.
@@ -267,7 +266,7 @@ export class ShaderEditor
             await this.renderer.setContext(context);
             this.currentContext = context;
 
-            const { sources, originals } = await this.loadSourcesForShader(shader, context);
+            const { sources, originals } = await ShaderSourceLoader.loadSources(shader, context, SHADER_TYPES);
             if (token !== this.loadToken)
             {
                 return;
@@ -314,180 +313,6 @@ export class ShaderEditor
     }
 
     /**
-     * Retrieves all stage sources for the given shader/context pair.
-     *
-     * @param {object} shader - Shader definition.
-     * @param {string} context - Rendering context identifier.
-     * @returns {Promise<{sources: object, originals: object}>} Loaded sources and originals.
-     */
-    async loadSourcesForShader(shader, context)
-    {
-        const visibleTypes = this.getVisibleShaderTypes(context);
-        const sources = {};
-        const originals = {};
-
-        for (const type of SHADER_TYPES)
-        {
-            if (visibleTypes.find((t) => t.id === type.id))
-            {
-                const src = await this.loadSourceForType(shader, type, context);
-                sources[type.id] = src;
-                originals[type.id] = src;
-            }
-            else
-            {
-                sources[type.id] = "";
-                originals[type.id] = "";
-            }
-        }
-
-        return { sources, originals };
-    }
-
-    /**
-     * Picks the best-matching source file for a specific shader stage.
-     *
-     * The method tries stage-specific filenames, then falls back to shared
-     * defaults when optional sources are missing.
-     *
-     * @param {object} shader - Shader definition.
-     * @param {object} type - Stage metadata from SHADER_TYPES.
-     * @param {string} context - Rendering context identifier.
-     * @returns {Promise<string>} Shader source text.
-     */
-    async loadSourceForType(shader, type, context)
-    {
-        if (type.context && type.context !== context)
-        {
-            return "";
-        }
-
-        const candidates = [];
-        const added = new Map();
-        const addCandidate = (url, optional) =>
-        {
-            if (!url)
-            {
-                return;
-            }
-
-            if (added.has(url))
-            {
-                if (added.get(url) === true && optional === false)
-                {
-                    const idx = candidates.findIndex(c => c.url === url);
-                    if (idx !== -1)
-                    {
-                        candidates[idx].optional = false;
-                    }
-                    added.set(url, false);
-                }
-                return;
-            }
-
-            added.set(url, optional);
-            candidates.push({ url, optional });
-        };
-
-        const baseName = ShaderCollection.getBaseName(shader);
-        const basePath = `${ShaderCollection.BASE_PATH}/${shader.folder}/${baseName}`;
-        const isWebGPU = context === ShaderRenderer.CONTEXTS.WEBGPU;
-
-        if (type.id === "vertex")
-        {
-            if (isWebGPU)
-            {
-                addCandidate(`${basePath}.vertex.wgsl`, /*optional*/ true);
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.wgsl`, /*optional*/ false);
-            }
-            else
-            {
-                addCandidate(`${basePath}.vertex.glsl`, /*optional*/ true);
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.vertex.glsl`, /*optional*/ false);
-            }
-        }
-
-        if (type.id === "fragment")
-        {
-            if (isWebGPU)
-            {
-                addCandidate(`${basePath}.fragment.wgsl`, /*optional*/ false);
-            }
-            else
-            {
-                addCandidate(`${basePath}.fragment.glsl`, /*optional*/ false);
-            }
-        }
-
-        if (type.id === "compute")
-        {
-            if (isWebGPU)
-            {
-                addCandidate(`${basePath}.compute.wgsl`, /*optional*/ true);
-                addCandidate(`${ShaderCollection.SHARED_PATH}/default.compute.wgsl`, /*optional*/ false);
-            }
-            else
-            {
-                return "";
-            }
-        }
-
-        for (const candidate of candidates)
-        {
-            try
-            {
-                const content = await this.fetchShaderSource(candidate.url, candidate.optional);
-                if (content)
-                {
-                    return content;
-                }
-            }
-            catch (err)
-            {
-                if (candidate.optional)
-                {
-                    continue;
-                }
-                throw err;
-            }
-        }
-
-        return "";
-    }
-
-    /**
-     * Fetches shader text; returns empty string when optional and missing.
-     *
-     * @param {string} url - URL to fetch.
-     * @param {boolean} optional - When true, missing files return empty string.
-     * @returns {Promise<string>} Shader source or empty string.
-     */
-    async fetchShaderSource(url, optional = false)
-    {
-        try
-        {
-            const response = await fetch(url);
-            if (!response.ok)
-            {
-                if (optional)
-                {
-                    return "";
-                }
-                throw new Error(`Failed to load: ${url}`);
-            }
-            return response.text();
-        }
-        catch (err)
-        {
-            if (optional)
-            {
-                return "";
-            }
-            throw err;
-        }
-    }
-
-    /**
      * Persists the last selected shader to storage.
      *
      * @param {object} shader - Shader definition to store.
@@ -495,14 +320,7 @@ export class ShaderEditor
      */
     saveShaderSelection(shader)
     {
-        try
-        {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(shader));
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
+        ShaderStorage.saveShader(shader);
     }
 
     /**
@@ -513,19 +331,7 @@ export class ShaderEditor
      */
     saveModelSelection(model)
     {
-        try
-        {
-            if (!model || !model.id)
-            {
-                localStorage.removeItem(STORAGE_KEY_MODEL);
-                return;
-            }
-            localStorage.setItem(STORAGE_KEY_MODEL, model.id);
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
+        ShaderStorage.saveModelId(model);
     }
 
     /**
@@ -535,23 +341,7 @@ export class ShaderEditor
      */
     getSavedShader()
     {
-        try
-        {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved)
-            {
-                const shader = JSON.parse(saved);
-                if (ShaderCollection.isKnown(shader))
-                {
-                    return shader;
-                }
-            }
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
-        return null;
+        return ShaderStorage.getShader();
     }
 
     /**
@@ -561,16 +351,7 @@ export class ShaderEditor
      */
     getSavedModelId()
     {
-        try
-        {
-            const saved = localStorage.getItem(STORAGE_KEY_MODEL);
-            return saved || null;
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
-        return null;
+        return ShaderStorage.getModelId();
     }
 
     /**
@@ -580,14 +361,7 @@ export class ShaderEditor
      */
     clearSavedShader()
     {
-        try
-        {
-            localStorage.removeItem(STORAGE_KEY);
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
+        ShaderStorage.clearShader();
     }
 
     /**
@@ -597,14 +371,7 @@ export class ShaderEditor
      */
     clearSavedModel()
     {
-        try
-        {
-            localStorage.removeItem(STORAGE_KEY_MODEL);
-        }
-        catch (e)
-        {
-            // Ignore storage errors
-        }
+        ShaderStorage.clearModel();
     }
 
     /**
