@@ -24,6 +24,15 @@ export class ShaderCollection
      *
      * Each entry should include `folder`, `name`, and optionally `language`.
      * The editor uses this list to build the file tree and resolve sources.
+     *
+     * To add a new shader:
+     * 1. Create the source files under `assets/shaders/<folder>/`, named
+     *    `<name>.fragment.<glsl|wgsl>` (required) plus optional
+     *    `<name>.vertex.<glsl|wgsl>` and `<name>.compute.wgsl`. Missing vertex
+     *    or compute stages fall back to the shared defaults in
+     *    `assets/shaders/shared/`.
+     * 2. Add an entry here: `{ language: "glsl"|"wgsl", folder, name }`.
+     *    `glsl` shaders render with WebGL2; `wgsl` shaders render with WebGPU.
      */
     static ITEMS = [
         // Basics

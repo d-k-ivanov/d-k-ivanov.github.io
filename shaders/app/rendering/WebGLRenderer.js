@@ -2,9 +2,7 @@
 
 import { BaseRenderer } from "./BaseRenderer.js";
 import { WebGLTextureLoader } from "./WebGLTextureLoader.js";
-
-const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
-const MODEL_PADDING_MARKER = /\bMODEL_GEOMETRY_WITH_PADDING\b/;
+import { buildModelInfo, hasModelGeometry, hasModelPadding } from "./ModelGeometry.js";
 
 /**
  * WebGL2 renderer backend for the shader editor.
@@ -114,8 +112,8 @@ export class WebGLRenderer extends BaseRenderer
         this.programVersion++;
         const version = this.programVersion;
         this.program = newProgram;
-        this.useModelGeometry = this.detectModelGeometry(vertSrc, fragSrc);
-        const nextPadding = this.useModelGeometry && this.detectModelPadding(vertSrc, fragSrc) ? 3 : 0;
+        this.useModelGeometry = hasModelGeometry([vertSrc, fragSrc]);
+        const nextPadding = this.useModelGeometry && hasModelPadding([vertSrc, fragSrc]) ? 3 : 0;
         const paddingChanged = nextPadding !== this.modelPadding;
         this.modelPadding = nextPadding;
         if (paddingChanged)
@@ -507,67 +505,8 @@ export class WebGLRenderer extends BaseRenderer
     setModel(model)
     {
         super.setModel(model);
-        this.modelInfo = model ? this.buildModelInfo(model) : null;
+        this.modelInfo = model ? buildModelInfo(model) : null;
         this.updateModelBuffers();
-    }
-
-    /**
-     * Parses sources for model-geometry markers.
-     *
-     * @param {string} vertexSource - Vertex shader source.
-     * @param {string} fragmentSource - Fragment shader source.
-     * @returns {boolean} True when model geometry should be used.
-     */
-    detectModelGeometry(vertexSource, fragmentSource)
-    {
-        const combined = `${vertexSource || ""}\n${fragmentSource || ""}`;
-        return MODEL_GEOMETRY_MARKER.test(combined);
-    }
-
-    /**
-     * Detects markers that reserve padding before model vertices.
-     *
-     * @param {string} vertexSource - Vertex shader source.
-     * @param {string} fragmentSource - Fragment shader source.
-     * @returns {boolean} True when the shader expects padded model buffers.
-     */
-    detectModelPadding(vertexSource, fragmentSource)
-    {
-        const combined = `${vertexSource || ""}\n${fragmentSource || ""}`;
-        return MODEL_PADDING_MARKER.test(combined);
-    }
-
-    /**
-     * Computes derived model info (center/scale/bounds).
-     *
-     * @param {object} model - Model payload with bounds.
-     * @returns {{center: number[], scale: number, boundsMin: number[], boundsMax: number[]}}
-     * Derived model info.
-     */
-    buildModelInfo(model)
-    {
-        const bounds = model?.bounds || {};
-        const min = bounds.min || [0, 0, 0];
-        const max = bounds.max || [0, 0, 0];
-        const center = [
-            (min[0] + max[0]) * 0.5,
-            (min[1] + max[1]) * 0.5,
-            (min[2] + max[2]) * 0.5
-        ];
-        const size = [
-            max[0] - min[0],
-            max[1] - min[1],
-            max[2] - min[2]
-        ];
-        const maxAxis = Math.max(size[0], size[1], size[2], 0.0001);
-        const scale = 1.6 / maxAxis;
-
-        return {
-            center,
-            scale,
-            boundsMin: min,
-            boundsMax: max
-        };
     }
 
     /**

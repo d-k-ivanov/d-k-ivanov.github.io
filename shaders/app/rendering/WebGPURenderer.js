@@ -2,13 +2,15 @@
 
 import { BaseRenderer } from "./BaseRenderer.js";
 import { ShaderUniformState } from "./ShaderUniformState.js";
+import { buildModelInfo, hasModelGeometry, hasModelPadding } from "./ModelGeometry.js";
+import {
+    DEFAULT_GRID_SIZE,
+    DEFAULT_VERTEX_COUNT,
+    DEFAULT_WORKGROUP_SIZE,
+    WgslSourceAnalyzer
+} from "./WgslSourceAnalyzer.js";
 
-const DEFAULT_WORKGROUP_SIZE = { x: 8, y: 8, z: 1 };
 const DEFAULT_WORKGROUPS = { x: 1, y: 1, z: 1 };
-const DEFAULT_VERTEX_COUNT = 3;
-const DEFAULT_GRID_SIZE = 1;
-const MODEL_GEOMETRY_MARKER = /\bMODEL_GEOMETRY\b/;
-const MODEL_PADDING_MARKER = /\bMODEL_GEOMETRY_WITH_PADDING\b/;
 const MODEL_BINDINGS = {
     positions: 20,
     normals: 21,
@@ -188,7 +190,7 @@ export class WebGPURenderer extends BaseRenderer
     setModel(model)
     {
         super.setModel(model);
-        this.modelInfo = model ? this.buildModelInfo(model) : null;
+        this.modelInfo = model ? buildModelInfo(model) : null;
         const baseVertexCount = model?.vertexCount || 0;
         const padding = model ? this.modelPadding : 0;
         this.modelVertexCount = baseVertexCount > 0 ? baseVertexCount + padding : 0;
@@ -219,59 +221,6 @@ export class WebGPURenderer extends BaseRenderer
                 console.error("Failed to rebuild model bind group:", error);
             });
         }
-    }
-
-    /**
-     * Detects GLSL markers to guard against misusing WGSL path.
-     *
-     * @param {string} source - Shader source to inspect.
-     * @returns {boolean} True when the source appears to be GLSL.
-     */
-    isLikelyGLSL(source)
-    {
-        const glslMarkers = [
-            /^\s*#version/m,
-            /\bprecision\s+(?:lowp|mediump|highp)\b/,
-            // /\blayout\s*\(/,
-            /\bgl_(FragCoord|Position|VertexID|InstanceID)\b/,
-            /\bsampler2D\b/
-        ];
-        return glslMarkers.some((rx) => rx.test(source));
-    }
-
-    /**
-     * Throws if the WGSL source appears to be GLSL.
-     *
-     * @param {string} source - Shader source to validate.
-     * @param {string} label - Stage label for error messages.
-     * @returns {void}
-     */
-    validateWGSLSource(source, label)
-    {
-        if (this.isLikelyGLSL(source))
-        {
-            throw new Error(`${label} looks like GLSL. WebGPU expects WGSL with @vertex/@fragment/@compute entry points. Switch to WebGL2 or update the shader to WGSL.`);
-        }
-    }
-
-    /**
-     * Extracts an entry point name for the given shader stage.
-     *
-     * @param {string} source - WGSL source to scan.
-     * @param {"vertex"|"fragment"|"compute"} stage - Shader stage.
-     * @returns {string|null} Entry point function name.
-     */
-    getEntryPoint(source, stage)
-    {
-        let allowedStages = ["vertex", "fragment", "compute"];
-        if (!allowedStages.includes(stage))
-        {
-            throw new Error(`Invalid shader stage: ${stage}`);
-        }
-
-        const regex = new RegExp(`@${stage}[\\s\\S]*?fn\\s+(\\w+)`, "m");
-        const match = regex.exec(source);
-        return match ? match[1] : null;
     }
 
     /**
@@ -313,212 +262,6 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Parses all @binding entries and populates this.bindingsRender set.
-     *
-     * @param {string|Array<string>} source - WGSL source(s) to inspect.
-     * @returns {void}
-     */
-    extractBindingsRender(source)
-    {
-        this.bindingsRender.clear();
-        const sourceText = Array.isArray(source) ? source.join("\n") : (source || "");
-        const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
-        let match;
-        while ((match = regex.exec(sourceText)) !== null)
-        {
-            const bindingIndex = parseInt(match[1], 10);
-            this.bindingsRender.add(bindingIndex);
-        }
-    }
-
-    /**
-     * Parses all @binding entries and populates this.bindingsCompute set.
-     *
-     * @param {string|Array<string>} source - WGSL source(s) to inspect.
-     * @returns {void}
-     */
-    extractBindingsCompute(source)
-    {
-        this.bindingsCompute.clear();
-        const sourceText = Array.isArray(source) ? source.join("\n") : (source || "");
-        const regex = /@binding\s*\(\s*(\d+)\s*\)/g;
-        let match;
-        while ((match = regex.exec(sourceText)) !== null)
-        {
-            const bindingIndex = parseInt(match[1], 10);
-            this.bindingsCompute.add(bindingIndex);
-        }
-    }
-
-    /**
-     * Extracts a texture URL from sampler declaration comments.
-     * Expects comments: // iChannel0URL: ./path/to/texture.png
-     * Expects comments: // iChannel1URL: ./path/to/texture.png
-     * Expects comments: // iChannel2URL: ./path/to/texture.png
-     * Expects comments: // iChannel3URL: ./path/to/texture.png
-     * Initialize: channel[index] with extracted URLs or null.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {void}
-     */
-    extractTextureURLs(sources)
-    {
-        this.channelUrls = [null, null, null, null];
-        const regex = /\/\/\s*iChannel([0-3])URL\s*:\s*(\S+)/i;
-        for (const source of sources)
-        {
-            if (!source)
-            {
-                continue;
-            }
-            const match = regex.exec(source);
-            if (match)
-            {
-                const index = parseInt(match[1], 10);
-                const url = match[2];
-                this.channelUrls[index] = url;
-                // console.log(`Extracted iChannel${index} URL: ${url}`);
-            }
-        }
-    }
-
-    /**
-     * Parses @workgroup_size, falling back to defaults.
-     *
-     * @param {string} source - WGSL compute shader source.
-     * @returns {{x: number, y: number, z: number}} Workgroup size tuple.
-     */
-    extractWorkgroupSize(source)
-    {
-        const match = source.match(/@workgroup_size\s*\(\s*(\d+)\s*(?:,\s*(\d+))?\s*(?:,\s*(\d+))?\s*\)/i);
-        if (!match)
-        {
-            return { ...DEFAULT_WORKGROUP_SIZE };
-        }
-
-        const [, x, y, z] = match;
-        return {
-            x: parseInt(x, 10) || DEFAULT_WORKGROUP_SIZE.x,
-            y: parseInt(y || "1", 10) || DEFAULT_WORKGROUP_SIZE.y,
-            z: parseInt(z || "1", 10) || DEFAULT_WORKGROUP_SIZE.z
-        };
-    }
-
-    /**
-     * Extracts VERTEX_COUNT constant from any provided WGSL sources.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {number} Vertex count to use for draw calls.
-     */
-    extractVertexCount(sources)
-    {
-        const regex = /const\s+VERTEX_COUNT[^=]*=\s*([0-9]+)\s*u?/i;
-        for (const source of sources)
-        {
-            if (!source)
-            {
-                continue;
-            }
-
-            const match = regex.exec(source);
-            if (match)
-            {
-                const parsed = parseInt(match[1], 10);
-                if (!Number.isNaN(parsed) && parsed > 0)
-                {
-                    return parsed;
-                }
-            }
-        }
-
-        return DEFAULT_VERTEX_COUNT;
-    }
-
-    /**
-     * Extracts GRID_SIZE constant from any provided WGSL sources.
-     *
-     * Expected format: const GRID_SIZE : vec3u = vec3u(256u, 256u, 1u);
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {{x: number, y: number, z: number}} Grid size used for dispatches.
-     */
-    extractGridSize(sources)
-    {
-        const fallback = {
-            x: DEFAULT_GRID_SIZE,
-            y: DEFAULT_GRID_SIZE,
-            z: DEFAULT_GRID_SIZE
-        };
-        const regex = /const\s+GRID_SIZE\b[^=]*=\s*vec3u?\s*\(\s*([0-9]+)\s*u?\s*,\s*([0-9]+)\s*u?\s*,\s*([0-9]+)\s*u?\s*\)/i;
-
-        for (const source of sources)
-        {
-            if (!source)
-            {
-                continue;
-            }
-
-            const match = regex.exec(source);
-            if (!match)
-            {
-                continue;
-            }
-
-            const x = parseInt(match[1], 10);
-            const y = parseInt(match[2], 10);
-            const z = parseInt(match[3], 10);
-            if ([x, y, z].every(value => Number.isFinite(value) && value > 0))
-            {
-                return { x, y, z };
-            }
-        }
-
-        return fallback;
-    }
-
-    /**
-     * Extracts GRID_SIZE_RESOLUTION flag from any provided WGSL sources.
-     *
-     * Expected format: const GRID_SIZE_RESOLUTION : bool = true;
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {boolean} True when grid size should follow canvas resolution.
-     */
-    extractGridSizeResolution(sources)
-    {
-        const regex = /const\s+GRID_SIZE_RESOLUTION\b[^=]*=\s*(true|false)\b/i;
-        for (const source of sources)
-        {
-            if (!source)
-            {
-                continue;
-            }
-
-            const match = regex.exec(source);
-            if (match)
-            {
-                return match[1].toLowerCase() === "true";
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Detects additive blending marker from WGSL sources.
-     *
-     * Expected format: const BLEND_ADD : bool = true;
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {boolean} True when additive blending is requested.
-     */
-    extractAdditiveBlend(sources)
-    {
-        const regex = /const\s+BLEND_ADD\b[^=]*=\s*true\b/i;
-        return sources.some(source => source && regex.test(source));
-    }
-
-    /**
      * Returns grid dimensions derived from the current canvas resolution.
      *
      * @returns {{x: number, y: number, z: number}} Resolution-backed grid size.
@@ -536,28 +279,6 @@ export class WebGPURenderer extends BaseRenderer
     }
 
     /**
-     * Checks WGSL sources for model-geometry markers.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {boolean} True when model geometry should be used.
-     */
-    detectModelGeometry(sources)
-    {
-        return sources.some((source) => MODEL_GEOMETRY_MARKER.test(source || ""));
-    }
-
-    /**
-     * Checks WGSL sources for model padding markers.
-     *
-     * @param {Array<string>} sources - Shader sources to scan.
-     * @returns {boolean} True when model buffers should be padded.
-     */
-    detectModelPadding(sources)
-    {
-        return sources.some((source) => MODEL_PADDING_MARKER.test(source || ""));
-    }
-
-    /**
      * Returns true when shader bindings include model buffers.
      *
      * @returns {boolean} True when model bindings are present.
@@ -565,39 +286,6 @@ export class WebGPURenderer extends BaseRenderer
     usesModelBindings()
     {
         return Object.values(MODEL_BINDINGS).some((binding) => this.bindingsRender.has(binding));
-    }
-
-    /**
-     * Computes model center/scale/bounds for shader use.
-     *
-     * @param {object} model - Model payload with bounds.
-     * @returns {{center: number[], scale: number, boundsMin: number[], boundsMax: number[]}}
-     * Derived model info.
-     */
-    buildModelInfo(model)
-    {
-        const bounds = model?.bounds || {};
-        const min = bounds.min || [0, 0, 0];
-        const max = bounds.max || [0, 0, 0];
-        const center = [
-            (min[0] + max[0]) * 0.5,
-            (min[1] + max[1]) * 0.5,
-            (min[2] + max[2]) * 0.5
-        ];
-        const size = [
-            max[0] - min[0],
-            max[1] - min[1],
-            max[2] - min[2]
-        ];
-        const maxAxis = Math.max(size[0], size[1], size[2], 0.0001);
-        const scale = 1.6 / maxAxis;
-
-        return {
-            center,
-            scale,
-            boundsMin: min,
-            boundsMax: max
-        };
     }
 
     /**
@@ -651,7 +339,7 @@ export class WebGPURenderer extends BaseRenderer
             }
         }
 
-        const info = model ? this.buildModelInfo(model) : null;
+        const info = model ? buildModelInfo(model) : null;
         const hasModel = baseVertexCount > 0 ? 1.0 : 0.0;
         const boundsMin = info ? info.boundsMin : [0, 0, 0];
         const boundsMax = info ? info.boundsMax : [0, 0, 0];
@@ -1430,10 +1118,10 @@ export class WebGPURenderer extends BaseRenderer
             const fragmentSource = (sources.fragment || "").trim();
             const computeSource = (sources.compute || "").trim();
             const shaderSources = [vertexSource, fragmentSource, computeSource];
-            const useAdditiveBlend = this.extractAdditiveBlend(shaderSources);
+            const useAdditiveBlend = WgslSourceAnalyzer.extractAdditiveBlend(shaderSources);
 
-            this.useModelGeometry = this.detectModelGeometry(shaderSources);
-            const nextPadding = this.useModelGeometry && this.detectModelPadding(shaderSources) ? 3 : 0;
+            this.useModelGeometry = hasModelGeometry(shaderSources);
+            const nextPadding = this.useModelGeometry && hasModelPadding(shaderSources) ? 3 : 0;
             const paddingChanged = nextPadding !== this.modelPadding;
             this.modelPadding = nextPadding;
             if (paddingChanged)
@@ -1450,9 +1138,9 @@ export class WebGPURenderer extends BaseRenderer
                 throw new Error("WebGPU requires WGSL vertex and fragment shaders");
             }
 
-            this.validateWGSLSource(vertexSource, "Vertex shader");
-            this.validateWGSLSource(fragmentSource, "Fragment shader");
-            this.validateWGSLSource(computeSource, "Compute shader");
+            WgslSourceAnalyzer.validateWGSLSource(vertexSource, "Vertex shader");
+            WgslSourceAnalyzer.validateWGSLSource(fragmentSource, "Fragment shader");
+            WgslSourceAnalyzer.validateWGSLSource(computeSource, "Compute shader");
 
             const [vertexModule, fragmentModule, computeModule] = await Promise.all([
                 this.createShaderModule(vertexSource, "Vertex shader"),
@@ -1460,9 +1148,9 @@ export class WebGPURenderer extends BaseRenderer
                 this.createShaderModule(computeSource, "Compute shader")
             ]);
 
-            const vertexEntry = this.getEntryPoint(vertexSource, "vertex");
-            const fragmentEntry = this.getEntryPoint(fragmentSource, "fragment");
-            const computeEntry = this.getEntryPoint(computeSource, "compute");
+            const vertexEntry = WgslSourceAnalyzer.getEntryPoint(vertexSource, "vertex");
+            const fragmentEntry = WgslSourceAnalyzer.getEntryPoint(fragmentSource, "fragment");
+            const computeEntry = WgslSourceAnalyzer.getEntryPoint(computeSource, "compute");
             if (!vertexEntry || !fragmentEntry)
             {
                 throw new Error("WGSL shaders must declare @vertex and @fragment entry points");
@@ -1515,7 +1203,7 @@ export class WebGPURenderer extends BaseRenderer
                         entryPoint: computeEntry
                     }
                 });
-                this.workgroupSize = this.extractWorkgroupSize(computeSource);
+                this.workgroupSize = WgslSourceAnalyzer.extractWorkgroupSize(computeSource);
             }
             else
             {
@@ -1524,23 +1212,23 @@ export class WebGPURenderer extends BaseRenderer
                 this.workgroupSize = { ...DEFAULT_WORKGROUP_SIZE };
             }
 
-            this.extractBindingsRender([vertexSource, fragmentSource]);
-            this.extractBindingsCompute([computeSource]);
-            this.extractTextureURLs(shaderSources);
+            this.bindingsRender = WgslSourceAnalyzer.extractBindings([vertexSource, fragmentSource]);
+            this.bindingsCompute = WgslSourceAnalyzer.extractBindings([computeSource]);
+            this.channelUrls = WgslSourceAnalyzer.extractTextureURLs(shaderSources);
 
             if (!this.usesModelBindings())
             {
                 this.destroyModelBuffers();
             }
 
-            this.vertexCount = this.extractVertexCount(shaderSources);
+            this.vertexCount = WgslSourceAnalyzer.extractVertexCount(shaderSources);
             if (this.useModelGeometry && this.modelVertexCount > 0)
             {
                 this.vertexCount = this.modelVertexCount;
             }
 
-            const useResolutionGrid = this.extractGridSizeResolution(shaderSources);
-            const gridSize = useResolutionGrid ? this.getCanvasGridSize() : this.extractGridSize(shaderSources);
+            const useResolutionGrid = WgslSourceAnalyzer.extractGridSizeResolution(shaderSources);
+            const gridSize = useResolutionGrid ? this.getCanvasGridSize() : WgslSourceAnalyzer.extractGridSize(shaderSources);
             this.gridSize = { ...gridSize };
             this.uniformState.setGridSize(this.gridSize);
 
