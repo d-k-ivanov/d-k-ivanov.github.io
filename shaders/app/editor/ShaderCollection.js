@@ -80,6 +80,7 @@ export class ShaderCollection
         { language: "glsl", folder: "misc", name: "christmas_tree_01" },
         { language: "glsl", folder: "misc", name: "curena_alhambra" },
         { language: "glsl", folder: "misc", name: "curena_p6mm" },
+        { language: "glsl", folder: "misc", name: "iq_brick_tower" },
         { language: "glsl", folder: "misc", name: "iq_primitives" },
         { language: "glsl", folder: "misc", name: "isometries" },
         { language: "glsl", folder: "misc", name: "kaneta_raymarching" },
