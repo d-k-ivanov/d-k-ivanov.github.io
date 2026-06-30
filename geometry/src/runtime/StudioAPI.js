@@ -12,21 +12,42 @@ export function createStudioContext({ viewer, sceneManager, loader, console })
     // ---- Internal helpers -------------------------------------------------
     const toVec3 = (p) =>
     {
-        if (p instanceof THREE.Vector3) return p.clone();
-        if (Array.isArray(p)) return new THREE.Vector3(p[0] || 0, p[1] || 0, p[2] || 0);
+        if (p instanceof THREE.Vector3)
+        {
+            return p.clone();
+        }
+        if (Array.isArray(p))
+        {
+            return new THREE.Vector3(p[0] || 0, p[1] || 0, p[2] || 0);
+        }
         return new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0);
     };
 
     const applyTransform = (object, opts = {}) =>
     {
-        if (opts.position) object.position.copy(toVec3(opts.position));
-        if (opts.rotation) object.rotation.set(opts.rotation[0] || 0, opts.rotation[1] || 0, opts.rotation[2] || 0);
+        if (opts.position)
+        {
+            object.position.copy(toVec3(opts.position));
+        }
+        if (opts.rotation)
+        {
+            object.rotation.set(opts.rotation[0] || 0, opts.rotation[1] || 0, opts.rotation[2] || 0)
+        };
         if (opts.scale != null)
         {
-            if (typeof opts.scale === 'number') object.scale.setScalar(opts.scale);
-            else object.scale.copy(toVec3(opts.scale));
+            if (typeof opts.scale === 'number')
+            {
+                object.scale.setScalar(opts.scale)
+            }
+            else
+            {
+                object.scale.copy(toVec3(opts.scale));
+            }
         }
-        if (opts.name) object.name = opts.name;
+        if (opts.name)
+        {
+            object.name = opts.name;
+        }
         return object;
     };
 
@@ -163,11 +184,20 @@ export function createStudioContext({ viewer, sceneManager, loader, console })
         if (opts.color != null)
         {
             const tint = new THREE.Color(opts.color);
-            object.traverse((child) => { if (child.material) child.material.color = tint; });
+            object.traverse((child) =>
+            {
+                if (child.material)
+                {
+                    child.material.color = tint;
+                }
+            });
         }
         applyTransform(object, opts);
         add(object);
-        if (opts.fit !== false) viewer.fit();
+        if (opts.fit !== false)
+        {
+            viewer.fit();
+        }
         return object;
     };
 

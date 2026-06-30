@@ -54,7 +54,10 @@ export class MeshLoader
             return object;
         } finally
         {
-            if (isFile) URL.revokeObjectURL(url);
+            if (isFile)
+            {
+                URL.revokeObjectURL(url);
+            }
         }
     }
 

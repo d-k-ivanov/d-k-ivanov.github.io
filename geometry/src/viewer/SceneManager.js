@@ -16,7 +16,11 @@ export class SceneManager
 
     add(object)
     {
-        if (!object) return object;
+        if (!object)
+        {
+            return object;
+        }
+
         this.group.add(object);
         this.objects.push(object);
         return object;
@@ -48,8 +52,14 @@ export class SceneManager
         {
             child.geometry?.dispose?.();
             const material = child.material;
-            if (Array.isArray(material)) material.forEach((m) => m?.dispose?.());
-            else material?.dispose?.();
+            if (Array.isArray(material))
+            {
+                material.forEach((m) => m?.dispose?.());
+            }
+            else
+            {
+                material?.dispose?.();
+            }
         });
     }
 
@@ -57,7 +67,10 @@ export class SceneManager
     fit(camera, controls, offset = 1.4)
     {
         const box = new THREE.Box3().setFromObject(this.group);
-        if (box.isEmpty()) return;
+        if (box.isEmpty())
+        {
+            return;
+        }
 
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());

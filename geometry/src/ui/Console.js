@@ -30,8 +30,14 @@ export class Console
     /** Render any value to a readable string (objects are pretty-printed as JSON). */
     static format(value)
     {
-        if (typeof value === 'string') return value;
-        if (value instanceof Error) return value.stack || `${value.name}: ${value.message}`;
+        if (typeof value === 'string')
+        {
+            return value;
+        }
+        if (value instanceof Error)
+        {
+            return value.stack || `${value.name}: ${value.message}`;
+        }
         try
         {
             return JSON.stringify(value, Console._replacer(), 2);
@@ -47,10 +53,16 @@ export class Console
         const seen = new WeakSet();
         return (_key, val) =>
         {
-            if (typeof val === 'function') return `[Function ${val.name || 'anonymous'}]`;
+            if (typeof val === 'function')
+            {
+                return `[Function ${val.name || 'anonymous'}]`;
+            }
             if (typeof val === 'object' && val !== null)
             {
-                if (seen.has(val)) return '[Circular]';
+                if (seen.has(val))
+                {
+                    return '[Circular]';
+                }
                 seen.add(val);
             }
             return val;

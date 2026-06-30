@@ -80,7 +80,11 @@ export class Viewer
 
     _animate()
     {
-        if (!this._running) return;
+        if (!this._running)
+        {
+            return;
+        }
+
         requestAnimationFrame(this._animate);
         this.controls.update();
         this.renderer.render(this.scene, this.camera);

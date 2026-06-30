@@ -27,7 +27,10 @@ export const rad2deg = (r) => (r * 180) / Math.PI;
 /** Evenly spaced numbers over the inclusive interval [start, end]. */
 export function linspace(start, end, n = 50)
 {
-    if (n < 2) return [start];
+    if (n < 2)
+    {
+        return [start];
+    }
     const step = (end - start) / (n - 1);
     return Array.from({ length: n }, (_, i) => start + i * step);
 }
@@ -60,7 +63,10 @@ export function convexHull2D(points)
     const pts = points
         .map(toXY)
         .sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));
-    if (pts.length < 3) return pts.slice();
+    if (pts.length < 3)
+    {
+        return pts.slice();
+    }
 
     const buildHalf = (source) =>
     {

@@ -71,17 +71,35 @@ export class CodeEditor
         this.toolbar.addEventListener('click', (event) =>
         {
             const action = event.target?.dataset?.act;
-            if (action === 'run') this.run();
-            else if (action === 'clear') this.onClear();
-            else if (action === 'fit') this.onFit();
-            else if (action === 'load') this.fileInput.click();
-            else if (action === 'save') this.save();
+            if (action === 'run')
+            {
+                this.run();
+            }
+            else if (action === 'clear')
+            {
+                this.onClear();
+            }
+            else if (action === 'fit')
+            {
+                this.onFit();
+            }
+            else if (action === 'load')
+            {
+                this.fileInput.click();
+            }
+            else if (action === 'save')
+            {
+                this.save();
+            }
         });
 
         this.toolbar.querySelector('[data-act="examples"]').addEventListener('change', (event) =>
         {
             const key = event.target.value;
-            if (key && EXAMPLES[key]) { this.setValue(EXAMPLES[key]); this.run(); }
+            if (key && EXAMPLES[key])
+            {
+                this.setValue(EXAMPLES[key]); this.run();
+            }
             event.target.value = '';
         });
 
@@ -92,7 +110,10 @@ export class CodeEditor
         this.fileInput.addEventListener('change', async (event) =>
         {
             const file = event.target.files?.[0];
-            if (file) { this.setValue(await file.text()); this.run(); }
+            if (file)
+            {
+                this.setValue(await file.text()); this.run();
+            }
             this.fileInput.value = '';
         });
     }

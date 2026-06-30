@@ -43,7 +43,10 @@ export class Layout
 
         const onMove = (event) =>
         {
-            if (!dragging) return;
+            if (!dragging)
+            {
+                return;
+            }
             const rect = this.root.getBoundingClientRect();
             const clientX = event.touches ? event.touches[0].clientX : event.clientX;
             const ratio = Math.min(0.8, Math.max(0.2, (clientX - rect.left) / rect.width));
@@ -67,7 +70,10 @@ export class Layout
 
     static _injectStylesOnce()
     {
-        if (document.getElementById('cgs-styles')) return;
+        if (document.getElementById('cgs-styles'))
+        {
+            return;
+        }
         const style = document.createElement('style');
         style.id = 'cgs-styles';
         style.textContent = STYLES;
