@@ -12,8 +12,8 @@ main:
   - title: "Shaders"
     url: /shaders
 
-  - title: "Geometry"
-    url: /geometry
+  # - title: "Geometry"
+  #   url: /geometry
 
   # - title: "Playground"
   #   url: /playground

@@ -9,19 +9,19 @@
 // Delivered via esm.sh so no bundler or package manager is required: esm.sh
 // rewrites the addons' bare `three` imports to the same pinned core below.
 
-import * as THREE from 'https://esm.sh/three@0.160.0';
+import * as THREE from 'https://esm.sh/three@0.185.0';
 
 export { THREE };
 
 // Camera controls.
-export { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+export { OrbitControls } from 'https://esm.sh/three@0.185.0/examples/jsm/controls/OrbitControls.js';
 
 // Mesh format loaders.
-export { STLLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/STLLoader.js';
-export { PLYLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/PLYLoader.js';
-export { OBJLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/OBJLoader.js';
-export { DRACOLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/DRACOLoader.js';
-export { VOXLoader, VOXMesh } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/VOXLoader.js';
+export { STLLoader } from 'https://esm.sh/three@0.185.0/examples/jsm/loaders/STLLoader.js';
+export { PLYLoader } from 'https://esm.sh/three@0.185.0/examples/jsm/loaders/PLYLoader.js';
+export { OBJLoader } from 'https://esm.sh/three@0.185.0/examples/jsm/loaders/OBJLoader.js';
+export { DRACOLoader } from 'https://esm.sh/three@0.185.0/examples/jsm/loaders/DRACOLoader.js';
+export { VOXLoader, buildMesh as buildVoxMesh } from 'https://esm.sh/three@0.185.0/examples/jsm/loaders/VOXLoader.js';
 
 // Geometry helpers used by the studio API.
-export { ConvexGeometry } from 'https://esm.sh/three@0.160.0/examples/jsm/geometries/ConvexGeometry.js';
+export { ConvexGeometry } from 'https://esm.sh/three@0.185.0/examples/jsm/geometries/ConvexGeometry.js';

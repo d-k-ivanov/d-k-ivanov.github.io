@@ -7,7 +7,7 @@ import
     OBJLoader,
     DRACOLoader,
     VOXLoader,
-    VOXMesh,
+    buildVoxMesh,
 } from '../vendor/Three.js';
 
 // Loads meshes from a URL or a local File and returns a ready-to-add Three.js
@@ -94,6 +94,7 @@ export class MeshLoader
         {
             loader.load(url, (geometry) =>
             {
+                this._ensureFloat32Attributes(geometry);
                 geometry.computeVertexNormals?.();
                 const hasColor = allowVertexColors && !!geometry.getAttribute('color');
                 const material = new THREE.MeshStandardMaterial({
@@ -107,6 +108,22 @@ export class MeshLoader
         });
     }
 
+    /** WebGL cannot upload Float64 buffer attributes emitted by newer PLYLoader versions. */
+    _ensureFloat32Attributes(geometry)
+    {
+        for (const [name, attribute] of Object.entries(geometry.attributes))
+        {
+            if (attribute?.array instanceof Float64Array)
+            {
+                geometry.setAttribute(name, new THREE.Float32BufferAttribute(
+                    attribute.array,
+                    attribute.itemSize,
+                    attribute.normalized,
+                ));
+            }
+        }
+    }
+
     /** For loaders that already resolve to an Object3D/Group. */
     _loadObject(loader, url)
     {
@@ -116,15 +133,21 @@ export class MeshLoader
         });
     }
 
-    /** VOX resolves to an array of chunks; build a group of VOXMesh instances. */
+    /** VOX resolves to a parsed scene in r185; fall back to chunks for older files. */
     _loadVox(url)
     {
         return new Promise((resolve, reject) =>
         {
-            new VOXLoader().load(url, (chunks) =>
+            new VOXLoader().load(url, (result) =>
             {
+                if (result.scene)
+                {
+                    resolve(result.scene);
+                    return;
+                }
+
                 const group = new THREE.Group();
-                for (const chunk of chunks) group.add(new VOXMesh(chunk));
+                for (const chunk of result.chunks ?? result) group.add(buildVoxMesh(chunk));
                 resolve(group);
             }, undefined, reject);
         });
