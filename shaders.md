@@ -1,5 +1,5 @@
 ---
-layout: shaders
+layout: embedded
 title : Shaders
 permalink: /shaders/
 ---

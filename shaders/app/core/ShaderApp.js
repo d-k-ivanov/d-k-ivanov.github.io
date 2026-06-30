@@ -285,7 +285,7 @@ export class ShaderApp
         wrapper.innerHTML = SHADER_UI_TEMPLATE.trim();
 
         const root = wrapper.firstElementChild;
-        const host = document.querySelector("main") || document.body;
+        const host = document.getElementById("embedded-container") || document.querySelector("main") || document.body;
         host.appendChild(root);
     }
 

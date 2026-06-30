@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: " en-US" }}">
+
+{% include head.html %}
+
+<body style="margin: 0; padding: 0; overflow: hidden;">
+    {% include navigation.html %}
+    <main id="embedded-container" class="embedded-container" style="position: fixed; top: var(--nav-height, 40px); left: 0; right: 0; bottom: 0; overflow: hidden;">
+        {{ content }}
+    </main>
+    <script>
+        (function ()
+        {
+            var nav = document.querySelector('.topnav');
+            if (!nav) return;
+            var update = function ()
+            {
+                document.documentElement.style.setProperty('--nav-height', nav.getBoundingClientRect().height + 'px');
+            };
+            update();
+            window.addEventListener('resize', update);
+            if (window.ResizeObserver) new ResizeObserver(update).observe(nav);
+        })();
+    </script>
+    <script src="/assets/js/scale.fix.js"></script>
+    {% include analytics.html %}
+</body>
+
+</html>

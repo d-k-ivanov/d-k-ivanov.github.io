@@ -1,11 +1,19 @@
 main:
+  - title: "Computational Geometry Studio"
+    authors: Dmitry Ivanov
+    code: https://github.com/d-k-ivanov/d-k-ivanov.github.io/tree/main/geometry
+    badge: WebGL, Graphics
+    image: /assets/img/projects/ComputationalGeometryStudio.png
+    page: https://d-k-ivanov.github.io/geometry
+    notes: Under Development
+
   - title: "Shader Editor for WebGL and WebGPU"
     authors: Dmitry Ivanov
     code: https://github.com/d-k-ivanov/d-k-ivanov.github.io/tree/main/shaders
     badge: WebGL, Graphics
     image: /assets/img/projects/ShaderEditorWeb.png
     page: https://d-k-ivanov.github.io/shaders
-    notes: Under Development
+    # notes: Under Development
 
   - title: "Ray-Tracing Framework and Visualizer"
     authors: Dmitry Ivanov
