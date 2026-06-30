@@ -1,6 +1,6 @@
 "use strict";
 import { Console } from './Console.js';
-import { EXAMPLES, DEFAULT_CODE } from '../runtime/Examples.js';
+import { EXAMPLE_GROUPS, EXAMPLES, DEFAULT_CODE } from '../examples/Examples.js';
 
 const STORAGE_KEY = 'cgs:code';
 
@@ -10,12 +10,13 @@ const STORAGE_KEY = 'cgs:code';
 
 export class CodeEditor
 {
-    constructor(container, { onRun, onClear, onFit } = {})
+    constructor(container, { onRun, onClear, onFit, onDocs } = {})
     {
         this.container = container;
         this.onRun = onRun || (() => { });
         this.onClear = onClear || (() => { });
         this.onFit = onFit || (() => { });
+        this.onDocs = onDocs || (() => { });
 
         this._build();
         this._wire();
@@ -32,6 +33,7 @@ export class CodeEditor
       <button class="cgs-btn cgs-primary" data-act="run" title="Run (Ctrl+Enter)">Run</button>
       <button class="cgs-btn" data-act="clear" title="Clear scene & console">Reset</button>
       <button class="cgs-btn" data-act="fit" title="Frame content">Fit</button>
+      <button class="cgs-btn" data-act="docs" title="Toggle reference docs">Docs</button>
       <span class="cgs-spacer"></span>
       <select class="cgs-select" data-act="examples" title="Load an example"></select>
       <button class="cgs-btn" data-act="load" title="Open a .js file from disk">Load</button>
@@ -39,7 +41,10 @@ export class CodeEditor
     `;
         const select = this.toolbar.querySelector('[data-act="examples"]');
         select.innerHTML = '<option value="">Examples…</option>'
-            + Object.keys(EXAMPLES).map((k) => `<option value="${k}">${k}</option>`).join('');
+            + EXAMPLE_GROUPS.map(({ group, items }) =>
+                `<optgroup label="${group}">`
+                + items.map((ex) => `<option value="${ex.name}">${ex.name}</option>`).join('')
+                + '</optgroup>').join('');
 
         // Code area: line-number gutter + textarea.
         this.editorWrap = document.createElement('div');
@@ -83,6 +88,10 @@ export class CodeEditor
             {
                 this.onFit();
             }
+            else if (action === 'docs')
+            {
+                this.onDocs();
+            }
             else if (action === 'load')
             {
                 this.fileInput.click();
@@ -98,7 +107,7 @@ export class CodeEditor
             const key = event.target.value;
             if (key && EXAMPLES[key])
             {
-                this.setValue(EXAMPLES[key]); this.run();
+                this.setValue(EXAMPLES[key].code); this.run();
             }
             event.target.value = '';
         });
@@ -150,6 +159,22 @@ export class CodeEditor
         this.textarea.value = code;
         this._updateGutter();
         this._save();
+    }
+
+    /** Insert a snippet at the caret (used by the docs panel's "Insert" buttons). */
+    insert(text)
+    {
+        const el = this.textarea;
+        const start = el.selectionStart ?? el.value.length;
+        const end = el.selectionEnd ?? el.value.length;
+        const before = el.value.slice(0, start);
+        const lead = before.length && !before.endsWith('\n') ? '\n' : '';
+        const snippet = `${lead}${text}\n`;
+        el.value = before + snippet + el.value.slice(end);
+        el.selectionStart = el.selectionEnd = before.length + snippet.length;
+        this._updateGutter();
+        this._save();
+        el.focus();
     }
 
     run() { this.onRun(this.getValue()); }

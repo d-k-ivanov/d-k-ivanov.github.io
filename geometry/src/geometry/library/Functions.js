@@ -1,9 +1,10 @@
 "use strict";
-// Pure, framework-independent computational geometry helpers.
+// Pure, framework-independent computational geometry functions.
 //
 // Points may be supplied either as arrays ([x, y] / [x, y, z]) or as objects
 // ({ x, y, z }). Keeping this module free of any Three.js dependency makes it a
-// clean, reusable math library that can be unit tested in isolation.
+// clean, reusable math library that can be unit tested in isolation. The public
+// `geom` namespace and the documentation catalogue are assembled in Library.js.
 
 /** Normalize a 2D point input to `{ x, y }`. */
 export function toXY(p)
@@ -134,10 +135,3 @@ export function boundingBox(points)
         size: { x: max.x - min.x, y: max.y - min.y, z: max.z - min.z },
     };
 }
-
-/** Convenience namespace bundling every helper for single-import use in scripts. */
-export const geom = {
-    toXY, toXYZ, clamp, lerp, deg2rad, rad2deg, linspace,
-    distance2D, distance3D, cross2D, convexHull2D, polygonArea,
-    polygonCentroid, boundingBox,
-};

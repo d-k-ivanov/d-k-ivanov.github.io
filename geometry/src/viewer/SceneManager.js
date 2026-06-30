@@ -5,6 +5,9 @@ import { THREE } from '../vendor/Three.js';
 // disposing GPU resources on removal, and framing the camera to fit everything.
 // Keeping user content in a dedicated group lets us clear it without disturbing
 // the viewer's lights, grid and axes.
+//
+// Items may be GeometryObject wrappers (with an `.object3D`) or raw THREE objects;
+// both are accepted and tracked, and the wrapper is returned for fluent chaining.
 
 export class SceneManager
 {
@@ -14,41 +17,44 @@ export class SceneManager
         this.objects = [];
     }
 
-    add(object)
+    add(item)
     {
-        if (!object)
+        if (!item)
         {
-            return object;
+            return item;
         }
 
-        this.group.add(object);
-        this.objects.push(object);
-        return object;
+        this.group.add(SceneManager._node(item));
+        this.objects.push(item);
+        return item;
     }
 
-    remove(object)
+    remove(item)
     {
-        this.group.remove(object);
-        this.objects = this.objects.filter((o) => o !== object);
-        SceneManager._dispose(object);
+        this.group.remove(SceneManager._node(item));
+        this.objects = this.objects.filter((o) => o !== item);
+        SceneManager._dispose(item);
     }
 
     clear()
     {
-        for (const object of this.objects)
+        for (const item of this.objects)
         {
-            this.group.remove(object);
-            SceneManager._dispose(object);
+            this.group.remove(SceneManager._node(item));
+            SceneManager._dispose(item);
         }
         this.objects = [];
     }
 
     count() { return this.objects.length; }
 
+    /** Resolve the underlying THREE.Object3D for a wrapper or raw object. */
+    static _node(item) { return item.object3D ?? item; }
+
     /** Release geometry and material GPU memory for an object and its descendants. */
-    static _dispose(object)
+    static _dispose(item)
     {
-        object.traverse?.((child) =>
+        SceneManager._node(item).traverse?.((child) =>
         {
             child.geometry?.dispose?.();
             const material = child.material;
