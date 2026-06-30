@@ -1,6 +1,6 @@
 "use strict";
 import { Console } from './Console.js';
-import { EXAMPLES, DEFAULT_CODE } from '../runtime/examples.js';
+import { EXAMPLES, DEFAULT_CODE } from '../runtime/Examples.js';
 
 const STORAGE_KEY = 'cgs:code';
 
