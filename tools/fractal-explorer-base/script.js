@@ -82,19 +82,15 @@ class JuliaSetRenderer
                 throw new Error('No WebGPU adapter found. Please ensure your GPU drivers are up to date.');
             }
 
-            this.device = await adapter.requestDevice({
-                requiredFeatures: [],
-                requiredLimits: {
-                    maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
-                    maxUniformBufferBindingSize: Math.min(65536, adapter.limits.maxUniformBufferBindingSize)
-                }
-            });
+            this.device = await adapter.requestDevice();
 
             this.device.lost.then((info) =>
             {
                 console.error('WebGPU device lost:', info.message);
                 if (info.reason !== 'destroyed')
                 {
+                    this.device = null;
+                    this.context = null;
                     setTimeout(() => this.init(), 1000);
                 }
             });
