@@ -86,6 +86,7 @@ permalink: /travel/
         geographyConfig: {
             borderColor: '#DEDEDE',
             highlightBorderWidth: 1,
+            popupOnHover: false,
             // Change color on mouse hover
             highlightFillColor: function(geo) {
                 return geo['fillColor'] || '#E5E5E5';
@@ -109,6 +110,52 @@ permalink: /travel/
                 }
             }
         }
+    });
+
+    var mapElement = document.getElementById('datamap');
+    var tooltip = document.createElement('div');
+    tooltip.className = 'country-tooltip';
+    tooltip.style.zIndex = '10001';
+    tooltip.style.position = 'absolute';
+    tooltip.style.display = 'none';
+    tooltip.style.pointerEvents = 'none';
+    mapElement.appendChild(tooltip);
+
+    function updateTooltip(event) {
+        var region = event.target.closest && event.target.closest('.datamaps-subunit');
+
+        if (!region) {
+            if (event.type === 'mouseover') {
+                tooltip.style.display = 'none';
+            }
+            return;
+        }
+
+        var geo = region.__data__;
+        var data = dataset[geo.id];
+
+        if (!data) {
+            tooltip.style.display = 'none';
+            return;
+        }
+
+        tooltip.innerHTML = map.options.geographyConfig.popupTemplate(geo, data);
+        tooltip.style.display = 'block';
+
+        var mapBounds = mapElement.getBoundingClientRect();
+        var pointerX = event.clientX - mapBounds.left;
+        var pointerY = event.clientY - mapBounds.top;
+        var left = pointerX - tooltip.offsetWidth / 2;
+
+        left = Math.max(0, Math.min(left, mapBounds.width - tooltip.offsetWidth));
+        tooltip.style.left = Math.round(left) + 'px';
+        tooltip.style.top = Math.max(0, Math.round(pointerY - tooltip.offsetHeight - 12)) + 'px';
+    }
+
+    mapElement.addEventListener('mouseover', updateTooltip);
+    mapElement.addEventListener('mousemove', updateTooltip);
+    mapElement.addEventListener('mouseleave', function() {
+        tooltip.style.display = 'none';
     });
 
     window.addEventListener('resize', function(event){
