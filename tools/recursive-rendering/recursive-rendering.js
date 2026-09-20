@@ -16,6 +16,7 @@ const DEFAULT_GRID_COLUMNS = 4;
 const MAX_GRID_SIZE = 4;
 const MODEL_SIZE = 2;
 const CAMERA_FRAME = 1.3;
+const MODEL_LOAD_IDLE_MS = 300;
 const MIN_CAMERA_ZOOM = 0.25;
 const MAX_CAMERA_ZOOM = 8;
 const WHEEL_ZOOM_SENSITIVITY = 0.002;
@@ -335,6 +336,11 @@ class ModelViewRow
 
     initializeViewport(cameraController)
     {
+        if (this.controls)
+        {
+            return;
+        }
+
         this.scene = this.createScene();
 
         this.camera = new THREE.OrthographicCamera(-CAMERA_FRAME, CAMERA_FRAME, CAMERA_FRAME, -CAMERA_FRAME, 0.1, 100);
@@ -360,6 +366,11 @@ class ModelViewRow
         this.viewport.addEventListener('pointerdown', this.handlePointerDown);
 
         this.unregisterCamera = cameraController.register(this.camera, this.controls);
+
+        if (this.modelRoot)
+        {
+            this.scene.add(this.modelRoot);
+        }
     }
 
     createScene()
@@ -386,7 +397,6 @@ class ModelViewRow
     setModel(object)
     {
         this.modelRoot = normalizeModel(object);
-        this.scene.add(this.modelRoot);
         this.ready = true;
         this.element.classList.add('is-ready');
         this.setLoadState('Ready');
@@ -414,8 +424,8 @@ class ModelViewRow
                 return false;
             }
 
-            this.initializeViewport(cameraController);
             this.setModel(object);
+            this.initializeViewport(cameraController);
             return true;
         }
         catch (error)
@@ -481,7 +491,7 @@ class ModelViewRow
         if (this.modelRoot)
         {
             disposeObject(this.modelRoot);
-            this.scene.remove(this.modelRoot);
+            this.modelRoot.parent?.remove(this.modelRoot);
             this.modelRoot = null;
         }
 
@@ -508,6 +518,7 @@ class ModelViewRow
         this.controls.stopListenToKeyEvents();
         this.controls.dispose();
         this.viewport.removeEventListener('pointerdown', this.handlePointerDown);
+        this.modelRoot?.parent?.remove(this.modelRoot);
         this.scene.remove(this.camera);
 
         this.unregisterCamera = null;
@@ -544,8 +555,7 @@ class RecursiveRenderingApp
         this.loadQueue = [];
         this.processingQueue = false;
         this.currentIndex = -1;
-        this.wheelTimer = null;
-        this.wheelLocked = false;
+        this.loadTimer = null;
         this.wheelDelta = 0;
         this.totalModelCount = 0;
         this.ignoredFileCount = 0;
@@ -590,6 +600,11 @@ class RecursiveRenderingApp
         return this.gridRows * this.gridColumns;
     }
 
+    get lastPageStartIndex()
+    {
+        return Math.max(0, Math.floor((this.modelFiles.length - 1) / this.activeViewCount) * this.activeViewCount);
+    }
+
     handleGridChange()
     {
         this.gridRows = this.readGridSize(this.rowCountSelect, DEFAULT_GRID_ROWS);
@@ -598,8 +613,10 @@ class RecursiveRenderingApp
 
         if (this.currentIndex >= 0)
         {
-            const lastStartIndex = Math.max(0, this.modelFiles.length - this.activeViewCount);
-            this.currentIndex = Math.min(this.currentIndex, lastStartIndex);
+            this.currentIndex = Math.min(
+                Math.floor(this.currentIndex / this.activeViewCount) * this.activeViewCount,
+                this.lastPageStartIndex
+            );
             this.updateActiveRows();
         }
     }
@@ -673,21 +690,41 @@ class RecursiveRenderingApp
         this.rows = desiredIndices.map((index) =>
         {
             const file = this.modelFiles[index];
-            const row = existingRows.get(index) ?? new ModelViewRow(this.pathOf(file), file, index);
-            return row;
+            return existingRows.get(index) ?? new ModelViewRow(this.pathOf(file), file, index);
         });
 
-        this.loadQueue = this.loadQueue.filter(({ row }) => desiredIndexSet.has(row.modelIndex));
-        this.modelsElement.replaceChildren(...this.rows.map((row) => row.element));
-
-        for (const row of this.rows)
+        for (const { row } of this.loadQueue)
         {
-            this.enqueueRow(row, request);
+            row.queued = false;
         }
+
+        this.loadQueue = [];
+        this.modelsElement.replaceChildren(...this.rows.map((row) => row.element));
 
         this.renderer.renderLists.dispose();
         this.updateStatus();
         this.requestRender();
+        this.scheduleVisibleLoads(request);
+    }
+
+    scheduleVisibleLoads(request = this.loadRequest)
+    {
+        clearTimeout(this.loadTimer);
+        this.loadTimer = setTimeout(() =>
+        {
+            this.loadTimer = null;
+            this.wheelDelta = 0;
+
+            if (request !== this.loadRequest)
+            {
+                return;
+            }
+
+            for (const row of this.rows)
+            {
+                this.enqueueRow(row, request);
+            }
+        }, MODEL_LOAD_IDLE_MS);
     }
 
     handleModelWheel(event)
@@ -710,34 +747,21 @@ class RecursiveRenderingApp
             return;
         }
 
-        clearTimeout(this.wheelTimer);
-        this.wheelTimer = setTimeout(() =>
-        {
-            this.wheelLocked = false;
-            this.wheelDelta = 0;
-        }, 180);
-
-        if (this.wheelLocked)
-        {
-            return;
-        }
-
         this.wheelDelta += delta;
+        this.scheduleVisibleLoads();
 
         if (Math.abs(this.wheelDelta) < 24)
         {
             return;
         }
 
-        this.wheelLocked = true;
-        this.navigateTo(this.currentIndex + Math.sign(this.wheelDelta));
+        this.navigateTo(this.currentIndex + Math.sign(this.wheelDelta) * this.activeViewCount);
         this.wheelDelta = 0;
     }
 
     navigateTo(index)
     {
-        const lastStartIndex = Math.max(0, this.modelFiles.length - this.activeViewCount);
-        const nextIndex = THREE.MathUtils.clamp(index, 0, lastStartIndex);
+        const nextIndex = THREE.MathUtils.clamp(index, 0, this.lastPageStartIndex);
 
         if (nextIndex === this.currentIndex)
         {
@@ -814,13 +838,12 @@ class RecursiveRenderingApp
 
     updateStatus()
     {
-        const activeCount = this.rows.filter((row) => row.ready).length;
         const loadingCount = this.rows.filter((row) => row.loading || row.queued).length;
         const failedCount = this.rows.filter((row) => row.failed).length;
         const firstNumber = this.currentIndex >= 0 ? this.currentIndex + 1 : 0;
         const lastNumber = Math.min(this.currentIndex + this.activeViewCount, this.totalModelCount);
         const range = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
-        const parts = [`${range} of ${this.totalModelCount}`, `${activeCount} active`];
+        const parts = [`${range} of ${this.totalModelCount}`];
 
         if (loadingCount > 0)
         {
@@ -847,9 +870,8 @@ class RecursiveRenderingApp
 
     clearRows()
     {
-        clearTimeout(this.wheelTimer);
-        this.wheelTimer = null;
-        this.wheelLocked = false;
+        clearTimeout(this.loadTimer);
+        this.loadTimer = null;
         this.wheelDelta = 0;
         this.loadQueue = [];
 
