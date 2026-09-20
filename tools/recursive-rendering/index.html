@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="color-scheme" content="light">
 
-    <title>Recursive Model Rendering from a Folder</title>
+    <title>Recursive Model Rendering</title>
 
     <style type="text/css">
         :root {
@@ -27,12 +27,13 @@
         }
 
         html {
-            min-height: 100%;
+            height: 100%;
         }
 
         body {
             min-width: 320px;
-            min-height: 100vh;
+            height: 100%;
+            overflow: hidden;
             color: var(--ink);
             background-color: var(--paper);
             background-image:
@@ -54,12 +55,12 @@
         .app-shell {
             position: relative;
             z-index: 1;
-            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            height: 100dvh;
         }
 
         .toolbar {
-            position: sticky;
-            top: 0;
             z-index: 2;
             border-bottom: 1px solid var(--ink);
             background: rgba(236, 233, 223, 0.96);
@@ -124,25 +125,49 @@
         }
 
         main {
-            width: min(100%, 1600px);
-            margin: 0 auto;
-            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-rows: repeat(2, minmax(0, 1fr));
+            width: 100%;
+            min-height: 0;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        main[data-view-count="1"] {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+        }
+
+        main[data-view-count="2"] {
+            grid-template-rows: 1fr;
         }
 
         .empty-state {
+            display: grid;
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+            min-height: 100%;
             padding: 40px 24px;
-            border: 1px dashed var(--line);
+            place-items: center;
             color: var(--muted);
             background: rgba(248, 247, 242, 0.82);
             text-align: center;
         }
 
         .model-row {
-            margin-bottom: 20px;
-            border: 1px solid var(--ink);
-            border-radius: 4px;
-            box-shadow: 4px 4px 0 rgba(23, 32, 29, 0.22);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+            min-height: 0;
+            background: var(--panel);
+            box-shadow: inset 0 0 0 1px var(--line);
             overflow: hidden;
+        }
+
+        .model-row.is-ready {
+            background: transparent;
         }
 
         .model-header {
@@ -173,8 +198,9 @@
 
         .model-viewport {
             position: relative;
+            flex: 1 1 auto;
             width: 100%;
-            height: clamp(260px, 42vw, 560px);
+            min-height: 0;
             background: var(--panel);
             cursor: grab;
             overflow: hidden;
@@ -225,11 +251,7 @@
             }
 
             main {
-                padding: 16px;
-            }
-
-            .model-row {
-                margin-bottom: 16px;
+                width: 100%;
             }
         }
     </style>
@@ -250,7 +272,7 @@
     <div class="app-shell">
         <header class="toolbar">
             <div class="toolbar-content">
-                <h1>Synchronized Model Viewer</h1>
+                <h1>Recursive Model Rendering</h1>
                 <div class="controls">
                     <span id="status" role="status" aria-live="polite">No folder selected</span>
                     <button id="folder-button" type="button">Select folder</button>

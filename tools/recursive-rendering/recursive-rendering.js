@@ -9,8 +9,14 @@ import { VOXLoader, buildMesh } from 'three/addons/loaders/VOXLoader.js';
 const THREE_CDN_ROOT = 'https://cdn.jsdelivr.net/npm/three@0.186.0';
 const SUPPORTED_EXTENSIONS = new Set(['stl', 'drc', 'draco', 'ply', 'vox', 'obj']);
 const VIEW_BACKGROUND = new THREE.Color(0xf8f7f2);
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const DEFAULT_MODEL_COLOR = 0xc95a3b;
+const ACTIVE_VIEW_COUNT = 4;
 const MODEL_SIZE = 2;
 const CAMERA_FRAME = 1.3;
+const MIN_UP_COHERENCE = 0.05;
+const MIN_VISIBLE_COLOR = 0.03;
+const MAX_COLOR_SAMPLES = 4096;
 
 class ModelLoaderFactory
 {
@@ -25,12 +31,12 @@ class ModelLoaderFactory
         this.objLoader = new OBJLoader();
 
         this.loaders = new Map([
-            ['stl', async (url) => this.createSurface(await this.stlLoader.loadAsync(url))],
-            ['drc', async (url) => this.createDracoObject(await this.dracoLoader.loadAsync(url))],
-            ['draco', async (url) => this.createDracoObject(await this.dracoLoader.loadAsync(url))],
-            ['ply', async (url) => this.createPlyObject(await this.plyLoader.loadAsync(url))],
-            ['vox', async (url) => this.createVoxObject(await this.voxLoader.loadAsync(url))],
-            ['obj', async (url) => this.objLoader.loadAsync(url)]
+            ['stl', async (file) => this.createSurface(this.stlLoader.parse(await file.arrayBuffer()))],
+            ['drc', async (file) => this.createDracoObject(await this.loadFromObjectUrl(file, this.dracoLoader))],
+            ['draco', async (file) => this.createDracoObject(await this.loadFromObjectUrl(file, this.dracoLoader))],
+            ['ply', async (file) => this.createPlyObject(this.plyLoader.parse(await file.arrayBuffer()))],
+            ['vox', async (file) => this.createVoxObject(this.voxLoader.parse(await file.arrayBuffer()))],
+            ['obj', async (file) => this.objLoader.parse(await file.text())]
         ]);
     }
 
@@ -54,11 +60,18 @@ class ModelLoaderFactory
             throw new Error(`Unsupported model format: .${extension}`);
         }
 
+        const object = await loadModel(file);
+        ensureVisibleAppearance(object);
+        return object;
+    }
+
+    async loadFromObjectUrl(file, loader)
+    {
         const objectUrl = URL.createObjectURL(file);
 
         try
         {
-            return await loadModel(objectUrl);
+            return await loader.loadAsync(objectUrl);
         }
         finally
         {
@@ -68,14 +81,17 @@ class ModelLoaderFactory
 
     createSurface(geometry)
     {
-        if (!geometry.hasAttribute('normal'))
+        ensureUsableNormals(geometry);
+
+        const vertexColors = hasVisibleVertexColors(geometry);
+
+        if (!vertexColors)
         {
-            geometry.computeVertexNormals();
+            geometry.deleteAttribute('color');
         }
 
-        const vertexColors = geometry.hasAttribute('color');
         const material = new THREE.MeshStandardMaterial({
-            color: vertexColors ? 0xffffff : 0xc95a3b,
+            color: vertexColors ? 0xffffff : DEFAULT_MODEL_COLOR,
             metalness: 0.05,
             roughness: 0.68,
             side: THREE.DoubleSide,
@@ -87,9 +103,15 @@ class ModelLoaderFactory
 
     createPointCloud(geometry)
     {
-        const vertexColors = geometry.hasAttribute('color');
+        const vertexColors = hasVisibleVertexColors(geometry);
+
+        if (!vertexColors)
+        {
+            geometry.deleteAttribute('color');
+        }
+
         const material = new THREE.PointsMaterial({
-            color: vertexColors ? 0xffffff : 0xc95a3b,
+            color: vertexColors ? 0xffffff : DEFAULT_MODEL_COLOR,
             size: 0.035,
             sizeAttenuation: true,
             vertexColors
@@ -229,12 +251,22 @@ class SynchronizedCameraController
 
 class ModelViewRow
 {
-    constructor(modelPath, cameraController)
+    constructor(modelPath, file, modelIndex)
     {
         this.modelPath = modelPath;
+        this.file = file;
+        this.modelIndex = modelIndex;
+        this.loadState = 'Waiting';
         this.modelRoot = null;
         this.ready = false;
-        this.scene = this.createScene();
+        this.loading = false;
+        this.queued = false;
+        this.requested = false;
+        this.failed = false;
+        this.scene = null;
+        this.camera = null;
+        this.controls = null;
+        this.unregisterCamera = null;
         this.element = document.createElement('article');
         this.element.className = 'model-row';
 
@@ -248,7 +280,7 @@ class ModelViewRow
 
         this.state = document.createElement('span');
         this.state.className = 'model-state';
-        this.state.textContent = 'Loading';
+        this.state.textContent = this.loadState;
 
         header.append(title, this.state);
 
@@ -258,6 +290,19 @@ class ModelViewRow
         this.viewport.setAttribute('role', 'region');
         this.viewport.setAttribute('aria-label', `${modelPath}, interactive 3D viewport`);
 
+        this.element.append(header, this.viewport);
+    }
+
+    setLoadState(loadState)
+    {
+        this.loadState = loadState;
+        this.state.textContent = loadState;
+    }
+
+    initializeViewport(cameraController)
+    {
+        this.scene = this.createScene();
+
         this.camera = new THREE.OrthographicCamera(-CAMERA_FRAME, CAMERA_FRAME, CAMERA_FRAME, -CAMERA_FRAME, 0.1, 100);
         this.camera.position.set(0, 0, 4);
         this.camera.lookAt(0, 0, 0);
@@ -266,6 +311,7 @@ class ModelViewRow
 
         this.controls = new OrbitControls(this.camera, this.viewport);
         this.controls.enableDamping = false;
+        this.controls.enableZoom = false;
         this.controls.minZoom = 0.25;
         this.controls.maxZoom = 8;
         this.controls.screenSpacePanning = true;
@@ -280,7 +326,6 @@ class ModelViewRow
         this.viewport.addEventListener('pointerdown', this.handlePointerDown);
 
         this.unregisterCamera = cameraController.register(this.camera, this.controls);
-        this.element.append(header, this.viewport);
     }
 
     createScene()
@@ -310,13 +355,62 @@ class ModelViewRow
         this.scene.add(this.modelRoot);
         this.ready = true;
         this.element.classList.add('is-ready');
-        this.state.textContent = 'Ready';
+        this.setLoadState('Ready');
+    }
+
+    async load(modelLoader, cameraController)
+    {
+        if (this.ready || this.loading || this.failed)
+        {
+            return false;
+        }
+
+        this.loading = true;
+        this.setLoadState('Loading');
+        let object = null;
+
+        try
+        {
+            object = await modelLoader.load(this.file);
+
+            if (!this.requested)
+            {
+                disposeObject(object);
+                this.setLoadState('Waiting');
+                return false;
+            }
+
+            this.initializeViewport(cameraController);
+            this.setModel(object);
+            return true;
+        }
+        catch (error)
+        {
+            if (object && !this.modelRoot)
+            {
+                disposeObject(object);
+            }
+
+            this.releaseRuntime();
+
+            if (!this.requested)
+            {
+                this.setLoadState('Waiting');
+            }
+
+            throw error;
+        }
+        finally
+        {
+            this.loading = false;
+        }
     }
 
     setError(error)
     {
+        this.failed = true;
         this.element.classList.add('is-error');
-        this.state.textContent = 'Failed';
+        this.setLoadState('Failed');
         this.viewport.hidden = true;
 
         const message = document.createElement('p');
@@ -345,14 +439,10 @@ class ModelViewRow
         this.camera.updateProjectionMatrix();
     }
 
-    dispose()
+    release()
     {
-        this.unregisterCamera();
-        this.controls.removeEventListener('start', this.handleControlStart);
-        this.controls.removeEventListener('end', this.handleControlEnd);
-        this.controls.stopListenToKeyEvents();
-        this.controls.dispose();
-        this.viewport.removeEventListener('pointerdown', this.handlePointerDown);
+        this.requested = false;
+        this.queued = false;
 
         if (this.modelRoot)
         {
@@ -360,6 +450,42 @@ class ModelViewRow
             this.scene.remove(this.modelRoot);
             this.modelRoot = null;
         }
+
+        this.releaseRuntime();
+        this.ready = false;
+        this.element.classList.remove('is-ready');
+
+        if (!this.loading && !this.failed)
+        {
+            this.setLoadState('Waiting');
+        }
+    }
+
+    releaseRuntime()
+    {
+        if (!this.controls)
+        {
+            return;
+        }
+
+        this.unregisterCamera?.();
+        this.controls.removeEventListener('start', this.handleControlStart);
+        this.controls.removeEventListener('end', this.handleControlEnd);
+        this.controls.stopListenToKeyEvents();
+        this.controls.dispose();
+        this.viewport.removeEventListener('pointerdown', this.handlePointerDown);
+        this.scene.remove(this.camera);
+
+        this.unregisterCamera = null;
+        this.controls = null;
+        this.camera = null;
+        this.scene = null;
+    }
+
+    dispose()
+    {
+        this.release();
+        this.file = null;
     }
 }
 
@@ -376,12 +502,23 @@ class RecursiveRenderingApp
         this.requestRender = this.requestRender.bind(this);
         this.modelLoader = new ModelLoaderFactory();
         this.cameraController = new SynchronizedCameraController(this.requestRender);
+        this.modelFiles = [];
         this.rows = [];
+        this.loadQueue = [];
+        this.processingQueue = false;
+        this.currentIndex = -1;
+        this.wheelTimer = null;
+        this.wheelLocked = false;
+        this.wheelDelta = 0;
+        this.totalModelCount = 0;
+        this.ignoredFileCount = 0;
         this.loadRequest = 0;
         this.frameRequest = null;
         this.renderWidth = 0;
         this.renderHeight = 0;
         this.pixelRatio = 0;
+
+        this.handleModelWheel = this.handleModelWheel.bind(this);
 
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
@@ -400,12 +537,13 @@ class RecursiveRenderingApp
     {
         this.folderButton.addEventListener('click', () => this.folderInput.click());
         this.folderInput.addEventListener('change', () => this.loadFolder(this.folderInput.files));
+        this.modelsElement.addEventListener('wheel', this.handleModelWheel, { passive: false });
         window.addEventListener('resize', this.requestRender);
         window.addEventListener('scroll', this.requestRender, { capture: true, passive: true });
         this.requestRender();
     }
 
-    async loadFolder(fileList)
+    loadFolder(fileList)
     {
         const request = ++this.loadRequest;
         const allFiles = Array.from(fileList ?? []);
@@ -427,56 +565,192 @@ class RecursiveRenderingApp
         }
 
         this.modelsElement.replaceChildren();
-        let loadedCount = 0;
-        let failedCount = 0;
+        this.modelFiles = modelFiles;
+        this.currentIndex = 0;
+        this.totalModelCount = modelFiles.length;
+        this.ignoredFileCount = allFiles.length - modelFiles.length;
+        this.statusElement.textContent = `Preparing ${modelFiles.length} models`;
+        this.updateActiveRows(request);
+    }
 
-        for (const [index, file] of modelFiles.entries())
+    updateActiveRows(request = this.loadRequest)
+    {
+        if (request !== this.loadRequest)
         {
-            if (request !== this.loadRequest)
-            {
-                return;
-            }
-
-            this.statusElement.textContent = `Loading ${index + 1} of ${modelFiles.length}`;
-            const row = new ModelViewRow(this.pathOf(file), this.cameraController);
-            this.rows.push(row);
-            this.modelsElement.append(row.element);
-            this.requestRender();
-
-            try
-            {
-                const object = await this.modelLoader.load(file);
-
-                if (request !== this.loadRequest)
-                {
-                    disposeObject(object);
-                    return;
-                }
-
-                row.setModel(object);
-                loadedCount++;
-            }
-            catch (error)
-            {
-                row.setError(error);
-                failedCount++;
-                console.error(`Could not load ${this.pathOf(file)}`, error);
-            }
-
-            this.requestRender();
+            return;
         }
 
-        const ignoredCount = allFiles.length - modelFiles.length;
-        const parts = [`${loadedCount} ${loadedCount === 1 ? 'model' : 'models'}`];
+        const desiredIndices = Array.from(
+            { length: ACTIVE_VIEW_COUNT },
+            (_, offset) => this.currentIndex + offset
+        ).filter((index) => index < this.modelFiles.length);
+        const desiredIndexSet = new Set(desiredIndices);
+        const existingRows = new Map(this.rows.map((row) => [row.modelIndex, row]));
+
+        for (const row of this.rows)
+        {
+            if (!desiredIndexSet.has(row.modelIndex))
+            {
+                row.dispose();
+            }
+        }
+
+        this.rows = desiredIndices.map((index) =>
+        {
+            const file = this.modelFiles[index];
+            const row = existingRows.get(index) ?? new ModelViewRow(this.pathOf(file), file, index);
+            return row;
+        });
+
+        this.loadQueue = this.loadQueue.filter(({ row }) => desiredIndexSet.has(row.modelIndex));
+        this.modelsElement.replaceChildren(...this.rows.map((row) => row.element));
+        this.modelsElement.dataset.viewCount = String(this.rows.length);
+
+        for (const row of this.rows)
+        {
+            this.enqueueRow(row, request);
+        }
+
+        this.renderer.renderLists.dispose();
+        this.updateStatus();
+        this.requestRender();
+    }
+
+    handleModelWheel(event)
+    {
+        if (this.currentIndex < 0 || Math.abs(event.deltaY) <= Math.abs(event.deltaX))
+        {
+            return;
+        }
+
+        event.preventDefault();
+        const deltaScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 :
+            event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? this.modelsElement.clientHeight : 1;
+        clearTimeout(this.wheelTimer);
+        this.wheelTimer = setTimeout(() =>
+        {
+            this.wheelLocked = false;
+            this.wheelDelta = 0;
+        }, 180);
+
+        if (this.wheelLocked)
+        {
+            return;
+        }
+
+        this.wheelDelta += event.deltaY * deltaScale;
+
+        if (Math.abs(this.wheelDelta) < 24)
+        {
+            return;
+        }
+
+        this.wheelLocked = true;
+        this.navigateTo(this.currentIndex + Math.sign(this.wheelDelta));
+        this.wheelDelta = 0;
+    }
+
+    navigateTo(index)
+    {
+        const lastStartIndex = Math.max(0, this.modelFiles.length - ACTIVE_VIEW_COUNT);
+        const nextIndex = THREE.MathUtils.clamp(index, 0, lastStartIndex);
+
+        if (nextIndex === this.currentIndex)
+        {
+            return;
+        }
+
+        this.currentIndex = nextIndex;
+        this.updateActiveRows();
+    }
+
+    enqueueRow(row, request)
+    {
+        row.requested = true;
+
+        if (row.ready || row.loading || row.queued || row.failed)
+        {
+            return;
+        }
+
+        row.queued = true;
+        row.setLoadState('Queued');
+        this.loadQueue.push({ row, request });
+        this.processLoadQueue();
+    }
+
+    async processLoadQueue()
+    {
+        if (this.processingQueue)
+        {
+            return;
+        }
+
+        this.processingQueue = true;
+
+        try
+        {
+            while (this.loadQueue.length > 0)
+            {
+                const { row, request } = this.loadQueue.shift();
+                row.queued = false;
+
+                if (request !== this.loadRequest || !row.requested || row.ready || row.failed)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await row.load(this.modelLoader, this.cameraController);
+                }
+                catch (error)
+                {
+                    if (row.requested && request === this.loadRequest)
+                    {
+                        row.setError(error);
+                        console.error(`Could not load ${row.modelPath}`, error);
+                    }
+                }
+
+                this.updateStatus();
+                this.requestRender();
+            }
+        }
+        finally
+        {
+            this.processingQueue = false;
+
+            if (this.loadQueue.length > 0)
+            {
+                this.processLoadQueue();
+            }
+        }
+    }
+
+    updateStatus()
+    {
+        const activeCount = this.rows.filter((row) => row.ready).length;
+        const loadingCount = this.rows.filter((row) => row.loading || row.queued).length;
+        const failedCount = this.rows.filter((row) => row.failed).length;
+        const firstNumber = this.currentIndex >= 0 ? this.currentIndex + 1 : 0;
+        const lastNumber = Math.min(this.currentIndex + ACTIVE_VIEW_COUNT, this.totalModelCount);
+        const range = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
+        const parts = [`${range} of ${this.totalModelCount}`, `${activeCount} active`];
+
+        if (loadingCount > 0)
+        {
+            parts.push(`${loadingCount} loading`);
+        }
 
         if (failedCount > 0)
         {
             parts.push(`${failedCount} failed`);
         }
 
-        if (ignoredCount > 0)
+        if (this.ignoredFileCount > 0)
         {
-            parts.push(`${ignoredCount} other ${ignoredCount === 1 ? 'file' : 'files'} ignored`);
+            parts.push(`${this.ignoredFileCount} other ${this.ignoredFileCount === 1 ? 'file' : 'files'} ignored`);
         }
 
         this.statusElement.textContent = parts.join(' / ');
@@ -489,14 +763,26 @@ class RecursiveRenderingApp
 
     clearRows()
     {
+        clearTimeout(this.wheelTimer);
+        this.wheelTimer = null;
+        this.wheelLocked = false;
+        this.wheelDelta = 0;
+        this.loadQueue = [];
+
         for (const row of this.rows)
         {
             row.dispose();
         }
 
+        this.modelFiles = [];
         this.rows = [];
+        this.currentIndex = -1;
+        this.totalModelCount = 0;
+        this.ignoredFileCount = 0;
         this.cameraController.reset();
+        this.renderer.renderLists.dispose();
         this.modelsElement.replaceChildren();
+        delete this.modelsElement.dataset.viewCount;
         this.requestRender();
     }
 
@@ -574,7 +860,17 @@ class RecursiveRenderingApp
 function normalizeModel(object)
 {
     object.updateMatrixWorld(true);
-    const bounds = new THREE.Box3().setFromObject(object);
+    const modelUp = estimateModelUp(object);
+    const normalized = new THREE.Group();
+    normalized.add(object);
+
+    if (modelUp)
+    {
+        normalized.quaternion.setFromUnitVectors(modelUp, WORLD_UP);
+    }
+
+    normalized.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(normalized);
 
     if (bounds.isEmpty())
     {
@@ -590,13 +886,186 @@ function normalizeModel(object)
     }
 
     const center = bounds.getCenter(new THREE.Vector3());
-    const normalized = new THREE.Group();
-    object.position.sub(center);
-    normalized.add(object);
-    normalized.scale.setScalar(MODEL_SIZE / largestDimension);
+    const scale = MODEL_SIZE / largestDimension;
+    normalized.position.copy(center).multiplyScalar(-scale);
+    normalized.scale.setScalar(scale);
     normalized.updateMatrixWorld(true);
 
     return normalized;
+}
+
+function estimateModelUp(object)
+{
+    const normalSum = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    const vertexA = new THREE.Vector3();
+    const vertexB = new THREE.Vector3();
+    const vertexC = new THREE.Vector3();
+    const edgeA = new THREE.Vector3();
+    const edgeB = new THREE.Vector3();
+    const normalMatrix = new THREE.Matrix3();
+    let faceCount = 0;
+
+    // Each non-degenerate triangle gets one vote toward the model's natural up.
+    object.traverse((child) =>
+    {
+        if (!child.isMesh)
+        {
+            return;
+        }
+
+        const positions = child.geometry?.getAttribute('position');
+
+        if (!positions)
+        {
+            return;
+        }
+
+        const indices = child.geometry.index;
+        const normals = child.geometry.getAttribute('normal');
+        const elementCount = indices?.count ?? positions.count;
+        normalMatrix.getNormalMatrix(child.matrixWorld);
+
+        for (let offset = 0; offset + 2 < elementCount; offset += 3)
+        {
+            if (!indices && normals)
+            {
+                normal.fromBufferAttribute(normals, offset);
+            }
+            else
+            {
+                const indexA = indices ? indices.getX(offset) : offset;
+                const indexB = indices ? indices.getX(offset + 1) : offset + 1;
+                const indexC = indices ? indices.getX(offset + 2) : offset + 2;
+                vertexA.fromBufferAttribute(positions, indexA);
+                vertexB.fromBufferAttribute(positions, indexB);
+                vertexC.fromBufferAttribute(positions, indexC);
+                edgeA.subVectors(vertexB, vertexA);
+                edgeB.subVectors(vertexC, vertexA);
+                normal.crossVectors(edgeA, edgeB);
+            }
+
+            if (normal.lengthSq() <= Number.EPSILON)
+            {
+                continue;
+            }
+
+            normal.applyNormalMatrix(normalMatrix);
+            normalSum.add(normal);
+            faceCount++;
+        }
+    });
+
+    if (faceCount === 0 || normalSum.length() / faceCount < MIN_UP_COHERENCE)
+    {
+        return null;
+    }
+
+    return normalSum.normalize();
+}
+
+function hasVisibleVertexColors(geometry)
+{
+    const colors = geometry?.getAttribute('color');
+
+    if (!colors || colors.itemSize < 3)
+    {
+        return false;
+    }
+
+    const step = Math.max(1, Math.floor(colors.count / MAX_COLOR_SAMPLES));
+
+    for (let index = 0; index < colors.count; index += step)
+    {
+        const brightestChannel = Math.max(colors.getX(index), colors.getY(index), colors.getZ(index));
+
+        if (Number.isFinite(brightestChannel) && brightestChannel >= MIN_VISIBLE_COLOR)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function ensureUsableNormals(geometry)
+{
+    const positions = geometry?.getAttribute('position');
+    const normals = geometry?.getAttribute('normal');
+
+    if (!positions)
+    {
+        return;
+    }
+
+    if (normals)
+    {
+        const step = Math.max(1, Math.floor(normals.count / MAX_COLOR_SAMPLES));
+
+        for (let index = 0; index < normals.count; index += step)
+        {
+            const x = normals.getX(index);
+            const y = normals.getY(index);
+            const z = normals.getZ(index);
+
+            if (Number.isFinite(x + y + z) && x * x + y * y + z * z > Number.EPSILON)
+            {
+                return;
+            }
+        }
+
+        geometry.deleteAttribute('normal');
+    }
+
+    geometry.computeVertexNormals();
+}
+
+function ensureVisibleAppearance(object)
+{
+    object.traverse((child) =>
+    {
+        if ((!child.isMesh && !child.isPoints) || !child.material)
+        {
+            return;
+        }
+
+        const colorAttribute = child.geometry?.getAttribute('color');
+        const vertexColors = hasVisibleVertexColors(child.geometry);
+
+        if (child.isMesh)
+        {
+            ensureUsableNormals(child.geometry);
+        }
+
+        if (colorAttribute && !vertexColors)
+        {
+            child.geometry.deleteAttribute('color');
+        }
+
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+
+        for (const material of materials)
+        {
+            material.vertexColors = vertexColors;
+
+            if (material.color)
+            {
+                const isBlack = Math.max(material.color.r, material.color.g, material.color.b) < MIN_VISIBLE_COLOR;
+
+                if (isBlack || (colorAttribute && !vertexColors))
+                {
+                    material.color.set(vertexColors ? 0xffffff : DEFAULT_MODEL_COLOR);
+                }
+            }
+
+            if (child.isMesh)
+            {
+                material.side = THREE.DoubleSide;
+            }
+
+            material.needsUpdate = true;
+        }
+    });
 }
 
 function disposeObject(object)
