@@ -4,28 +4,7 @@ title: Travel
 permalink: /travel/
 ---
 
-<!-- <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <style>
-        html {
-            overflow-x: hidden;
-            overflow-y: hidden;
-        }
-        .active { fill: gray !important;}
-        .DatamapDiv {
-            /* border:1px dotted gray; */
-            /* background-color: #0077be; */
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-        }
-        /*.datamaps-key dt, .datamaps-key dd {float: none !important;}
-        .datamaps-key {right: -50px; top: 0;}*/
-    </style>
-</head> -->
-
-<div id="datamap"></div>
+<div id="datamap" style="width: 100vw; height: 100vh;"></div>
 
 <script src="/assets/js/d3.min.js"></script>
 <script src="https://unpkg.com/d3-geo-projection@0.2.16/d3.geo.projection.min.js"></script>
@@ -176,8 +155,8 @@ permalink: /travel/
     var map = new Datamap({
         element: document.getElementById('datamap'),
         projection: 'eckert4',
-        responsive: true,
-        // responsive: false,
+        // responsive: true,
+        responsive: false,
         // countries don't listed in dataset will be painted with this color
         fills: { defaultFill: '#F5F5F5', city: '#000000' },
         data: dataset,
@@ -210,6 +189,15 @@ permalink: /travel/
         }
     });
 
+    map.svg.insert('rect', ':first-child')
+        .attr('class', 'datamaps-water')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .style('fill', '#DCEFF7')
+        .style('pointer-events', 'none');
+
     var cityRadius = 4;
     map.bubbles(cities, {
         borderWidth: 1,
@@ -224,6 +212,37 @@ permalink: /travel/
                 '</div>'].join('');
         }
     });
+
+    function loadHydrography(map) {
+        var path = d3.geo.path().projection(map.projection);
+        var hydrography = map.svg.insert('g', '.bubbles')
+            .attr('class', 'datamaps-hydrography');
+
+        var sources = {
+            lakes: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_lakes.geojson',
+            rivers: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_rivers_lake_centerlines.geojson'
+        };
+
+        Object.keys(sources).forEach(function(type) {
+            d3.json(sources[type], function(error, data) {
+                if (error) {
+                    return;
+                }
+
+                hydrography.selectAll('.datamaps-' + type)
+                    .data(data.features)
+                    .enter()
+                    .append('path')
+                    .attr('class', 'datamaps-' + type)
+                    .attr('d', path)
+                    .style('fill', type === 'lakes' ? '#B7D8E8' : 'none')
+                    .style('stroke', type === 'rivers' ? '#6BAED6' : 'none')
+                    .style('stroke-width', type === 'rivers' ? 0.8 : 0);
+            });
+        });
+    }
+
+    loadHydrography(map);
 
     function enableMapZoom(map) {
         var zoom = d3.behavior.zoom()
