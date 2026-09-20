@@ -11,7 +11,8 @@ const SUPPORTED_EXTENSIONS = new Set(['stl', 'drc', 'draco', 'ply', 'vox', 'obj'
 const VIEW_BACKGROUND = new THREE.Color(0xf8f7f2);
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_MODEL_COLOR = 0xc95a3b;
-const DEFAULT_GRID_SIZE = 2;
+const DEFAULT_GRID_ROWS = 2;
+const DEFAULT_GRID_COLUMNS = 4;
 const MAX_GRID_SIZE = 4;
 const MODEL_SIZE = 2;
 const CAMERA_FRAME = 1.3;
@@ -553,8 +554,8 @@ class RecursiveRenderingApp
         this.renderWidth = 0;
         this.renderHeight = 0;
         this.pixelRatio = 0;
-        this.gridRows = DEFAULT_GRID_SIZE;
-        this.gridColumns = DEFAULT_GRID_SIZE;
+        this.gridRows = DEFAULT_GRID_ROWS;
+        this.gridColumns = DEFAULT_GRID_COLUMNS;
 
         this.handleModelWheel = this.handleModelWheel.bind(this);
 
@@ -591,8 +592,8 @@ class RecursiveRenderingApp
 
     handleGridChange()
     {
-        this.gridRows = this.readGridSize(this.rowCountSelect);
-        this.gridColumns = this.readGridSize(this.columnCountSelect);
+        this.gridRows = this.readGridSize(this.rowCountSelect, DEFAULT_GRID_ROWS);
+        this.gridColumns = this.readGridSize(this.columnCountSelect, DEFAULT_GRID_COLUMNS);
         this.applyGridSize();
 
         if (this.currentIndex >= 0)
@@ -603,10 +604,10 @@ class RecursiveRenderingApp
         }
     }
 
-    readGridSize(select)
+    readGridSize(select, defaultSize)
     {
         const size = Number.parseInt(select.value, 10);
-        return THREE.MathUtils.clamp(size || DEFAULT_GRID_SIZE, 1, MAX_GRID_SIZE);
+        return THREE.MathUtils.clamp(size || defaultSize, 1, MAX_GRID_SIZE);
     }
 
     applyGridSize()
