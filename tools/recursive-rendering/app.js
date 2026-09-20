@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import { CameraController } from './camera-controller.js';
 import { ModelLoaderFactory } from './model-loader.js';
 import { CompositeModelViewRow, ModelViewRow } from './model-view-row.js';
-import { SynchronizedCameraController } from './synchronized-camera-controller.js';
 
 const VIEW_BACKGROUND = new THREE.Color(0xf8f7f2);
 const DEFAULT_GRID_ROWS = 2;
@@ -26,7 +26,7 @@ class RecursiveRenderingApp
         this.handleGridChange = this.handleGridChange.bind(this);
         this.handleCompositeModeChange = this.handleCompositeModeChange.bind(this);
         this.modelLoader = new ModelLoaderFactory();
-        this.cameraController = new SynchronizedCameraController(this.requestRender);
+        this.cameraController = new CameraController(this.requestRender);
         this.modelFiles = [];
         this.modelGroups = [];
         this.rows = [];

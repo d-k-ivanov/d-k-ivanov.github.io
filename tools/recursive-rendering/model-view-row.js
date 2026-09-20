@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+import { CAMERA_ZOOM_LIMITS } from './camera-controller.js';
 import { disposeObject, normalizeModel } from './model-geometry.js';
-import { CAMERA_ZOOM_LIMITS } from './synchronized-camera-controller.js';
 
 const CAMERA_FRAME = 1.3;
 
@@ -23,6 +23,8 @@ export class ModelViewRow
         this.camera = null;
         this.controls = null;
         this.unregisterCamera = null;
+        this.handlePointerMove = () => this.controls?.update();
+        this.handlePointerUp = () => this.finishPointerInteraction();
         this.element = document.createElement('article');
         this.element.className = 'model-row';
 
@@ -70,18 +72,22 @@ export class ModelViewRow
         this.addCameraLights();
         this.scene.add(this.camera);
 
-        this.controls = new OrbitControls(this.camera, this.viewport);
-        this.controls.enableDamping = false;
-        this.controls.enableZoom = false;
+        this.controls = new TrackballControls(this.camera, this.viewport);
+        this.controls.staticMoving = true;
+        this.controls.noZoom = true;
         this.controls.minZoom = CAMERA_ZOOM_LIMITS.min;
         this.controls.maxZoom = CAMERA_ZOOM_LIMITS.max;
-        this.controls.screenSpacePanning = true;
-        this.controls.zoomToCursor = true;
-        this.controls.listenToKeyEvents(this.viewport);
+        this.controls.multiTouchRoll = true;
 
         this.handleControlStart = () => this.viewport.classList.add('is-interacting');
         this.handleControlEnd = () => this.viewport.classList.remove('is-interacting');
-        this.handlePointerDown = () => this.viewport.focus({ preventScroll: true });
+        this.handlePointerDown = () =>
+        {
+            this.viewport.focus({ preventScroll: true });
+            document.addEventListener('pointermove', this.handlePointerMove);
+            document.addEventListener('pointerup', this.handlePointerUp);
+            document.addEventListener('pointercancel', this.handlePointerUp);
+        };
         this.controls.addEventListener('start', this.handleControlStart);
         this.controls.addEventListener('end', this.handleControlEnd);
         this.viewport.addEventListener('pointerdown', this.handlePointerDown);
@@ -92,6 +98,14 @@ export class ModelViewRow
         {
             this.scene.add(this.modelRoot);
         }
+    }
+
+    finishPointerInteraction()
+    {
+        this.controls?.update();
+        document.removeEventListener('pointermove', this.handlePointerMove);
+        document.removeEventListener('pointerup', this.handlePointerUp);
+        document.removeEventListener('pointercancel', this.handlePointerUp);
     }
 
     createScene()
@@ -207,6 +221,7 @@ export class ModelViewRow
         }
 
         this.camera.updateProjectionMatrix();
+        this.controls?.handleResize();
     }
 
     release()
@@ -241,9 +256,9 @@ export class ModelViewRow
         this.unregisterCamera?.();
         this.controls.removeEventListener('start', this.handleControlStart);
         this.controls.removeEventListener('end', this.handleControlEnd);
-        this.controls.stopListenToKeyEvents();
-        this.controls.dispose();
         this.viewport.removeEventListener('pointerdown', this.handlePointerDown);
+        this.finishPointerInteraction();
+        this.controls.dispose();
         this.modelRoot?.parent?.remove(this.modelRoot);
         this.scene.remove(this.camera);
 

@@ -4,7 +4,7 @@ export const CAMERA_ZOOM_LIMITS = Object.freeze({ min: 0.25, max: 8 });
 
 const WHEEL_ZOOM_SENSITIVITY = 0.002;
 
-export class SynchronizedCameraController
+export class CameraController
 {
     constructor(requestRender)
     {
