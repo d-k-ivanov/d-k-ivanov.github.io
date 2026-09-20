@@ -29,6 +29,7 @@ permalink: /travel/
 <!-- <div id="datamap" style="position: relative;" ></div> -->
 
 <script src="/assets/js/d3.min.js"></script>
+<script src="https://unpkg.com/d3-geo-projection@0.2.16/d3.geo.projection.min.js"></script>
 <script src="/assets/js/topojson.js"></script>
 <script src="/assets/js/datamaps.world.hires.min.js"></script>
 
@@ -75,13 +76,24 @@ permalink: /travel/
         "VAT": { "fillColor":  getRandomColor() }
     };
 
+    var cities = [
+        { name: 'Beijing', country: 'China', latitude: 39.9042, longitude: 116.4074 },
+        { name: 'Lima', country: 'Peru', latitude: -12.0464, longitude: -77.0428 },
+        { name: 'Lisbon', country: 'Portugal', latitude: 38.7223, longitude: -9.1393 },
+        { name: 'Madrid', country: 'Spain', latitude: 40.4168, longitude: -3.7038 },
+        { name: 'Moscow', country: 'Russia', latitude: 55.7558, longitude: 37.6173 },
+        { name: 'Paris', country: 'France', latitude: 48.8566, longitude: 2.3522 },
+        { name: 'Rome', country: 'Italy', latitude: 41.9028, longitude: 12.4964 },
+        { name: 'Yerevan', country: 'Armenia', latitude: 40.1872, longitude: 44.5152 },
+    ];
+
     // render map
     var map = new Datamap({
         element: document.getElementById('datamap'),
-        projection: 'mercator', // big world map
+        projection: 'eckert4',
         responsive: true,
         // countries don't listed in dataset will be painted with this color
-        fills: { defaultFill: '#F5F5F5' },
+        fills: { defaultFill: '#F5F5F5', city: '#000000' },
         data: dataset,
         geographyConfig: {
             borderColor: '#DEDEDE',
@@ -89,7 +101,7 @@ permalink: /travel/
             popupOnHover: false,
             // Change color on mouse hover
             highlightFillColor: function(geo) {
-                return geo['fillColor'] || '#E5E5E5';
+                return geo['fillColor'] || '#F5F5F5';
             },
             highlightBorderColor: '#B7B7B7',
             // show desired information in tooltip
@@ -111,6 +123,37 @@ permalink: /travel/
             }
         }
     });
+
+    var cityRadius = 4;
+    map.bubbles(cities, {
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
+        fillKey: 'city',
+        radius: cityRadius,
+        popupOnHover: true,
+        popupTemplate: function(geo, data) {
+            return ['<div class="hoverinfo">',
+                '<strong>', data.name, '</strong>',
+                '<br>', data.country,
+                '</div>'].join('');
+        }
+    });
+
+    function enableMapZoom(map) {
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 8])
+            .on('zoom', function() {
+                map.svg.selectAll('g').attr(
+                    'transform',
+                    'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')'
+                );
+                map.svg.selectAll('.datamaps-bubble').attr('r', cityRadius / d3.event.scale);
+            });
+
+        map.svg.call(zoom);
+    }
+
+    enableMapZoom(map);
 
     var mapElement = document.getElementById('datamap');
     var tooltip = document.createElement('div');
