@@ -4,6 +4,10 @@ title : Tools
 permalink: /tools/
 ---
 
+## Rendering Tools
+
+- <a name="Recursive Model Rendering from a Folder" href="/tools/recursive-rendering/" target="_blank">Recursive Model Rendering from a Folder</a>
+
 ## Text Tools
 
 - <a name="Compare Two Lists" href="/tools/compare-two-lists/">Compare Two Lists</a>
