@@ -415,7 +415,7 @@ class ModelViewRow
 
         try
         {
-            object = await modelLoader.load(this.file);
+            object = await this.loadObject(modelLoader);
 
             if (!this.requested)
             {
@@ -448,6 +448,11 @@ class ModelViewRow
         {
             this.loading = false;
         }
+    }
+
+    loadObject(modelLoader)
+    {
+        return modelLoader.load(this.file);
     }
 
     setError(error)
@@ -534,6 +539,72 @@ class ModelViewRow
     }
 }
 
+class CompositeModelViewRow extends ModelViewRow
+{
+    constructor(modelPath, files, modelIndex)
+    {
+        super(modelPath, null, modelIndex);
+        this.files = [...files];
+        this.failureCount = 0;
+    }
+
+    async loadObject(modelLoader)
+    {
+        const group = new THREE.Group();
+
+        for (const [index, file] of this.files.entries())
+        {
+            if (!this.requested)
+            {
+                break;
+            }
+
+            this.setLoadState(`Loading ${index + 1} of ${this.files.length}`);
+
+            try
+            {
+                const object = await modelLoader.load(file);
+
+                if (!this.requested)
+                {
+                    disposeObject(object);
+                    break;
+                }
+
+                group.add(object);
+            }
+            catch (error)
+            {
+                this.failureCount++;
+                console.error(`Could not load ${file.webkitRelativePath || file.name}`, error);
+            }
+        }
+
+        if (this.requested && group.children.length === 0)
+        {
+            throw new Error('None of the selected models could be loaded.');
+        }
+
+        return group;
+    }
+
+    setModel(object)
+    {
+        super.setModel(object);
+
+        if (this.failureCount > 0)
+        {
+            this.setLoadState(`Ready / ${this.failureCount} failed`);
+        }
+    }
+
+    dispose()
+    {
+        super.dispose();
+        this.files = [];
+    }
+}
+
 class RecursiveRenderingApp
 {
     constructor()
@@ -545,12 +616,15 @@ class RecursiveRenderingApp
         this.statusElement = document.getElementById('status');
         this.rowCountSelect = document.getElementById('row-count');
         this.columnCountSelect = document.getElementById('column-count');
+        this.compositeModeInput = document.getElementById('composite-mode');
 
         this.requestRender = this.requestRender.bind(this);
         this.handleGridChange = this.handleGridChange.bind(this);
+        this.handleCompositeModeChange = this.handleCompositeModeChange.bind(this);
         this.modelLoader = new ModelLoaderFactory();
         this.cameraController = new SynchronizedCameraController(this.requestRender);
         this.modelFiles = [];
+        this.modelGroups = [];
         this.rows = [];
         this.loadQueue = [];
         this.processingQueue = false;
@@ -588,6 +662,7 @@ class RecursiveRenderingApp
         this.folderInput.addEventListener('change', () => this.loadFolder(this.folderInput.files));
         this.rowCountSelect.addEventListener('change', this.handleGridChange);
         this.columnCountSelect.addEventListener('change', this.handleGridChange);
+        this.compositeModeInput.addEventListener('change', this.handleCompositeModeChange);
         this.modelsElement.addEventListener('wheel', this.handleModelWheel, { capture: true, passive: false });
         window.addEventListener('resize', this.requestRender);
         window.addEventListener('scroll', this.requestRender, { capture: true, passive: true });
@@ -600,9 +675,14 @@ class RecursiveRenderingApp
         return this.gridRows * this.gridColumns;
     }
 
+    get viewItemCount()
+    {
+        return this.compositeModeInput.checked ? this.modelGroups.length : this.modelFiles.length;
+    }
+
     get lastPageStartIndex()
     {
-        return Math.max(0, Math.floor((this.modelFiles.length - 1) / this.activeViewCount) * this.activeViewCount);
+        return Math.max(0, Math.floor((this.viewItemCount - 1) / this.activeViewCount) * this.activeViewCount);
     }
 
     handleGridChange()
@@ -635,6 +715,21 @@ class RecursiveRenderingApp
         this.modelsElement.style.setProperty('--view-columns', String(this.gridColumns));
     }
 
+    handleCompositeModeChange()
+    {
+        this.applyGridSize();
+
+        if (this.modelFiles.length === 0)
+        {
+            return;
+        }
+
+        const request = ++this.loadRequest;
+        this.clearViewRows();
+        this.currentIndex = 0;
+        this.updateActiveRows(request);
+    }
+
     loadFolder(fileList)
     {
         const request = ++this.loadRequest;
@@ -658,6 +753,7 @@ class RecursiveRenderingApp
 
         this.modelsElement.replaceChildren();
         this.modelFiles = modelFiles;
+        this.modelGroups = this.groupModelsByFolder(modelFiles);
         this.currentIndex = 0;
         this.totalModelCount = modelFiles.length;
         this.ignoredFileCount = allFiles.length - modelFiles.length;
@@ -672,10 +768,8 @@ class RecursiveRenderingApp
             return;
         }
 
-        const desiredIndices = Array.from(
-            { length: this.activeViewCount },
-            (_, offset) => this.currentIndex + offset
-        ).filter((index) => index < this.modelFiles.length);
+        const desiredIndices = Array.from({ length: this.activeViewCount }, (_, offset) =>
+            this.currentIndex + offset).filter((index) => index < this.viewItemCount);
         const desiredIndexSet = new Set(desiredIndices);
         const existingRows = new Map(this.rows.map((row) => [row.modelIndex, row]));
 
@@ -689,6 +783,16 @@ class RecursiveRenderingApp
 
         this.rows = desiredIndices.map((index) =>
         {
+            if (this.compositeModeInput.checked)
+            {
+                const group = this.modelGroups[index];
+                return existingRows.get(index) ?? new CompositeModelViewRow(
+                    `${group.path} (${group.files.length} ${group.files.length === 1 ? 'model' : 'models'})`,
+                    group.files,
+                    index
+                );
+            }
+
             const file = this.modelFiles[index];
             return existingRows.get(index) ?? new ModelViewRow(this.pathOf(file), file, index);
         });
@@ -705,6 +809,27 @@ class RecursiveRenderingApp
         this.updateStatus();
         this.requestRender();
         this.scheduleVisibleLoads(request);
+    }
+
+    groupModelsByFolder(files)
+    {
+        const groups = new Map();
+
+        for (const file of files)
+        {
+            const relativePath = (file.webkitRelativePath || file.name).replaceAll('\\', '/');
+            const separatorIndex = relativePath.lastIndexOf('/');
+            const folderPath = separatorIndex >= 0 ? relativePath.slice(0, separatorIndex) : 'Selected models';
+
+            if (!groups.has(folderPath))
+            {
+                groups.set(folderPath, []);
+            }
+
+            groups.get(folderPath).push(file);
+        }
+
+        return Array.from(groups, ([path, groupFiles]) => ({ path, files: groupFiles }));
     }
 
     scheduleVisibleLoads(request = this.loadRequest)
@@ -839,11 +964,14 @@ class RecursiveRenderingApp
     updateStatus()
     {
         const loadingCount = this.rows.filter((row) => row.loading || row.queued).length;
-        const failedCount = this.rows.filter((row) => row.failed).length;
+        const failedCount = this.rows.reduce((count, row) =>
+            count + Math.max(row.failureCount ?? 0, Number(row.failed)), 0);
         const firstNumber = this.currentIndex >= 0 ? this.currentIndex + 1 : 0;
-        const lastNumber = Math.min(this.currentIndex + this.activeViewCount, this.totalModelCount);
+        const lastNumber = Math.min(this.currentIndex + this.activeViewCount, this.viewItemCount);
         const range = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
-        const parts = [`${range} of ${this.totalModelCount}`];
+        const parts = [this.compositeModeInput.checked ?
+            `${range} of ${this.modelGroups.length} folders / ${this.totalModelCount} models` :
+            `${range} of ${this.totalModelCount}`];
 
         if (loadingCount > 0)
         {
@@ -870,6 +998,16 @@ class RecursiveRenderingApp
 
     clearRows()
     {
+        this.clearViewRows();
+        this.modelFiles = [];
+        this.modelGroups = [];
+        this.currentIndex = -1;
+        this.totalModelCount = 0;
+        this.ignoredFileCount = 0;
+    }
+
+    clearViewRows()
+    {
         clearTimeout(this.loadTimer);
         this.loadTimer = null;
         this.wheelDelta = 0;
@@ -880,11 +1018,7 @@ class RecursiveRenderingApp
             row.dispose();
         }
 
-        this.modelFiles = [];
         this.rows = [];
-        this.currentIndex = -1;
-        this.totalModelCount = 0;
-        this.ignoredFileCount = 0;
         this.cameraController.reset();
         this.renderer.renderLists.dispose();
         this.modelsElement.replaceChildren();

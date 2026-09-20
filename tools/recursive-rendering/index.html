@@ -105,6 +105,24 @@
             font-weight: 650;
         }
 
+        .composite-control {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 650;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .composite-control input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
         select {
             width: 52px;
             min-height: 38px;
@@ -280,6 +298,10 @@
                 grid-column: 1 / -1;
             }
 
+            .grid-controls {
+                grid-column: 1 / -1;
+            }
+
             main {
                 width: 100%;
             }
@@ -325,6 +347,10 @@
                             </select>
                         </label>
                     </div>
+                    <label class="composite-control" for="composite-mode">
+                        <input id="composite-mode" type="checkbox">
+                        Combine by folder
+                    </label>
                     <button id="folder-button" type="button">Select folder</button>
                     <input id="folder-input" type="file" accept=".stl,.drc,.draco,.ply,.vox,.obj" webkitdirectory directory multiple hidden>
                 </div>
