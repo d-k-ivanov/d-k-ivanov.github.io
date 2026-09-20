@@ -25,8 +25,7 @@ permalink: /travel/
     </style>
 </head> -->
 
-<div id="datamap" style="height: 30vh; position: relative;" ></div>
-<!-- <div id="datamap" style="position: relative;" ></div> -->
+<div id="datamap"></div>
 
 <script src="/assets/js/d3.min.js"></script>
 <script src="https://unpkg.com/d3-geo-projection@0.2.16/d3.geo.projection.min.js"></script>
@@ -77,14 +76,32 @@ permalink: /travel/
     };
 
     var cities = [
-        { name: 'Beijing', country: 'China', latitude: 39.9042, longitude: 116.4074 },
-        { name: 'Lima', country: 'Peru', latitude: -12.0464, longitude: -77.0428 },
-        { name: 'Lisbon', country: 'Portugal', latitude: 38.7223, longitude: -9.1393 },
-        { name: 'Madrid', country: 'Spain', latitude: 40.4168, longitude: -3.7038 },
-        { name: 'Moscow', country: 'Russia', latitude: 55.7558, longitude: 37.6173 },
-        { name: 'Paris', country: 'France', latitude: 48.8566, longitude: 2.3522 },
-        { name: 'Rome', country: 'Italy', latitude: 41.9028, longitude: 12.4964 },
-        { name: 'Yerevan', country: 'Armenia', latitude: 40.1872, longitude: 44.5152 },
+        { country: 'Armenia', name: 'Yerevan', latitude: 40.1872, longitude: 44.5152 },
+        { country: 'China', name: 'Beijing', latitude: 39.9042, longitude: 116.4074 },
+        { country: 'China', name: 'Luoyang', latitude: 34.6197, longitude: 112.454 },
+        { country: 'China', name: "Xi'an", latitude: 34.3416, longitude: 108.9398 },
+        { country: 'France', name: 'Paris', latitude: 48.8566, longitude: 2.3522 },
+        { country: 'Germany', name: 'Berlin', latitude: 52.52, longitude: 13.405 },
+        { country: 'Italy', name: 'Rome', latitude: 41.9028, longitude: 12.4964 },
+        { country: 'Peru', name: 'Lima', latitude: -12.0464, longitude: -77.0428 },
+        { country: 'Portugal', name: 'Lisbon', latitude: 38.7223, longitude: -9.1393 },
+        { country: 'Russia', name: 'Moscow', latitude: 55.7558, longitude: 37.6173 },
+        { country: 'Russia', name: 'Saint Petersburg', latitude: 59.9343, longitude: 30.3351 },
+        { country: 'Spain', name: 'A Coruna', latitude: 43.3623, longitude: -8.4115 },
+        { country: 'Spain', name: 'Bilbao', latitude: 43.263, longitude: -2.935 },
+        { country: 'Spain', name: 'Cadiz', latitude: 36.5271, longitude: -6.2886 },
+        { country: 'Spain', name: 'Cordoba', latitude: 37.8882, longitude: -4.7794 },
+        { country: 'Spain', name: 'Granada', latitude: 37.1773, longitude: -3.5986 },
+        { country: 'Spain', name: 'Leon', latitude: 42.5987, longitude: -5.5671 },
+        { country: 'Spain', name: 'Madrid', latitude: 40.4168, longitude: -3.7038 },
+        { country: 'Spain', name: 'Malaga', latitude: 36.7213, longitude: -4.4214 },
+        { country: 'Spain', name: 'Oviedo', latitude: 43.3619, longitude: -5.8494 },
+        { country: 'Spain', name: 'Salamanca', latitude: 40.9701, longitude: -5.6635 },
+        { country: 'Spain', name: 'Santander', latitude: 43.4623, longitude: -3.8099 },
+        { country: 'Spain', name: 'Santiago de Compostela', latitude: 42.8782, longitude: -8.5448 },
+        { country: 'Spain', name: 'Seville', latitude: 37.3891, longitude: -5.9845 },
+        { country: 'Spain', name: 'Valencia', latitude: 39.4699, longitude: -0.3763 },
+        { country: 'Spain', name: 'Valladolid', latitude: 41.6523, longitude: -4.7286 },
     ];
 
     // render map
@@ -92,6 +109,7 @@ permalink: /travel/
         element: document.getElementById('datamap'),
         projection: 'eckert4',
         responsive: true,
+        // responsive: false,
         // countries don't listed in dataset will be painted with this color
         fills: { defaultFill: '#F5F5F5', city: '#000000' },
         data: dataset,

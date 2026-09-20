@@ -3,14 +3,10 @@
 
 {% include head.html %}
 
-<body>
+<body style="overflow: hidden;">
     {% include navigation.html %}
-    <div style="width: 60%;margin: auto;">
-        <header>
-        </header>
+    <div style="width: 100%; margin: auto;">
         {{ content }}
-        <footer>
-        </footer>
     </div>
     <script src="/assets/js/scale.fix.js"></script>
     {% include analytics.html %}
