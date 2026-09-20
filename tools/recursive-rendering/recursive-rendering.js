@@ -663,7 +663,7 @@ class RecursiveRenderingApp
         this.rowCountSelect.addEventListener('change', this.handleGridChange);
         this.columnCountSelect.addEventListener('change', this.handleGridChange);
         this.compositeModeInput.addEventListener('change', this.handleCompositeModeChange);
-        this.modelsElement.addEventListener('wheel', this.handleModelWheel, { capture: true, passive: false });
+        window.addEventListener('wheel', this.handleModelWheel, { capture: true, passive: false });
         window.addEventListener('resize', this.requestRender);
         window.addEventListener('scroll', this.requestRender, { capture: true, passive: true });
         this.applyGridSize();
@@ -864,8 +864,9 @@ class RecursiveRenderingApp
         const deltaScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 :
             event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? this.modelsElement.clientHeight : 1;
         const delta = event.deltaY * deltaScale;
+        const overViewport = event.target instanceof Element && event.target.closest('.model-viewport');
 
-        if (event.ctrlKey)
+        if (!event.ctrlKey && overViewport)
         {
             this.cameraController.zoomByWheel(delta);
             this.wheelDelta = 0;
