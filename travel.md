@@ -58,6 +58,7 @@ permalink: /travel/
         { country: 'Argentina', name: 'Buenos Aires', latitude: -34.6037, longitude: -58.3816 },
         { country: 'Argentina', name: 'Córdoba', latitude: -31.4201, longitude: -64.1888 },
         { country: 'Argentina', name: 'La Rioja', latitude: -29.4116, longitude: -66.8558 },
+        { country: 'Argentina', name: 'Las Cuevas', latitude: -31.4833, longitude: -68.5333 },
         { country: 'Argentina', name: 'Mendoza', latitude: -32.8895, longitude: -68.8458 },
         { country: 'Argentina', name: 'Puerto Iguazú', latitude: -25.595, longitude: -54.588 },
         { country: 'Argentina', name: 'Salta', latitude: -24.7821, longitude: -65.4232 },
