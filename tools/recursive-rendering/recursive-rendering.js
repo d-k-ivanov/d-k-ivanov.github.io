@@ -14,6 +14,9 @@ const DEFAULT_MODEL_COLOR = 0xc95a3b;
 const ACTIVE_VIEW_COUNT = 4;
 const MODEL_SIZE = 2;
 const CAMERA_FRAME = 1.3;
+const MIN_CAMERA_ZOOM = 0.25;
+const MAX_CAMERA_ZOOM = 8;
+const WHEEL_ZOOM_SENSITIVITY = 0.002;
 const MIN_UP_COHERENCE = 0.05;
 const MIN_VISIBLE_COLOR = 0.03;
 const MAX_COLOR_SAMPLES = 4096;
@@ -243,6 +246,35 @@ class SynchronizedCameraController
         controls.update();
     }
 
+    zoomByWheel(delta)
+    {
+        if (!this.state || delta === 0)
+        {
+            return;
+        }
+
+        const zoom = THREE.MathUtils.clamp(
+            this.state.zoom * Math.exp(-delta * WHEEL_ZOOM_SENSITIVITY),
+            MIN_CAMERA_ZOOM,
+            MAX_CAMERA_ZOOM
+        );
+
+        if (zoom === this.state.zoom)
+        {
+            return;
+        }
+
+        this.state.zoom = zoom;
+
+        for (const { camera } of this.entries)
+        {
+            camera.zoom = zoom;
+            camera.updateProjectionMatrix();
+        }
+
+        this.requestRender();
+    }
+
     reset()
     {
         this.state = null;
@@ -312,8 +344,8 @@ class ModelViewRow
         this.controls = new OrbitControls(this.camera, this.viewport);
         this.controls.enableDamping = false;
         this.controls.enableZoom = false;
-        this.controls.minZoom = 0.25;
-        this.controls.maxZoom = 8;
+        this.controls.minZoom = MIN_CAMERA_ZOOM;
+        this.controls.maxZoom = MAX_CAMERA_ZOOM;
         this.controls.screenSpacePanning = true;
         this.controls.zoomToCursor = true;
         this.controls.listenToKeyEvents(this.viewport);
@@ -537,7 +569,7 @@ class RecursiveRenderingApp
     {
         this.folderButton.addEventListener('click', () => this.folderInput.click());
         this.folderInput.addEventListener('change', () => this.loadFolder(this.folderInput.files));
-        this.modelsElement.addEventListener('wheel', this.handleModelWheel, { passive: false });
+        this.modelsElement.addEventListener('wheel', this.handleModelWheel, { capture: true, passive: false });
         window.addEventListener('resize', this.requestRender);
         window.addEventListener('scroll', this.requestRender, { capture: true, passive: true });
         this.requestRender();
@@ -624,8 +656,18 @@ class RecursiveRenderingApp
         }
 
         event.preventDefault();
+        event.stopPropagation();
         const deltaScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 :
             event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? this.modelsElement.clientHeight : 1;
+        const delta = event.deltaY * deltaScale;
+
+        if (event.ctrlKey)
+        {
+            this.cameraController.zoomByWheel(delta);
+            this.wheelDelta = 0;
+            return;
+        }
+
         clearTimeout(this.wheelTimer);
         this.wheelTimer = setTimeout(() =>
         {
@@ -638,7 +680,7 @@ class RecursiveRenderingApp
             return;
         }
 
-        this.wheelDelta += event.deltaY * deltaScale;
+        this.wheelDelta += delta;
 
         if (Math.abs(this.wheelDelta) < 24)
         {
