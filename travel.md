@@ -81,6 +81,8 @@ permalink: /travel/
         { country: 'Argentina', name: 'La Rioja', latitude: -29.4116, longitude: -66.8558 },
         { country: 'Argentina', name: 'Mendoza', latitude: -32.8895, longitude: -68.8458 },
         { country: 'Argentina', name: 'Puerto Iguazú', latitude: -25.595, longitude: -54.588 },
+        { country: 'Argentina', name: 'Salta', latitude: -24.7821, longitude: -65.4232 },
+        { country: 'Argentina', name: 'San Salvador de Jujuy', latitude: -24.1858, longitude: -65.2995 },
         { country: 'Armenia', name: 'Khor Virap', latitude: 39.8789, longitude: 44.5760 },
         { country: 'Armenia', name: 'Tatev', latitude: 39.3852, longitude: 46.2408 },
         { country: 'Armenia', name: 'Yerevan', latitude: 40.1872, longitude: 44.5152 },
