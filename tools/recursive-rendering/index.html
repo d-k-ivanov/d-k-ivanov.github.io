@@ -90,6 +90,38 @@
             gap: 16px;
         }
 
+        .grid-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 650;
+        }
+
+        select {
+            width: 52px;
+            min-height: 38px;
+            padding: 6px 8px;
+            border: 1px solid var(--ink);
+            border-radius: 4px;
+            color: var(--ink);
+            background: var(--panel);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        select:focus-visible {
+            outline: 3px solid #e3a62f;
+            outline-offset: 2px;
+        }
+
         #status {
             color: var(--muted);
             font-size: 0.875rem;
@@ -126,21 +158,12 @@
 
         main {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            grid-template-rows: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(var(--view-columns, 2), minmax(0, 1fr));
+            grid-template-rows: repeat(var(--view-rows, 2), minmax(0, 1fr));
             width: 100%;
             min-height: 0;
             overflow: hidden;
             background: transparent;
-        }
-
-        main[data-view-count="1"] {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
-        }
-
-        main[data-view-count="2"] {
-            grid-template-rows: 1fr;
         }
 
         .empty-state {
@@ -247,7 +270,14 @@
             }
 
             .controls {
-                justify-content: space-between;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                justify-content: stretch;
+                gap: 10px;
+            }
+
+            #status {
+                grid-column: 1 / -1;
             }
 
             main {
@@ -275,6 +305,26 @@
                 <h1>Recursive Model Rendering</h1>
                 <div class="controls">
                     <span id="status" role="status" aria-live="polite">No folder selected</span>
+                    <div class="grid-controls" role="group" aria-label="Viewport grid">
+                        <label class="grid-control" for="row-count">
+                            Rows
+                            <select id="row-count">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </label>
+                        <label class="grid-control" for="column-count">
+                            Columns
+                            <select id="column-count">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </label>
+                    </div>
                     <button id="folder-button" type="button">Select folder</button>
                     <input id="folder-input" type="file" accept=".stl,.drc,.draco,.ply,.vox,.obj" webkitdirectory directory multiple hidden>
                 </div>

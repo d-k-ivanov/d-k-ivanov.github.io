@@ -11,7 +11,8 @@ const SUPPORTED_EXTENSIONS = new Set(['stl', 'drc', 'draco', 'ply', 'vox', 'obj'
 const VIEW_BACKGROUND = new THREE.Color(0xf8f7f2);
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_MODEL_COLOR = 0xc95a3b;
-const ACTIVE_VIEW_COUNT = 4;
+const DEFAULT_GRID_SIZE = 2;
+const MAX_GRID_SIZE = 4;
 const MODEL_SIZE = 2;
 const CAMERA_FRAME = 1.3;
 const MIN_CAMERA_ZOOM = 0.25;
@@ -530,8 +531,11 @@ class RecursiveRenderingApp
         this.folderInput = document.getElementById('folder-input');
         this.modelsElement = document.getElementById('models');
         this.statusElement = document.getElementById('status');
+        this.rowCountSelect = document.getElementById('row-count');
+        this.columnCountSelect = document.getElementById('column-count');
 
         this.requestRender = this.requestRender.bind(this);
+        this.handleGridChange = this.handleGridChange.bind(this);
         this.modelLoader = new ModelLoaderFactory();
         this.cameraController = new SynchronizedCameraController(this.requestRender);
         this.modelFiles = [];
@@ -549,6 +553,8 @@ class RecursiveRenderingApp
         this.renderWidth = 0;
         this.renderHeight = 0;
         this.pixelRatio = 0;
+        this.gridRows = DEFAULT_GRID_SIZE;
+        this.gridColumns = DEFAULT_GRID_SIZE;
 
         this.handleModelWheel = this.handleModelWheel.bind(this);
 
@@ -569,10 +575,46 @@ class RecursiveRenderingApp
     {
         this.folderButton.addEventListener('click', () => this.folderInput.click());
         this.folderInput.addEventListener('change', () => this.loadFolder(this.folderInput.files));
+        this.rowCountSelect.addEventListener('change', this.handleGridChange);
+        this.columnCountSelect.addEventListener('change', this.handleGridChange);
         this.modelsElement.addEventListener('wheel', this.handleModelWheel, { capture: true, passive: false });
         window.addEventListener('resize', this.requestRender);
         window.addEventListener('scroll', this.requestRender, { capture: true, passive: true });
+        this.applyGridSize();
         this.requestRender();
+    }
+
+    get activeViewCount()
+    {
+        return this.gridRows * this.gridColumns;
+    }
+
+    handleGridChange()
+    {
+        this.gridRows = this.readGridSize(this.rowCountSelect);
+        this.gridColumns = this.readGridSize(this.columnCountSelect);
+        this.applyGridSize();
+
+        if (this.currentIndex >= 0)
+        {
+            const lastStartIndex = Math.max(0, this.modelFiles.length - this.activeViewCount);
+            this.currentIndex = Math.min(this.currentIndex, lastStartIndex);
+            this.updateActiveRows();
+        }
+    }
+
+    readGridSize(select)
+    {
+        const size = Number.parseInt(select.value, 10);
+        return THREE.MathUtils.clamp(size || DEFAULT_GRID_SIZE, 1, MAX_GRID_SIZE);
+    }
+
+    applyGridSize()
+    {
+        this.rowCountSelect.value = String(this.gridRows);
+        this.columnCountSelect.value = String(this.gridColumns);
+        this.modelsElement.style.setProperty('--view-rows', String(this.gridRows));
+        this.modelsElement.style.setProperty('--view-columns', String(this.gridColumns));
     }
 
     loadFolder(fileList)
@@ -613,7 +655,7 @@ class RecursiveRenderingApp
         }
 
         const desiredIndices = Array.from(
-            { length: ACTIVE_VIEW_COUNT },
+            { length: this.activeViewCount },
             (_, offset) => this.currentIndex + offset
         ).filter((index) => index < this.modelFiles.length);
         const desiredIndexSet = new Set(desiredIndices);
@@ -636,7 +678,6 @@ class RecursiveRenderingApp
 
         this.loadQueue = this.loadQueue.filter(({ row }) => desiredIndexSet.has(row.modelIndex));
         this.modelsElement.replaceChildren(...this.rows.map((row) => row.element));
-        this.modelsElement.dataset.viewCount = String(this.rows.length);
 
         for (const row of this.rows)
         {
@@ -694,7 +735,7 @@ class RecursiveRenderingApp
 
     navigateTo(index)
     {
-        const lastStartIndex = Math.max(0, this.modelFiles.length - ACTIVE_VIEW_COUNT);
+        const lastStartIndex = Math.max(0, this.modelFiles.length - this.activeViewCount);
         const nextIndex = THREE.MathUtils.clamp(index, 0, lastStartIndex);
 
         if (nextIndex === this.currentIndex)
@@ -776,7 +817,7 @@ class RecursiveRenderingApp
         const loadingCount = this.rows.filter((row) => row.loading || row.queued).length;
         const failedCount = this.rows.filter((row) => row.failed).length;
         const firstNumber = this.currentIndex >= 0 ? this.currentIndex + 1 : 0;
-        const lastNumber = Math.min(this.currentIndex + ACTIVE_VIEW_COUNT, this.totalModelCount);
+        const lastNumber = Math.min(this.currentIndex + this.activeViewCount, this.totalModelCount);
         const range = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
         const parts = [`${range} of ${this.totalModelCount}`, `${activeCount} active`];
 
@@ -824,7 +865,6 @@ class RecursiveRenderingApp
         this.cameraController.reset();
         this.renderer.renderLists.dispose();
         this.modelsElement.replaceChildren();
-        delete this.modelsElement.dataset.viewCount;
         this.requestRender();
     }
 
