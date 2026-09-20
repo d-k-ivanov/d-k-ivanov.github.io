@@ -4,6 +4,8 @@ import { CAMERA_ZOOM_LIMITS } from './camera-controller.js';
 import { disposeObject, normalizeModel } from './model-geometry.js';
 
 const CAMERA_FRAME = 1.3;
+const CAMERA_ROTATE_SPEED = 2.0;
+const CAMERA_PAN_SENSITIVITY = 1.0;
 
 export class ModelViewRow
 {
@@ -75,9 +77,13 @@ export class ModelViewRow
         this.controls = new TrackballControls(this.camera, this.viewport);
         this.controls.staticMoving = true;
         this.controls.noZoom = true;
+        this.controls.rotateSpeed = CAMERA_ROTATE_SPEED;
+        this.controls.rollSpeed = CAMERA_ROTATE_SPEED;
         this.controls.minZoom = CAMERA_ZOOM_LIMITS.min;
         this.controls.maxZoom = CAMERA_ZOOM_LIMITS.max;
         this.controls.multiTouchRoll = true;
+        this.controls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
+        this.updateControlMetrics();
 
         this.handleControlStart = () => this.viewport.classList.add('is-interacting');
         this.handleControlEnd = () => this.viewport.classList.remove('is-interacting');
@@ -221,7 +227,20 @@ export class ModelViewRow
         }
 
         this.camera.updateProjectionMatrix();
-        this.controls?.handleResize();
+        this.updateControlMetrics();
+    }
+
+    updateControlMetrics()
+    {
+        if (!this.controls)
+        {
+            return;
+        }
+
+        const cameraDistance = this.camera.position.distanceTo(this.controls.target);
+        this.controls.panSpeed = CAMERA_PAN_SENSITIVITY * this.viewport.clientWidth /
+            Math.max(cameraDistance, Number.EPSILON);
+        this.controls.handleResize();
     }
 
     release()

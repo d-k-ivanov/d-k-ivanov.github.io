@@ -91,7 +91,6 @@ export class CameraController
         camera.zoom = this.state.zoom;
         controls.target.copy(this.state.target);
         camera.updateProjectionMatrix();
-        controls.update();
     }
 
     zoomByWheel(delta)
