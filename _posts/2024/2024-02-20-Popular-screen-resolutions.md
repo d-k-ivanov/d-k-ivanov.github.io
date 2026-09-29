@@ -100,7 +100,6 @@ I never can't remember the parameters of popular resolutions, so decided to make
 
 |  Width x Height  |    Pixels    |     Name     |
 | :--------------: | :----------: | :----------: |
-| $
 | $2560\times1080$ | $2'764'800$  |     UWHD     |
 | $3440\times1440$ | $4'953'600$  |    UWQHD     |
 | $3840\times1600$ | $6'144'000$  |    UWQHD+    |
