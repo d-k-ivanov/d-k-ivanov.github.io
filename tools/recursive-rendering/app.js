@@ -3,7 +3,7 @@ import { CameraController } from './camera-controller.js';
 import { ModelLoaderFactory } from './model-loader.js';
 import { CompositeModelViewRow, ModelViewRow } from './model-view-row.js';
 
-const VIEW_BACKGROUND = new THREE.Color(0xf8f7f2);
+const VIEW_BACKGROUND = new THREE.Color(0xffffff);
 const DEFAULT_GRID_ROWS = 2;
 const DEFAULT_GRID_COLUMNS = 4;
 const MAX_GRID_SIZE = 10;
